@@ -1,0 +1,319 @@
+grammar com.utc.utrc.hermes.iml.Iml with org.eclipse.xtext.common.Terminals
+
+generate iml "http://www.utc.com/utrc/hermes/iml/Iml"
+
+
+import "http://www.eclipse.org/emf/2002/Ecore" as ecore
+
+/* A model is a container for one or more types. It must have a qualified name*/
+Model:
+	'package' name=QualifiedName ';'
+	(imports+=Import ';')*
+	(elements+=Element (';')?)*
+;
+
+
+
+/*A qualified name is a sequence of names separated by dots*/
+QualifiedName:
+	ID ('.' ID)*;
+
+/*Import statement to access model elements defined outside of the current 
+ * model*/
+Import:
+	'import' importedNamespace=QualifiedNameWithWildcard;
+
+/*A qualified name followed by ".*" denotes all element within the scope 
+ * of the prefix*/
+QualifiedNameWithWildcard:
+	QualifiedName '.*'?;
+
+
+
+Symbol :
+	TermSymbol|
+	TypeProperty|
+	TypeRelation |
+	ConstrainedType |
+	NamedFormula
+;
+
+/*A term symbol is a function declaration, a constant declaration or 
+ * a variable declaration*/
+TermSymbol:
+	FunctionDefinition |
+	ConstantDeclaration |
+	VariableDeclaration 
+;
+
+
+/*An element of a model is either a symbol or a named formula */
+Element:
+	Symbol 
+	;
+
+TypeProperty:
+	{TypeProperty} 'property' name=ID ;
+
+TypeRelation: 
+	{TypeRelation} 'relation' name = ID 
+;
+
+Doc :
+	{Doc}('@' properties+=[TypeProperty|QualifiedName] descriptions+=STRING)+
+;
+	
+TypeReference:
+	('<<' properties+=[TypeProperty|QualifiedName] (',' properties+=[TypeProperty|QualifiedName])* '>>')? type=[ConstrainedType|QualifiedName]
+	/*Optional type parameters for generic types */
+	('<' typeBinding+=TypeReference (',' typeBinding+=TypeReference)* '>')?
+	(array?='['dimension+=TermExpression']' ('['dimension+=TermExpression']')*)?  ('~>' range=TypeReference)?
+;
+
+/*Literals used in finite data types */
+DomainLiteral:
+	name=ID;
+
+ConstrainedType:
+	(doc=Doc)?
+	'type' ('<<' properties+=[TypeProperty|QualifiedName] (',' properties+=[TypeProperty|QualifiedName])* '>>')? name=ID
+	((finite?='finite' '{' literals+=DomainLiteral+ '}')
+	|
+	(static?='singleton')?
+	/*Optional template parameters for generic types */
+	(template?='<' typeParameter+=ConstrainedType (',' typeParameter+=ConstrainedType)* '>')?
+	/*Optional parameters for parametric types */
+	//('(' params+=VariableDeclaration (',' params+=VariableDeclaration)* ')')?
+	/* An optional list of type being extended by this type*/
+	( relatesto+=[TypeRelation|QualifiedName] superType+=TypeReference (',' relatesto+=[TypeRelation|QualifiedName] superType+=TypeReference)* )?
+	/* A list of elements defined by this type*/
+	('{' (elements+=Element ';')* '}')?);
+	
+
+	
+FunctionDefinition  returns TermSymbol:
+	{FunctionDefinition} (doc=Doc)? (modality?='modality')? name=ID
+	'('  (parameters+=VariableDeclaration (',' parameters+=VariableDeclaration)*)? ')'
+	(ret?='returns' type=TypeReference)?
+	(interpretation=Interpretation)?
+;
+
+/*A variables has a name and a type*/
+VariableDeclaration returns TermSymbol:
+	{VariableDeclaration} (doc=Doc)? type=TypeReference name=ID (':=' init=Interpretation)?;
+	
+Interpretation :
+//	'(' assigns+=VariableAssignment (',' assigns+=VariableAssignment)*  ')'
+'{' program=Program '}'
+;
+
+//VariableAssignment :
+//    (key=[SingleTypeSymbol] '=')? value=TermValue;
+//
+//TermValue:
+//	interp = Interpretation | 
+//	val = TermExpression
+//;
+
+/*Constants are instances of a certain type. They are distinguished elements of
+ * the domain of a type.
+ */
+ConstantDeclaration returns TermSymbol:
+	{ConstantDeclaration} (doc=Doc)? 'const' type=TypeReference name=ID  (':=' init=Interpretation)?;
+
+
+//Modality returns Symbol:
+//	{Modality} 'modality' name=ID ('['  (parameters+=VariableDeclaration (',' parameters+=VariableDeclaration)*
+//	)? ']')?
+//;
+
+ 
+/*A formula must have a stereotype, a name and a body expression.*/
+NamedFormula returns Symbol:
+ {NamedFormula}	(doc=Doc)? 
+                ('<<' properties+=[TypeProperty|QualifiedName] (',' properties+=[TypeProperty|QualifiedName])* '>>')? 
+                name=ID ':' expr=FolFormula ;
+
+
+
+/*Entry point for a first order logic formula.*/
+FolFormula:
+	/*Weakest operators are implication -> and double implication <->*/
+	 Formula ({FolFormula.left=current} symbol=('=>' | '<=>') right=Formula)?;
+
+Formula returns FolFormula:
+	QuantifiedFormula | BoundedForLoopFormula   | OrExpression;
+
+/*A quantified formula (universally or existentially quantified) has
+ * a list of bound variables and a body defined over those variables.
+ */
+QuantifiedFormula returns FolFormula:
+	symbol=('forall' | 'exists') scope+=VariableDeclaration (',' scope+=VariableDeclaration)* '{' left=FolFormula '}';
+
+BoundedForLoopFormula returns QuantifiedFormula :
+	symbol='for' scope+=VariableDeclaration (boundedInt?='=' lower=AtomicExpression '..' upper=AtomicExpression)? '{'
+	     //('var' scope+=VariableDeclaration ';')*
+		 left=FolFormula  
+	'}'
+;
+
+/*Disjunction of two formulas */
+OrExpression returns FolFormula:
+	AndExpression ({OrExpression.left=current} symbol='||' right=AndExpression)*;
+
+
+
+/*Conjunction of two formulas*/
+AndExpression returns FolFormula:
+	SignedAtomicFormula ({AndExpression.left=current} symbol='&&' right=SignedAtomicFormula)*;
+	
+		
+/*Strongest operator is the negation of a formula */
+SignedAtomicFormula returns FolFormula:
+	(neg?='!')? left=AtomicExpression;
+
+
+/*An atomic expression is a truth value (True of False), a predicate, 
+ * an If-Then-Else operator, an infix relation among terms or a parenthesized
+ * formula.
+ */
+ 
+//enum TemporalModality :
+//	NEXT='Next' | EVENTUALLY='Eventually' | GLOBALLY='Always' |  UNTILEND='Until'
+//;
+
+AtomicExpression returns FolFormula:
+	TermExpression ({AtomicExpression.left=current} rel=RelationKind right=TermExpression)* ;
+	
+
+
+
+TruthValue returns TermExpression:
+	TRUE='True' | FALSE='False';
+
+
+
+
+/*A relation is a predicate with two parameters and 
+ * one among a set of possible relation kinds.
+ */
+//Relation returns Predicate:
+//	parameters+=TermExpression rel=RelationKind parameters+=TermExpression;
+
+/*Allowed relation kinds are the equality (which can be used over all 
+ * objects types), or the ordering relations among numeric types.
+ */
+enum RelationKind:
+	EQ='=' | LESS='<' | GREATER='>' | LEQ='<=' | GEQ='>=';
+
+/*The if then else formula corresponds to the following: 
+ * condition -> then and (not condition) -> else. The second factor is present
+ * only if the else branch is specified.
+ */
+//IteExpression:
+//	'If' '(' condition=FolFormula ')' '{' left=FolFormula '}' (=> 'Else' '{' right=FolFormula '}')?;
+
+/*A predicate starts with a predicate symbol already defined, followed by 
+ * actual template type parameters, followed by a list of terms.
+ */
+//Predicate:
+//	decl=[FunctionDefinition|QualifiedName]  '(' (parameters+=TermExpression (',' parameters+=TermExpression)*)? ')';
+
+/*Generic term expression */
+TermExpression:
+	Addition;
+	
+/*Addition (or subtraction) of two terms */
+Addition returns TermExpression:
+	Multiplication ({Addition.left=current} sign=('+' | '-') right=Multiplication)*;
+
+/*Multiplication, division, reminder and modulo of two terms */
+Multiplication returns TermExpression:
+	TermSelectionExpression ({Multiplication.left=current} sign=('*' | '/' | '%' | 'mod')
+	right=TermSelectionExpression)*;
+
+/*Selection of a term in the scope of another term or of a static type. */
+//TermSelectionExpressionOrStaticReference returns TermExpression:
+//	TermSelectionExpression  |
+//	{StaticRef} ref=StaticReference;
+	
+
+/*Selection of a term is a recursive definition. It is a terminal term followed
+ * by the scoping operator :: and by a member terms. The member term is a 
+ * symbol possibly followed by type binding information (for generic functions),
+ * possibly followed by parameters (for functions)
+ */
+TermSelectionExpression returns TermExpression:
+	TerminalTerm ({TermMemberSelection.receiver=current} '->'
+	member=[TermSymbol]
+	//(template?='<' (typeBinding+=TypeReference (',' typeBinding+=TypeReference)*)? '>')?
+	(methodinvocation?='('
+	(parameters+=TermExpression (',' parameters+=TermExpression)*)? ')')? 
+	(arrayindex?='['index+=TermExpression']' ('[' index+=TermExpression']')* )? )*
+	;
+
+/*A terminal term can be a number, a reference to symbol defined in the scope
+ * of the term, a reference to a constant of a finite type, an if-then-else term
+ * expression, the keyword this, or a parenthesized term.
+ */
+TerminalTerm returns TermExpression:
+	//{NumberLiteral} neg?=('-')? value=INT (real?='.' (extdecimal=EXT_INT | decimal=DECIMAL) )?  |
+	//{NumberLiteral} neg?=('-')?  ( value=INT | fvalue = FLOAT)  |
+	{NumberLiteral} neg?=('-')? value=INT |
+	{FloatNumberLiteral} neg?=('-')? value = FLOAT |
+	{Aggregate} value=SecondOrderTerm |
+	{SymbolRef} ref=[Symbol|QualifiedName]
+	(methodinvocation?='(' (parameters+=TermExpression (',' parameters+=TermExpression)*)? ')')? 
+	(arrayindex?='['index+=FolFormula']' ('[' index+=FolFormula']')* )? |
+	{EnumRef} constant=EnumLiteral |
+	{StaticRef} ref=StaticReference |
+	{Ite} ite=IteTermExpression |
+	{This} 'this' |
+	TruthValue |
+	//'{' Program '}' |
+	'(' subformula=FolFormula')';
+
+
+IteTermExpression returns TermExpression:
+	{IteTermExpression} 'if' '(' condition=FolFormula ')' '{' left=TermExpression '}' (=> 'else'  '{' right=TermExpression '}')?;
+
+ReturnStatement returns TermExpression :
+	'return' term=TermExpression
+;
+
+Assignment :
+	left=TermSelectionExpression ':=' right=TermExpression 
+;
+
+LocalVariable:
+	'var' var = VariableDeclaration 
+;
+
+Program returns TermExpression: 
+	{Program} ( statements+=(LocalVariable | FolFormula | ReturnStatement) ';')*
+;
+
+
+
+
+
+EnumLiteral:
+	type=[ConstrainedType|QualifiedName] '@' literal=[DomainLiteral];
+
+StaticReference:
+	type=[ConstrainedType|QualifiedName] '::' element=TermSelectionExpression;
+
+SecondOrderTerm:
+	op=SetOp '{'
+	var=VariableDeclaration (boundedInt?='=' lower=TermExpression '..' upper=TermExpression)? '|' expr=FolFormula ',' member=TermExpression
+	'}';
+
+enum SetOp:
+	SUM='sum' | PROD='prod';
+
+
+
+terminal EXT_INT: INT ('e'|'E')('-'|'+') INT;
+terminal FLOAT returns ecore::EFloat : ('0'..'9')+ '.' ('0'..'9')+;
+
+	
