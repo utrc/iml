@@ -375,9 +375,9 @@ class ImlScopeProvider extends AbstractDeclarativeScopeProvider {
 	def boolean isStatic(IEObjectDescription ieod) {
 		val obj = ieod.EObjectOrProxy
 		if (obj instanceof ConstrainedType) {
-			if (obj.isStatic) {
-				return true;
-			}
+//			if (obj.isStatic) {
+//				return true;
+//			}
 		}
 		return false;
 	}

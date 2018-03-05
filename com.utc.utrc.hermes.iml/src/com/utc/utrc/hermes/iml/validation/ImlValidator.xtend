@@ -16,7 +16,6 @@ import com.utc.utrc.hermes.iml.iml.QuantifiedFormula
 import com.utc.utrc.hermes.iml.iml.Symbol
 import com.utc.utrc.hermes.iml.iml.SymbolRef
 import com.utc.utrc.hermes.iml.iml.TermMemberSelection
-import com.utc.utrc.hermes.iml.iml.TypeProperty
 import com.utc.utrc.hermes.iml.iml.TypeReference
 import com.utc.utrc.hermes.iml.iml.VariableDeclaration
 import java.util.ArrayList
@@ -94,12 +93,12 @@ class ImlValidator extends AbstractImlValidator {
 	def checkTemplateType(ConstrainedType t) {
 		if (t.template) {
 			for (tp : t.typeParameter) {
-				if (tp.finite || tp.static || tp.template || tp.relatesto.size() > 0 || tp.elements.size != 0) {
-					error('''Type parameters must be simple types''',
-						ImlPackage::eINSTANCE.constrainedType_TypeParameter, t.typeParameter.indexOf(
-							tp
-						), INVALID_TYPE_PARAMETER)
-				}
+//				if (tp.finite || tp.static || tp.template || tp.relatesto.size() > 0 || tp.elements.size != 0) {
+//					error('''Type parameters must be simple types''',
+//						ImlPackage::eINSTANCE.constrainedType_TypeParameter, t.typeParameter.indexOf(
+//							tp
+//						), INVALID_TYPE_PARAMETER)
+//				}
 			}
 		}
 	}
@@ -107,10 +106,10 @@ class ImlValidator extends AbstractImlValidator {
 	@Check
 	def checkExtetions(ConstrainedType t) {
 		if (t.numeric) {
-			if (t.superType.size > 1) {
-				error('''If a type is extending a primitive numeric type, then it cannot extend any other type''',
-					ImlPackage::eINSTANCE.symbol_Name, INVALID_TYPE_DECLARATION);
-			}
+//			if (t.superType.size > 1) {
+//				error('''If a type is extending a primitive numeric type, then it cannot extend any other type''',
+//					ImlPackage::eINSTANCE.symbol_Name, INVALID_TYPE_DECLARATION);
+//			}
 			if (t.template) {
 				error('''If a type is extending a primitive numeric type, then it cannot be generic''',
 					ImlPackage::eINSTANCE.symbol_Name, INVALID_TYPE_DECLARATION);
@@ -137,35 +136,35 @@ class ImlValidator extends AbstractImlValidator {
 	// then map should never be null
 	@Check
 	def checkLegitimateStereoType(ConstrainedType t) {
-		val s = t.properties
-		if (t.static) {
-			for (Element e : t.elements) {
-				switch (e) {
-					NamedFormula: {
-					}
-					ConstrainedType: {
-						error('''Type declarations are not allowed in static types''',
-							ImlPackage::eINSTANCE.constrainedType_Elements, t.elements.indexOf(
-								e
-							), ELEMENTS_IN_STATIC_TYPES)
-					}
-					TypeProperty: {
-						error('''Stereotype declarations are not allowed in static types''',
-							ImlPackage::eINSTANCE.constrainedType_Elements, t.elements.indexOf(
-								e
-							), ELEMENTS_IN_STATIC_TYPES)
-					}
-					VariableDeclaration: {
-						error('''Variable declarations are not allowed in static types''',
-							ImlPackage::eINSTANCE.constrainedType_Elements, t.elements.indexOf(
-								e
-							), ELEMENTS_IN_STATIC_TYPES)
-					}
-					default: {
-					}
-				}
-			}
-		}
+//		val s = t.properties
+//		if (t.static) {
+//			for (Element e : t.elements) {
+//				switch (e) {
+//					NamedFormula: {
+//					}
+//					ConstrainedType: {
+//						error('''Type declarations are not allowed in static types''',
+//							ImlPackage::eINSTANCE.constrainedType_Elements, t.elements.indexOf(
+//								e
+//							), ELEMENTS_IN_STATIC_TYPES)
+//					}
+//					//TypeProperty: {
+//					//	error('''Stereotype declarations are not allowed in static types''',
+//					//		ImlPackage::eINSTANCE.constrainedType_Elements, t.elements.indexOf(
+//					//			e
+//					//		), ELEMENTS_IN_STATIC_TYPES)
+//					//}
+//					VariableDeclaration: {
+//						error('''Variable declarations are not allowed in static types''',
+//							ImlPackage::eINSTANCE.constrainedType_Elements, t.elements.indexOf(
+//								e
+//							), ELEMENTS_IN_STATIC_TYPES)
+//					}
+//					default: {
+//					}
+//				}
+//			}
+//		}
 	}
 
 	@Check
@@ -180,8 +179,8 @@ class ImlValidator extends AbstractImlValidator {
 	def checkNoCycleInConstrainedTypeHierarchy(
 		ConstrainedType ct
 	) {
-		if (ct.superType.empty)
-			return
+//		if (ct.superType.empty)
+//			return
 		val visited = <ConstrainedType>newArrayList()
 		val superTypeHierarchy = new ArrayList<List<ConstrainedType>>()
 		superTypeHierarchy.add(
@@ -200,17 +199,17 @@ class ImlValidator extends AbstractImlValidator {
 			for (cur : superTypeHierarchy.get(
 				index
 			)) {
-				for (supType : cur.superType) {
-					if (!visited.contains(supType.type))
-						toAdd.add(supType.type)
-					else {
-						error(
-							"Cycle in hierarchy of constrained type '" + cur.name + "'",
-							ImlPackage::eINSTANCE.constrainedType_SuperType,
-							CYCLIC_CONSTRAINEDTYPE_HIERARCHY
-						)
-					}
-				}
+//				for (supType : cur.superType) {
+//					if (!visited.contains(supType.type))
+//						toAdd.add(supType.type)
+//					else {
+//						error(
+//							"Cycle in hierarchy of constrained type '" + cur.name + "'",
+//							ImlPackage::eINSTANCE.constrainedType_SuperType,
+//							CYCLIC_CONSTRAINEDTYPE_HIERARCHY
+//						)
+//					}
+//				}
 				visited.add(
 					cur
 				)

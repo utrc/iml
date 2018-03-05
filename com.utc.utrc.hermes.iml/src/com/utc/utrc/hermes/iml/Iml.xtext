@@ -9,7 +9,7 @@ import "http://www.eclipse.org/emf/2002/Ecore" as ecore
 Model:
 	'package' name=QualifiedName ';'
 	(imports+=Import ';')*
-	(elements+=Element (';')?)*
+	(symbols+=Symbol (';')?)*
 ;
 
 
@@ -32,108 +32,68 @@ QualifiedNameWithWildcard:
 
 Symbol :
 	TermSymbol|
-	TypeProperty|
-	TypeRelation |
-	ConstrainedType |
-	NamedFormula
+	ConstrainedType 
 ;
 
-/*A term symbol is a function declaration, a constant declaration or 
- * a variable declaration*/
-TermSymbol:
-	FunctionDefinition |
-	ConstantDeclaration |
-	VariableDeclaration 
-;
-
-
-/*An element of a model is either a symbol or a named formula */
-Element:
-	Symbol 
-	;
-
-TypeProperty:
-	{TypeProperty} 'property' name=ID ;
-
-TypeRelation: 
-	{TypeRelation} 'relation' name = ID 
-;
 
 Doc :
-	{Doc}('@' properties+=[TypeProperty|QualifiedName] descriptions+=STRING)+
+	{Doc}('@' properties+=[ConstrainedType|QualifiedName] descriptions+=STRING)+
 ;
 	
-TypeReference:
-	('<<' properties+=[TypeProperty|QualifiedName] (',' properties+=[TypeProperty|QualifiedName])* '>>')? type=[ConstrainedType|QualifiedName]
-	/*Optional type parameters for generic types */
-	('<' typeBinding+=TypeReference (',' typeBinding+=TypeReference)* '>')?
-	(array?='['dimension+=TermExpression']' ('['dimension+=TermExpression']')*)?  ('~>' range=TypeReference)?
-;
+
 
 /*Literals used in finite data types */
 DomainLiteral:
 	name=ID;
 
+RelationInstance:
+	propertylist=PropertyList  target=TypeConstructor
+;
+
+PropertyList:
+	'<<' properties+=TermSymbol (',' properties+=TermSymbol)* '>>'
+;
+
 ConstrainedType:
 	(doc=Doc)?
-	'type' ('<<' properties+=[TypeProperty|QualifiedName] (',' properties+=[TypeProperty|QualifiedName])* '>>')? name=ID
-	((finite?='finite' '{' literals+=DomainLiteral+ '}')
-	|
-	(static?='singleton')?
+	(meta?='meta')? 'type' (propertylist=PropertyList)? name=ID
+	((finite?='finite' '|'(cardinality=INT |  literals+=DomainLiteral (',' literals+=DomainLiteral)* )'|' )?
 	/*Optional template parameters for generic types */
 	(template?='<' typeParameter+=ConstrainedType (',' typeParameter+=ConstrainedType)* '>')?
-	/*Optional parameters for parametric types */
-	//('(' params+=VariableDeclaration (',' params+=VariableDeclaration)* ')')?
 	/* An optional list of type being extended by this type*/
-	( relatesto+=[TypeRelation|QualifiedName] superType+=TypeReference (',' relatesto+=[TypeRelation|QualifiedName] superType+=TypeReference)* )?
+	( relations+=RelationInstance)*
 	/* A list of elements defined by this type*/
-	('{' (elements+=Element ';')* '}')?);
-	
+	('{' (symbols+=TermSymbol ';')* '}')?);
 
-	
-FunctionDefinition  returns TermSymbol:
-	{FunctionDefinition} (doc=Doc)? (modality?='modality')? name=ID
-	'('  (parameters+=VariableDeclaration (',' parameters+=VariableDeclaration)*)? ')'
-	(ret?='returns' type=TypeReference)?
-	(interpretation=Interpretation)?
+
+
+TermSymbol:
+	name=ID (signature=SymbolTuple)? ':' type=TypeConstructor (':=' definition=FolFormula)? 
 ;
 
-/*A variables has a name and a type*/
-VariableDeclaration returns TermSymbol:
-	{VariableDeclaration} (doc=Doc)? type=TypeReference name=ID (':=' init=Interpretation)?;
-	
-Interpretation :
-//	'(' assigns+=VariableAssignment (',' assigns+=VariableAssignment)*  ')'
-'{' program=Program '}'
+SymbolTuple:
+	{SymbolTuple} '(' ( symbols+=TermSymbol (',' symbols+=TermSymbol)*  )? ')'
 ;
 
-//VariableAssignment :
-//    (key=[SingleTypeSymbol] '=')? value=TermValue;
-//
-//TermValue:
-//	interp = Interpretation | 
-//	val = TermExpression
-//;
+TypeConstructor:
+	(propertylist=PropertyList)? domain=TypeDomain ('~>' range=TypeDomain)?  
+;
 
-/*Constants are instances of a certain type. They are distinguished elements of
- * the domain of a type.
- */
-ConstantDeclaration returns TermSymbol:
-	{ConstantDeclaration} (doc=Doc)? 'const' type=TypeReference name=ID  (':=' init=Interpretation)?;
+TypeDomain:
+	type=TerminalType (array?='['dimension+=TermExpression']' ('['dimension+=TermExpression']')*)? 
+;
 
+TerminalType:
+	TypeReference |
+	'(' types+=TypeConstructor (','  types+=TypeConstructor)* ')'
+	
+;
 
-//Modality returns Symbol:
-//	{Modality} 'modality' name=ID ('['  (parameters+=VariableDeclaration (',' parameters+=VariableDeclaration)*
-//	)? ']')?
-//;
-
- 
-/*A formula must have a stereotype, a name and a body expression.*/
-NamedFormula returns Symbol:
- {NamedFormula}	(doc=Doc)? 
-                ('<<' properties+=[TypeProperty|QualifiedName] (',' properties+=[TypeProperty|QualifiedName])* '>>')? 
-                name=ID ':' expr=FolFormula ;
-
+TypeReference:
+	type=[ConstrainedType|QualifiedName]
+	/*Optional type parameters for generic types */
+	('<' typeBinding+=TypeConstructor (',' typeBinding+=TypeConstructor)* '>')?
+;
 
 
 /*Entry point for a first order logic formula.*/
@@ -142,20 +102,14 @@ FolFormula:
 	 Formula ({FolFormula.left=current} symbol=('=>' | '<=>') right=Formula)?;
 
 Formula returns FolFormula:
-	QuantifiedFormula | BoundedForLoopFormula   | OrExpression;
+	QuantifiedFormula  | OrExpression;
 
 /*A quantified formula (universally or existentially quantified) has
  * a list of bound variables and a body defined over those variables.
  */
 QuantifiedFormula returns FolFormula:
-	symbol=('forall' | 'exists') scope+=VariableDeclaration (',' scope+=VariableDeclaration)* '{' left=FolFormula '}';
+	symbol=('forall' | 'exists') scope+=TermSymbol (',' scope+=TermSymbol)* '{' left=FolFormula '}';
 
-BoundedForLoopFormula returns QuantifiedFormula :
-	symbol='for' scope+=VariableDeclaration (boundedInt?='=' lower=AtomicExpression '..' upper=AtomicExpression)? '{'
-	     //('var' scope+=VariableDeclaration ';')*
-		 left=FolFormula  
-	'}'
-;
 
 /*Disjunction of two formulas */
 OrExpression returns FolFormula:
@@ -173,25 +127,13 @@ SignedAtomicFormula returns FolFormula:
 	(neg?='!')? left=AtomicExpression;
 
 
-/*An atomic expression is a truth value (True of False), a predicate, 
- * an If-Then-Else operator, an infix relation among terms or a parenthesized
- * formula.
- */
  
-//enum TemporalModality :
-//	NEXT='Next' | EVENTUALLY='Eventually' | GLOBALLY='Always' |  UNTILEND='Until'
-//;
-
 AtomicExpression returns FolFormula:
 	TermExpression ({AtomicExpression.left=current} rel=RelationKind right=TermExpression)* ;
 	
 
-
-
 TruthValue returns TermExpression:
 	TRUE='True' | FALSE='False';
-
-
 
 
 /*A relation is a predicate with two parameters and 
@@ -206,18 +148,6 @@ TruthValue returns TermExpression:
 enum RelationKind:
 	EQ='=' | LESS='<' | GREATER='>' | LEQ='<=' | GEQ='>=';
 
-/*The if then else formula corresponds to the following: 
- * condition -> then and (not condition) -> else. The second factor is present
- * only if the else branch is specified.
- */
-//IteExpression:
-//	'If' '(' condition=FolFormula ')' '{' left=FolFormula '}' (=> 'Else' '{' right=FolFormula '}')?;
-
-/*A predicate starts with a predicate symbol already defined, followed by 
- * actual template type parameters, followed by a list of terms.
- */
-//Predicate:
-//	decl=[FunctionDefinition|QualifiedName]  '(' (parameters+=TermExpression (',' parameters+=TermExpression)*)? ')';
 
 /*Generic term expression */
 TermExpression:
@@ -252,6 +182,8 @@ TermSelectionExpression returns TermExpression:
 	(arrayindex?='['index+=TermExpression']' ('[' index+=TermExpression']')* )? )*
 	;
 
+
+
 /*A terminal term can be a number, a reference to symbol defined in the scope
  * of the term, a reference to a constant of a finite type, an if-then-else term
  * expression, the keyword this, or a parenthesized term.
@@ -261,55 +193,54 @@ TerminalTerm returns TermExpression:
 	//{NumberLiteral} neg?=('-')?  ( value=INT | fvalue = FLOAT)  |
 	{NumberLiteral} neg?=('-')? value=INT |
 	{FloatNumberLiteral} neg?=('-')? value = FLOAT |
-	{Aggregate} value=SecondOrderTerm |
-	{SymbolRef} ref=[Symbol|QualifiedName]
-	(methodinvocation?='(' (parameters+=TermExpression (',' parameters+=TermExpression)*)? ')')? 
-	(arrayindex?='['index+=FolFormula']' ('[' index+=FolFormula']')* )? |
-	{EnumRef} constant=EnumLiteral |
-	{StaticRef} ref=StaticReference |
+	//{Aggregate} value=SecondOrderTerm |
+	SymbolRef |
+	//{EnumRef} constant=EnumLiteral |
+	//{StaticRef} ref=StaticReference |
 	{Ite} ite=IteTermExpression |
 	{This} 'this' |
 	TruthValue |
-	//'{' Program '}' |
+	'{' Program '}' |
 	'(' subformula=FolFormula')';
+
+SymbolRef:
+	ref=[Symbol|QualifiedName]
+	(
+		(
+			('$' typeBinding+=TypeConstructor (',' typeBinding+=TypeConstructor)* '$')?
+			'@' literal=[DomainLiteral]
+		) |
+		((methodinvocation?='(' (parameters+=TermExpression (',' parameters+=TermExpression)*)? ')')? 
+		(arrayindex?='['index+=FolFormula']' ('[' index+=FolFormula']')* )?) 
+	)
+;
 
 
 IteTermExpression returns TermExpression:
 	{IteTermExpression} 'if' '(' condition=FolFormula ')' '{' left=TermExpression '}' (=> 'else'  '{' right=TermExpression '}')?;
 
-ReturnStatement returns TermExpression :
-	'return' term=TermExpression
+
+
+
+Program returns TermExpression:
+	{Program} ('var' defs+= TermSymbol ';')* 
+	          (relations+=FolFormula ';')*
 ;
-
-Assignment :
-	left=TermSelectionExpression ':=' right=TermExpression 
-;
-
-LocalVariable:
-	'var' var = VariableDeclaration 
-;
-
-Program returns TermExpression: 
-	{Program} ( statements+=(LocalVariable | FolFormula | ReturnStatement) ';')*
-;
-
-
-
 
 
 EnumLiteral:
-	type=[ConstrainedType|QualifiedName] '@' literal=[DomainLiteral];
+	type=TypeReference '@' literal=[DomainLiteral];
 
-StaticReference:
-	type=[ConstrainedType|QualifiedName] '::' element=TermSelectionExpression;
+//StaticReference:
+//	type=[ConstrainedType|QualifiedName] '::' element=TermSelectionExpression;
 
-SecondOrderTerm:
-	op=SetOp '{'
-	var=VariableDeclaration (boundedInt?='=' lower=TermExpression '..' upper=TermExpression)? '|' expr=FolFormula ',' member=TermExpression
-	'}';
+//SecondOrderTerm:
+//	op=SetOp '{'
+//	var=SymbolDefinition (=> boundedInt?=':=' lower=TermExpression '..' upper=TermExpression)? '|' expr=FolFormula ',' member=TermExpression
+//	'}';
 
-enum SetOp:
-	SUM='sum' | PROD='prod';
+//enum SetOp:
+//	SUM='sum' | PROD='prod';
 
 
 

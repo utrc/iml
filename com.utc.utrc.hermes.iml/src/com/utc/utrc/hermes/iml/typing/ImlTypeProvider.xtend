@@ -34,6 +34,7 @@ import com.utc.utrc.hermes.iml.iml.Symbol
 import com.utc.utrc.hermes.iml.iml.AtomicExpression
 import com.utc.utrc.hermes.iml.iml.QuantifiedFormula
 import com.utc.utrc.hermes.iml.iml.ImlFactory
+import com.utc.utrc.hermes.iml.iml.TypeConstructor
 
 public class ImlTypeProvider {
 	public static val anyType = ImlFactory::eINSTANCE.createConstrainedType => [name = 'Any']
@@ -56,7 +57,7 @@ public class ImlTypeProvider {
 
 	public static val boolTypeRef = ImlFactory::eINSTANCE.createTypeReference => [type = boolType]
 
-	def static TypeReference termExpressionType(FolFormula t, TypeReference context) {
+	def static TypeConstructor termExpressionType(FolFormula t, TypeConstructor context) {
 
 		if (t instanceof QuantifiedFormula) {
 			return boolTypeRef
@@ -428,11 +429,11 @@ public class ImlTypeProvider {
 		var List<List<TypeReference>> hierarchy = ctx.allSuperTypesReferences;
 		for (level : hierarchy) {
 			for (st : level) {
-				for (Element e : st.type.elements) {
-					if (e instanceof TermSymbol) {
-						tlist.add(e);
-					}
-				}
+//				for (Element e : st.type.elements) {
+//					if (e instanceof TermSymbol) {
+//						tlist.add(e);
+//					}
+//				}
 			}
 		}
 		return tlist;
@@ -443,11 +444,11 @@ public class ImlTypeProvider {
 		var List<List<TypeReference>> hierarchy = ctx.allSuperTypesReferences;
 		for (level : hierarchy) {
 			for (st : level) {
-				for (Element e : st.type.elements) {
-
-					tlist.add(e);
-
-				}
+//				for (Element e : st.type.elements) {
+//
+//					tlist.add(e);
+//
+//				}
 			}
 		}
 		return tlist;
@@ -463,11 +464,11 @@ public class ImlTypeProvider {
 		while (retVal.get(index).size() > 0) {
 			val toAdd = <ConstrainedType>newArrayList();
 			for (current : retVal.get(index)) {
-				for (sup : current.superType) {
-					if (!closed.contains(sup.type)) {
-						toAdd.add(sup.type)
-					}
-				}
+//				for (sup : current.superType) {
+//					if (!closed.contains(sup.type)) {
+//						toAdd.add(sup.type)
+//					}
+//				}
 				closed.add(current)
 			}
 			if (toAdd.size() > 0) {
@@ -497,11 +498,11 @@ public class ImlTypeProvider {
 		while (retVal.get(index).size() > 0) {
 			val toAdd = <TypeReference>newArrayList();
 			for (current : retVal.get(index)) {
-				for (sup : current.type.superType) {
-					if (!closed.contains(sup)) {
-						toAdd.add(sup)
-					}
-				}
+//				for (sup : current.type.superType) {
+//					if (!closed.contains(sup)) {
+//						toAdd.add(sup)
+//					}
+//				}
 				closed.add(current)
 			}
 			if (toAdd.size() > 0) {
@@ -636,14 +637,14 @@ public class ImlTypeProvider {
 		while (retval.get(index).size() > 0) {
 			val toadd = <ConstrainedType>newArrayList();
 			for (current : retval.get(index)) {
-				for (sup : current.superType) {
-					if (!closed.contains(sup.type)) {
-						if (sup.type.isEqual(t)) {
-							return true;
-						}
-						toadd.add(sup.type)
-					}
-				}
+//				for (sup : current.superType) {
+//					if (!closed.contains(sup.type)) {
+//						if (sup.type.isEqual(t)) {
+//							return true;
+//						}
+//						toadd.add(sup.type)
+//					}
+//				}
 				closed.add(current)
 			}
 			if (toadd.size() > 0) {
@@ -674,11 +675,11 @@ public class ImlTypeProvider {
 		if (t == integerTypeRef || t == realTypeRef || t.type.name == 'Real' || t.type.name == 'Int') {
 			return true;
 		}
-		for (st : t.type.superType) {
-			if (st.isNumeric) {
-				return true;
-			}
-		}
+//		for (st : t.type.superType) {
+//			if (st.isNumeric) {
+//				return true;
+//			}
+//		}
 		return false;
 	}
 
@@ -687,11 +688,11 @@ public class ImlTypeProvider {
 		if (t == integerTypeRef || t == realTypeRef || t.name == 'Real' || t.name == 'Int') {
 			return true;
 		}
-		for (st : t.superType) {
-			if (st.isNumeric) {
-				return true;
-			}
-		}
+//		for (st : t.superType) {
+//			if (st.isNumeric) {
+//				return true;
+//			}
+//		}
 		return false;
 	}
 
