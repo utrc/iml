@@ -30,6 +30,28 @@ var
 
 # Mathematical and Logical Operators
 
+Addition: +
+
+Subtraction: -
+
+Multiplication: *
+
+Division: /
+
+Modulo: %, mod
+
+And: &&
+
+Or: ||
+
+Implication: =>
+
+Double Implication: <=>
+
+Not: !
+
+
+
 # Structure of an IML file
 
 ```java
