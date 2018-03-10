@@ -51,7 +51,6 @@ Double Implication: <=>
 Not: !
 
 
-
 # Structure of an IML file
 
 ```java
@@ -67,5 +66,18 @@ type TypeName {
   /* This is a
      multiline
      comment */
+}
+```
+
+# Functions and Programs
+
+```java
+type List<type T>{
+	head : T;
+	tail : List<T>;
+	
+	push(x : T, l : List<T>) : List<T> := {
+		var ret : List<T> := {head = x; tail = l;};
+	};
 }
 ```
