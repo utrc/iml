@@ -207,9 +207,9 @@ SymbolRef:
 	ref=[Symbol|QualifiedName]
 	(
 		(
-			('$' typeBinding+=TypeConstructor (',' typeBinding+=TypeConstructor)* '$')?
-			'@' literal=[DomainLiteral]
-		) |
+			//('$' typeBinding+=TypeConstructor (',' typeBinding+=TypeConstructor)* '$')?
+			'@' (literal=[DomainLiteral] | intid=INT)
+		)? 
 		((methodinvocation?='(' (parameters+=TermExpression (',' parameters+=TermExpression)*)? ')')? 
 		(arrayindex?='['index+=FolFormula']' ('[' index+=FolFormula']')* )?) 
 	)

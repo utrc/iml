@@ -11,7 +11,6 @@ import com.utc.utrc.hermes.iml.iml.FloatNumberLiteral
 import com.utc.utrc.hermes.iml.iml.SymbolRef
 import com.utc.utrc.hermes.iml.iml.TermMemberSelection
 import java.util.ArrayList
-import com.utc.utrc.hermes.iml.iml.Element
 import com.utc.utrc.hermes.iml.iml.TermSymbol
 import java.util.HashMap
 import org.eclipse.xtext.nodemodel.ICompositeNode
@@ -23,62 +22,49 @@ import static extension org.eclipse.xtext.EcoreUtil2.*
 import com.utc.utrc.hermes.iml.iml.IteTermExpression
 import com.utc.utrc.hermes.iml.iml.Addition
 import com.utc.utrc.hermes.iml.iml.Multiplication
-import com.utc.utrc.hermes.iml.iml.EnumRef
-import com.utc.utrc.hermes.iml.iml.Aggregate
 import com.utc.utrc.hermes.iml.iml.Ite
 import com.utc.utrc.hermes.iml.iml.FolFormula
 import java.util.Map
-import com.utc.utrc.hermes.iml.iml.FunctionDefinition
-import com.utc.utrc.hermes.iml.iml.NamedFormula
 import com.utc.utrc.hermes.iml.iml.Symbol
 import com.utc.utrc.hermes.iml.iml.AtomicExpression
-import com.utc.utrc.hermes.iml.iml.QuantifiedFormula
 import com.utc.utrc.hermes.iml.iml.ImlFactory
 import com.utc.utrc.hermes.iml.iml.TypeConstructor
+import com.utc.utrc.hermes.iml.iml.TypeDomain
+import com.utc.utrc.hermes.iml.iml.TerminalType
 
 public class ImlTypeProvider {
-	public static val anyType = ImlFactory::eINSTANCE.createConstrainedType => [name = 'Any']
+	
+	public static val Any = createBasicType('Any')
 
-	public static val anyTypeRef = ImlFactory::eINSTANCE.createTypeReference => [type = anyType]
+	public static val Int = createBasicType('Int')
+	
+	public static val Null = createBasicType('Null')
+	
+	public static val Real = createBasicType('Real')
+	
+	public static val Bool = createBasicType('Bool')
 
-	public static val integerType = ImlFactory::eINSTANCE.createConstrainedType => [name = 'Int']
-
-	public static val integerTypeRef = ImlFactory::eINSTANCE.createTypeReference => [type = integerType]
-
-	public static val nullType = ImlFactory::eINSTANCE.createConstrainedType => [name = 'null']
-
-	public static val nullTypeRef = ImlFactory::eINSTANCE.createTypeReference => [type = nullType]
-
-	public static val realType = ImlFactory::eINSTANCE.createConstrainedType => [name = 'Real']
-
-	public static val realTypeRef = ImlFactory::eINSTANCE.createTypeReference => [type = realType]
-
-	public static val boolType = ImlFactory::eINSTANCE.createConstrainedType => [name = 'Bool']
-
-	public static val boolTypeRef = ImlFactory::eINSTANCE.createTypeReference => [type = boolType]
+	
+	def static TypeConstructor createBasicType(String n){
+		val ret = ImlFactory::eINSTANCE.createTypeConstructor => [
+			domain = ImlFactory::eINSTANCE.createTypeDomain => [
+				type = ImlFactory::eINSTANCE.createTypeReference => [
+					type = ImlFactory::eINSTANCE.createConstrainedType => [name = n]
+				]
+			]
+		];
+		return ret
+	}
+	
 
 	def static TypeConstructor termExpressionType(FolFormula t, TypeConstructor context) {
 
-		if (t instanceof QuantifiedFormula) {
-			return boolTypeRef
+		if (t.symbol !== null || t.neg || t instanceof AtomicExpression) {
+			return Bool ;
 		}
-
-		if (t.symbol !== null) {
-			return boolTypeRef
-		}
-
-		if (t.neg) {
-			return boolTypeRef;
-		}
-
-		if (t instanceof AtomicExpression) {
-			return boolTypeRef
-		}
-
 		if (t instanceof TermExpression) {
 			return termExpressionType((t as TermExpression), context)
 		}
-
 		return t.left.termExpressionType(context)
 	}
 
@@ -88,7 +74,7 @@ public class ImlTypeProvider {
 	 * that contains stereotypes, type and type binding information
 	 * for the term. 
 	 * */
-	def static TypeReference termExpressionType(TermExpression t, TypeReference context) {
+	def static TypeConstructor termExpressionType(TermExpression t, TypeConstructor context) {
 
 		switch (t) {
 			// If the expression is "this", then its type is the 
@@ -102,14 +88,14 @@ public class ImlTypeProvider {
 			Addition: {
 
 				// note that in csl grammar, addition includes both "+" and "-".
-				if (t.left.termExpressionType(context).isEqual(realTypeRef) ||
-					t.right.termExpressionType(context).isEqual(realTypeRef)) {
-					return realTypeRef
-				} else if (t.left.termExpressionType(context).isEqual(integerTypeRef) ||
-					t.right.termExpressionType(context).isEqual(integerTypeRef)) {
-					return integerTypeRef
+				if (t.left.termExpressionType(context).isEqual(Real) ||
+					t.right.termExpressionType(context).isEqual(Real)) {
+					return Real
+				} else if (t.left.termExpressionType(context).isEqual(Int) ||
+					t.right.termExpressionType(context).isEqual(Int)) {
+					return Int
 				} else {
-					return integerTypeRef
+					return Int
 				}
 			}
 			// For reminder and modulo, the result is integer
@@ -358,7 +344,7 @@ public class ImlTypeProvider {
 	// This function creates a map that resolves all template bindings
 	// The map is created by navigating the type hierarchy. Each template
 	// parameter is then bound to a concrete type.
-	def static TypeReference bindTypeRefWith(TypeReference t, TypeReference ctx) {
+	def static TypeConstructor bindTypeRefWith(TypeReference t, TypeConstructor ctx) {
 		if(ctx === null) return t;
 		var map = new HashMap<ConstrainedType, TypeReference>();
 		var List<List<TypeReference>> hierarchy = ctx.allSuperTypesReferences;
@@ -515,6 +501,25 @@ public class ImlTypeProvider {
 		return retVal
 	}
 
+
+	/* Check whether two type references are the same */
+	def static boolean isEqual(TypeConstructor left, TypeConstructor right) {
+		//TODO
+		return true
+	}
+
+
+	/* Check whether two type references are the same */
+	def static boolean isEqual(TypeDomain left, TypeDomain right) {
+		//TODO
+		return true
+	}
+	
+	def static boolean isEqual(TerminalType left, TerminalType right) {
+		//TODO
+		return true
+	}
+
 	/* Check whether two type references are the same */
 	def static boolean isEqual(TypeReference left, TypeReference right) {
 		if (!left.type.isEqual(right.type)) {
@@ -533,23 +538,9 @@ public class ImlTypeProvider {
 		return true
 	}
 
-	/* Check whether two type references are the same. If flag is true, then
-	 * also check that stereotypes are the same.*/
-	def static boolean isEqual(TypeReference left, TypeReference right, Boolean flag) {
-		if (!left.type.isEqual(right.type)) {
-			return false
-		}
-		// else if (left.stereotypes != right.stereotypes && flag) {
-		// return false
-		// }
-		return true;
-	}
-
 	// Checks whether two types are equal
 	def static boolean isEqual(ConstrainedType left, ConstrainedType right) {
-		if ((left == right) || (left.name == "Int" && right.name == "Int") ||
-			(left.name == "Real" && right.name == "Real") || (left.name == "null" && right.name == "null") ||
-			(left.name == "Any" && right.name == "Any") || (left.name == "Bool" && right.name == "Bool"))
+		if (left == right)
 			return true;
 		return false;
 	}
