@@ -47,7 +47,7 @@ DomainLiteral:
 	name=ID;
 
 RelationInstance:
-	propertylist=PropertyList  target=TypeConstructor
+	propertylist=PropertyList  target=HigherOrderType
 ;
 
 PropertyList:
@@ -68,31 +68,33 @@ ConstrainedType:
 
 
 SymbolDeclaration:
-	name=ID (signature=SymbolTuple)? ':' type=TypeConstructor (':=' definition=FolFormula)? 
+	name=ID (signature=SymbolTuple)? ':' type=HigherOrderType (':=' definition=FolFormula)? 
 ;
 
 SymbolTuple:
 	{SymbolTuple} '(' ( symbols+=SymbolDeclaration (',' symbols+=SymbolDeclaration)*  )? ')'
 ;
 
-TypeConstructor:
-	(propertylist=PropertyList)? domain=TypeDomain ('~>' range=TypeDomain)?  
+HigherOrderType:
+	(propertylist=PropertyList)? domain=ArrayType ('~>' range=ArrayType)?  
 ;
 
-TypeDomain:
-	type=TerminalType (array?='['dimension+=TermExpression']' ('['dimension+=TermExpression']')*)? 
+
+
+ArrayType returns HigherOrderType:
+	TypeReference ({ArrayType.type=current}'['dimension+=TermExpression']' ('['dimension+=TermExpression']')*)? 
 ;
 
-TerminalType:
-	TypeReference |
-	'(' types+=TypeConstructor (','  types+=TypeConstructor)* ')'
+TypeReference returns HigherOrderType:
+	SimpleTypeReference |
+	{TupleType}'(' types+=HigherOrderType (','  types+=HigherOrderType)* ')'
 	
 ;
 
-TypeReference:
-	type=[ConstrainedType|QualifiedName]
+SimpleTypeReference returns HigherOrderType:
+	{SimpleTypeReference} ref=[ConstrainedType|QualifiedName]
 	/*Optional type parameters for generic types */
-	('<' typeBinding+=TypeConstructor (',' typeBinding+=TypeConstructor)* '>')?
+	('<' typeBinding+=HigherOrderType (',' typeBinding+=HigherOrderType)* '>')?
 ;
 
 

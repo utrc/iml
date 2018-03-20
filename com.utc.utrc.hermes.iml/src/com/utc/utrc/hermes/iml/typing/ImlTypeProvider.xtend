@@ -1,6 +1,5 @@
 package com.utc.utrc.hermes.iml.typing
 
-import com.utc.utrc.hermes.iml.iml.TypeReference
 import com.utc.utrc.hermes.iml.iml.TermExpression
 import java.util.List
 import com.utc.utrc.hermes.iml.iml.ConstrainedType
@@ -11,7 +10,6 @@ import com.utc.utrc.hermes.iml.iml.FloatNumberLiteral
 import com.utc.utrc.hermes.iml.iml.SymbolRef
 import com.utc.utrc.hermes.iml.iml.TermMemberSelection
 import java.util.ArrayList
-import com.utc.utrc.hermes.iml.iml.TermSymbol
 import java.util.HashMap
 import org.eclipse.xtext.nodemodel.ICompositeNode
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils
@@ -28,9 +26,7 @@ import java.util.Map
 import com.utc.utrc.hermes.iml.iml.Symbol
 import com.utc.utrc.hermes.iml.iml.AtomicExpression
 import com.utc.utrc.hermes.iml.iml.ImlFactory
-import com.utc.utrc.hermes.iml.iml.TypeConstructor
-import com.utc.utrc.hermes.iml.iml.TypeDomain
-import com.utc.utrc.hermes.iml.iml.TerminalType
+import com.utc.utrc.hermes.iml.iml.HigherOrderType
 
 public class ImlTypeProvider {
 	
@@ -45,19 +41,17 @@ public class ImlTypeProvider {
 	public static val Bool = createBasicType('Bool')
 
 	
-	def static TypeConstructor createBasicType(String n){
-		val ret = ImlFactory::eINSTANCE.createTypeConstructor => [
-			domain = ImlFactory::eINSTANCE.createTypeDomain => [
-				type = ImlFactory::eINSTANCE.createTypeReference => [
-					type = ImlFactory::eINSTANCE.createConstrainedType => [name = n]
+	def static HigherOrderType createBasicType(String n){
+		val ret = ImlFactory::eINSTANCE.createHigherOrderType => [
+			domain = ImlFactory::eINSTANCE.createSimpleTypeReference => [
+				ref = ImlFactory::eINSTANCE.createConstrainedType => [name = n]
 				]
-			]
 		];
 		return ret
 	}
 	
 
-	def static TypeConstructor termExpressionType(FolFormula t, TypeConstructor context) {
+	def static HigherOrderType termExpressionType(FolFormula t, HigherOrderType context) {
 
 		if (t.symbol !== null || t.neg || t instanceof AtomicExpression) {
 			return Bool ;
@@ -74,7 +68,7 @@ public class ImlTypeProvider {
 	 * that contains stereotypes, type and type binding information
 	 * for the term. 
 	 * */
-	def static TypeConstructor termExpressionType(TermExpression t, TypeConstructor context) {
+	def static HigherOrderType termExpressionType(TermExpression t, HigherOrderType context) {
 
 		switch (t) {
 			// If the expression is "this", then its type is the 
