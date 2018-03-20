@@ -80,8 +80,9 @@ HighOrderType:
 ;
 
 TypeReference:
-	type=[ConstrainedType|QualifiedName]
-		 | ({Tuple}'(' elements+=HighOrderType (','  elements+=HighOrderType)* ')')
+	((type=[ConstrainedType|QualifiedName]) |
+     (tuple='(' elements+=HighOrderType (','  elements+=HighOrderType)* ')')
+	)
 		('<' typeBinding+=HighOrderType (',' typeBinding+=HighOrderType)* '>')?
 		(array?='['dimension+=TermExpression']' ('['dimension+=TermExpression']')*)? 
 ;
