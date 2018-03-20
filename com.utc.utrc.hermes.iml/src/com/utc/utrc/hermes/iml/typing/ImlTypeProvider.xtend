@@ -28,6 +28,9 @@ import com.utc.utrc.hermes.iml.iml.AtomicExpression
 import com.utc.utrc.hermes.iml.iml.ImlFactory
 import com.utc.utrc.hermes.iml.iml.HigherOrderType
 
+import static extension com.utc.utrc.hermes.iml.typing.TypingServices.*
+import javax.swing.text.Highlighter
+
 public class ImlTypeProvider {
 	
 	public static val Any = createBasicType('Any')
@@ -40,16 +43,6 @@ public class ImlTypeProvider {
 	
 	public static val Bool = createBasicType('Bool')
 
-	
-	def static HigherOrderType createBasicType(String n){
-		val ret = ImlFactory::eINSTANCE.createHigherOrderType => [
-			domain = ImlFactory::eINSTANCE.createSimpleTypeReference => [
-				ref = ImlFactory::eINSTANCE.createConstrainedType => [name = n]
-				]
-		];
-		return ret
-	}
-	
 
 	def static HigherOrderType termExpressionType(FolFormula t, HigherOrderType context) {
 
@@ -74,7 +67,7 @@ public class ImlTypeProvider {
 			// If the expression is "this", then its type is the 
 			// type of the container type.
 			This: {
-				return bindTypeRefWith(ct2tr(t.getContainerOfType(ConstrainedType)), context)
+				return bindTypeRefWith(createBasicType(t.getContainerOfType(ConstrainedType)), context)
 			}
 			// Additions are among numeric types and the result is a numeric 
 			// type. If one of the two terms is real, then the type is real
@@ -338,7 +331,7 @@ public class ImlTypeProvider {
 	// This function creates a map that resolves all template bindings
 	// The map is created by navigating the type hierarchy. Each template
 	// parameter is then bound to a concrete type.
-	def static TypeConstructor bindTypeRefWith(TypeReference t, TypeConstructor ctx) {
+	def static HigherOrderType bindTypeRefWith(HigherOrderType t, HigherOrderType ctx) {
 		if(ctx === null) return t;
 		var map = new HashMap<ConstrainedType, TypeReference>();
 		var List<List<TypeReference>> hierarchy = ctx.allSuperTypesReferences;
@@ -496,49 +489,7 @@ public class ImlTypeProvider {
 	}
 
 
-	/* Check whether two type references are the same */
-	def static boolean isEqual(TypeConstructor left, TypeConstructor right) {
-		//TODO
-		return true
-	}
-
-
-	/* Check whether two type references are the same */
-	def static boolean isEqual(TypeDomain left, TypeDomain right) {
-		//TODO
-		return true
-	}
 	
-	def static boolean isEqual(TerminalType left, TerminalType right) {
-		//TODO
-		return true
-	}
-
-	/* Check whether two type references are the same */
-	def static boolean isEqual(TypeReference left, TypeReference right) {
-		if (!left.type.isEqual(right.type)) {
-			return false
-		} // if (left.type.name != right.type.name || left.type.template != right.type.template || left.type.extends != right.type.extends ) {
-		// return false
-		else if (left.typeBinding.size != right.typeBinding.size) {
-			return false
-		} else {
-			for (i : 0 ..< left.typeBinding.size) {
-				if (! left.typeBinding.get(i).isEqual(right.typeBinding.get(i))) {
-					return false
-				}
-			}
-		}
-		return true
-	}
-
-	// Checks whether two types are equal
-	def static boolean isEqual(ConstrainedType left, ConstrainedType right) {
-		if (left == right)
-			return true;
-		return false;
-	}
-
 	/* Check whether actual paramemter's type is compatible with formal/signature parameter's type.
 	 * If the flag checkStereotypes is true, then also compare stereotypes. 
 	 * */
