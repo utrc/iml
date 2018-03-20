@@ -31,7 +31,7 @@ QualifiedNameWithWildcard:
 
 
 Symbol :
-	TermSymbol|
+	SymbolDefinition |
 	ConstrainedType 
 ;
 
@@ -47,11 +47,11 @@ DomainLiteral:
 	name=ID;
 
 RelationInstance:
-	propertylist=PropertyList  target=TypeConstructor
+	propertylist=PropertyList  target=HighOrderType
 ;
 
 PropertyList:
-	'<<' properties+=TermSymbol (',' properties+=TermSymbol)* '>>'
+	'<<' properties+=SymbolDefinition (',' properties+=SymbolDefinition)* '>>'
 ;
 
 ConstrainedType:
@@ -63,38 +63,28 @@ ConstrainedType:
 	/* An optional list of type being extended by this type*/
 	( relations+=RelationInstance)*
 	/* A list of elements defined by this type*/
-	('{' (symbols+=TermSymbol ';')* '}')?);
+	('{' (symbols+=SymbolDefinition ';')* '}')?);
 
 
 
-TermSymbol:
-	name=ID (signature=SymbolTuple)? ':' type=TypeConstructor (':=' definition=FolFormula)? 
+SymbolDefinition:
+	name=ID (signature=SymbolTuple)? ':' type=HighOrderType (':=' definition=FolFormula)? 
 ;
 
 SymbolTuple:
-	{SymbolTuple} '(' ( symbols+=TermSymbol (',' symbols+=TermSymbol)*  )? ')'
+	{SymbolTuple} '(' ( symbols+=SymbolDefinition (',' symbols+=SymbolDefinition)*  )? ')'
 ;
 
-TypeConstructor:
-	(propertylist=PropertyList)? domain=TypeDomain ('~>' range=TypeDomain)?  
-;
-
-TypeDomain:
-	type=TerminalType (array?='['dimension+=TermExpression']' ('['dimension+=TermExpression']')*)? 
-;
-
-TerminalType:
-	TypeReference |
-	'(' types+=TypeConstructor (','  types+=TypeConstructor)* ')'
-	
+HighOrderType:
+	(propertylist=PropertyList)? domain=TypeReference ('~>' range=TypeReference)?  
 ;
 
 TypeReference:
 	type=[ConstrainedType|QualifiedName]
-	/*Optional type parameters for generic types */
-	('<' typeBinding+=TypeConstructor (',' typeBinding+=TypeConstructor)* '>')?
+		 | ({Tuple}'(' elements+=HighOrderType (','  elements+=HighOrderType)* ')')
+		('<' typeBinding+=HighOrderType (',' typeBinding+=HighOrderType)* '>')?
+		(array?='['dimension+=TermExpression']' ('['dimension+=TermExpression']')*)? 
 ;
-
 
 /*Entry point for a first order logic formula.*/
 FolFormula:
@@ -108,7 +98,7 @@ Formula returns FolFormula:
  * a list of bound variables and a body defined over those variables.
  */
 QuantifiedFormula returns FolFormula:
-	symbol=('forall' | 'exists') scope+=TermSymbol (',' scope+=TermSymbol)* '{' left=FolFormula '}';
+	symbol=('forall' | 'exists') scope+=SymbolDefinition (',' scope+=SymbolDefinition)* '{' left=FolFormula '}';
 
 
 /*Disjunction of two formulas */
@@ -175,7 +165,7 @@ Multiplication returns TermExpression:
  */
 TermSelectionExpression returns TermExpression:
 	TerminalTerm ({TermMemberSelection.receiver=current} '->'
-	member=[TermSymbol]
+	member=[SymbolDefinition]
 	//(template?='<' (typeBinding+=TypeReference (',' typeBinding+=TypeReference)*)? '>')?
 	(methodinvocation?='('
 	(parameters+=TermExpression (',' parameters+=TermExpression)*)? ')')? 
@@ -223,7 +213,7 @@ IteTermExpression returns TermExpression:
 
 
 Program returns TermExpression:
-	{Program} ('var' defs+= TermSymbol ';')* 
+	{Program} ('var' defs+= SymbolDefinition ';')* 
 	          (relations+=FolFormula ';')*
 ;
 
