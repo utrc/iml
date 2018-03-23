@@ -4,25 +4,18 @@
 package com.utc.utrc.hermes.iml.validation
 
 import com.utc.utrc.hermes.iml.iml.AtomicExpression
-import com.utc.utrc.hermes.iml.iml.ConstantDeclaration
 import com.utc.utrc.hermes.iml.iml.ConstrainedType
-import com.utc.utrc.hermes.iml.iml.Element
 import com.utc.utrc.hermes.iml.iml.FolFormula
-import com.utc.utrc.hermes.iml.iml.FunctionDefinition
 import com.utc.utrc.hermes.iml.iml.Model
 import com.utc.utrc.hermes.iml.iml.Multiplication
-import com.utc.utrc.hermes.iml.iml.NamedFormula
-import com.utc.utrc.hermes.iml.iml.QuantifiedFormula
 import com.utc.utrc.hermes.iml.iml.Symbol
-import com.utc.utrc.hermes.iml.iml.SymbolRef
 import com.utc.utrc.hermes.iml.iml.TermMemberSelection
-import com.utc.utrc.hermes.iml.iml.TypeReference
-import com.utc.utrc.hermes.iml.iml.VariableDeclaration
 import java.util.ArrayList
 import java.util.List
 import org.eclipse.xtext.validation.Check
 
 import static extension com.utc.utrc.hermes.iml.typing.ImlTypeProvider.*
+import static extension com.utc.utrc.hermes.iml.typing.TypingServices.*
 import static extension org.eclipse.xtext.EcoreUtil2.*
 import com.utc.utrc.hermes.iml.iml.Addition
 import com.google.inject.Inject
@@ -31,6 +24,8 @@ import org.eclipse.core.runtime.Platform
 import org.eclipse.xtext.validation.AbstractDeclarativeValidator
 import org.eclipse.emf.ecore.EPackage
 import com.utc.utrc.hermes.iml.iml.ImlPackage
+import com.utc.utrc.hermes.iml.iml.AtomicTerm
+import com.utc.utrc.hermes.iml.iml.HigherOrderType
 
 /**
  * This class contains custom validation rules. 
@@ -120,12 +115,12 @@ class ImlValidator extends AbstractImlValidator {
 
 	@Check
 	def checkNoNestedTypes(ConstrainedType t) {
-		for (e : t.elements) {
+		for (e : t.symbols) {
 			if (e instanceof ConstrainedType) {
 				error(
 					'''Nested types are not supported''',
-					ImlPackage::eINSTANCE.constrainedType_Elements,
-					t.elements.indexOf(e),
+					ImlPackage::eINSTANCE.constrainedType_Symbols,
+					t.symbols.indexOf(e),
 					INVALID_ELEMENT
 				);
 			}
@@ -167,13 +162,7 @@ class ImlValidator extends AbstractImlValidator {
 //		}
 	}
 
-	@Check
-	def checkLegitimateStereoType(NamedFormula f) {
-	}
 
-	@Check
-	def checkLegitimateStereoType(Model m) {
-	}
 
 	@Check
 	def checkNoCycleInConstrainedTypeHierarchy(
@@ -226,169 +215,168 @@ class ImlValidator extends AbstractImlValidator {
 	}
 
 	@Check
-	def checkNamedFormula(NamedFormula f) {
-		var context = ct2tr(f.getContainerOfType(ConstrainedType))
-		var exprtr = f.expr.termExpressionType(context)
-		if (exprtr !== boolTypeRef) {
-			error('''The expression inside a named formula should be Booelan,  got «exprtr.printTypeReference»''',
-				ImlPackage::eINSTANCE.namedFormula_Expr, INVALID_TYPE_PARAMETER)
-		}
+	def checkFormula(FolFormula f) {
+//		var context = createBasicType(f.getContainerOfType(ConstrainedType))
+//		var exprtr = f.termExpressionType(context)
+//		if (exprtr !== Bool) {
+//			error('''The formula should be Booelan,  got «exprtr.printType»''',f, INVALID_TYPE_PARAMETER)
+//		}
 	}
 
 	@Check
 	def checkQuantifiedFormula(FolFormula f) {
-		if (f instanceof QuantifiedFormula) {
-			var context = ct2tr(f.getContainerOfType(ConstrainedType))
-			var exprtr = f.left.termExpressionType(context)
-			if (exprtr !== boolTypeRef) {
-				error('''The expression inside a named formula should be Booelan, got «exprtr.printTypeReference»  instead''',
-					ImlPackage::eINSTANCE.folFormula_Left, INVALID_TYPE_PARAMETER)
-			}
-		}
+//		if (f instanceof QuantifiedFormula) {
+//			var context = ct2tr(f.getContainerOfType(ConstrainedType))
+//			var exprtr = f.left.termExpressionType(context)
+//			if (exprtr !== boolTypeRef) {
+//				error('''The expression inside a named formula should be Booelan, got «exprtr.printTypeReference»  instead''',
+//					ImlPackage::eINSTANCE.folFormula_Left, INVALID_TYPE_PARAMETER)
+//			}
+//		}
 	}
 
 	@Check
 	def checkFolFormula(FolFormula f) {
-		if (f.symbol !== null) {
-			var context = ct2tr(f.getContainerOfType(ConstrainedType))
-			if (f.symbol.equals("=>") || f.symbol.equals("<=>") || f.symbol.equals("||") || f.symbol.equals("&&")) {
-				var exprtr = f.left.termExpressionType(context)
-				if (exprtr != boolTypeRef) {
-					error('''The left hand side should be Boolean, got «exprtr.printTypeReference»  instead''',
-						ImlPackage::eINSTANCE.folFormula_Left, INVALID_TYPE_PARAMETER)
-				}
-				exprtr = f.right.termExpressionType(context)
-				if (exprtr != boolTypeRef) {
-					error('''The right hand side should be Boolean, got «exprtr.printTypeReference»  instead''',
-						ImlPackage::eINSTANCE.folFormula_Right, INVALID_TYPE_PARAMETER)
-				}
-			}
-		} else if (f.neg) {
-			var context = ct2tr(f.getContainerOfType(ConstrainedType))
-			var exprtr = f.left.termExpressionType(context)
-			if (exprtr != boolTypeRef) {
-				error('''The ! operator can be only  applied to a Boolean expression, got «exprtr.printTypeReference»  instead''',
-					ImlPackage::eINSTANCE.folFormula_Left, INVALID_TYPE_PARAMETER)
-			}
-		}
+//		if (f.symbol !== null) {
+//			var context = ct2tr(f.getContainerOfType(ConstrainedType))
+//			if (f.symbol.equals("=>") || f.symbol.equals("<=>") || f.symbol.equals("||") || f.symbol.equals("&&")) {
+//				var exprtr = f.left.termExpressionType(context)
+//				if (exprtr != boolTypeRef) {
+//					error('''The left hand side should be Boolean, got «exprtr.printTypeReference»  instead''',
+//						ImlPackage::eINSTANCE.folFormula_Left, INVALID_TYPE_PARAMETER)
+//				}
+//				exprtr = f.right.termExpressionType(context)
+//				if (exprtr != boolTypeRef) {
+//					error('''The right hand side should be Boolean, got «exprtr.printTypeReference»  instead''',
+//						ImlPackage::eINSTANCE.folFormula_Right, INVALID_TYPE_PARAMETER)
+//				}
+//			}
+//		} else if (f.neg) {
+//			var context = ct2tr(f.getContainerOfType(ConstrainedType))
+//			var exprtr = f.left.termExpressionType(context)
+//			if (exprtr != boolTypeRef) {
+//				error('''The ! operator can be only  applied to a Boolean expression, got «exprtr.printTypeReference»  instead''',
+//					ImlPackage::eINSTANCE.folFormula_Left, INVALID_TYPE_PARAMETER)
+//			}
+//		}
 	}
 
 	@Check
 	def checkAtomicExpression(AtomicExpression e) {
 
-		var context = ct2tr(e.getContainerOfType(ConstrainedType))
-		switch (e.rel) {
-			case EQ: {
-				var rt = e.right.termExpressionType(context)
-				var lt = e.left.termExpressionType(context)
-				if (! rt.isCompatible(lt, true) || ! lt.isCompatible(rt, true)) {
-					error('''Type «lt.printTypeReference» and «rt.printTypeReference» are not compatible''',
-						ImlPackage::eINSTANCE.atomicExpression_Rel, INVALID_TYPE_PARAMETER)
-				}
-			}
-			default: {
-				var rt = e.right.termExpressionType(context)
-				var lt = e.left.termExpressionType(context)
-				if (! (rt.isNumeric && lt.isNumeric)) {
-					error('''Both sides must be numeric''', ImlPackage::eINSTANCE.atomicExpression_Rel,
-						INVALID_TYPE_PARAMETER)
-				}
-			}
-		}
+//		var context = ct2tr(e.getContainerOfType(ConstrainedType))
+//		switch (e.rel) {
+//			case EQ: {
+//				var rt = e.right.termExpressionType(context)
+//				var lt = e.left.termExpressionType(context)
+//				if (! rt.isCompatible(lt, true) || ! lt.isCompatible(rt, true)) {
+//					error('''Type «lt.printTypeReference» and «rt.printTypeReference» are not compatible''',
+//						ImlPackage::eINSTANCE.atomicExpression_Rel, INVALID_TYPE_PARAMETER)
+//				}
+//			}
+//			default: {
+//				var rt = e.right.termExpressionType(context)
+//				var lt = e.left.termExpressionType(context)
+//				if (! (rt.isNumeric && lt.isNumeric)) {
+//					error('''Both sides must be numeric''', ImlPackage::eINSTANCE.atomicExpression_Rel,
+//						INVALID_TYPE_PARAMETER)
+//				}
+//			}
+//		}
 
 	}
 
 	@Check
-	def checkParameterList(SymbolRef f) {
-		val symbol = f.ref
-		if (symbol !== null) {
-			if (symbol instanceof VariableDeclaration && f.methodinvocation) {
-				error('''Method invocation on a variable term''', ImlPackage::eINSTANCE.symbolRef_Methodinvocation,
-					METHOD_INVOCATION_ON_VARIABLE)
-			}
-			if (symbol instanceof ConstantDeclaration && f.methodinvocation) {
-				error('''Method invocation on a constant term''', ImlPackage::eINSTANCE.symbolRef_Methodinvocation,
-					METHOD_INVOCATION_ON_CONSTAINT)
-			}
-			if (symbol instanceof FunctionDefinition) {
-				val fdecl = (symbol as FunctionDefinition)
-				if (fdecl.parameters.size > 0 && ! f.methodinvocation) {
-					error('''Missing method invocation''', ImlPackage::eINSTANCE.symbolRef_Methodinvocation,
-						MISSING_METHOD_INVOCATION)
-				} else {
-					// check parameter list
-					if (fdecl.parameters.size != f.parameters.size) {
-						error(
-							'''Invalid number of arguments : expecting ''' + fdecl.parameters.size + " but only got " +
-								f.parameters.size, ImlPackage::eINSTANCE.symbolRef_Methodinvocation,
-							INVALID_PARAMETER_LIST)
-						} else {
-							for (i : 0 ..< fdecl.parameters.size) {
-								var typeref = fdecl.parameters.get(i).type
-								var context = ct2tr(f.getContainerOfType(ConstrainedType))
-								val argType = f.parameters.get(i).termExpressionType(context)
-								val expected = bindTypeRefWith(typeref, context)
-
-								if (! argType.isCompatible(expected, true))
-									error(
-										'''Invalid argument type: expecting ''' + expected.printTypeReference +
-											''', got ''' + argType.printTypeReference,
-										ImlPackage::eINSTANCE.symbolRef_Parameters, i, INVALID_PARAMETER_LIST)
-
-							}
-						}
-
-					}
-				}
-			}
+	def checkParameterList(AtomicTerm f) {
+//		val symbol = f.ref
+//		if (symbol !== null) {
+//			if (symbol instanceof VariableDeclaration && f.methodinvocation) {
+//				error('''Method invocation on a variable term''', ImlPackage::eINSTANCE.symbolRef_Methodinvocation,
+//					METHOD_INVOCATION_ON_VARIABLE)
+//			}
+//			if (symbol instanceof ConstantDeclaration && f.methodinvocation) {
+//				error('''Method invocation on a constant term''', ImlPackage::eINSTANCE.symbolRef_Methodinvocation,
+//					METHOD_INVOCATION_ON_CONSTAINT)
+//			}
+//			if (symbol instanceof FunctionDefinition) {
+//				val fdecl = (symbol as FunctionDefinition)
+//				if (fdecl.parameters.size > 0 && ! f.methodinvocation) {
+//					error('''Missing method invocation''', ImlPackage::eINSTANCE.symbolRef_Methodinvocation,
+//						MISSING_METHOD_INVOCATION)
+//				} else {
+//					// check parameter list
+//					if (fdecl.parameters.size != f.parameters.size) {
+//						error(
+//							'''Invalid number of arguments : expecting ''' + fdecl.parameters.size + " but only got " +
+//								f.parameters.size, ImlPackage::eINSTANCE.symbolRef_Methodinvocation,
+//							INVALID_PARAMETER_LIST)
+//						} else {
+//							for (i : 0 ..< fdecl.parameters.size) {
+//								var typeref = fdecl.parameters.get(i).type
+//								var context = ct2tr(f.getContainerOfType(ConstrainedType))
+//								val argType = f.parameters.get(i).termExpressionType(context)
+//								val expected = bindTypeRefWith(typeref, context)
+//
+//								if (! argType.isCompatible(expected, true))
+//									error(
+//										'''Invalid argument type: expecting ''' + expected.printTypeReference +
+//											''', got ''' + argType.printTypeReference,
+//										ImlPackage::eINSTANCE.symbolRef_Parameters, i, INVALID_PARAMETER_LIST)
+//
+//							}
+//						}
+//
+//					}
+//				}
+//			}
 		}
 
 		// validate function's parameters against its declaration's
 		@Check
 		def checkParameterList(TermMemberSelection f) {
-			val member = f.member
-			if (member !== null) {
-				if (member instanceof VariableDeclaration && f.methodinvocation) {
-					error('''Method invocation on a variable term''',
-						ImlPackage::eINSTANCE.termMemberSelection_Methodinvocation, METHOD_INVOCATION_ON_VARIABLE)
-				}
-				if (member instanceof ConstantDeclaration && f.methodinvocation) {
-					error('''Method invocation on a constant term''',
-						ImlPackage::eINSTANCE.termMemberSelection_Methodinvocation, METHOD_INVOCATION_ON_CONSTAINT)
-				}
-				if (member instanceof FunctionDefinition) {
-					val fdecl = (member as FunctionDefinition)
-					if (fdecl.parameters.size > 0 && ! f.methodinvocation) {
-						error('''Missing method invocation''',
-							ImlPackage::eINSTANCE.termMemberSelection_Methodinvocation, MISSING_METHOD_INVOCATION)
-					} else {
-						// check parameter list
-						if (fdecl.parameters.size != f.parameters.size) {
-							error(
-								'''Invalid number of arguments : expecting ''' + fdecl.parameters.size +
-									" but only got " + f.parameters.size,
-								ImlPackage::eINSTANCE.symbolRef_Methodinvocation, INVALID_PARAMETER_LIST)
-						} else {
-							var context = ct2tr(f.getContainerOfType(ConstrainedType))
-							for (i : 0 ..< fdecl.parameters.size) {
-								var expected = bindTypeRefWith(fdecl.parameters.get(i).type,
-									f.receiver.termExpressionType(context))
-								var argType = f.parameters.get(i).termExpressionType(context);
-								if (! argType.isCompatible(expected, true))
-									error(
-										'''Invalid argument type: expecting ''' + expected.printTypeReference +
-											''', got ''' + argType.printTypeReference,
-										ImlPackage::eINSTANCE.termMemberSelection_Parameters, i, INVALID_PARAMETER_LIST)
-							}
-						}
-					}
-				}
-			}
+//			val member = f.member
+//			if (member !== null) {
+//				if (member instanceof VariableDeclaration && f.methodinvocation) {
+//					error('''Method invocation on a variable term''',
+//						ImlPackage::eINSTANCE.termMemberSelection_Methodinvocation, METHOD_INVOCATION_ON_VARIABLE)
+//				}
+//				if (member instanceof ConstantDeclaration && f.methodinvocation) {
+//					error('''Method invocation on a constant term''',
+//						ImlPackage::eINSTANCE.termMemberSelection_Methodinvocation, METHOD_INVOCATION_ON_CONSTAINT)
+//				}
+//				if (member instanceof FunctionDefinition) {
+//					val fdecl = (member as FunctionDefinition)
+//					if (fdecl.parameters.size > 0 && ! f.methodinvocation) {
+//						error('''Missing method invocation''',
+//							ImlPackage::eINSTANCE.termMemberSelection_Methodinvocation, MISSING_METHOD_INVOCATION)
+//					} else {
+//						// check parameter list
+//						if (fdecl.parameters.size != f.parameters.size) {
+//							error(
+//								'''Invalid number of arguments : expecting ''' + fdecl.parameters.size +
+//									" but only got " + f.parameters.size,
+//								ImlPackage::eINSTANCE.symbolRef_Methodinvocation, INVALID_PARAMETER_LIST)
+//						} else {
+//							var context = ct2tr(f.getContainerOfType(ConstrainedType))
+//							for (i : 0 ..< fdecl.parameters.size) {
+//								var expected = bindTypeRefWith(fdecl.parameters.get(i).type,
+//									f.receiver.termExpressionType(context))
+//								var argType = f.parameters.get(i).termExpressionType(context);
+//								if (! argType.isCompatible(expected, true))
+//									error(
+//										'''Invalid argument type: expecting ''' + expected.printTypeReference +
+//											''', got ''' + argType.printTypeReference,
+//										ImlPackage::eINSTANCE.termMemberSelection_Parameters, i, INVALID_PARAMETER_LIST)
+//							}
+//						}
+//					}
+//				}
+//			}
 		}
 
 		@Check
 		def checkMultiplication(Multiplication m) {
-			var context = ct2tr(m.getContainerOfType(ConstrainedType))
+		//	var context = ct2tr(m.getContainerOfType(ConstrainedType))
 //			if (m.sign == '%' || m.sign == 'mod') {
 //				if (m.left.termExpressionType(context).type.name != 'Int') {
 //					error(
@@ -406,24 +394,24 @@ class ImlValidator extends AbstractImlValidator {
 
 		@Check
 		def checkMultiplication(Addition m) {
-			var context = ct2tr(m.getContainerOfType(ConstrainedType))
+			//var context = ct2tr(m.getContainerOfType(ConstrainedType))
 			
 		}
 
 		@Check
-		def checkParametersList(TypeReference tr) {
-			val type = tr.type
-			if (type !== null) {
-				// check template parameter list
-				val ct = (type as ConstrainedType)
-				if (ct.template && ct.typeParameter.size != tr.typeBinding.size) {
-					error(
-						'''Invalid number of template type binding parameters''',
-						ImlPackage::eINSTANCE.typeReference_TypeBinding,
-						INVALID_PARAMETER_LIST
-					)
-				}
-			}
+		def checkParametersList(HigherOrderType tr) {
+//			val type = tr.type
+//			if (type !== null) {
+//				// check template parameter list
+//				val ct = (type as ConstrainedType)
+//				if (ct.template && ct.typeParameter.size != tr.typeBinding.size) {
+//					error(
+//						'''Invalid number of template type binding parameters''',
+//						ImlPackage::eINSTANCE.typeReference_TypeBinding,
+//						INVALID_PARAMETER_LIST
+//					)
+//				}
+//			}
 		}
 
 	}
