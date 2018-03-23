@@ -16,15 +16,16 @@ Require-Bundle: org.eclipse.xtext,
  org.eclipse.emf.common,
  org.eclipse.core.runtime;bundle-version="3.13.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
-Export-Package: com.utc.utrc.hermes.iml.iml.impl,
- com.utc.utrc.hermes.iml.serializer,
- com.utc.utrc.hermes.iml.parser.antlr.internal,
- com.utc.utrc.hermes.iml,
- com.utc.utrc.hermes.iml.scoping,
- com.utc.utrc.hermes.iml.parser.antlr,
- com.utc.utrc.hermes.iml.validation,
- com.utc.utrc.hermes.iml.iml,
- com.utc.utrc.hermes.iml.iml.util,
+Export-Package: com.utc.utrc.hermes.iml,
  com.utc.utrc.hermes.iml.generator,
- com.utc.utrc.hermes.iml.services
+ com.utc.utrc.hermes.iml.iml,
+ com.utc.utrc.hermes.iml.iml.impl,
+ com.utc.utrc.hermes.iml.iml.util,
+ com.utc.utrc.hermes.iml.parser.antlr,
+ com.utc.utrc.hermes.iml.parser.antlr.internal,
+ com.utc.utrc.hermes.iml.scoping,
+ com.utc.utrc.hermes.iml.serializer,
+ com.utc.utrc.hermes.iml.services,
+ com.utc.utrc.hermes.iml.typing,
+ com.utc.utrc.hermes.iml.validation
 Import-Package: org.apache.log4j
