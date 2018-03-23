@@ -7,6 +7,7 @@ import com.utc.utrc.hermes.iml.iml.ArrayType
 import com.utc.utrc.hermes.iml.iml.SimpleTypeReference
 import com.utc.utrc.hermes.iml.iml.TupleType
 import com.utc.utrc.hermes.iml.iml.PropertyList
+import com.utc.utrc.hermes.iml.iml.impl.TupleTypeImpl
 import com.utc.utrc.hermes.iml.services.ImlGrammarAccess.SymbolDeclarationElements
 import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
 import java.util.List
@@ -110,19 +111,103 @@ public class TypingServices {
 	
 	/* Check whether two type references are the same */
 	def static boolean isEqual(HigherOrderType left, HigherOrderType right) {
-		//TODO
+		if (left === null && right === null) {
+			return true
+		} else if (left === null || right === null) {
+			return false
+		}
+		
+		if (left.class != right.class) {
+			return false
+		}
+		
+		if (left instanceof SimpleTypeReference) {
+			if (!isEqual(left as SimpleTypeReference, right as SimpleTypeReference)) {
+				return false
+			}
+		}
+		
+		if (left instanceof ArrayType) {
+			if (!isEqual(left as ArrayType, right as ArrayType)) {
+				return false
+			}
+		}
+		
+		if (left instanceof TupleType) {
+			if (!isEqual(left as TupleType, right as TupleType)) {
+				return false
+			}
+		}
+		
+		if (!isEqual(left.domain, right.domain)) {
+			return false
+		}
+		
+		if (!isEqual(left.range, right.range)) {
+			return false
+		}
+		
 		return true
+	}
+	
+	def static boolean isEqual(HigherOrderType left, HigherOrderType right, boolean checkProperties) {
+		if (!isEqual(left, right)) {
+			return false;
+		}
+		
+		if (checkProperties) {
+			if (!isEqual(left.propertylist, right.propertylist)) {
+				return false
+			}
+		}
+		
+		return true;
 	}
 
 
 	/* Check whether two type references are the same */
 	def static boolean isEqual(ArrayType left, ArrayType right) {
-		//TODO
+		if (left === null && right === null) {
+			return true
+		} else if (left === null || right === null) {
+			return false
+		}
+		
+		if (!isEqual(left.type, right.type)) {
+			return false
+		}
+		
+		if (left.dimension.size != right.dimension.size) {
+			return false
+		}
+		
 		return true
 	}
 	
 	def static boolean isEqual(TupleType left, TupleType right) {
-		//TODO
+		if (left.types.length != right.types.length) {
+			return false
+		} else {
+			for (i: 0 ..< left.types.length) {
+				if (!isEqual(left.types.get(i), right.types.get(i))) {
+					return false
+				}
+			}
+		}
+		return true
+	}
+	
+	def static boolean isEqual(PropertyList left, PropertyList right) {
+		if (left.properties.size != right.properties.size) {
+			return false;
+		}
+		
+		for (i:0 ..< left.properties.size) {
+			if (! isEqual(left.properties.get(i).type, right.properties.get(i).type)) {
+				return false
+			}
+		}
+		
 		return true
 	}
 
