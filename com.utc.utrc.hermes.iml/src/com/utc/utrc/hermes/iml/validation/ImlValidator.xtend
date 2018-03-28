@@ -72,6 +72,8 @@ class ImlValidator extends AbstractImlValidator {
 				}
 			};
 		
+		} else {
+			super.register(registrar);
 		}		
 	}
 
