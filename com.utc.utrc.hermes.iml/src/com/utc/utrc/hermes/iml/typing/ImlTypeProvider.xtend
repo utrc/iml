@@ -51,7 +51,12 @@ public class ImlTypeProvider {
 		if (t instanceof TermExpression) {
 			return termExpressionType((t as TermExpression), context)
 		}
-		return Bool;
+		
+		if (t instanceof AtomicExpression) {
+			return Bool
+		}
+		
+		return t.left.termExpressionType(context);
 	}
 
 	/* Compute the type of a TermExpression 
@@ -243,7 +248,9 @@ public class ImlTypeProvider {
 		return false;
 	}
 	
-
+	def static HigherOrderType ct2hot(ConstrainedType type) {
+		return createBasicType(type)
+	}
 	
 
 }
