@@ -1,39 +1,36 @@
 package com.utc.utrc.hermes.iml.typing
 
-import com.utc.utrc.hermes.iml.iml.TermExpression
-import java.util.List
-import com.utc.utrc.hermes.iml.iml.ConstrainedType
-import org.eclipse.emf.ecore.EObject
-import com.utc.utrc.hermes.iml.iml.Model
-import com.utc.utrc.hermes.iml.iml.NumberLiteral
-import com.utc.utrc.hermes.iml.iml.FloatNumberLiteral
-import com.utc.utrc.hermes.iml.iml.TermMemberSelection
-import java.util.ArrayList
-import java.util.HashMap
-import org.eclipse.xtext.nodemodel.ICompositeNode
-import org.eclipse.xtext.nodemodel.util.NodeModelUtils
-import java.util.regex.Pattern
-import java.util.regex.Matcher
-import com.utc.utrc.hermes.iml.iml.This
-import static extension org.eclipse.xtext.EcoreUtil2.*
-import com.utc.utrc.hermes.iml.iml.IteTermExpression
 import com.utc.utrc.hermes.iml.iml.Addition
-import com.utc.utrc.hermes.iml.iml.Multiplication
+import com.utc.utrc.hermes.iml.iml.ArrayAccess
+import com.utc.utrc.hermes.iml.iml.ArrayType
+import com.utc.utrc.hermes.iml.iml.AtomicTerm
+import com.utc.utrc.hermes.iml.iml.ConstrainedType
+import com.utc.utrc.hermes.iml.iml.FloatNumberLiteral
 import com.utc.utrc.hermes.iml.iml.FolFormula
-import java.util.Map
-import com.utc.utrc.hermes.iml.iml.Symbol
-import com.utc.utrc.hermes.iml.iml.AtomicExpression
-import com.utc.utrc.hermes.iml.iml.ImlFactory
 import com.utc.utrc.hermes.iml.iml.HigherOrderType
+import com.utc.utrc.hermes.iml.iml.IteTermExpression
+import com.utc.utrc.hermes.iml.iml.Multiplication
+import com.utc.utrc.hermes.iml.iml.NumberLiteral
+import com.utc.utrc.hermes.iml.iml.ParenthesizedExpression
+import com.utc.utrc.hermes.iml.iml.SignedAtomicFormula
+import com.utc.utrc.hermes.iml.iml.SimpleTypeReference
+import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
+import com.utc.utrc.hermes.iml.iml.TermExpression
+import com.utc.utrc.hermes.iml.iml.TermMemberSelection
+import com.utc.utrc.hermes.iml.iml.This
+import com.utc.utrc.hermes.iml.iml.TruthValue
+import java.util.Map
 
 import static extension com.utc.utrc.hermes.iml.typing.TypingServices.*
-import com.utc.utrc.hermes.iml.iml.TruthValue
-import com.utc.utrc.hermes.iml.iml.ParenthesizedExpression
-import com.utc.utrc.hermes.iml.iml.AtomicTerm
-import com.utc.utrc.hermes.iml.iml.ArrayAccess
-import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
-import com.utc.utrc.hermes.iml.iml.ArrayType
-import com.utc.utrc.hermes.iml.iml.SimpleTypeReference
+import static extension org.eclipse.xtext.EcoreUtil2.*
+import java.util.HashMap
+import java.util.List
+import com.utc.utrc.hermes.iml.iml.ImlFactory
+import com.utc.utrc.hermes.iml.iml.TupleType
+import java.util.AbstractMap.SimpleEntry
+import javax.management.openmbean.SimpleType
+import com.utc.utrc.hermes.iml.services.ImlGrammarAccess.SimpleTypeReferenceElements
+import javax.naming.ldap.ExtendedRequest
 
 public class ImlTypeProvider {
 
@@ -50,6 +47,7 @@ public class ImlTypeProvider {
 	def static HigherOrderType termExpressionType(FolFormula t, HigherOrderType context) {
 		if (t instanceof TermExpression) {
 			return termExpressionType((t as TermExpression), context)
+		} if (t instanceof SignedAtomicFormula) {
 		}
 		return Bool;
 	}
@@ -60,13 +58,13 @@ public class ImlTypeProvider {
 	 * that contains stereotypes, type and type binding information
 	 * for the term. 
 	 * */
-	def static HigherOrderType termExpressionType(TermExpression t, HigherOrderType context) {
+	def static HigherOrderType termExpressionType(TermExpression t, SimpleTypeReference context) {
 
 		switch (t) {
 			// If the expression is "this", then its type is the 
 			// type of the container type.
 			This: {
-				return bindTypeRefWith(createBasicType(t.getContainerOfType(ConstrainedType)), context)
+				return bind(createBasicType(t.getContainerOfType(ConstrainedType)), context)
 			}
 			// Additions are among numeric types and the result is a numeric 
 			// type. If one of the two terms is real, then the type is real
@@ -108,7 +106,7 @@ public class ImlTypeProvider {
 					return createBasicType(t.symbol as ConstrainedType)
 				} else {
 					// Reference to a symbol
-					var term_type = (t.symbol as SymbolDeclaration).type.bindTypeRefWith(context);
+					var term_type = getType(t.symbol as SymbolDeclaration,context);
 					if (t instanceof ArrayAccess && term_type instanceof ArrayType) {
 						term_type = accessArray(term_type as ArrayType, (t as ArrayAccess).index.size)
 					}
@@ -142,84 +140,96 @@ public class ImlTypeProvider {
 		}
 
 	}
-
 	
-	// This function creates a map that resolves all template bindings
-	// The map is created by navigating the type hierarchy. Each template
-	// parameter is then bound to a concrete type.
-	def static HigherOrderType bindTypeRefWith(HigherOrderType t, HigherOrderType ctx) {
-		return clone(t)
-		/* 
-		if(ctx === null) return t;
-		var map = new HashMap<ConstrainedType, TypeReference>();
-		var List<List<TypeReference>> hierarchy = ctx.allSuperTypesReferences;
-		for (level : hierarchy) {
-			for (st : level) {
-				// This is a supertype of the context
-				if (st.type.typeParameter.size != st.typeBinding.size)
-					return nullTypeRef;
-				// go over all template binding information
-				for (i : 0 ..< st.typeBinding.size) {
-					var TypeReference tr = null;
-					if (map.containsKey(st.typeBinding.get(i).type)) {
-						tr = map.get(st.typeBinding.get(i).type);
-					} else {
-						tr = st.typeBinding.get(i).cloneTypeReference
+	
+	def static HigherOrderType getType(SymbolDeclaration s, SimpleTypeReference ctx) {
+		if ( ctx.ref.symbols.contains(s)) {
+			return bind(s,ctx)
+		}
+		for(rel : ctx.ref.relations) {
+			switch(rel){
+				com.utc.utrc.hermes.iml.iml.Extension :{
+					val target = rel.target
+					if (target instanceof SimpleTypeReference) {
+						var sup = bind(target,ctx) as SimpleTypeReference
+						var retval = getType(s,sup);
+						if (retval !== null) {
+							return retval;
+						}	
 					}
-
-//					// If the type bound to a parameter is a template type
-//					// the its actual type must be already in the map
-//					if(st.typeBinding.get(i).isTemplateParameter) {
-//						tr = map.get(st.typeBinding.get(i).type)
-//					} else {
-//						// otherwise it is a concrete type and we just
-//						// clone the type reference
-//						tr = st.typeBinding.get(i).cloneTypeReference
-//					}
-					map.put(st.type.typeParameter.get(i), tr.bindTypeRefWith(map))
 				}
 			}
 		}
-		// At this point we have a map from template parameters for the context
-		// Now just bind the type reference using the map 
-		var c = bindTypeRefWith(t, map);
-		return c
-		
-		*/
+		return null;
 	}
-
-	// Given a type reference and a map from type parameters to actual 
-	// types, compute the actual type reference
-	def public static HigherOrderType bindTypeRefWith(HigherOrderType t, Map<ConstrainedType, HigherOrderType> map) {
-		return clone(t)
-		/*
-		if (t === null) {
-			return nullTypeRef;
-		}
-		if (t.isTemplateParameter) {
-			val tr = map.get(t.type);
-			if (tr !== null) {
-				return tr;
-			} else {
-				return t;
-			}
-		} else {
-			var retval = ImlFactory.eINSTANCE.createTypeReference;
-			retval.type = t.type;
-			// retval.stereotypes.addAll(t.stereotypes)
-			for (i : 0 ..< t.typeBinding.size()) {
-				retval.typeBinding.add(t.typeBinding.get(i).bindTypeRefWith(map))
-			}
-			retval.array = t.array;
-			for (TermExpression te : t.dimension) {
-
-				retval.dimension.add(te.cloneTermExpression)
-			}
-			return retval;
+	
+	def static bind(SymbolDeclaration s, SimpleTypeReference ctx) {
+		return bind(s.type,ctx)
+	}
+	
+	def static bind(HigherOrderType t, SimpleTypeReference ctx){
+		
+		var ctxbinds = new HashMap<ConstrainedType, HigherOrderType>();
+		
+		for(i : 0 ..< ctx.ref.typeParameter.size) {
+			ctxbinds.put(ctx.ref.typeParameter.get(i),ctx.typeBinding.get(i))
 		}
 		
-		*/
+		return remap(t,ctxbinds)	
+			
 	}
+	
+	def static HigherOrderType remap(HigherOrderType t, Map<ConstrainedType,HigherOrderType> map){
+		switch(t){
+			ArrayType:{
+				var retval = ImlFactory.eINSTANCE.createArrayType ;
+				retval.type = remap(t.type,map)	
+				for(d : t.dimension) {
+					//TODO : Should we clone the term expressions?
+					retval.dimension.add(ImlFactory::eINSTANCE.createNumberLiteral => [value=0] ) ;
+				}
+				return retval				
+			}
+			SimpleTypeReference:{
+				var retval = ImlFactory.eINSTANCE.createSimpleTypeReference ;
+				retval.ref = t.ref
+				for( h : t.typeBinding) {
+					if(h instanceof SimpleTypeReference){
+						if ((h as SimpleTypeReference).typeBinding.size === 0) {
+							if (map.containsKey(h.ref)) {
+								retval.typeBinding.add(clone(map.get(h.ref)))
+							} else {
+								retval.typeBinding.add(clone(h))
+							}
+						} else {
+							retval.typeBinding.add(remap(h,map))
+						}
+					} else {
+						retval.typeBinding.add(remap(h,map))
+					} 
+				}
+				return retval;
+			}
+			TupleType:{
+				var retval = ImlFactory.eINSTANCE.createTupleType ;
+				for(h : t.types) {
+					retval.types.add(remap(h,map))
+				}
+				return retval; 
+			}
+			default:{
+				var retval = ImlFactory.eINSTANCE.createHigherOrderType ;
+				retval.domain = remap(t.domain,map)
+				if (t.range !== null) {
+					retval.range = remap(t.range,map)
+				}
+				return retval ;
+			}
+		}
+	}
+	
+
+	
 
 	/* Check whether t is primitive type */
 	def static boolean isPrimitive(HigherOrderType t) {

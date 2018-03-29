@@ -7,8 +7,6 @@ import com.utc.utrc.hermes.iml.iml.ArrayType
 import com.utc.utrc.hermes.iml.iml.SimpleTypeReference
 import com.utc.utrc.hermes.iml.iml.TupleType
 import com.utc.utrc.hermes.iml.iml.PropertyList
-import com.utc.utrc.hermes.iml.iml.impl.TupleTypeImpl
-import com.utc.utrc.hermes.iml.services.ImlGrammarAccess.SymbolDeclarationElements
 import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
 import java.util.List
 import java.util.ArrayList
@@ -284,6 +282,11 @@ public class TypingServices {
 
 	/* Compute all super type references of a TypeReference */
 	def static getAllSuperTypes(HigherOrderType tf) {
+		switch (tf){
+			SimpleTypeReference: {
+				
+			}
+		}
 		val closed = <HigherOrderType>newArrayList()
 		val retVal = new ArrayList<List<HigherOrderType>>()
 		retVal.add(new ArrayList<HigherOrderType>());
@@ -308,6 +311,40 @@ public class TypingServices {
 		}
 		return retVal
 	}
+	
+
+	def static getSuperTypes(SimpleTypeReference tf) {
+		val closed = <SimpleTypeReference>newArrayList()
+		val retVal = new ArrayList<List<SimpleTypeReference>>()
+		retVal.add(new ArrayList<SimpleTypeReference>());
+		retVal.get(0).add(tf); // A type is a super type of itself
+		var index = 0;
+		while (retVal.get(index).size() > 0) {
+			val toAdd = <SimpleTypeReference>newArrayList();
+			for (current : retVal.get(index)) {
+				val ctype = current.ref
+				for(rel : ctype.relations) {
+					if (rel instanceof com.utc.utrc.hermes.iml.iml.Extension) {
+						if (rel.target.domain instanceof SimpleTypeReference) {
+							if ( ! closed.contains(rel.target.domain)) {
+								toAdd.add(rel.target.domain as SimpleTypeReference)
+							}
+						}
+					}
+				}
+				closed.add(current)
+			}
+			if (toAdd.size() > 0) {
+				retVal.add(toAdd)
+				index = index + 1
+			} else {
+				return retVal;
+			}
+		}
+		return retVal
+	}
+	
+	
 
 	/* Check whether actual paramemter's type is compatible with formal/signature parameter's type.
 	 * If the flag checkStereotypes is true, then also compare stereotypes. 
