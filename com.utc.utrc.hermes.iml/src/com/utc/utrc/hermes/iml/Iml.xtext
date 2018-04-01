@@ -47,7 +47,22 @@ DomainLiteral:
 	name=ID;
 
 RelationInstance:
-	propertylist=PropertyList  target=HigherOrderType
+	Extension |
+	Alias |
+	MetaRelation
+	
+;
+
+Extension :
+	{Extension} 'extends'  target=HigherOrderType
+;
+
+Alias:
+	{Alias} 'sameas'  target=HigherOrderType
+;
+
+MetaRelation:
+	{MetaRelaion} propertylist=PropertyList  target=HigherOrderType
 ;
 
 PropertyList:
@@ -126,7 +141,7 @@ AndExpression returns FolFormula:
 		
 /*Strongest operator is the negation of a formula */
 SignedAtomicFormula returns FolFormula:
-	(neg?='!')? left=AtomicExpression;
+	{SignedAtomicFormula} (neg?='!')? left=AtomicExpression;
 
 
  
