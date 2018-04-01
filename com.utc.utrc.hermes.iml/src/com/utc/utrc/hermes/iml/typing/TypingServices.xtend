@@ -56,13 +56,31 @@ public class TypingServices {
 	}
 	
 	def static HigherOrderType clone(HigherOrderType other) {
-		var ret = ImlFactory::eINSTANCE.createHigherOrderType() ;
-		//TODO We are not cloning the property list here
-		ret.domain = clone(other.domain);
-		if (other.range !== null) {
-			ret.range= clone(other.range);
+		if (other !== null) {
+			if (other instanceof SimpleTypeReference) {
+				return clone(other as SimpleTypeReference)
+			}
+			
+			if (other instanceof ArrayType) {
+				return clone(other as ArrayType)
+			}
+			
+			if (other instanceof TupleType) {
+				return clone(other as TupleType)
+			}
+			
+			// Not a leaf node
+			var ret = ImlFactory::eINSTANCE.createHigherOrderType() ;
+			//TODO We are not cloning the property list here
+			ret.domain = clone(other.domain);
+			if (other.range !== null) {
+				ret.range= clone(other.range);
+			}
+			return ret
+			
+		} else {
+			return null
 		}
-		return ret
 		
 	}
 	
@@ -91,6 +109,7 @@ public class TypingServices {
 			//TODO : Should we clone the term expressions?
 			ret.dimension.add(ImlFactory::eINSTANCE.createNumberLiteral => [value=0] ) ;
 		}
+		return ret
 	}
 		
 	def static HigherOrderType accessArray(ArrayType type, int dim) {

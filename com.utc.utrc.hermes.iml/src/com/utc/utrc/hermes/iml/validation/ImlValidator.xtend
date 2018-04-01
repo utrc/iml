@@ -85,17 +85,18 @@ class ImlValidator extends AbstractImlValidator {
 
 	}
 
-	// validate function's parameters against its declaration's
+	// Check correct Template declaration
 	@Check
 	def checkTemplateType(ConstrainedType t) {
 		if (t.template) {
 			for (tp : t.typeParameter) {
-//				if (tp.finite || tp.static || tp.template || tp.relatesto.size() > 0 || tp.elements.size != 0) {
-//					error('''Type parameters must be simple types''',
-//						ImlPackage::eINSTANCE.constrainedType_TypeParameter, t.typeParameter.indexOf(
-//							tp
-//						), INVALID_TYPE_PARAMETER)
-//				}
+				if (tp.finite || tp.meta || tp.template || !tp.symbols.isEmpty || tp.doc !== null || !tp.relations.isEmpty) {
+					error('''Type parameters must be simple types''',
+						ImlPackage::eINSTANCE.constrainedType_TypeParameter, t.typeParameter.indexOf(
+							tp
+						), INVALID_TYPE_PARAMETER)
+					
+				}
 			}
 		}
 	}

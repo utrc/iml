@@ -15,7 +15,12 @@ import com.utc.utrc.hermes.iml.typing.TypingServices
 import com.utc.utrc.hermes.iml.iml.ConstrainedType
 import com.utc.utrc.hermes.iml.typing.ImlTypeProvider
 import com.utc.utrc.hermes.iml.iml.HigherOrderType
+import com.utc.utrc.hermes.iml.iml.SimpleTypeReference
 
+/**
+ * Test related helper methods
+ * @author Ayman Elkfrawy
+ */
 @RunWith(XtextRunner)
 @InjectWith(ImlInjectorProvider)
 class ImlTypeProviderTest {
@@ -69,7 +74,7 @@ class ImlTypeProviderTest {
 	}
 	
 	@Test
-	def testTermExpressionType_withTermSelection() {
+	def testTermExpressionType() {
 		val model = '''
 			package p;
 			type Int;
@@ -90,10 +95,40 @@ class ImlTypeProviderTest {
 		val folForm = var1.definition
 		
 		val context = TypingServices.createBasicType(t1)
-		val t2Type = TypingServices.createBasicType(t2);
 		
-		assertEquals(ImlTypeProvider.termExpressionType(folForm, context), t2Type)
+		val exprType = ImlTypeProvider.termExpressionType(folForm, context)
 		
+		assertEquals((exprType.domain as SimpleTypeReference).ref, t2)
+	}
+	
+	@Test
+	def testTermExpressionType_withTermSelection() {
+		val model = '''
+			package p;
+			type Int;
+			type Real;
+			type t1 {
+				var1 : Int := var2->varx;
+				var2 : t2;
+			}
+			
+			type t2 {
+				varx : Int;	
+			};
+			
+		'''.parse
+//		model.assertNoErrors
+		
+		var t1 = model.findSymbol("t1") as ConstrainedType
+		var intType = model.findSymbol("Int") as ConstrainedType
+		val var1 = t1.findSymbol("var1") 
+		val folForm = var1.definition
+		
+		val context = TypingServices.createBasicType(t1)
+		
+		val exprType = ImlTypeProvider.termExpressionType(folForm, context)
+		
+		assertEquals((exprType.domain as SimpleTypeReference).ref, intType)
 	}
 	
 }

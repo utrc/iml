@@ -13,6 +13,10 @@ import org.junit.Test
 import com.utc.utrc.hermes.iml.iml.ImlPackage
 import com.utc.utrc.hermes.iml.validation.ImlValidator
 
+/**
+ * Test related helper methods
+ * @author Ayman Elkfrawy
+ */
 @RunWith(XtextRunner)
 @InjectWith(ImlInjectorProvider)
 class ImlValidatorTest {
@@ -124,5 +128,17 @@ class ImlValidatorTest {
 		'''.parse
 		model.assertError(ImlPackage.eINSTANCE.symbolDeclaration, ImlValidator.DUPLICATE_ELEMENT)
 	}
+	
+	@Test
+	def testCheckTemplateType_valid() {
+		val model = '''
+			package p;
+			type x<type T, type P>;
+			
+		'''.parse
+		model.assertNoErrors
+	}
+	
+	
 	
 }

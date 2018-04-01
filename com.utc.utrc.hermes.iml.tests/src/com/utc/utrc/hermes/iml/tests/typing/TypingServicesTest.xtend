@@ -14,7 +14,9 @@ import com.utc.utrc.hermes.iml.tests.TestHelper
 import com.utc.utrc.hermes.iml.typing.TypingServices
 import com.utc.utrc.hermes.iml.iml.ConstrainedType
 
-
+/**
+ * @author Ayman Elkfrawy
+ */
 @RunWith(XtextRunner)
 @InjectWith(ImlInjectorProvider)
 class TypingServicesTest {
@@ -214,6 +216,25 @@ class TypingServicesTest {
 		val var2 = (model.findSymbol("t1") as ConstrainedType).findSymbol("var2")
 		
 		assertTrue(TypingServices.isEqual(var1.type, var2.type))
+	}
+	
+	@Test
+	def testIsEqual_HigherOrderType_RangeAndNoRange() {
+		val model = '''
+			package p;
+			type Int;
+			type Boolean;
+			type t1 {
+				var1 : (Int, Boolean) ~> Int;
+				var2 : (Int, Boolean);
+			}
+		'''.parse
+		
+		model.assertNoErrors
+		val var1 = (model.findSymbol("t1") as ConstrainedType).findSymbol("var1")
+		val var2 = (model.findSymbol("t1") as ConstrainedType).findSymbol("var2")
+		
+		assertFalse(TypingServices.isEqual(var1.type, var2.type))
 	}
 	
 	@Test
