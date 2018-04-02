@@ -37,6 +37,12 @@ public class TypingServices {
 		return ret
 	}
 	
+	def static SimpleTypeReference createSimpleTypeRef(ConstrainedType t) {
+		ImlFactory::eINSTANCE.createSimpleTypeReference => [
+			ref = t
+		]
+	}
+
 	def static clone(PropertyList pl) {
 		var ret = ImlFactory::eINSTANCE.createPropertyList ;
 		for(p : pl.properties) {

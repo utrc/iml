@@ -31,6 +31,7 @@ import java.util.AbstractMap.SimpleEntry
 import javax.management.openmbean.SimpleType
 import com.utc.utrc.hermes.iml.services.ImlGrammarAccess.SimpleTypeReferenceElements
 import javax.naming.ldap.ExtendedRequest
+import com.utc.utrc.hermes.iml.iml.AtomicExpression
 
 public class ImlTypeProvider {
 
@@ -44,7 +45,16 @@ public class ImlTypeProvider {
 
 	public static val Bool = createBasicType('Bool')
 
-	def static HigherOrderType termExpressionType(FolFormula t, HigherOrderType context) {
+	
+	def static HigherOrderType termExpressionType(FolFormula t) {
+		termExpressionType(t, createSimpleTypeRef(t.getContainerOfType(ConstrainedType)))
+	}
+
+	def static HigherOrderType termExpressionType(TermExpression t) {
+		termExpressionType(t, createSimpleTypeRef(t.getContainerOfType(ConstrainedType)))
+	}
+
+	def static HigherOrderType termExpressionType(FolFormula t, SimpleTypeReference context) {
 		if (t instanceof TermExpression) {
 			return termExpressionType((t as TermExpression), context)
 		} if (t instanceof SignedAtomicFormula) {
@@ -102,7 +112,11 @@ public class ImlTypeProvider {
 			// Compute the actual type reference which 
 			// depends on the types of the change of member selections
 			TermMemberSelection: {
-				return termExpressionType(t.member, termExpressionType(t.receiver,context))
+				val receiverType = termExpressionType(t.receiver,context)
+				if (receiverType instanceof SimpleTypeReference) {
+					return termExpressionType(t.member, receiverType)
+				} else return null // TODO Should we raise an exception better?
+				
 			}
 			AtomicTerm: {
 

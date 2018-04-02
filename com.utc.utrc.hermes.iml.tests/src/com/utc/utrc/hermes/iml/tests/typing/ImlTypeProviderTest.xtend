@@ -69,7 +69,7 @@ class ImlTypeProviderTest {
 		
 		val context = TypingServices.createBasicType(t1)
 		
-		assertEquals(ImlTypeProvider.termExpressionType(folForm, context), type)
+		assertEquals(ImlTypeProvider.termExpressionType(folForm), type)
 		
 	}
 	
@@ -96,7 +96,7 @@ class ImlTypeProviderTest {
 		
 		val context = TypingServices.createBasicType(t1)
 		
-		val exprType = ImlTypeProvider.termExpressionType(folForm, context)
+		val exprType = ImlTypeProvider.termExpressionType(folForm)
 		
 		assertEquals((exprType.domain as SimpleTypeReference).ref, t2)
 	}
@@ -117,7 +117,7 @@ class ImlTypeProviderTest {
 			};
 			
 		'''.parse
-//		model.assertNoErrors
+		model.assertNoErrors
 		
 		var t1 = model.findSymbol("t1") as ConstrainedType
 		var intType = model.findSymbol("Int") as ConstrainedType
@@ -126,7 +126,7 @@ class ImlTypeProviderTest {
 		
 		val context = TypingServices.createBasicType(t1)
 		
-		val exprType = ImlTypeProvider.termExpressionType(folForm, context)
+		val exprType = ImlTypeProvider.termExpressionType(folForm)
 		
 		assertEquals((exprType.domain as SimpleTypeReference).ref, intType)
 	}

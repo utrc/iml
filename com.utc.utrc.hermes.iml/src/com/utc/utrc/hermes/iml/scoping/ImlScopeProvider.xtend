@@ -16,7 +16,8 @@ import org.eclipse.xtext.scoping.impl.AbstractDeclarativeScopeProvider
 import org.eclipse.xtext.scoping.impl.FilteringScope
 
 import static extension org.eclipse.xtext.EcoreUtil2.*
-
+import com.utc.utrc.hermes.iml.iml.TermMemberSelection
+import static extension com.utc.utrc.hermes.iml.typing.ImlTypeProvider.*
 /**
  * This class contains custom scoping description.
  * 
@@ -33,6 +34,10 @@ class ImlScopeProvider extends AbstractDeclarativeScopeProvider {
 
 	@Inject
 	private IQualifiedNameConverter qualifiedNameConverter;
+	
+	override getScope(EObject context, EReference reference) {
+		super.getScope(context, reference)
+	}
 
 	def boolean isImported(IEObjectDescription iod, Model context) {
 		var qn = iod.qualifiedName
@@ -97,6 +102,16 @@ class ImlScopeProvider extends AbstractDeclarativeScopeProvider {
 //		val global = new FilteringScope(delegateScope, filter)
 //		global
 	// delegateScope	
+	}
+	
+	def scope_TermMemberSelection_member(TermMemberSelection context, EReference r) {
+		var parentScope = IScope::NULLSCOPE
+		var receiverType = context.receiver.termExpressionType
+		
+		if (receiverType === null || receiverType.isPrimitive) {
+			return parentScope
+		}
+		
 	}
 
 	//
