@@ -18,6 +18,13 @@ import org.eclipse.xtext.scoping.impl.FilteringScope
 import static extension org.eclipse.xtext.EcoreUtil2.*
 import com.utc.utrc.hermes.iml.iml.TermMemberSelection
 import static extension com.utc.utrc.hermes.iml.typing.ImlTypeProvider.*
+import static extension com.utc.utrc.hermes.iml.typing.TypingServices.*
+import com.utc.utrc.hermes.iml.iml.SimpleTypeReference
+import org.eclipse.xtext.scoping.Scopes
+import com.utc.utrc.hermes.iml.iml.ConstrainedType
+import com.utc.utrc.hermes.iml.iml.FolFormula
+import com.utc.utrc.hermes.iml.iml.AtomicTerm
+
 /**
  * This class contains custom scoping description.
  * 
@@ -104,16 +111,46 @@ class ImlScopeProvider extends AbstractDeclarativeScopeProvider {
 	// delegateScope	
 	}
 	
-	def scope_TermMemberSelection_member(TermMemberSelection context, EReference r) {
+	def scope_AtomicTerm_symbol(AtomicTerm context, EReference r) {
+		val container = context.eContainer
+		if (container instanceof TermMemberSelection) {
+			if (container.member === context) {
+				return scope_AtomicTerm_symbol(container,r)
+			}
+		}
+		var features = new HashSet
+		var scope = getGlobalScope(context, r)
+		val parent = context.getContainerOfType(ConstrainedType)
+		features.addAll(parent.symbols)
+		return Scopes::scopeFor(features, scope)
+	}
+
+//	
+	def scope_AtomicTerm_symbol(TermMemberSelection context, EReference r) {
 		var parentScope = IScope::NULLSCOPE
-		var receiverType = context.receiver.termExpressionType
+		val receiver = context.receiver
+		var receiverType = receiver.termExpressionType
 		
 		if (receiverType === null || receiverType.isPrimitive) {
 			return parentScope
 		}
 		
+		val superTypes = receiverType.allSuperTypes
+		for (level : superTypes.reverseView) {
+			var features = new HashSet
+			for (t : level) {
+				if (t instanceof SimpleTypeReference) {
+					var theType = t.ref;
+					switch (theType) {
+						ConstrainedType: features.addAll(theType.symbols)
+					}
+				}
+			}
+			parentScope = Scopes::scopeFor(features, parentScope)
+		}
+		return parentScope
 	}
-
+	
 	//
 //	def scope_TypeReference_type(TypeReference context, EReference r) {
 //		val global = getGlobalScope(context, r)

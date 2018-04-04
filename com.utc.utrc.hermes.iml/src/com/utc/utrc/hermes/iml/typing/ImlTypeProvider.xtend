@@ -24,13 +24,8 @@ import java.util.Map
 import static extension com.utc.utrc.hermes.iml.typing.TypingServices.*
 import static extension org.eclipse.xtext.EcoreUtil2.*
 import java.util.HashMap
-import java.util.List
 import com.utc.utrc.hermes.iml.iml.ImlFactory
 import com.utc.utrc.hermes.iml.iml.TupleType
-import java.util.AbstractMap.SimpleEntry
-import javax.management.openmbean.SimpleType
-import com.utc.utrc.hermes.iml.services.ImlGrammarAccess.SimpleTypeReferenceElements
-import javax.naming.ldap.ExtendedRequest
 import com.utc.utrc.hermes.iml.iml.AtomicExpression
 
 public class ImlTypeProvider {

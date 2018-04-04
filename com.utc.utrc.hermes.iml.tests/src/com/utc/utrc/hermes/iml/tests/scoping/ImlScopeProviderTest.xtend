@@ -49,10 +49,35 @@ class ImlScopeProviderTest {
 				varx : Int := var2->var1;
 			}
 		'''.parse;
-
+		
 		((model.symbols.last as ConstrainedType).symbols.last.definition.left as TermMemberSelection) => [
-			assertScope(ImlPackage::eINSTANCE.termMemberSelection_Member, "var1")
-		]
+			assertScope(ImlPackage::eINSTANCE.atomicTerm_Symbol, "var1")
+		];
+		return
+	}
+	
+	@Test
+	def scopeForMemberSelection_WithExtension() {
+		val model = '''
+			package p;
+			type Int;
+			type Parent {
+				varp : Int;
+			}
+			type t1 extends Parent {
+				var1 : Int;
+			}
+			
+			type t2 {
+				var2 : t1;
+				varx : Int := var2->var1;
+			}
+		'''.parse;
+		
+		((model.symbols.last as ConstrainedType).symbols.last.definition.left as TermMemberSelection) => [
+			assertScope(ImlPackage::eINSTANCE.atomicTerm_Symbol, "var1, varp")
+		];
+		return
 	}
 	
 	

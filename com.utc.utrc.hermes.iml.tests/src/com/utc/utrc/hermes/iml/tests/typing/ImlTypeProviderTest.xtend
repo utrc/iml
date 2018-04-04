@@ -67,8 +67,6 @@ class ImlTypeProviderTest {
 		val var1 = t1.findSymbol("var1") 
 		val folForm = var1.definition
 		
-		val context = TypingServices.createBasicType(t1)
-		
 		assertEquals(ImlTypeProvider.termExpressionType(folForm), type)
 		
 	}
@@ -94,11 +92,9 @@ class ImlTypeProviderTest {
 		val var1 = t1.findSymbol("var1") 
 		val folForm = var1.definition
 		
-		val context = TypingServices.createBasicType(t1)
-		
 		val exprType = ImlTypeProvider.termExpressionType(folForm)
 		
-		assertEquals((exprType.domain as SimpleTypeReference).ref, t2)
+		assertEquals((exprType as SimpleTypeReference).ref, t2)
 	}
 	
 	@Test
@@ -123,8 +119,6 @@ class ImlTypeProviderTest {
 		var intType = model.findSymbol("Int") as ConstrainedType
 		val var1 = t1.findSymbol("var1") 
 		val folForm = var1.definition
-		
-		val context = TypingServices.createBasicType(t1)
 		
 		val exprType = ImlTypeProvider.termExpressionType(folForm)
 		

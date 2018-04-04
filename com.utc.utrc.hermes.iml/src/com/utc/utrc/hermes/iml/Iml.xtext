@@ -83,7 +83,7 @@ ConstrainedType:
 
 
 SymbolDeclaration:
-	name=ID (signature=SymbolTuple)? ':' type=HigherOrderType (':=' definition=FolFormula)? 
+	 name=ID  (signature=SymbolTuple)? ':' (propertylist=PropertyList)? type=HigherOrderType (':=' definition=FolFormula)? 
 ;
 
 SymbolTuple:
@@ -91,7 +91,7 @@ SymbolTuple:
 ;
 
 HigherOrderType:
-	(propertylist=PropertyList)? domain=ArrayType ('~>' range=ArrayType)?  
+	ArrayType ({HigherOrderType.domain=current} '~>' range=ArrayType)?  
 ;
 
 

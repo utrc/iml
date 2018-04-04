@@ -178,11 +178,11 @@ public class TypingServices {
 			return false;
 		}
 		
-		if (checkProperties) {
-			if (!isEqual(left.propertylist, right.propertylist)) {
-				return false
-			}
-		}
+//		if (checkProperties) {
+//			if (!isEqual(left.propertylist, right.propertylist)) {
+//				return false
+//			}
+//		}
 		
 		return true;
 	}
@@ -279,29 +279,7 @@ public class TypingServices {
 
 	/* Compute all super types of a ContrainedType  */
 	def static getAllSuperTypes(ConstrainedType ct) {
-		val closed = <ConstrainedType>newArrayList()
-		val retVal = new ArrayList<List<ConstrainedType>>()
-		retVal.add(new ArrayList<ConstrainedType>());
-		retVal.get(0).add(ct); // A type is a super type of itself
-		var index = 0;
-		while (retVal.get(index).size() > 0) {
-			val toAdd = <ConstrainedType>newArrayList();
-			for (current : retVal.get(index)) {
-//				for (sup : current.superType) {
-//					if (!closed.contains(sup.type)) {
-//						toAdd.add(sup.type)
-//					}
-//				}
-				closed.add(current)
-			}
-			if (toAdd.size() > 0) {
-				retVal.add(toAdd)
-				index = index + 1
-			} else {
-				return retVal;
-			}
-		}
-		return retVal
+		getSuperTypes(createSimpleTypeRef(ct)).map[it.map[it.ref]]
 	}
 
 
@@ -339,7 +317,7 @@ public class TypingServices {
 	
 
 	def static getSuperTypes(SimpleTypeReference tf) {
-		val closed = <SimpleTypeReference>newArrayList()
+		val closed = <ConstrainedType>newArrayList()
 		val retVal = new ArrayList<List<SimpleTypeReference>>()
 		retVal.add(new ArrayList<SimpleTypeReference>());
 		retVal.get(0).add(tf); // A type is a super type of itself
@@ -350,14 +328,14 @@ public class TypingServices {
 				val ctype = current.ref
 				for(rel : ctype.relations) {
 					if (rel instanceof com.utc.utrc.hermes.iml.iml.Extension) {
-						if (rel.target.domain instanceof SimpleTypeReference) {
-							if ( ! closed.contains(rel.target.domain)) {
-								toAdd.add(rel.target.domain as SimpleTypeReference)
+						if (rel.target instanceof SimpleTypeReference) {
+							if ( ! closed.contains((rel.target as SimpleTypeReference).ref)) {
+								toAdd.add(rel.target as SimpleTypeReference)
 							}
 						}
 					}
 				}
-				closed.add(current)
+				closed.add(current.ref)
 			}
 			if (toAdd.size() > 0) {
 				retVal.add(toAdd)

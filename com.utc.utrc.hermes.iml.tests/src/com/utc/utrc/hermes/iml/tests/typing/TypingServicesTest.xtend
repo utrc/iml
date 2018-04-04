@@ -13,6 +13,9 @@ import org.eclipse.xtext.testing.validation.ValidationTestHelper
 import com.utc.utrc.hermes.iml.tests.TestHelper
 import com.utc.utrc.hermes.iml.typing.TypingServices
 import com.utc.utrc.hermes.iml.iml.ConstrainedType
+import java.util.Arrays
+import java.util.List
+import java.util.ArrayList
 
 /**
  * @author Ayman Elkfrawy
@@ -28,6 +31,9 @@ class TypingServicesTest {
 	@Inject extension TestHelper
 	
 	
+	/**************************
+	 * Testing isEqual methods 
+	 * ************************/
 	@Test
 	def testIsEqual_HigherOrderType() {
 		val model = '''
@@ -255,5 +261,85 @@ class TypingServicesTest {
 		
 		assertFalse(TypingServices.isEqual(var1.type, var2.type))
 	}
+	/***********************************
+	 * Testing GetAllSuperTypes methods 
+	 * *********************************/
+	@Test
+	def testGetAllSuperTypes_NoParent() {
+		val model = '''
+			package p;
+			type Int;
+			type t1 {
+				
+			}
+		'''.parse
+		
+		model.assertNoErrors
+		val t1 = model.findSymbol("t1") as ConstrainedType
+		
+		assertParents(TypingServices.getAllSuperTypes(t1), Arrays.asList("t1"))
+	}
+	
+	@Test
+	def testGetAllSuperTypes_WitParent() {
+		val model = '''
+			package p;
+			type Int;
+			type Parent;
+			type t1 extends Parent {
+				
+			}
+		'''.parse
+		
+		model.assertNoErrors
+		val t1 = model.findSymbol("t1") as ConstrainedType
+		
+		assertParents(TypingServices.getAllSuperTypes(t1), Arrays.asList("t1", "Parent"))
+	}
+
+	@Test
+	def testGetAllSuperTypes_MultipleParents() {
+		val model = '''
+			package p;
+			type Int;
+			type Parent;
+			type t1 extends Parent extends Int {
+				
+			}
+		'''.parse
+		
+		model.assertNoErrors
+		val t1 = model.findSymbol("t1") as ConstrainedType
+		
+		assertParents(TypingServices.getAllSuperTypes(t1), Arrays.asList("t1", "Parent", "Int"))
+	}
+	
+	@Test
+	def testGetAllSuperTypes_MultipleParentsMultipleLevels() {
+		val model = '''
+			package p;
+			type Int;
+			type Parent33;
+			type Parent3 sameas Parent33;
+			type Parent2 extends Parent3 extends Int;
+			type Parent extends Parent2;
+			type t1 extends Parent extends Int {
+				
+			}
+		'''.parse
+		
+		model.assertNoErrors
+		val t1 = model.findSymbol("t1") as ConstrainedType
+		
+		assertParents(TypingServices.getAllSuperTypes(t1), Arrays.asList("t1", "Parent", "Parent2", "Parent3", "Int"))
+	}
+	
+	def assertParents(List<List<ConstrainedType>> parents, List<String> types) {
+		val parentsFlat = parents.flatten.toList.map[it.name]
+		assertEquals(types.size, parentsFlat.size)
+		assertTrue(parentsFlat.containsAll(types))
+	}
+	
+	
 	
 }
