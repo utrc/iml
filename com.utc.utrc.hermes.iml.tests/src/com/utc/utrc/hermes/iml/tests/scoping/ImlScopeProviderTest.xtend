@@ -17,6 +17,9 @@ import com.utc.utrc.hermes.iml.iml.ImlPackage
 import org.eclipse.emf.ecore.EReference
 import org.eclipse.emf.ecore.EObject
 import static extension org.junit.Assert.*
+import com.utc.utrc.hermes.iml.iml.AtomicTerm
+import java.util.Arrays
+import java.util.List
 
 /**
  * 
@@ -51,7 +54,7 @@ class ImlScopeProviderTest {
 		'''.parse;
 		
 		((model.symbols.last as ConstrainedType).symbols.last.definition.left as TermMemberSelection) => [
-			assertScope(ImlPackage::eINSTANCE.atomicTerm_Symbol, "var1")
+			assertScope(ImlPackage::eINSTANCE.atomicTerm_Symbol, Arrays.asList("var1"))
 		];
 		return
 	}
@@ -75,17 +78,63 @@ class ImlScopeProviderTest {
 		'''.parse;
 		
 		((model.symbols.last as ConstrainedType).symbols.last.definition.left as TermMemberSelection) => [
-			assertScope(ImlPackage::eINSTANCE.atomicTerm_Symbol, "var1, varp")
+			assertScope(ImlPackage::eINSTANCE.atomicTerm_Symbol, Arrays.asList("var1", "varp"))
 		];
 		return
 	}
 	
+	@Test
+	def scopeForAtomicMember_WithParent() {
+		val model = '''
+			package p;
+			type Int;
+			type Parent {
+				varp : Int;
+			}
+			type t1 extends Parent {
+				var1 : Int;
+				varx : Int := var1;
+			}
+		'''.parse;
+		
+		((model.symbols.last as ConstrainedType).symbols.last.definition.left as AtomicTerm) => [
+			assertScope(ImlPackage::eINSTANCE.atomicTerm_Symbol, 
+				Arrays.asList("var1", "varp", "Int", "Parent", "Parent.varp", 
+						"t1.var1", "t1.varx", "varx", "t1"))
+		];
+		return
+	}
 	
-	def private assertScope(EObject context, EReference ref, String expected) {
+	@Test
+	def scopeForAtomicMember_MutliplePackages() {
+		var model = '''
+			package p1;
+			type P1T1;
+		'''.parse;
+		
+		model = '''
+			package p2;
+			import p1.*;
+			type Int;
+			type P2T1 {
+				var1 : Int;
+				varx : Int := var1;
+			}
+		'''.parse(model.eResource.resourceSet)
+		
+		((model.symbols.last as ConstrainedType).symbols.last.definition.left as AtomicTerm) => [
+			assertScope(ImlPackage::eINSTANCE.atomicTerm_Symbol, 
+				Arrays.asList("var1", "varx", "P2T1", "P2T1.var1", "P2T1.varx", 
+						"Int", "P1T1", "p1.P1T1"))
+		];
+		return
+	}
+	
+	def private assertScope(EObject context, EReference ref, List<String> expected) {
 		context.assertNoErrors
-		expected.toString.assertEquals(
-			context.getScope(ref).allElements.map[name].join(", ")
-		)
+		val scope = context.getScope(ref).allElements.map[name.toString].toList
+		assertEquals(expected.size, scope.size)
+		assertTrue(expected.containsAll(scope))
 	}
 	
 }

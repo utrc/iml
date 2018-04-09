@@ -1,17 +1,3 @@
-//	Copyright (C) 2014, United Technologies Research Center
-//	All rights reserved.
-//
-//	The content of this file has been developed under the DARPA STO Program
-//	"Communications in Contested Environments (C2E)" by the United Technologies 
-//  Research Center (UTRC) (contract number N65236-14-C-2822).
-//
-//  DISTRIBUTION STATEMENT D: Distribution authorized to the Department of 
-//	Defense (DoD) and U.S. DoD contractors; Administrative or Operational Use, 
-//	March 1, 2014.  Other requests for this document shall be referred to DARPA, 
-//	Security and Intelligence Directorate, 675 N. Randolph St., Arlington, 
-//	Virginia 22203-2114.  
-//	Authors:
-//	Gerald Wang (wangg2@utrc.utc.com)
 
 package com.utc.utrc.hermes.iml.scoping
 

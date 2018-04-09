@@ -24,6 +24,7 @@ import org.eclipse.xtext.scoping.Scopes
 import com.utc.utrc.hermes.iml.iml.ConstrainedType
 import com.utc.utrc.hermes.iml.iml.FolFormula
 import com.utc.utrc.hermes.iml.iml.AtomicTerm
+import com.utc.utrc.hermes.iml.iml.ImlPackage
 
 /**
  * This class contains custom scoping description.
@@ -118,10 +119,15 @@ class ImlScopeProvider extends AbstractDeclarativeScopeProvider {
 				return scope_AtomicTerm_symbol(container,r)
 			}
 		}
-		var features = new HashSet
 		var scope = getGlobalScope(context, r)
-		val parent = context.getContainerOfType(ConstrainedType)
-		features.addAll(parent.symbols)
+		val superTypes = context.getContainerOfType(ConstrainedType).allSuperTypes
+		var features = new HashSet
+		for (level : superTypes.reverseView) {
+			for (t : level) {
+				features.addAll(t.symbols)
+			}
+			scope = Scopes::scopeFor(features, scope)
+		}
 		return Scopes::scopeFor(features, scope)
 	}
 

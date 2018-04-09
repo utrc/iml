@@ -262,7 +262,7 @@ public class TypingServices {
 	//TODO 
 	def static getAllDeclarations(HigherOrderType ctx) {
 		var List<SymbolDeclaration> tlist = <SymbolDeclaration>newArrayList()
-		var List<List<HigherOrderType>> hierarchy = ctx.allSuperTypes;
+		var List<List<SimpleTypeReference>> hierarchy = ctx.allSuperTypes;
 		for (level : hierarchy) {
 			for (st : level) {
 //				for (Element e : st.type.elements) {
@@ -284,35 +284,12 @@ public class TypingServices {
 
 
 	/* Compute all super type references of a TypeReference */
-	def static getAllSuperTypes(HigherOrderType tf) {
-		switch (tf){
-			SimpleTypeReference: {
-				
-			}
+	def static getAllSuperTypes(HigherOrderType hot) {
+		if (hot instanceof SimpleTypeReference) {
+			return getSuperTypes(hot)
+		} else {
+			return new ArrayList<List<SimpleTypeReference>>()
 		}
-		val closed = <HigherOrderType>newArrayList()
-		val retVal = new ArrayList<List<HigherOrderType>>()
-		retVal.add(new ArrayList<HigherOrderType>());
-		retVal.get(0).add(tf); // A type is a super type of itself
-		var index = 0;
-		while (retVal.get(index).size() > 0) {
-			val toAdd = <HigherOrderType>newArrayList();
-			for (current : retVal.get(index)) {
-//				for (sup : current.type.superType) {
-//					if (!closed.contains(sup)) {
-//						toAdd.add(sup)
-//					}
-//				}
-				closed.add(current)
-			}
-			if (toAdd.size() > 0) {
-				retVal.add(toAdd)
-				index = index + 1
-			} else {
-				return retVal;
-			}
-		}
-		return retVal
 	}
 	
 
