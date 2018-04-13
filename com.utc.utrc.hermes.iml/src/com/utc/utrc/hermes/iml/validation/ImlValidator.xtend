@@ -26,6 +26,7 @@ import org.eclipse.emf.ecore.EPackage
 import com.utc.utrc.hermes.iml.iml.ImlPackage
 import com.utc.utrc.hermes.iml.iml.AtomicTerm
 import com.utc.utrc.hermes.iml.iml.HigherOrderType
+import com.utc.utrc.hermes.iml.iml.SimpleTypeReference
 
 /**
  * This class contains custom validation rules. 
@@ -51,6 +52,7 @@ class ImlValidator extends AbstractImlValidator {
 	public static val INVALID_TYPE_PARAMETER = 'com.utc.utrc.hermes.iml.validation.InvalidTypeParameter';
 	public static val INVALID_TYPE_DECLARATION = 'com.utc.utrc.hermes.iml.validation.InvalidTypeDeclaration';
 	public static val INVALID_ELEMENT = 'com.utc.utrc.hermes.iml.validation.InvalidElement';
+	public static val INVALID_RELATION = 'com.utc.utrc.hermes.iml.validation.InvalidRelation';
 
 	@Inject
 	override void register(EValidatorRegistrar registrar) {
@@ -102,31 +104,25 @@ class ImlValidator extends AbstractImlValidator {
 	}
 
 	@Check
-	def checkExtetions(ConstrainedType t) {
+	def checkExtension(ConstrainedType t) {
+		val extensions = t.relations.filter[it instanceof com.utc.utrc.hermes.iml.iml.Extension].map[it as com.utc.utrc.hermes.iml.iml.Extension]
 		if (t.numeric) {
-//			if (t.superType.size > 1) {
-//				error('''If a type is extending a primitive numeric type, then it cannot extend any other type''',
-//					ImlPackage::eINSTANCE.symbol_Name, INVALID_TYPE_DECLARATION);
-//			}
+			if (extensions.size > 1) {
+				error('''If a type is extending a primitive numeric type, then it cannot extend any other type''',
+					ImlPackage::eINSTANCE.symbol_Name, INVALID_TYPE_DECLARATION);
+			}
 			if (t.template) {
 				error('''If a type is extending a primitive numeric type, then it cannot be generic''',
 					ImlPackage::eINSTANCE.symbol_Name, INVALID_TYPE_DECLARATION);
 			}
 		}
-
 	}
-
+	
 	@Check
-	def checkNoNestedTypes(ConstrainedType t) {
-		for (e : t.symbols) {
-			if (e instanceof ConstrainedType) {
-				error(
-					'''Nested types are not supported''',
-					ImlPackage::eINSTANCE.constrainedType_Symbols,
-					t.symbols.indexOf(e),
-					INVALID_ELEMENT
-				);
-			}
+	def checkExtendsRelation(com.utc.utrc.hermes.iml.iml.Extension extendRelation) {
+		if (! (extendRelation.target instanceof SimpleTypeReference)) {
+			error("Types can extend only simple types", 
+				ImlPackage::eINSTANCE.extension_Target, INVALID_RELATION)
 		}
 	}
 
@@ -168,53 +164,42 @@ class ImlValidator extends AbstractImlValidator {
 
 
 	@Check
-	def checkNoCycleInConstrainedTypeHierarchy(
-		ConstrainedType ct
-	) {
-//		if (ct.superType.empty)
-//			return
+	def checkNoCycleInConstrainedTypeHierarchy(ConstrainedType ct) {
+		val extensions = getExtensions(ct) 
+		if (extensions.empty)
+			return
 		val visited = <ConstrainedType>newArrayList()
 		val superTypeHierarchy = new ArrayList<List<ConstrainedType>>()
-		superTypeHierarchy.add(
-			new ArrayList<ConstrainedType>()
-		)
-		superTypeHierarchy.get(
-			0
-		).add(
-			ct
-		)
+		superTypeHierarchy.add(new ArrayList<ConstrainedType>())
+		superTypeHierarchy.get(0).add(ct)
 		var index = 0
-		while (superTypeHierarchy.get(
-			index
-		).size() > 0) {
+		while (superTypeHierarchy.get(index).size() > 0) {
 			val toAdd = <ConstrainedType>newArrayList()
-			for (cur : superTypeHierarchy.get(
-				index
-			)) {
-//				for (supType : cur.superType) {
-//					if (!visited.contains(supType.type))
-//						toAdd.add(supType.type)
-//					else {
-//						error(
-//							"Cycle in hierarchy of constrained type '" + cur.name + "'",
-//							ImlPackage::eINSTANCE.constrainedType_SuperType,
-//							CYCLIC_CONSTRAINEDTYPE_HIERARCHY
-//						)
-//					}
-//				}
-				visited.add(
-					cur
-				)
+			for (cur : superTypeHierarchy.get(index)) {
+				for (supType : getExtensions(cur)) {
+					if (!visited.contains(supType.target.asSimpleTR.ref))
+						toAdd.add(supType.target.asSimpleTR.ref)
+					else {
+						error(
+							"Cycle in hierarchy of constrained type '" + cur.name + "'",
+							ImlPackage::eINSTANCE.constrainedType_Relations,
+							CYCLIC_CONSTRAINEDTYPE_HIERARCHY
+						)
+					}
+				}
+				visited.add(cur)
 			}
 			if (toAdd.size() > 0) {
-				superTypeHierarchy.add(
-					toAdd
-				)
+				superTypeHierarchy.add(toAdd)
 				index = index + 1
 			} else
 				return
 		}
 		return
+	}
+	
+	def getExtensions(ConstrainedType type) {
+		type.relations.filter[it instanceof com.utc.utrc.hermes.iml.iml.Extension].map[it as com.utc.utrc.hermes.iml.iml.Extension]
 	}
 
 	@Check
@@ -290,7 +275,9 @@ class ImlValidator extends AbstractImlValidator {
 	}
 
 	@Check
-	def checkParameterList(AtomicTerm f) {
+	def checkParameterList(AtomicTerm at) {
+		
+		
 //		val symbol = f.ref
 //		if (symbol !== null) {
 //			if (symbol instanceof VariableDeclaration && f.methodinvocation) {

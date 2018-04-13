@@ -19,20 +19,16 @@ import com.utc.utrc.hermes.iml.iml.Model
 
 public class TypingServices {
 
-	def static HigherOrderType createBasicType(String n) {
-		val ret = ImlFactory::eINSTANCE.createHigherOrderType => [
-			domain = ImlFactory::eINSTANCE.createSimpleTypeReference => [
-				ref = ImlFactory::eINSTANCE.createConstrainedType => [name = n]
-			]
+	def static createBasicType(String n) {
+		val ret = ImlFactory::eINSTANCE.createSimpleTypeReference => [
+			ref = ImlFactory::eINSTANCE.createConstrainedType => [name = n]
 		];
 		return ret
 	}
 
-	def static HigherOrderType createBasicType(ConstrainedType t) {
-		val ret = ImlFactory::eINSTANCE.createHigherOrderType => [
-			domain = ImlFactory::eINSTANCE.createSimpleTypeReference => [
-				ref = t
-			]
+	def static createBasicType(ConstrainedType t) {
+		val ret = ImlFactory::eINSTANCE.createSimpleTypeReference => [
+			ref = t
 		];
 		return ret
 	}
@@ -527,6 +523,17 @@ public class TypingServices {
 			}
 		}
 		return false;
+	}
+	
+	def static isSimpleTR(HigherOrderType hot) {
+		return hot instanceof SimpleTypeReference
+	}
+	
+	def static asSimpleTR(HigherOrderType hot) {
+		if (isSimpleTR(hot)) {
+			return hot as SimpleTypeReference
+		}
+		return null;
 	}
 
 

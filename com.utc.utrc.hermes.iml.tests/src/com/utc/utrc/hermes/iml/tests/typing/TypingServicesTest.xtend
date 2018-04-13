@@ -323,7 +323,7 @@ class TypingServicesTest {
 			type Parent3 sameas Parent33;
 			type Parent2 extends Parent3 extends Int;
 			type Parent extends Parent2;
-			type t1 extends Parent extends Int {
+			type t1 extends Parent {
 				
 			}
 		'''.parse

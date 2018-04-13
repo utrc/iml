@@ -152,7 +152,6 @@ public class ImlTypeProvider {
 				return Null
 			}
 		}
-
 	}
 	
 	
@@ -260,8 +259,7 @@ public class ImlTypeProvider {
 	
 	/* Check whether t is numeric type reference */
 	def static boolean isNumeric(ConstrainedType t) {
-		
-		if (t == (Int.domain as SimpleTypeReference).ref || t == (Real.domain as SimpleTypeReference).ref) {
+		if (t == Int.ref || t == Real.ref) {
 			return true;
 		}
 		return false;
