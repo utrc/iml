@@ -155,4 +155,50 @@ class ImlTypeProviderTest {
 		assertEquals((exprType as SimpleTypeReference).ref, intType)
 	}
 	
+	@Test
+	def testTermExpressionType_withFunction() {
+		val model = '''
+			package p;
+			type Int;
+			type Real;
+			type t1 {
+				var1 : Int := var2 (5, 6);
+				var2(p1 : Int, p2 : Real) : Int;
+			}			
+		'''.parse
+		model.assertNoErrors
+		
+		var t1 = model.findSymbol("t1") as ConstrainedType
+		var intType = model.findSymbol("Int") as ConstrainedType
+		val var1 = t1.findSymbol("var1") 
+		val folForm = var1.definition
+		
+		val exprType = ImlTypeProvider.termExpressionType(folForm)
+		
+		assertEquals((exprType as SimpleTypeReference).ref, intType)
+	}
+	
+	@Test
+	def testTermExpressionType_withFunction() {
+		val model = '''
+			package p;
+			type Int;
+			type Real;
+			type t1 {
+				var1 : Int := var2;
+				var2(p1 : Int, p2 : Real) : Int;
+			}			
+		'''.parse
+		model.assertNoErrors
+		
+		var t1 = model.findSymbol("t1") as ConstrainedType
+		var intType = model.findSymbol("Int") as ConstrainedType
+		val var1 = t1.findSymbol("var1") 
+		val folForm = var1.definition
+		
+		val exprType = ImlTypeProvider.termExpressionType(folForm)
+		
+		assertEquals((exprType as SimpleTypeReference).ref, intType)
+	}
+	
 }
