@@ -82,7 +82,7 @@ HigherOrderType:
 
 
 ArrayType returns HigherOrderType:
-	TypeReference ({ArrayType.type=current}'['dimension+=TermExpression']' ('['dimension+=TermExpression']')*)? 
+	TypeReference ({ArrayType.type=current}'['(dimension+=TermExpression)?']' ('['(dimension+=TermExpression)?']')*)? 
 ;
 
 TypeReference returns HigherOrderType:
