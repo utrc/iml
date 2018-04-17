@@ -155,8 +155,8 @@ class TypingServicesTest {
 			type Int;
 			type Boolean;
 			type t1 {
-				var1 : (Int, Boolean);
-				var2 : (Int, Boolean);
+				var1 : (p1: Int, p2: Boolean);
+				var2 : (p1: Int, p3: Boolean);
 			}
 		'''.parse
 		
@@ -174,8 +174,8 @@ class TypingServicesTest {
 			type Int;
 			type Boolean;
 			type t1 {
-				var1 : (Boolean, Int);
-				var2 : (Int, Boolean);
+				var1 : (p1: Boolean, p2: Int);
+				var2 : (p1: Int, p3: Boolean);
 			}
 		'''.parse
 		
@@ -193,8 +193,8 @@ class TypingServicesTest {
 			type Int;
 			type Boolean;
 			type t1 {
-				var1 : (Int, Boolean, Boolean);
-				var2 : (Int, Boolean);
+				var1 : (p1: Int, p2: Boolean, p3: Boolean);
+				var2 : (p3: Int, p4: Boolean);
 			}
 		'''.parse
 		
@@ -212,8 +212,8 @@ class TypingServicesTest {
 			type Int;
 			type Boolean;
 			type t1 {
-				var1 : (Int, Boolean) ~> Int;
-				var2 : (Int, Boolean) ~> Int;
+				var1 : (p1: Int, p2: Boolean) ~> Int;
+				var2 : (p1: Int, p3: Boolean) ~> Int;
 			}
 		'''.parse
 		
@@ -231,8 +231,8 @@ class TypingServicesTest {
 			type Int;
 			type Boolean;
 			type t1 {
-				var1 : (Int, Boolean) ~> Int;
-				var2 : (Int, Boolean);
+				var1 : (p1: Int, p2: Boolean) ~> Int;
+				var2 : (p1: Int, p3: Boolean);
 			}
 		'''.parse
 		
@@ -250,8 +250,8 @@ class TypingServicesTest {
 			type Int;
 			type Boolean;
 			type t1 {
-				var1 : (Int, Boolean) ~> Int;
-				var2 : (Int, Boolean) ~> Boolean;
+				var1 : (p1: Int, p2: Boolean) ~> Int;
+				var2 : (p1: Int, p2: Boolean) ~> Boolean;
 			}
 		'''.parse
 		

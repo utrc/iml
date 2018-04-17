@@ -121,6 +121,13 @@ public class ImlTypeProvider {
 				} else {
 					// Reference to a symbol
 					var term_type = getType(t.symbol as SymbolDeclaration,context);
+					if (term_type.domain !== null) {
+						if (t.tail !== null) {
+							return term_type.range
+						} else {
+							return term_type
+						}
+					}
 					if (t instanceof ArrayAccess && term_type instanceof ArrayType) {
 						term_type = accessArray(term_type as ArrayType, (t as ArrayAccess).index.size)
 					}
@@ -204,6 +211,9 @@ public class ImlTypeProvider {
 				return retval				
 			}
 			SimpleTypeReference:{
+				if (map.containsKey(t.ref)) {
+					return map.get(t.ref)					
+				}
 				var retval = ImlFactory.eINSTANCE.createSimpleTypeReference ;
 				retval.ref = t.ref
 				for( h : t.typeBinding) {
@@ -225,8 +235,11 @@ public class ImlTypeProvider {
 			}
 			TupleType:{
 				var retval = ImlFactory.eINSTANCE.createTupleType ;
-				for(h : t.types) {
-					retval.types.add(remap(h,map))
+				for(s : t.symbols) {
+					val ss = ImlFactory.eINSTANCE.createSymbolDeclaration
+					ss.name = s.name
+					ss.type = remap(s.type, map)
+					retval.symbols.add(ss)
 				}
 				return retval; 
 			}

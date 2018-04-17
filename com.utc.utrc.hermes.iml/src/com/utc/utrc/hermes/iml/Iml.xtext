@@ -80,21 +80,13 @@ ConstrainedType:
 	/* A list of elements defined by this type*/
 	('{' (symbols+=SymbolDeclaration ';')* '}')?);
 
-
-
 SymbolDeclaration:
-	 name=ID  (signature=SymbolTuple)? ':' (propertylist=PropertyList)? type=HigherOrderType (':=' definition=FolFormula)? 
-;
-
-SymbolTuple:
-	{SymbolTuple} '(' ( symbols+=SymbolDeclaration (',' symbols+=SymbolDeclaration)*  )? ')'
+	 name=ID (propertylist=PropertyList)? ':' type=HigherOrderType (':=' definition=FolFormula)? 
 ;
 
 HigherOrderType:
 	ArrayType ({HigherOrderType.domain=current} '~>' range=ArrayType)?  
 ;
-
-
 
 ArrayType returns HigherOrderType:
 	TypeReference ({ArrayType.type=current}'['dimension+=TermExpression']' ('['dimension+=TermExpression']')*)? 
@@ -102,7 +94,7 @@ ArrayType returns HigherOrderType:
 
 TypeReference returns HigherOrderType:
 	SimpleTypeReference |
-	{TupleType}'(' types+=HigherOrderType (','  types+=HigherOrderType)* ')'
+	{TupleType} '(' ( symbols+=SymbolDeclaration (',' symbols+=SymbolDeclaration)*  )? ')'
 	
 ;
 
@@ -215,7 +207,7 @@ AtomicTerm:
 ;
 
 SymbolReference returns AtomicTerm: 
- symbol=[Symbol|QualifiedName] (tail?=SelectionParameters)?
+ symbol=[Symbol|QualifiedName] (tail=SelectionParameters)?
  
 ;
 
@@ -224,14 +216,8 @@ SelectionParameters:
 	{MethodParameters} 	'(' (parameters+=TermExpression (',' parameters+=TermExpression)*)? ')' 
 ;
 
-
-
-
 IteTermExpression:
 	{IteTermExpression} 'if' '(' condition=FolFormula ')' '{' left=TermExpression '}' (=> 'else'  '{' right=TermExpression '}')?;
-
-
-
 
 Program returns TermExpression:
 	{Program} ('var' defs+= SymbolDeclaration ';')* 

@@ -51,6 +51,11 @@ public class TypingServices {
 	//be copied as reference?
 	def static clone(SymbolDeclaration v) {
 		var ret = ImlFactory::eINSTANCE.createSymbolDeclaration ;
+		// Following added By Ayman for 4-higher-order-types-only
+		ret.name = v.name
+		// TODO Do we need to copy the property list?
+		ret.type = clone(v.type)
+		// TODO What to do with the definition?
 		
 		return ret
 	}
@@ -95,8 +100,9 @@ public class TypingServices {
 	
 	def static clone(TupleType tt){
 		var ret = ImlFactory::eINSTANCE.createTupleType();
-		for(t : tt.types) {
-			ret.types.add(clone(t))
+		
+		for (s : tt.symbols) {
+			ret.symbols.add(clone(s))
 		}
 		return ret
 	}
@@ -204,11 +210,11 @@ public class TypingServices {
 	}
 	
 	def static boolean isEqual(TupleType left, TupleType right) {
-		if (left.types.length != right.types.length) {
+		if (left.symbols.length != right.symbols.length) {
 			return false
 		} else {
-			for (i: 0 ..< left.types.length) {
-				if (!isEqual(left.types.get(i), right.types.get(i))) {
+			for (i: 0 ..< left.symbols.length) {
+				if (!isEqual(left.symbols.get(i).type, right.symbols.get(i).type)) {
 					return false
 				}
 			}

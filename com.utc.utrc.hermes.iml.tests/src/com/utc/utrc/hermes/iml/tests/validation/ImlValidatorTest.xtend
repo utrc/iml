@@ -274,7 +274,7 @@ class ImlValidatorTest {
 			type Int;
 			type Real;
 			type x {
-				var1(p1 : Int, p2 : Real): Int;
+				var1 : (p1 : Int, p2 : Real) ~> Int;
 				var2 : Int := var1(5,10);
 			}
 		'''.parse
@@ -291,7 +291,7 @@ class ImlValidatorTest {
 			type T1 extends T2;
 			type T2;
 			type x {
-				var1(p1 : T1, p2 : Real): Int;
+				var1: (p1 : T1, p2 : Real) ~> Int;
 				varT : T2;
 				var2 : Int := var1(T2,10);
 			}
@@ -307,7 +307,7 @@ class ImlValidatorTest {
 			type Int;
 			type Real;
 			type x {
-				var1(p1 : Int, p2 : Real): Int;
+				var1 : (p1 : Int, p2 : Real) ~> Int;
 				var2 : Int := var1(5,10);
 			}
 		'''.parse

@@ -16,6 +16,7 @@ import com.utc.utrc.hermes.iml.iml.ConstrainedType
 import com.utc.utrc.hermes.iml.typing.ImlTypeProvider
 import com.utc.utrc.hermes.iml.iml.HigherOrderType
 import com.utc.utrc.hermes.iml.iml.SimpleTypeReference
+import com.utc.utrc.hermes.iml.iml.TupleType
 
 /**
  * Test related helper methods
@@ -156,14 +157,14 @@ class ImlTypeProviderTest {
 	}
 	
 	@Test
-	def testTermExpressionType_withFunction() {
+	def testTermExpressionType_HOTWithTail() {
 		val model = '''
 			package p;
 			type Int;
 			type Real;
 			type t1 {
 				var1 : Int := var2 (5, 6);
-				var2(p1 : Int, p2 : Real) : Int;
+				var2 : (p1 : Int, p2 : Real) ~> Int;
 			}			
 		'''.parse
 		model.assertNoErrors
@@ -179,26 +180,57 @@ class ImlTypeProviderTest {
 	}
 	
 	@Test
-	def testTermExpressionType_withFunction() {
+	def testTermExpressionType_HOTWithoutTail() {
 		val model = '''
 			package p;
 			type Int;
 			type Real;
 			type t1 {
 				var1 : Int := var2;
-				var2(p1 : Int, p2 : Real) : Int;
+				var2 : (p1 : Int, p2 : Real) ~> Int;
 			}			
 		'''.parse
 		model.assertNoErrors
 		
 		var t1 = model.findSymbol("t1") as ConstrainedType
-		var intType = model.findSymbol("Int") as ConstrainedType
 		val var1 = t1.findSymbol("var1") 
+		val var2 = t1.findSymbol("var2") 
 		val folForm = var1.definition
 		
 		val exprType = ImlTypeProvider.termExpressionType(folForm)
 		
-		assertEquals((exprType as SimpleTypeReference).ref, intType)
+		assertTrue(TypingServices.isEqual(exprType, var2.type))
+	} 
+	
+	@Test
+	def testTermExpressionType_HOTWithTemplate() {
+		val model = '''
+			package p;
+			type Int;
+			type Real;
+			type t1 {
+				var1 : Int := var2->varx;
+				var2 : t2<Int, Real>;
+			}
+			
+			type t2 <type T, type P> {
+				varx : (p : T) ~> P;
+			}		
+		'''.parse
+		model.assertNoErrors
+		
+		var t1 = model.findSymbol("t1") as ConstrainedType
+		val var1 = t1.findSymbol("var1") 
+		val Int = model.findSymbol("Int")
+		val Real = model.findSymbol("Real")
+		val folForm = var1.definition
+		val exprType = ImlTypeProvider.termExpressionType(folForm)
+
+		assertNotNull(exprType.domain)
+		assertNotNull(exprType.range)
+		val domain = exprType.domain as TupleType
+		assertEquals(Int, (domain.symbols.get(0).type as SimpleTypeReference).ref)
+		assertEquals(Real, (exprType.range as SimpleTypeReference).ref)
 	}
 	
 }
