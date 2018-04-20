@@ -11,19 +11,34 @@ import org.eclipse.xtext.testing.util.ParseHelper
 import org.junit.Assert
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.eclipse.xtext.testing.validation.ValidationTestHelper
 
 @RunWith(XtextRunner)
 @InjectWith(ImlInjectorProvider)
 class ImlParsingTest {
-	@Inject
-	ParseHelper<Model> parseHelper
+	@Inject extension ParseHelper<Model> 
+	
+	@Inject extension ValidationTestHelper
 	
 	@Test
 	def void loadModel() {
-		val result = parseHelper.parse('''
+		val result = '''
 			package p;
-		''')
+		'''.parse
 		Assert.assertNotNull(result)
 		Assert.assertTrue(result.eResource.errors.isEmpty)
+	}
+	
+	@Test
+	def void parsingHigherOrderType() {
+		val model = '''
+			package p;
+			type Int;
+			type t {
+				var1 : Int ~> (Int ~> Int);
+			}
+		'''.parse
+		
+		model.assertNoErrors
 	}
 }

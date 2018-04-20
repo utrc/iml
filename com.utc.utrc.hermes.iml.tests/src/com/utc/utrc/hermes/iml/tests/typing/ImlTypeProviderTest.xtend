@@ -233,4 +233,105 @@ class ImlTypeProviderTest {
 		assertEquals(Real, (exprType.range as SimpleTypeReference).ref)
 	}
 	
+	@Test
+	def testTermExpressionType_BindingWithTemplate() {
+		val model = '''
+			package p;
+			type Int;
+			type Real;
+			type List <type T>;
+			
+			type t1 {
+				var1 : Int := var2->varx;
+				var2 : t2<List<Int> >;
+			}
+			
+			type t2 <type T> {
+				varx : T;
+			}		
+		'''.parse
+		model.assertNoErrors
+		
+		var t1 = model.findSymbol("t1") as ConstrainedType
+		val var1 = t1.findSymbol("var1") 
+		val List = model.findSymbol("List")
+		val Int = model.findSymbol("Int")
+		val folForm = var1.definition
+		val exprType = ImlTypeProvider.termExpressionType(folForm) as SimpleTypeReference	
+			
+		assertEquals(List, exprType.ref)		
+		assertEquals(Int, (exprType.typeBinding.get(0) as SimpleTypeReference).ref)
+	}
+	
+	@Test
+	def testTermExpressionType_BindingWithHOTTemplate() {
+		val model = '''
+			package p;
+			type Int;
+			type Real;
+			type List <type T>;
+			
+			type t1 {
+				var1 : Int := var2->varx;
+				var2 : t2<List<(p: Int)~>Real> >;
+			}
+			
+			type t2 <type T> {
+				varx : T;
+			}		
+		'''.parse
+		model.assertNoErrors
+		
+		var t1 = model.findSymbol("t1") as ConstrainedType
+		val var1 = t1.findSymbol("var1") 
+		val List = model.findSymbol("List")
+		val Int = model.findSymbol("Int")
+		val Real = model.findSymbol("Real")
+		val folForm = var1.definition
+		val exprType = (ImlTypeProvider.termExpressionType(folForm) as SimpleTypeReference)
+						.typeBinding.get(0)	
+			
+		assertNotNull(exprType.domain)
+		assertNotNull(exprType.range)
+		val domain = exprType.domain as TupleType
+		assertEquals(Int, (domain.symbols.get(0).type as SimpleTypeReference).ref)
+		assertEquals(Real, (exprType.range as SimpleTypeReference).ref)
+	}
+	
+	@Test
+	def testTermExpressionType_BindingWithTemplatedTemplate() {
+		val model = '''
+			package p;
+			type Int;
+			type Real;
+			type List <type T>;
+			
+			type t1 {
+				var1 : Int := var3->vary;
+				var3 : t3<Int>;
+			}
+			
+			type t2 <type T> {
+				varx : T;
+			}
+			
+			type t3 <type T> {
+				vary : Int := var2->varx;
+				var2 : t2<List<T> >;
+			}
+		'''.parse
+		model.assertNoErrors
+		
+		var t1 = model.findSymbol("t1") as ConstrainedType
+		val var1 = t1.findSymbol("var1") 
+		val List = model.findSymbol("List")
+		val Int = model.findSymbol("Int")
+		val Real = model.findSymbol("Real")
+		val folForm = var1.definition
+		val exprType = ImlTypeProvider.termExpressionType(folForm) as SimpleTypeReference	// t2<List<Int>>
+			
+		assertEquals(List, exprType.ref)		
+		assertEquals(Int, (exprType.typeBinding.get(0) as SimpleTypeReference).ref)
+	}
+	
 }

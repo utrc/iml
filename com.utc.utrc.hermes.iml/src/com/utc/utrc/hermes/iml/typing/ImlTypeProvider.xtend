@@ -11,7 +11,6 @@ import com.utc.utrc.hermes.iml.iml.HigherOrderType
 import com.utc.utrc.hermes.iml.iml.IteTermExpression
 import com.utc.utrc.hermes.iml.iml.Multiplication
 import com.utc.utrc.hermes.iml.iml.NumberLiteral
-import com.utc.utrc.hermes.iml.iml.ParenthesizedExpression
 import com.utc.utrc.hermes.iml.iml.SignedAtomicFormula
 import com.utc.utrc.hermes.iml.iml.SimpleTypeReference
 import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
@@ -27,6 +26,8 @@ import java.util.HashMap
 import com.utc.utrc.hermes.iml.iml.ImlFactory
 import com.utc.utrc.hermes.iml.iml.TupleType
 import com.utc.utrc.hermes.iml.iml.AtomicExpression
+import com.utc.utrc.hermes.iml.iml.TupleConstructor
+import com.utc.utrc.hermes.iml.iml.LambdaExpression
 
 public class ImlTypeProvider {
 
@@ -53,6 +54,7 @@ public class ImlTypeProvider {
 		if (t instanceof TermExpression) {
 			return termExpressionType((t as TermExpression), context)
 		} if (t instanceof SignedAtomicFormula) {
+			
 		}
 		
 		if (t instanceof AtomicExpression) {
@@ -150,17 +152,26 @@ public class ImlTypeProvider {
 			TruthValue: {
 				return Bool;
 			}
-			ParenthesizedExpression: {
-				return termExpressionType(t.subformula, context)
+			LambdaExpression: {
+				return t.definition.termExpressionType(context)
 			}
-			// If it is a parenthesized expression
-			// then recourse.
+			TupleConstructor: {
+				return ImlFactory.eINSTANCE.createTupleType => [
+					symbols.addAll(t.elements.map[
+						val ts = ImlFactory.eINSTANCE.createTupleSymbol;  
+						ts.type = it.termExpressionType(context)
+						ts
+					]);
+				]
+			}
+//			ParenthesizedExpression: {
+//				return termExpressionType(t.subformula, context)
+//			}
 			default: {
 				return Null
 			}
 		}
 	}
-	
 	
 	def static HigherOrderType getType(SymbolDeclaration s, SimpleTypeReference ctx) {
 		if ( ctx.ref.symbols.contains(s)) {
@@ -236,7 +247,7 @@ public class ImlTypeProvider {
 			TupleType:{
 				var retval = ImlFactory.eINSTANCE.createTupleType ;
 				for(s : t.symbols) {
-					val ss = ImlFactory.eINSTANCE.createSymbolDeclaration
+					val ss = ImlFactory.eINSTANCE.createTupleSymbol
 					ss.name = s.name
 					ss.type = remap(s.type, map)
 					retval.symbols.add(ss)
@@ -253,9 +264,6 @@ public class ImlTypeProvider {
 			}
 		}
 	}
-	
-
-	
 
 	/* Check whether t is primitive type */
 	def static boolean isPrimitive(HigherOrderType t) {
