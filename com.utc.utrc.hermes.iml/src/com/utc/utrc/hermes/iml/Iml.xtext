@@ -97,7 +97,6 @@ TypeReference returns HigherOrderType:
 ;
 
 TupleType returns HigherOrderType:
-	{ParenthesizedType} '(' subtype=HigherOrderType ')' |	
 	{TupleType} '(' ( symbols+=TupleSymbol (',' symbols+=TupleSymbol)*  )? ')'
 ;
 
