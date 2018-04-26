@@ -17,6 +17,7 @@ import com.utc.utrc.hermes.iml.typing.ImlTypeProvider
 import com.utc.utrc.hermes.iml.iml.HigherOrderType
 import com.utc.utrc.hermes.iml.iml.SimpleTypeReference
 import com.utc.utrc.hermes.iml.iml.TupleType
+import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
 
 /**
  * Test related helper methods
@@ -50,6 +51,11 @@ class ImlTypeProviderTest {
 	@Test
 	def testTermExpressionType_withAddition_boolean() {
 		assertFormulaType("5 = 6", ImlTypeProvider.Bool);
+	}
+	
+	@Test
+	def testTermExpressionType_withAnd_boolean() {
+		assertFormulaType("True && False", ImlTypeProvider.Bool);
 	}
 	
 	def assertFormulaType(String formula, HigherOrderType type) {
@@ -284,7 +290,6 @@ class ImlTypeProviderTest {
 		
 		var t1 = model.findSymbol("t1") as ConstrainedType
 		val var1 = t1.findSymbol("var1") 
-		val List = model.findSymbol("List")
 		val Int = model.findSymbol("Int")
 		val Real = model.findSymbol("Real")
 		val folForm = var1.definition
@@ -307,7 +312,7 @@ class ImlTypeProviderTest {
 			type List <type T>;
 			
 			type t1 {
-				var1 : Int := var3->vary;
+				var1 : Int := var3->var2->varx;
 				var3 : t3<Int>;
 			}
 			
@@ -316,7 +321,6 @@ class ImlTypeProviderTest {
 			}
 			
 			type t3 <type T> {
-				vary : Int := var2->varx;
 				var2 : t2<List<T> >;
 			}
 		'''.parse
@@ -326,12 +330,62 @@ class ImlTypeProviderTest {
 		val var1 = t1.findSymbol("var1") 
 		val List = model.findSymbol("List")
 		val Int = model.findSymbol("Int")
-		val Real = model.findSymbol("Real")
 		val folForm = var1.definition
 		val exprType = ImlTypeProvider.termExpressionType(folForm) as SimpleTypeReference	// t2<List<Int>>
 			
 		assertEquals(List, exprType.ref)		
 		assertEquals(Int, (exprType.typeBinding.get(0) as SimpleTypeReference).ref)
+	}
+	
+	@Test
+	def testTermExpressionType_LambdaWithOneElement() {
+		val model = '''
+			package p;
+			
+			type t1 {
+				varx : Int := lambda (p1: Int) {True;};
+			}
+		'''.parse
+		
+		model.assertNoErrors
+		val t1 = model.findSymbol("t1") as ConstrainedType
+		val exprType = ImlTypeProvider.termExpressionType(t1.findSymbol("varx").definition)
+		
+		assertEquals(ImlTypeProvider.Bool, exprType)
+	}
+	
+	@Test
+	def testTermExpressionType_LambdaWithMultipleElement() {
+		val model = '''
+			package p;
+			
+			type t1 {
+				varx : Int := lambda (p1: Int) {True;3*5;};
+			}
+		'''.parse
+		
+		model.assertNoErrors
+		val t1 = model.findSymbol("t1") as ConstrainedType
+		val exprType = ImlTypeProvider.termExpressionType(t1.findSymbol("varx").definition)
+		
+		assertEquals(ImlTypeProvider.Int, exprType)
+	}
+	
+		@Test
+	def testTermExpressionType_() {
+		val model = '''
+			package p;
+			
+			type t1 {
+				varx : Int := lambda (p1: Int) {True;3*5;};
+			}
+		'''.parse
+		
+		model.assertNoErrors
+		val t1 = model.findSymbol("t1") as ConstrainedType
+		val exprType = ImlTypeProvider.termExpressionType(t1.findSymbol("varx").definition)
+		
+		assertEquals(ImlTypeProvider.Int, exprType)
 	}
 	
 }

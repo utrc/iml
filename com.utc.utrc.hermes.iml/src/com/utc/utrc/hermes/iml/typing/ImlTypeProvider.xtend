@@ -28,6 +28,7 @@ import com.utc.utrc.hermes.iml.iml.TupleType
 import com.utc.utrc.hermes.iml.iml.AtomicExpression
 import com.utc.utrc.hermes.iml.iml.TupleConstructor
 import com.utc.utrc.hermes.iml.iml.LambdaExpression
+import com.utc.utrc.hermes.iml.iml.Program
 
 public class ImlTypeProvider {
 
@@ -164,9 +165,9 @@ public class ImlTypeProvider {
 					]);
 				]
 			}
-//			ParenthesizedExpression: {
-//				return termExpressionType(t.subformula, context)
-//			}
+			Program: {
+				return t.relations.last.termExpressionType(context)
+			}
 			default: {
 				return Null
 			}
@@ -199,15 +200,14 @@ public class ImlTypeProvider {
 	}
 	
 	def static bind(HigherOrderType t, SimpleTypeReference ctx){
-		
 		var ctxbinds = new HashMap<ConstrainedType, HigherOrderType>();
-		
-		for(i : 0 ..< ctx.ref.typeParameter.size) {
-			ctxbinds.put(ctx.ref.typeParameter.get(i),ctx.typeBinding.get(i))
+		if (ctx.typeBinding.size == ctx.ref.typeParameter.size) {
+			for(i : 0 ..< ctx.ref.typeParameter.size) {
+				ctxbinds.put(ctx.ref.typeParameter.get(i),ctx.typeBinding.get(i))
+			}
 		}
 		
 		return remap(t,ctxbinds)	
-			
 	}
 	
 	def static HigherOrderType remap(HigherOrderType t, Map<ConstrainedType,HigherOrderType> map){

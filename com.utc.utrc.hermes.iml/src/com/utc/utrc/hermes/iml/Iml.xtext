@@ -12,8 +12,6 @@ Model:
 	(symbols+=Symbol (';')?)*
 ;
 
-
-
 /*A qualified name is a sequence of names separated by dots*/
 QualifiedName:
 	ID ('.' ID)*;
@@ -28,19 +26,15 @@ Import:
 QualifiedNameWithWildcard:
 	QualifiedName '.*'?;
 
-
-
 Symbol :
 	SymbolDeclaration|
 	ConstrainedType 
 ;
 
-
 Doc :
 	{Doc}('@' properties+=[ConstrainedType|QualifiedName] descriptions+=STRING)+
 ;
 	
-
 
 /*Literals used in finite data types */
 DomainLiteral:
@@ -50,7 +44,6 @@ RelationInstance:
 	Extension |
 	Alias |
 	MetaRelation
-	
 ;
 
 Extension :
@@ -110,7 +103,6 @@ SimpleTypeReference returns HigherOrderType:
 	('<' typeBinding+=HigherOrderType (',' typeBinding+=HigherOrderType)* '>')?
 ;
 
-
 /*Entry point for a first order logic formula.*/
 FolFormula:
 	/*Weakest operators are implication -> and double implication <->*/
@@ -125,44 +117,29 @@ Formula returns FolFormula:
 QuantifiedFormula returns FolFormula:
 	op=('forall' | 'exists') scope+=SymbolDeclaration (',' scope+=SymbolDeclaration)* '{' left=FolFormula '}';
 
-
 /*Disjunction of two formulas */
 OrExpression returns FolFormula:
 	AndExpression ({OrExpression.left=current} op='||' right=AndExpression)*;
 
-
-
 /*Conjunction of two formulas*/
 AndExpression returns FolFormula:
 	SignedAtomicFormula ({AndExpression.left=current} op='&&' right=SignedAtomicFormula)*;
-	
 		
 /*Strongest operator is the negation of a formula */
 SignedAtomicFormula returns FolFormula:
 	{SignedAtomicFormula} (neg?='!')? left=AtomicExpression;
-
-
  
 AtomicExpression returns FolFormula:
 	TermExpression ({AtomicExpression.left=current} rel=RelationKind right=TermExpression)* ;
-	
 
 TruthValue returns TermExpression:
 	{TruthValue} TRUE='True' | FALSE='False';
-
-
-/*A relation is a predicate with two parameters and 
- * one among a set of possible relation kinds.
- */
-//Relation returns Predicate:
-//	parameters+=TermExpression rel=RelationKind parameters+=TermExpression;
 
 /*Allowed relation kinds are the equality (which can be used over all 
  * objects types), or the ordering relations among numeric types.
  */
 enum RelationKind:
 	EQ='=' | LESS='<' | GREATER='>' | LEQ='<=' | GEQ='>=';
-
 
 /*Generic term expression */
 TermExpression:
@@ -177,27 +154,19 @@ Multiplication returns TermExpression:
 	TermSelectionExpression ({Multiplication.left=current} sign=('*' | '/' | '%' | 'mod')
 	right=TermSelectionExpression)*;
 
-
 /*Selection of a term is a recursive definition. It is a terminal term followed
  * by the scoping operator :: and by a member terms. The member term is a 
  * symbol possibly followed by type binding information (for generic functions),
  * possibly followed by parameters (for functions)
  */
 TermSelectionExpression returns TermExpression:
-	TerminalTerm ({TermMemberSelection.receiver=current} '->'
-	//member=[SymbolDeclaration]
-	//(methodinvocation?='('
-	//(parameters+=TermExpression (',' parameters+=TermExpression)*)? ')')? 
-	//(arrayindex?='['index+=TermExpression']' ('[' index+=TermExpression']')* )? 
-	member=AtomicTerm
-	)*
+	TerminalTerm ({TermMemberSelection.receiver=current} '->' member=AtomicTerm)*
 	;
 
 /*A terminal term can be a number, a reference to symbol defined in the scope
  * of the term, a reference to a constant of a finite type, an if-then-else term
  * expression, the keyword this, or a parenthesized term.
  */
-
 TerminalTerm returns TermExpression:
 	{NumberLiteral} neg?=('-')? value=INT |
 	{FloatNumberLiteral} neg?=('-')? value = FLOAT |
@@ -206,16 +175,17 @@ TerminalTerm returns TermExpression:
 	{This} 'this' |
 	TruthValue |
 	'{' Program '}' |
-//	{ParenthesizedExpression} '(' subformula=FolFormula')'|
 	TupleConstructor | 
 	{LambdaExpression}'lambda' signature=TupleType '{'definition=Program'}' ;
 
 AtomicTerm:
 	SymbolReference ( {ArrayAccess.ref=current} '['index+=FolFormula']' ('[' index+=FolFormula']')* )? 
 ;
+
 TupleConstructor:
 	{TupleConstructor} '(' elements+=FolFormula (',' elements+=FolFormula)* ')'
 ;
+
 SymbolReference returns AtomicTerm: 
  symbol=[Symbol|QualifiedName] (tail=SelectionParameters)?
 ;
@@ -223,7 +193,6 @@ SymbolReference returns AtomicTerm:
 SelectionParameters:
 	TupleConstructor |
 	{LiteralSelection} '@' (literal=[DomainLiteral] | intid=INT)
-//	{MethodParameters} 	'(' (parameters+=TermExpression (',' parameters+=TermExpression)*)? ')' 
 ;
 
 IteTermExpression:
