@@ -82,11 +82,8 @@ HigherOrderType:
 ;
 
 ArrayType returns HigherOrderType:
-	TypeReference ({ArrayType.type=current}'['dimension+=TermExpression']' ('['dimension+=TermExpression']')*)? 
-;
-
-TypeReference returns HigherOrderType:
-	SimpleTypeReference | TupleType
+	SimpleTypeReference ({ArrayType.type=current}'['dimension+=TermExpression']' ('['dimension+=TermExpression']')*)? |
+	TupleType
 ;
 
 TupleType returns HigherOrderType:
@@ -133,7 +130,7 @@ AtomicExpression returns FolFormula:
 	TermExpression ({AtomicExpression.left=current} rel=RelationKind right=TermExpression)* ;
 
 TruthValue returns TermExpression:
-	{TruthValue} TRUE='True' | FALSE='False';
+	{TruthValue} (TRUE?='True' | FALSE?='False');
 
 /*Allowed relation kinds are the equality (which can be used over all 
  * objects types), or the ordering relations among numeric types.
@@ -160,7 +157,7 @@ Multiplication returns TermExpression:
  * possibly followed by parameters (for functions)
  */
 TermSelectionExpression returns TermExpression:
-	TerminalTerm ({TermMemberSelection.receiver=current} '->' member=AtomicTerm)*
+	TerminalTerm ({TermMemberSelection.receiver=current} '->' member=SymbolReferenceTerm)*
 	;
 
 /*A terminal term can be a number, a reference to symbol defined in the scope
@@ -170,24 +167,20 @@ TermSelectionExpression returns TermExpression:
 TerminalTerm returns TermExpression:
 	{NumberLiteral} neg?=('-')? value=INT |
 	{FloatNumberLiteral} neg?=('-')? value = FLOAT |
-	AtomicTerm |
+	TupleConstructor | 
+	SymbolReferenceTerm |
 	IteTermExpression |
 	{This} 'this' |
 	TruthValue |
 	'{' Program '}' |
-	TupleConstructor | 
 	{LambdaExpression}'lambda' signature=TupleType '{'definition=Program'}' ;
-
-AtomicTerm:
-	SymbolReference ( {ArrayAccess.ref=current} '['index+=FolFormula']' ('[' index+=FolFormula']')* )? 
-;
 
 TupleConstructor:
 	{TupleConstructor} '(' elements+=FolFormula (',' elements+=FolFormula)* ')'
 ;
 
-SymbolReference returns AtomicTerm: 
- symbol=[Symbol|QualifiedName] (tail=SelectionParameters)?
+SymbolReferenceTerm:
+	symbol=[Symbol|QualifiedName] (tail=SelectionParameters)? ( arrayAccess?= '['index+=FolFormula']' ('[' index+=FolFormula']')* )? 
 ;
 
 SelectionParameters:

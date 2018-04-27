@@ -17,8 +17,7 @@ import com.utc.utrc.hermes.iml.typing.ImlTypeProvider
 import com.utc.utrc.hermes.iml.iml.HigherOrderType
 import com.utc.utrc.hermes.iml.iml.SimpleTypeReference
 import com.utc.utrc.hermes.iml.iml.TupleType
-import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
-
+import com.utc.utrc.hermes.iml.iml.ArrayType
 /**
  * Test related helper methods
  * @author Ayman Elkfrawy
@@ -341,7 +340,7 @@ class ImlTypeProviderTest {
 	def testTermExpressionType_LambdaWithOneElement() {
 		val model = '''
 			package p;
-			
+			type Int;
 			type t1 {
 				varx : Int := lambda (p1: Int) {True;};
 			}
@@ -358,7 +357,7 @@ class ImlTypeProviderTest {
 	def testTermExpressionType_LambdaWithMultipleElement() {
 		val model = '''
 			package p;
-			
+			type Int;
 			type t1 {
 				varx : Int := lambda (p1: Int) {True;3*5;};
 			}
@@ -371,13 +370,55 @@ class ImlTypeProviderTest {
 		assertEquals(ImlTypeProvider.Int, exprType)
 	}
 	
-		@Test
-	def testTermExpressionType_() {
+	@Test
+	def testTermExpressionType_ArrayAccess() {
 		val model = '''
 			package p;
-			
+			type Int;
+			type Real;
 			type t1 {
-				varx : Int := lambda (p1: Int) {True;3*5;};
+				varx : Int := var1;
+				var1 : Real[10];
+			}
+		'''.parse
+		
+		model.assertNoErrors
+		val t1 = model.findSymbol("t1") as ConstrainedType
+		val var1 = t1.findSymbol("var1").type
+		val exprType = ImlTypeProvider.termExpressionType(t1.findSymbol("varx").definition)
+		
+		assertTrue(TypingServices.isEqual(var1, exprType))
+	}
+	
+	@Test
+	def testTermExpressionType_ArrayAccessWithIndex() {
+		val model = '''
+			package p;
+			type Int;
+			type Real;
+			type t1 {
+				varx : Int := var1[1];
+				var1 : Real[10];
+			}
+		'''.parse
+		
+		model.assertNoErrors
+		val t1 = model.findSymbol("t1") as ConstrainedType
+		val Real = model.findSymbol("Real") 
+		val exprType = ImlTypeProvider.termExpressionType(t1.findSymbol("varx").definition)
+		
+		assertEquals(Real, (exprType as SimpleTypeReference).ref)
+	}
+	
+	@Test
+	def testTermExpressionType_ArrayAccessWithPartialIndex() {
+		val model = '''
+			package p;
+			type Int;
+			type Real;
+			type t1 {
+				varx : Int := var1[1];
+				var1 : Real[10][20][30];
 			}
 		'''.parse
 		
@@ -385,7 +426,152 @@ class ImlTypeProviderTest {
 		val t1 = model.findSymbol("t1") as ConstrainedType
 		val exprType = ImlTypeProvider.termExpressionType(t1.findSymbol("varx").definition)
 		
+		assertTrue(exprType instanceof ArrayType)
+		assertEquals(2, (exprType as ArrayType).dimension.size)
+	}
+	
+	@Test
+	def testTermExpressionType_ArrayAccessWithTuple() {
+		val model = '''
+			package p;
+			type Int;
+			type Real;
+			type t1 {
+				varx : Int := var1[1];
+				var1 : (e1: Int, e2:Real);
+			}
+		'''.parse
+		
+		model.assertNoErrors
+		val t1 = model.findSymbol("t1") as ConstrainedType
+		val Real = model.findSymbol("Real")
+		val exprType = ImlTypeProvider.termExpressionType(t1.findSymbol("varx").definition)
+		
+		assertEquals(Real, (exprType as SimpleTypeReference).ref)
+	}
+	
+	@Test
+	def testTermExpressionType_ArrayAccessWithTupleUsingName() {
+		val model = '''
+			package p;
+			type Int;
+			type Real;
+			type t1 {
+				varx : Int := var1[e2];
+				var1 : (e1: Int, e2:Real);
+			}
+		'''.parse
+		
+		model.assertNoErrors
+		val t1 = model.findSymbol("t1") as ConstrainedType
+		val Real = model.findSymbol("Real")
+		val exprType = ImlTypeProvider.termExpressionType(t1.findSymbol("varx").definition)
+		
+		assertEquals(Real, (exprType as SimpleTypeReference).ref)
+	}
+	
+	@Test
+	def testTermExpressionType_TupleConstructor() {
+		val model = '''
+			package p;
+			type Int;
+			type Bool;
+			type t1 {
+				varx : Int := (2, False, 2.5);
+			}
+		'''.parse
+		
+		model.assertNoErrors
+		
+		val t1 = model.findSymbol("t1") as ConstrainedType
+		val exprType = ImlTypeProvider.termExpressionType(t1.findSymbol("varx").definition)
+		
+		assertTrue(exprType instanceof TupleType)
+		assertEquals(3, (exprType as TupleType).symbols.size)
+		assertEquals(ImlTypeProvider.Int, (exprType as TupleType).symbols.get(0).type)
+		assertEquals(ImlTypeProvider.Bool, (exprType as TupleType).symbols.get(1).type)
+		assertEquals(ImlTypeProvider.Real, (exprType as TupleType).symbols.get(2).type)
+	}
+	
+	@Test
+	def testTermExpressionType_IfThen() {
+		val model = '''
+			package p;
+			type Int;
+			type Bool;
+			type t1 {
+				varx : Int := if (True) {5};
+			}
+		'''.parse
+		
+		model.assertNoErrors
+		
+		val t1 = model.findSymbol("t1") as ConstrainedType
+		val exprType = ImlTypeProvider.termExpressionType(t1.findSymbol("varx").definition)
+		
 		assertEquals(ImlTypeProvider.Int, exprType)
 	}
 	
+	@Test
+	def testTermExpressionType_IfThenElse() {
+		val model = '''
+			package p;
+			type Int;
+			type Bool;
+			type t1 {
+				varx : Int := if (True) {5} else {True};
+			}
+		'''.parse
+		
+		model.assertNoErrors
+		
+		val t1 = model.findSymbol("t1") as ConstrainedType
+		val exprType = ImlTypeProvider.termExpressionType(t1.findSymbol("varx").definition)
+		
+		assertEquals(ImlTypeProvider.Int, exprType)
+	}
+	
+	@Test
+	def testTermExpressionType_LiteralSelection() {
+		val model = '''
+			package p;
+			type Int;
+			type Bool;
+			type Real;
+			type t1 {
+				varx : Int := t2@1;
+			}
+			type t2 finite |e1, e2|;
+		'''.parse
+		
+		model.assertNoErrors
+		
+		val t1 = model.findSymbol("t1") as ConstrainedType
+		val t2 = model.findSymbol("t2") as ConstrainedType
+		val exprType = ImlTypeProvider.termExpressionType(t1.findSymbol("varx").definition)
+		
+		assertEquals(t2, (exprType as SimpleTypeReference).ref)
+	}
+	
+	@Test
+	def testTermExpressionType_LiteralSelectionWithLiteral() {
+		val model = '''
+			package p;
+			type Int;
+			type Bool;
+			type Real;
+			type t1 {
+				varx : Int := t2@e2;
+			}
+			type t2 finite |e1, e2|;
+		'''.parse
+		
+		model.assertNoErrors
+		
+		val t1 = model.findSymbol("t1") as ConstrainedType
+		val t2 = model.findSymbol("t2") as ConstrainedType
+		val exprType = ImlTypeProvider.termExpressionType(t1.findSymbol("varx").definition)
+		
+		assertEquals(t2, (exprType as SimpleTypeReference).ref)
+	}
 }

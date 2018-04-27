@@ -1,9 +1,7 @@
 package com.utc.utrc.hermes.iml.typing
 
 import com.utc.utrc.hermes.iml.iml.Addition
-import com.utc.utrc.hermes.iml.iml.ArrayAccess
 import com.utc.utrc.hermes.iml.iml.ArrayType
-import com.utc.utrc.hermes.iml.iml.AtomicTerm
 import com.utc.utrc.hermes.iml.iml.ConstrainedType
 import com.utc.utrc.hermes.iml.iml.FloatNumberLiteral
 import com.utc.utrc.hermes.iml.iml.FolFormula
@@ -29,6 +27,9 @@ import com.utc.utrc.hermes.iml.iml.AtomicExpression
 import com.utc.utrc.hermes.iml.iml.TupleConstructor
 import com.utc.utrc.hermes.iml.iml.LambdaExpression
 import com.utc.utrc.hermes.iml.iml.Program
+import com.utc.utrc.hermes.iml.iml.Symbol
+import com.utc.utrc.hermes.iml.iml.TupleSymbol
+import com.utc.utrc.hermes.iml.iml.SymbolReferenceTerm
 
 public class ImlTypeProvider {
 
@@ -116,8 +117,25 @@ public class ImlTypeProvider {
 				} else return null // TODO Should we raise an exception better?
 				
 			}
-			AtomicTerm: {
-
+//			ArrayAccess: {
+//				var term_type = termExpressionType(t.ref as AtomicTerm, context);
+//				if (term_type instanceof ArrayType) {
+//					term_type = accessArray(term_type as ArrayType, t.index.size)
+//				} else if (term_type instanceof TupleType) {
+//					// TODO dimension need to be size 1 and has integer or symbol reference
+//					val index = t.index.get(0);
+//					if (index instanceof SymbolReferenceExpression) {
+//						
+//					}
+//					val indexInt = getIntValueOf(index)
+//					if (indexInt >= 0 && indexInt < term_type.symbols.size) {
+//						
+//					}
+////					term_type = accessTuple(term_type as TupleType, t)
+//				}
+//				term_type
+//			}
+			SymbolReferenceTerm: {
 				if (t.symbol instanceof ConstrainedType) {
 					// Reference to a literal
 					return createBasicType(t.symbol as ConstrainedType)
@@ -131,8 +149,8 @@ public class ImlTypeProvider {
 							return term_type
 						}
 					}
-					if (t instanceof ArrayAccess && term_type instanceof ArrayType) {
-						term_type = accessArray(term_type as ArrayType, (t as ArrayAccess).index.size)
+					if (t.arrayAccess) {
+						term_type = getArrayAccessType(term_type, t)
 					}
 					return term_type;
 				}
@@ -172,6 +190,32 @@ public class ImlTypeProvider {
 				return Null
 			}
 		}
+	}
+	
+	def static getArrayAccessType(HigherOrderType type, SymbolReferenceTerm term) {
+		if (term.arrayAccess) {
+			if (type instanceof ArrayType) {
+				return accessArray(type as ArrayType, term.index.size)
+			} else if (type instanceof TupleType) {
+				val index = term.index.get(0)
+				if (index.left !== null) {
+					val indexAtomic = index.left
+					if (indexAtomic instanceof SymbolReferenceTerm) { // Specific symbol
+						for (TupleSymbol symbol : type.symbols) {
+							if (symbol.name !== null && symbol.name == indexAtomic.symbol.name) {
+								return symbol.type
+							}
+						}
+					} else if (indexAtomic instanceof NumberLiteral) { // Specific index
+						val indexValue = indexAtomic.value * (if (indexAtomic.neg) -1 else 1)
+						if (indexValue >= 0 && indexValue < type.symbols.size) {
+							return type.symbols.get(indexValue).type
+						}
+					}
+				}
+			}
+		}
+		return type
 	}
 	
 	def static HigherOrderType getType(SymbolDeclaration s, SimpleTypeReference ctx) {

@@ -22,9 +22,7 @@ import static extension com.utc.utrc.hermes.iml.typing.TypingServices.*
 import com.utc.utrc.hermes.iml.iml.SimpleTypeReference
 import org.eclipse.xtext.scoping.Scopes
 import com.utc.utrc.hermes.iml.iml.ConstrainedType
-import com.utc.utrc.hermes.iml.iml.FolFormula
-import com.utc.utrc.hermes.iml.iml.AtomicTerm
-import com.utc.utrc.hermes.iml.iml.ImlPackage
+import com.utc.utrc.hermes.iml.iml.SymbolReferenceTerm
 
 /**
  * This class contains custom scoping description.
@@ -112,11 +110,11 @@ class ImlScopeProvider extends AbstractDeclarativeScopeProvider {
 	// delegateScope	
 	}
 	
-	def scope_AtomicTerm_symbol(AtomicTerm context, EReference r) {
+	def scope_SymbolReferenceTerm_symbol(SymbolReferenceTerm context, EReference r) {
 		val container = context.eContainer
 		if (container instanceof TermMemberSelection) {
 			if (container.member === context) {
-				return scope_AtomicTerm_symbol(container,r)
+				return scope_SymbolReferenceTerm_symbol(container,r)
 			}
 		}
 		var scope = getGlobalScope(context, r)
@@ -132,7 +130,7 @@ class ImlScopeProvider extends AbstractDeclarativeScopeProvider {
 	}
 
 //	
-	def scope_AtomicTerm_symbol(TermMemberSelection context, EReference r) {
+	def scope_SymbolReferenceTerm_symbol(TermMemberSelection context, EReference r) {
 		var parentScope = IScope::NULLSCOPE
 		val receiver = context.receiver
 		var receiverType = receiver.termExpressionType

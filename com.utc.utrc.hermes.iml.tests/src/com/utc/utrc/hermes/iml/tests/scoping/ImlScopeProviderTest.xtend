@@ -17,9 +17,9 @@ import com.utc.utrc.hermes.iml.iml.ImlPackage
 import org.eclipse.emf.ecore.EReference
 import org.eclipse.emf.ecore.EObject
 import static extension org.junit.Assert.*
-import com.utc.utrc.hermes.iml.iml.AtomicTerm
 import java.util.Arrays
 import java.util.List
+import com.utc.utrc.hermes.iml.iml.SymbolReferenceTerm
 
 /**
  * 
@@ -54,7 +54,7 @@ class ImlScopeProviderTest {
 		'''.parse;
 		
 		((model.symbols.last as ConstrainedType).symbols.last.definition.left as TermMemberSelection) => [
-			assertScope(ImlPackage::eINSTANCE.atomicTerm_Symbol, Arrays.asList("var1"))
+			assertScope(ImlPackage::eINSTANCE.symbolReferenceTerm_Symbol, Arrays.asList("var1"))
 		];
 		return
 	}
@@ -78,7 +78,7 @@ class ImlScopeProviderTest {
 		'''.parse;
 		
 		((model.symbols.last as ConstrainedType).symbols.last.definition.left as TermMemberSelection) => [
-			assertScope(ImlPackage::eINSTANCE.atomicTerm_Symbol, Arrays.asList("var1", "varp"))
+			assertScope(ImlPackage::eINSTANCE.symbolReferenceTerm_Symbol, Arrays.asList("var1", "varp"))
 		];
 		return
 	}
@@ -97,8 +97,8 @@ class ImlScopeProviderTest {
 			}
 		'''.parse;
 		
-		((model.symbols.last as ConstrainedType).symbols.last.definition.left as AtomicTerm) => [
-			assertScope(ImlPackage::eINSTANCE.atomicTerm_Symbol, 
+		((model.symbols.last as ConstrainedType).symbols.last.definition.left as SymbolReferenceTerm) => [
+			assertScope(ImlPackage::eINSTANCE.symbolReferenceTerm_Symbol, 
 				Arrays.asList("var1", "varp", "Int", "Parent", "Parent.varp", 
 						"t1.var1", "t1.varx", "varx", "t1"))
 		];
@@ -122,8 +122,8 @@ class ImlScopeProviderTest {
 			}
 		'''.parse(model.eResource.resourceSet)
 		
-		((model.symbols.last as ConstrainedType).symbols.last.definition.left as AtomicTerm) => [
-			assertScope(ImlPackage::eINSTANCE.atomicTerm_Symbol, 
+		((model.symbols.last as ConstrainedType).symbols.last.definition.left as SymbolReferenceTerm) => [
+			assertScope(ImlPackage::eINSTANCE.symbolReferenceTerm_Symbol, 
 				Arrays.asList("var1", "varx", "P2T1", "P2T1.var1", "P2T1.varx", 
 						"Int", "P1T1", "p1.P1T1"))
 		];

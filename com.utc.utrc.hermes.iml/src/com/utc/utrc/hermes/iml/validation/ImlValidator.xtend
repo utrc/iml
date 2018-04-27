@@ -24,9 +24,9 @@ import org.eclipse.core.runtime.Platform
 import org.eclipse.xtext.validation.AbstractDeclarativeValidator
 import org.eclipse.emf.ecore.EPackage
 import com.utc.utrc.hermes.iml.iml.ImlPackage
-import com.utc.utrc.hermes.iml.iml.AtomicTerm
 import com.utc.utrc.hermes.iml.iml.HigherOrderType
 import com.utc.utrc.hermes.iml.iml.SimpleTypeReference
+import com.utc.utrc.hermes.iml.iml.SymbolReferenceTerm
 
 /**
  * This class contains custom validation rules. 
@@ -275,7 +275,7 @@ class ImlValidator extends AbstractImlValidator {
 	}
 
 	@Check
-	def checkParameterList(AtomicTerm at) {
+	def checkParameterList(SymbolReferenceTerm at) {
 		
 		
 //		val symbol = f.ref

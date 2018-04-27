@@ -126,18 +126,19 @@ public class TypingServices {
 	}
 		
 	def static HigherOrderType accessArray(ArrayType type, int dim) {
-		var ret = ImlFactory::eINSTANCE.createArrayType() ;
-		//TODO We are not cloning the property list here
-		ret.domain = clone(type.domain);
-		if (type.range !== null) {
-			ret.range= clone(type.range);
-		}
-		for( i : 0..<(type.dimension.size()- dim)) {
-			//TODO : Should we clone the term expressions?
-			ret.dimension.add(ImlFactory::eINSTANCE.createNumberLiteral => [value=0] ) ;
-		}
-		return ret
+		if (dim == type.dimension.size) {
+			return type.type
+		} else {
+			var ret = ImlFactory::eINSTANCE.createArrayType() ;
+			//TODO We are not cloning the property list here
+			ret.type = clone(type.type);
 	
+			for( i : 0..<(type.dimension.size()- dim)) {
+				//TODO : Should we clone the term expressions?
+				ret.dimension.add(ImlFactory::eINSTANCE.createNumberLiteral => [value=0] ) ;
+			}
+			return ret
+		}
 	}
 
 	
