@@ -12,8 +12,6 @@ Model:
 	(symbols+=Symbol (';')?)*
 ;
 
-
-
 /*A qualified name is a sequence of names separated by dots*/
 QualifiedName:
 	ID ('.' ID)*;
@@ -28,26 +26,36 @@ Import:
 QualifiedNameWithWildcard:
 	QualifiedName '.*'?;
 
-
-
 Symbol :
 	SymbolDeclaration|
 	ConstrainedType 
 ;
-
 
 Doc :
 	{Doc}('@' properties+=[ConstrainedType|QualifiedName] descriptions+=STRING)+
 ;
 	
 
-
 /*Literals used in finite data types */
 DomainLiteral:
 	name=ID;
 
 RelationInstance:
-	propertylist=PropertyList  target=HigherOrderType
+	Extension |
+	Alias |
+	MetaRelation
+;
+
+Extension :
+	{Extension} 'extends'  target=HigherOrderType
+;
+
+Alias:
+	{Alias} 'sameas'  target=HigherOrderType
+;
+
+MetaRelation:
+	{MetaRelaion} propertylist=PropertyList  target=HigherOrderType
 ;
 
 PropertyList:
@@ -65,30 +73,25 @@ ConstrainedType:
 	/* A list of elements defined by this type*/
 	('{' (symbols+=SymbolDeclaration ';')* '}')?);
 
-
-
 SymbolDeclaration:
-	name=ID (signature=SymbolTuple)? ':' type=HigherOrderType (':=' definition=FolFormula)? 
-;
-
-SymbolTuple:
-	{SymbolTuple} '(' ( symbols+=SymbolDeclaration (',' symbols+=SymbolDeclaration)*  )? ')'
+	 name=ID (propertylist=PropertyList)? ':' type=HigherOrderType (':=' definition=FolFormula)? 
 ;
 
 HigherOrderType:
-	(propertylist=PropertyList)? domain=ArrayType ('~>' range=ArrayType)?  
+	ArrayType ({HigherOrderType.domain=current} '~>' range=ArrayType)?  
 ;
-
-
 
 ArrayType returns HigherOrderType:
-	TypeReference ({ArrayType.type=current}'['(dimension+=TermExpression)?']' ('['(dimension+=TermExpression)?']')*)? 
+	SimpleTypeReference ({ArrayType.type=current}'['(dimension+=TermExpression)?']' ('['(dimension+=TermExpression)?']')*)? |
+	TupleType
 ;
 
-TypeReference returns HigherOrderType:
-	SimpleTypeReference |
-	{TupleType}'(' types+=HigherOrderType (','  types+=HigherOrderType)* ')'
-	
+TupleType returns HigherOrderType:
+	{TupleType} '(' ( symbols+=TupleSymbol (',' symbols+=TupleSymbol)*  )? ')'
+;
+
+TupleSymbol:
+	(name=ID ':')? type=HigherOrderType
 ;
 
 SimpleTypeReference returns HigherOrderType:
@@ -96,7 +99,6 @@ SimpleTypeReference returns HigherOrderType:
 	/*Optional type parameters for generic types */
 	('<' typeBinding+=HigherOrderType (',' typeBinding+=HigherOrderType)* '>')?
 ;
-
 
 /*Entry point for a first order logic formula.*/
 FolFormula:
@@ -112,44 +114,29 @@ Formula returns FolFormula:
 QuantifiedFormula returns FolFormula:
 	op=('forall' | 'exists') scope+=SymbolDeclaration (',' scope+=SymbolDeclaration)* '{' left=FolFormula '}';
 
-
 /*Disjunction of two formulas */
 OrExpression returns FolFormula:
 	AndExpression ({OrExpression.left=current} op='||' right=AndExpression)*;
 
-
-
 /*Conjunction of two formulas*/
 AndExpression returns FolFormula:
 	SignedAtomicFormula ({AndExpression.left=current} op='&&' right=SignedAtomicFormula)*;
-	
 		
 /*Strongest operator is the negation of a formula */
 SignedAtomicFormula returns FolFormula:
-	(neg?='!')? left=AtomicExpression;
-
-
+	{SignedAtomicFormula} (neg?='!')? left=AtomicExpression;
  
 AtomicExpression returns FolFormula:
 	TermExpression ({AtomicExpression.left=current} rel=RelationKind right=TermExpression)* ;
-	
 
 TruthValue returns TermExpression:
-	{TruthValue} TRUE='True' | FALSE='False';
-
-
-/*A relation is a predicate with two parameters and 
- * one among a set of possible relation kinds.
- */
-//Relation returns Predicate:
-//	parameters+=TermExpression rel=RelationKind parameters+=TermExpression;
+	{TruthValue} (TRUE?='True' | FALSE?='False');
 
 /*Allowed relation kinds are the equality (which can be used over all 
  * objects types), or the ordering relations among numeric types.
  */
 enum RelationKind:
 	EQ='=' | LESS='<' | GREATER='>' | LEQ='<=' | GEQ='>=';
-
 
 /*Generic term expression */
 TermExpression:
@@ -164,59 +151,45 @@ Multiplication returns TermExpression:
 	TermSelectionExpression ({Multiplication.left=current} sign=('*' | '/' | '%' | 'mod')
 	right=TermSelectionExpression)*;
 
-
 /*Selection of a term is a recursive definition. It is a terminal term followed
  * by the scoping operator :: and by a member terms. The member term is a 
  * symbol possibly followed by type binding information (for generic functions),
  * possibly followed by parameters (for functions)
  */
 TermSelectionExpression returns TermExpression:
-	TerminalTerm ({TermMemberSelection.receiver=current} '->'
-	//member=[SymbolDeclaration]
-	//(methodinvocation?='('
-	//(parameters+=TermExpression (',' parameters+=TermExpression)*)? ')')? 
-	//(arrayindex?='['index+=TermExpression']' ('[' index+=TermExpression']')* )? 
-	member=AtomicTerm
-	)*
+	TerminalTerm ({TermMemberSelection.receiver=current} '->' member=SymbolReferenceTerm)*
 	;
 
 /*A terminal term can be a number, a reference to symbol defined in the scope
  * of the term, a reference to a constant of a finite type, an if-then-else term
  * expression, the keyword this, or a parenthesized term.
  */
-
 TerminalTerm returns TermExpression:
 	{NumberLiteral} neg?=('-')? value=INT |
 	{FloatNumberLiteral} neg?=('-')? value = FLOAT |
-	AtomicTerm |
+	TupleConstructor | 
+	SymbolReferenceTerm |
 	IteTermExpression |
 	{This} 'this' |
 	TruthValue |
 	'{' Program '}' |
-	{ParenthesizedExpression} '(' subformula=FolFormula')';
+	{LambdaExpression}'lambda' signature=TupleType '{'definition=Program'}' ;
 
-AtomicTerm:
-	SymbolReference ( {ArrayAccess.ref=current} '['index+=FolFormula']' ('[' index+=FolFormula']')* )? 
+TupleConstructor:
+	{TupleConstructor} '(' elements+=FolFormula (',' elements+=FolFormula)* ')'
 ;
 
-SymbolReference returns AtomicTerm: 
- symbol=[Symbol|QualifiedName] (tail?=SelectionParameters)?
- 
+SymbolReferenceTerm:
+	symbol=[Symbol|QualifiedName] (tail=SelectionParameters)? ( arrayAccess?= '['index+=FolFormula']' ('[' index+=FolFormula']')* )? 
 ;
 
 SelectionParameters:
-	{LiteralSelection} '@' (literal=[DomainLiteral] | intid=INT) |
-	{MethodParameters} 	'(' (parameters+=TermExpression (',' parameters+=TermExpression)*)? ')' 
+	TupleConstructor |
+	{LiteralSelection} '@' (literal=[DomainLiteral] | intid=INT)
 ;
-
-
-
 
 IteTermExpression:
 	{IteTermExpression} 'if' '(' condition=FolFormula ')' '{' left=TermExpression '}' (=> 'else'  '{' right=TermExpression '}')?;
-
-
-
 
 Program returns TermExpression:
 	{Program} ('var' defs+= SymbolDeclaration ';')* 
@@ -225,5 +198,3 @@ Program returns TermExpression:
 
 terminal EXT_INT: INT ('e'|'E')('-'|'+') INT;
 terminal FLOAT returns ecore::EFloat : ('0'..'9')+ '.' ('0'..'9')+;
-
-	

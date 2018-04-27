@@ -16,12 +16,23 @@ import org.eclipse.xtext.scoping.impl.AbstractDeclarativeScopeProvider
 import org.eclipse.xtext.scoping.impl.FilteringScope
 
 import static extension org.eclipse.xtext.EcoreUtil2.*
+import com.utc.utrc.hermes.iml.iml.TermMemberSelection
+import static extension com.utc.utrc.hermes.iml.typing.ImlTypeProvider.*
+import static extension com.utc.utrc.hermes.iml.typing.TypingServices.*
+import com.utc.utrc.hermes.iml.iml.SimpleTypeReference
+import org.eclipse.xtext.scoping.Scopes
+import com.utc.utrc.hermes.iml.iml.ConstrainedType
+import com.utc.utrc.hermes.iml.iml.SymbolReferenceTerm
 
 /**
  * This class contains custom scoping description.
  * 
  * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#scoping
  * on how and when to use it.
+ * 
+ * @author Alessandro Pinto
+ * @author Ayman Elkfrawy
+ * 
  */
 class ImlScopeProvider extends AbstractDeclarativeScopeProvider {
 	
@@ -29,6 +40,10 @@ class ImlScopeProvider extends AbstractDeclarativeScopeProvider {
 
 	@Inject
 	private IQualifiedNameConverter qualifiedNameConverter;
+	
+	override getScope(EObject context, EReference reference) {
+		super.getScope(context, reference)
+	}
 
 	def boolean isImported(IEObjectDescription iod, Model context) {
 		var qn = iod.qualifiedName
@@ -94,7 +109,52 @@ class ImlScopeProvider extends AbstractDeclarativeScopeProvider {
 //		global
 	// delegateScope	
 	}
+	
+	def scope_SymbolReferenceTerm_symbol(SymbolReferenceTerm context, EReference r) {
+		val container = context.eContainer
+		if (container instanceof TermMemberSelection) {
+			if (container.member === context) {
+				return scope_SymbolReferenceTerm_symbol(container,r)
+			}
+		}
+		var scope = getGlobalScope(context, r)
+		val superTypes = context.getContainerOfType(ConstrainedType).allSuperTypes
+		var features = new HashSet
+		for (level : superTypes.reverseView) {
+			for (t : level) {
+				features.addAll(t.symbols)
+			}
+			scope = Scopes::scopeFor(features, scope)
+		}
+		return Scopes::scopeFor(features, scope)
+	}
 
+//	
+	def scope_SymbolReferenceTerm_symbol(TermMemberSelection context, EReference r) {
+		var parentScope = IScope::NULLSCOPE
+		val receiver = context.receiver
+		var receiverType = receiver.termExpressionType
+		
+		if (receiverType === null || receiverType.isPrimitive) {
+			return parentScope
+		}
+		
+		val superTypes = receiverType.allSuperTypes
+		for (level : superTypes.reverseView) {
+			var features = new HashSet
+			for (t : level) {
+				if (t instanceof SimpleTypeReference) {
+					var theType = t.ref;
+					switch (theType) {
+						ConstrainedType: features.addAll(theType.symbols)
+					}
+				}
+			}
+			parentScope = Scopes::scopeFor(features, parentScope)
+		}
+		return parentScope
+	}
+	
 	//
 //	def scope_TypeReference_type(TypeReference context, EReference r) {
 //		val global = getGlobalScope(context, r)

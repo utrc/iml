@@ -7,8 +7,6 @@ import com.utc.utrc.hermes.iml.iml.ArrayType
 import com.utc.utrc.hermes.iml.iml.SimpleTypeReference
 import com.utc.utrc.hermes.iml.iml.TupleType
 import com.utc.utrc.hermes.iml.iml.PropertyList
-import com.utc.utrc.hermes.iml.iml.impl.TupleTypeImpl
-import com.utc.utrc.hermes.iml.services.ImlGrammarAccess.SymbolDeclarationElements
 import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
 import java.util.List
 import java.util.ArrayList
@@ -18,27 +16,30 @@ import com.utc.utrc.hermes.iml.iml.FloatNumberLiteral
 import com.utc.utrc.hermes.iml.iml.Symbol
 import org.eclipse.emf.ecore.EObject
 import com.utc.utrc.hermes.iml.iml.Model
+import com.utc.utrc.hermes.iml.iml.TupleSymbol
 
 public class TypingServices {
 
-	def static HigherOrderType createBasicType(String n) {
-		val ret = ImlFactory::eINSTANCE.createHigherOrderType => [
-			domain = ImlFactory::eINSTANCE.createSimpleTypeReference => [
-				ref = ImlFactory::eINSTANCE.createConstrainedType => [name = n]
-			]
+	def static createBasicType(String n) {
+		val ret = ImlFactory::eINSTANCE.createSimpleTypeReference => [
+			ref = ImlFactory::eINSTANCE.createConstrainedType => [name = n]
 		];
 		return ret
 	}
 
-	def static HigherOrderType createBasicType(ConstrainedType t) {
-		val ret = ImlFactory::eINSTANCE.createHigherOrderType => [
-			domain = ImlFactory::eINSTANCE.createSimpleTypeReference => [
-				ref = t
-			]
+	def static createBasicType(ConstrainedType t) {
+		val ret = ImlFactory::eINSTANCE.createSimpleTypeReference => [
+			ref = t
 		];
 		return ret
 	}
 	
+	def static SimpleTypeReference createSimpleTypeRef(ConstrainedType t) {
+		ImlFactory::eINSTANCE.createSimpleTypeReference => [
+			ref = t
+		]
+	}
+
 	def static clone(PropertyList pl) {
 		var ret = ImlFactory::eINSTANCE.createPropertyList ;
 		for(p : pl.properties) {
@@ -51,18 +52,41 @@ public class TypingServices {
 	//be copied as reference?
 	def static clone(SymbolDeclaration v) {
 		var ret = ImlFactory::eINSTANCE.createSymbolDeclaration ;
+		// Following added By Ayman for 4-higher-order-types-only
+		ret.name = v.name
+		// TODO Do we need to copy the property list?
+		ret.type = clone(v.type)
+		// TODO What to do with the definition?
 		
 		return ret
 	}
 	
 	def static HigherOrderType clone(HigherOrderType other) {
-		var ret = ImlFactory::eINSTANCE.createHigherOrderType() ;
-		//TODO We are not cloning the property list here
-		ret.domain = clone(other.domain);
-		if (other.range !== null) {
-			ret.range= clone(other.range);
+		if (other !== null) {
+			if (other instanceof SimpleTypeReference) {
+				return clone(other as SimpleTypeReference)
+			}
+			
+			if (other instanceof ArrayType) {
+				return clone(other as ArrayType)
+			}
+			
+			if (other instanceof TupleType) {
+				return clone(other as TupleType)
+			}
+			
+			// Not a leaf node
+			var ret = ImlFactory::eINSTANCE.createHigherOrderType() ;
+			//TODO We are not cloning the property list here
+			ret.domain = clone(other.domain);
+			if (other.range !== null) {
+				ret.range= clone(other.range);
+			}
+			return ret
+			
+		} else {
+			return null
 		}
-		return ret
 		
 	}
 	
@@ -77,12 +101,19 @@ public class TypingServices {
 	
 	def static clone(TupleType tt){
 		var ret = ImlFactory::eINSTANCE.createTupleType();
-		for(t : tt.types) {
-			ret.types.add(clone(t))
+		
+		for (s : tt.symbols) {
+			ret.symbols.add(clone(s))
 		}
 		return ret
 	}
 
+	def static clone(TupleSymbol ts) {
+		var ret = ImlFactory::eINSTANCE.createTupleSymbol
+		ret.name = ts.name
+		ret.type = ts.type
+		return ret
+	}
 	
 	def static clone(ArrayType at) {
 		var ret = ImlFactory::eINSTANCE.createArrayType() ;
@@ -91,21 +122,23 @@ public class TypingServices {
 			//TODO : Should we clone the term expressions?
 			ret.dimension.add(ImlFactory::eINSTANCE.createNumberLiteral => [value=0] ) ;
 		}
+		return ret
 	}
 		
 	def static HigherOrderType accessArray(ArrayType type, int dim) {
-		var ret = ImlFactory::eINSTANCE.createArrayType() ;
-		//TODO We are not cloning the property list here
-		ret.domain = clone(type.domain);
-		if (type.range !== null) {
-			ret.range= clone(type.range);
-		}
-		for( i : 0..<(type.dimension.size()- dim)) {
-			//TODO : Should we clone the term expressions?
-			ret.dimension.add(ImlFactory::eINSTANCE.createNumberLiteral => [value=0] ) ;
-		}
-		return ret
+		if (dim == type.dimension.size) {
+			return type.type
+		} else {
+			var ret = ImlFactory::eINSTANCE.createArrayType() ;
+			//TODO We are not cloning the property list here
+			ret.type = clone(type.type);
 	
+			for( i : 0..<(type.dimension.size()- dim)) {
+				//TODO : Should we clone the term expressions?
+				ret.dimension.add(ImlFactory::eINSTANCE.createNumberLiteral => [value=0] ) ;
+			}
+			return ret
+		}
 	}
 
 	
@@ -155,11 +188,11 @@ public class TypingServices {
 			return false;
 		}
 		
-		if (checkProperties) {
-			if (!isEqual(left.propertylist, right.propertylist)) {
-				return false
-			}
-		}
+//		if (checkProperties) {
+//			if (!isEqual(left.propertylist, right.propertylist)) {
+//				return false
+//			}
+//		}
 		
 		return true;
 	}
@@ -185,11 +218,11 @@ public class TypingServices {
 	}
 	
 	def static boolean isEqual(TupleType left, TupleType right) {
-		if (left.types.length != right.types.length) {
+		if (left.symbols.length != right.symbols.length) {
 			return false
 		} else {
-			for (i: 0 ..< left.types.length) {
-				if (!isEqual(left.types.get(i), right.types.get(i))) {
+			for (i: 0 ..< left.symbols.length) {
+				if (!isEqual(left.symbols.get(i).type, right.symbols.get(i).type)) {
 					return false
 				}
 			}
@@ -239,7 +272,7 @@ public class TypingServices {
 	//TODO 
 	def static getAllDeclarations(HigherOrderType ctx) {
 		var List<SymbolDeclaration> tlist = <SymbolDeclaration>newArrayList()
-		var List<List<HigherOrderType>> hierarchy = ctx.allSuperTypes;
+		var List<List<SimpleTypeReference>> hierarchy = ctx.allSuperTypes;
 		for (level : hierarchy) {
 			for (st : level) {
 //				for (Element e : st.type.elements) {
@@ -256,48 +289,40 @@ public class TypingServices {
 
 	/* Compute all super types of a ContrainedType  */
 	def static getAllSuperTypes(ConstrainedType ct) {
-		val closed = <ConstrainedType>newArrayList()
-		val retVal = new ArrayList<List<ConstrainedType>>()
-		retVal.add(new ArrayList<ConstrainedType>());
-		retVal.get(0).add(ct); // A type is a super type of itself
-		var index = 0;
-		while (retVal.get(index).size() > 0) {
-			val toAdd = <ConstrainedType>newArrayList();
-			for (current : retVal.get(index)) {
-//				for (sup : current.superType) {
-//					if (!closed.contains(sup.type)) {
-//						toAdd.add(sup.type)
-//					}
-//				}
-				closed.add(current)
-			}
-			if (toAdd.size() > 0) {
-				retVal.add(toAdd)
-				index = index + 1
-			} else {
-				return retVal;
-			}
-		}
-		return retVal
+		getSuperTypes(createSimpleTypeRef(ct)).map[it.map[it.ref]]
 	}
 
 
 	/* Compute all super type references of a TypeReference */
-	def static getAllSuperTypes(HigherOrderType tf) {
-		val closed = <HigherOrderType>newArrayList()
-		val retVal = new ArrayList<List<HigherOrderType>>()
-		retVal.add(new ArrayList<HigherOrderType>());
+	def static getAllSuperTypes(HigherOrderType hot) {
+		if (hot instanceof SimpleTypeReference) {
+			return getSuperTypes(hot)
+		} else {
+			return new ArrayList<List<SimpleTypeReference>>()
+		}
+	}
+	
+
+	def static getSuperTypes(SimpleTypeReference tf) {
+		val closed = <ConstrainedType>newArrayList()
+		val retVal = new ArrayList<List<SimpleTypeReference>>()
+		retVal.add(new ArrayList<SimpleTypeReference>());
 		retVal.get(0).add(tf); // A type is a super type of itself
 		var index = 0;
 		while (retVal.get(index).size() > 0) {
-			val toAdd = <HigherOrderType>newArrayList();
+			val toAdd = <SimpleTypeReference>newArrayList();
 			for (current : retVal.get(index)) {
-//				for (sup : current.type.superType) {
-//					if (!closed.contains(sup)) {
-//						toAdd.add(sup)
-//					}
-//				}
-				closed.add(current)
+				val ctype = current.ref
+				for(rel : ctype.relations) {
+					if (rel instanceof com.utc.utrc.hermes.iml.iml.Extension) {
+						if (rel.target instanceof SimpleTypeReference) {
+							if ( ! closed.contains((rel.target as SimpleTypeReference).ref)) {
+								toAdd.add(rel.target as SimpleTypeReference)
+							}
+						}
+					}
+				}
+				closed.add(current.ref)
 			}
 			if (toAdd.size() > 0) {
 				retVal.add(toAdd)
@@ -308,6 +333,8 @@ public class TypingServices {
 		}
 		return retVal
 	}
+	
+	
 
 	/* Check whether actual paramemter's type is compatible with formal/signature parameter's type.
 	 * If the flag checkStereotypes is true, then also compare stereotypes. 
@@ -510,6 +537,17 @@ public class TypingServices {
 			}
 		}
 		return false;
+	}
+	
+	def static isSimpleTR(HigherOrderType hot) {
+		return hot instanceof SimpleTypeReference
+	}
+	
+	def static asSimpleTR(HigherOrderType hot) {
+		if (isSimpleTR(hot)) {
+			return hot as SimpleTypeReference
+		}
+		return null;
 	}
 
 

@@ -3,9 +3,21 @@
  */
 package com.utc.utrc.hermes.iml
 
+import com.google.inject.Binder
+import org.eclipse.xtext.scoping.impl.AbstractDeclarativeScopeProvider
+import com.utc.utrc.hermes.iml.scoping.ImlImportedNamespaceAwareLocalScopeProvider
 
 /**
  * Use this class to register components to be used at runtime / without the Equinox extension registry.
  */
 class ImlRuntimeModule extends AbstractImlRuntimeModule {
+	
+	override configureIScopeProviderDelegate(Binder binder) {
+		binder.bind(org.eclipse.xtext.scoping.IScopeProvider)
+				.annotatedWith(
+						com.google.inject.name.Names
+								.named(AbstractDeclarativeScopeProvider.NAMED_DELEGATE))
+				.to(ImlImportedNamespaceAwareLocalScopeProvider);
+	}
+	
 }
