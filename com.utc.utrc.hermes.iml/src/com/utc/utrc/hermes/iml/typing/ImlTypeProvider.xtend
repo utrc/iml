@@ -27,8 +27,6 @@ import com.utc.utrc.hermes.iml.iml.AtomicExpression
 import com.utc.utrc.hermes.iml.iml.TupleConstructor
 import com.utc.utrc.hermes.iml.iml.LambdaExpression
 import com.utc.utrc.hermes.iml.iml.Program
-import com.utc.utrc.hermes.iml.iml.Symbol
-import com.utc.utrc.hermes.iml.iml.TupleSymbol
 import com.utc.utrc.hermes.iml.iml.SymbolReferenceTerm
 
 public class ImlTypeProvider {
@@ -139,6 +137,10 @@ public class ImlTypeProvider {
 				if (t.symbol instanceof ConstrainedType) {
 					// Reference to a literal
 					return createBasicType(t.symbol as ConstrainedType)
+				} else if (t.symbol.eContainer instanceof ConstrainedType && 
+					(t.symbol.eContainer as ConstrainedType).literals.contains(t.symbol)
+				) { // Accessing specific literal
+					return createBasicType(t.symbol.eContainer as ConstrainedType)
 				} else {
 					// Reference to a symbol
 					var term_type = getType(t.symbol as SymbolDeclaration,context);
@@ -177,7 +179,7 @@ public class ImlTypeProvider {
 			TupleConstructor: {
 				return ImlFactory.eINSTANCE.createTupleType => [
 					symbols.addAll(t.elements.map[
-						val ts = ImlFactory.eINSTANCE.createTupleSymbol;  
+						val ts = ImlFactory.eINSTANCE.createSymbolDeclaration;  
 						ts.type = it.termExpressionType(context)
 						ts
 					]);
@@ -197,11 +199,11 @@ public class ImlTypeProvider {
 			if (type instanceof ArrayType) {
 				return accessArray(type as ArrayType, term.index.size)
 			} else if (type instanceof TupleType) {
-				val index = term.index.get(0)
+				val index = term.index.get(0) // It should be integer or symbol a[0] or a[symbolName]
 				if (index.left !== null) {
 					val indexAtomic = index.left
 					if (indexAtomic instanceof SymbolReferenceTerm) { // Specific symbol
-						for (TupleSymbol symbol : type.symbols) {
+						for (symbol : type.symbols) {
 							if (symbol.name !== null && symbol.name == indexAtomic.symbol.name) {
 								return symbol.type
 							}
@@ -291,7 +293,7 @@ public class ImlTypeProvider {
 			TupleType:{
 				var retval = ImlFactory.eINSTANCE.createTupleType ;
 				for(s : t.symbols) {
-					val ss = ImlFactory.eINSTANCE.createTupleSymbol
+					val ss = ImlFactory.eINSTANCE.createSymbolDeclaration
 					ss.name = s.name
 					ss.type = remap(s.type, map)
 					retval.symbols.add(ss)

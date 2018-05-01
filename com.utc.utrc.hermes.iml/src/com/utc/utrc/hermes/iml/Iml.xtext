@@ -35,11 +35,6 @@ Doc :
 	{Doc}('@' properties+=[ConstrainedType|QualifiedName] descriptions+=STRING)+
 ;
 	
-
-/*Literals used in finite data types */
-DomainLiteral:
-	name=ID;
-
 RelationInstance:
 	Extension |
 	Alias |
@@ -65,7 +60,7 @@ PropertyList:
 ConstrainedType:
 	(doc=Doc)?
 	(meta?='meta')? 'type' (propertylist=PropertyList)? name=ID
-	((finite?='finite' '|'(cardinality=INT |  literals+=DomainLiteral (',' literals+=DomainLiteral)* )'|' )?
+	((finite?='finite' '|'(cardinality=INT |  literals+=SymbolDeclaration (',' literals+=SymbolDeclaration)* )'|' )?
 	/*Optional template parameters for generic types */
 	(template?='<' typeParameter+=ConstrainedType (',' typeParameter+=ConstrainedType)* '>')?
 	/* An optional list of type being extended by this type*/
@@ -74,7 +69,7 @@ ConstrainedType:
 	('{' (symbols+=SymbolDeclaration ';')* '}')?);
 
 SymbolDeclaration:
-	 name=ID (propertylist=PropertyList)? ':' type=HigherOrderType (':=' definition=FolFormula)? 
+	 name=ID (propertylist=PropertyList)? (':' type=HigherOrderType)? (':=' definition=FolFormula)? 
 ;
 
 HigherOrderType:
@@ -90,7 +85,7 @@ TupleType returns HigherOrderType:
 	{TupleType} '(' ( symbols+=TupleSymbol (',' symbols+=TupleSymbol)*  )? ')'
 ;
 
-TupleSymbol:
+TupleSymbol returns SymbolDeclaration:
 	(name=ID ':')? type=HigherOrderType
 ;
 
@@ -180,12 +175,7 @@ TupleConstructor:
 ;
 
 SymbolReferenceTerm:
-	symbol=[Symbol|QualifiedName] (tail=SelectionParameters)? ( arrayAccess?= '['index+=FolFormula']' ('[' index+=FolFormula']')* )? 
-;
-
-SelectionParameters:
-	TupleConstructor |
-	{LiteralSelection} '@' (literal=[DomainLiteral] | intid=INT)
+	symbol=[Symbol|QualifiedName] (tail=TupleConstructor)? ( arrayAccess?= '['index+=FolFormula']' ('[' index+=FolFormula']')* )? 
 ;
 
 IteTermExpression:

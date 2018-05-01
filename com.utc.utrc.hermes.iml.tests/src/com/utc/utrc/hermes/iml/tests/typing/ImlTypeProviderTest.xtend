@@ -532,14 +532,14 @@ class ImlTypeProviderTest {
 	}
 	
 	@Test
-	def testTermExpressionType_LiteralSelection() {
+	def testTermExpressionType_FinieSelection() {
 		val model = '''
 			package p;
 			type Int;
 			type Bool;
 			type Real;
 			type t1 {
-				varx : Int := t2@1;
+				varx : Int := t2.e2;
 			}
 			type t2 finite |e1, e2|;
 		'''.parse
@@ -561,7 +561,7 @@ class ImlTypeProviderTest {
 			type Bool;
 			type Real;
 			type t1 {
-				varx : Int := t2@e2;
+				varx : Int := t2.e2;
 			}
 			type t2 finite |e1, e2|;
 		'''.parse
@@ -574,4 +574,5 @@ class ImlTypeProviderTest {
 		
 		assertEquals(t2, (exprType as SimpleTypeReference).ref)
 	}
+	
 }

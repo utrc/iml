@@ -16,7 +16,6 @@ import com.utc.utrc.hermes.iml.iml.FloatNumberLiteral
 import com.utc.utrc.hermes.iml.iml.Symbol
 import org.eclipse.emf.ecore.EObject
 import com.utc.utrc.hermes.iml.iml.Model
-import com.utc.utrc.hermes.iml.iml.TupleSymbol
 
 public class TypingServices {
 
@@ -105,13 +104,6 @@ public class TypingServices {
 		for (s : tt.symbols) {
 			ret.symbols.add(clone(s))
 		}
-		return ret
-	}
-
-	def static clone(TupleSymbol ts) {
-		var ret = ImlFactory::eINSTANCE.createTupleSymbol
-		ret.name = ts.name
-		ret.type = ts.type
 		return ret
 	}
 	
