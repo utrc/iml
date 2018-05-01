@@ -82,7 +82,7 @@ class ImlValidator extends AbstractImlValidator {
 
 	@Check
 	def checkNoDuplicateElement(Symbol e) {
-		if (e.eContainer.eContents.filter(Symbol).exists[it != e && it.name == e.name])
+		if (e.eContainer.eContents.filter(Symbol).exists[it != e && it.name !== null && it.name == e.name])
 			error("Duplicate term symbol '" + e.name + "'", ImlPackage::eINSTANCE.symbol_Name, DUPLICATE_ELEMENT)
 
 	}
