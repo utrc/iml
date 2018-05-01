@@ -130,6 +130,27 @@ class ImlScopeProviderTest {
 		return
 	}
 	
+	@Test
+	def scopeForTupleAccess() {
+		val model = '''
+			package p;
+			type Int;
+			type Real;
+			type t1 {
+				var1 : (e1: Int, e2:Real);
+				varx : Int := var1[e2];
+			}
+		'''.parse
+		model.assertNoErrors;
+		
+		((model.symbols.last as ConstrainedType).symbols.last.definition.left 
+		   as SymbolReferenceTerm).index.get(0).left => [
+			assertScope(ImlPackage::eINSTANCE.symbolReferenceTerm_Symbol, 
+				Arrays.asList("e1", "e2"))
+		];
+		return
+	}
+	
 	def private assertScope(EObject context, EReference ref, List<String> expected) {
 		context.assertNoErrors
 		val scope = context.getScope(ref).allElements.map[name.toString].toList

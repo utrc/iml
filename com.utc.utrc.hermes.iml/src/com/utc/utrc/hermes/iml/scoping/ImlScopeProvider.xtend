@@ -23,6 +23,9 @@ import com.utc.utrc.hermes.iml.iml.SimpleTypeReference
 import org.eclipse.xtext.scoping.Scopes
 import com.utc.utrc.hermes.iml.iml.ConstrainedType
 import com.utc.utrc.hermes.iml.iml.SymbolReferenceTerm
+import com.utc.utrc.hermes.iml.iml.SignedAtomicFormula
+import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
+import com.utc.utrc.hermes.iml.iml.TupleType
 
 /**
  * This class contains custom scoping description.
@@ -116,6 +119,19 @@ class ImlScopeProvider extends AbstractDeclarativeScopeProvider {
 			if (container.member === context) {
 				return scope_SymbolReferenceTerm_symbol(container,r)
 			}
+		} else if (container instanceof SignedAtomicFormula && 
+					container.eContainer instanceof SymbolReferenceTerm) {
+
+			val symbolRef = container.eContainer as SymbolReferenceTerm
+			if (symbolRef.arrayAccess) { // trying to provide array access scope a[..]
+				if (symbolRef.symbol instanceof SymbolDeclaration && 
+					(symbolRef.symbol as SymbolDeclaration).type instanceof TupleType) {
+					// The only available scope is the symbols of tuple
+					val tuple = (symbolRef.symbol as SymbolDeclaration).type as TupleType
+					return Scopes::scopeFor(tuple.symbols.toList)
+				}
+			}			
+			
 		}
 		var scope = getGlobalScope(context, r)
 		val superTypes = context.getContainerOfType(ConstrainedType).allSuperTypes
@@ -128,8 +144,7 @@ class ImlScopeProvider extends AbstractDeclarativeScopeProvider {
 		}
 		return Scopes::scopeFor(features, scope)
 	}
-
-//	
+	
 	def scope_SymbolReferenceTerm_symbol(TermMemberSelection context, EReference r) {
 		var parentScope = IScope::NULLSCOPE
 		val receiver = context.receiver
@@ -152,6 +167,12 @@ class ImlScopeProvider extends AbstractDeclarativeScopeProvider {
 			}
 			parentScope = Scopes::scopeFor(features, parentScope)
 		}
+		return parentScope
+	}
+	
+	def scope_FolFormula(SymbolReferenceTerm context, EReference r) {
+		var parentScope = IScope::NULLSCOPE
+		
 		return parentScope
 	}
 	
