@@ -350,9 +350,11 @@ class ImlTypeProviderTest {
 		
 		model.assertNoErrors
 		val t1 = model.findSymbol("t1") as ConstrainedType
+		val Int = model.findSymbol("Int")
 		val exprType = ImlTypeProvider.termExpressionType(t1.findSymbol("varx").definition)
 		
-		assertEquals(ImlTypeProvider.Bool, exprType)
+		assertEquals(Int, ((exprType.domain as TupleType).symbols.get(0).type as SimpleTypeReference).ref)
+		assertEquals(ImlTypeProvider.Bool, exprType.range)
 	}
 	
 	@Test
@@ -368,8 +370,10 @@ class ImlTypeProviderTest {
 		model.assertNoErrors
 		val t1 = model.findSymbol("t1") as ConstrainedType
 		val exprType = ImlTypeProvider.termExpressionType(t1.findSymbol("varx").definition)
+		val Int = model.findSymbol("Int")
 		
-		assertEquals(ImlTypeProvider.Int, exprType)
+		assertEquals(Int,  ((exprType.domain as TupleType).symbols.get(0).type as SimpleTypeReference).ref)
+		assertEquals(ImlTypeProvider.Int, exprType.range)
 	}
 	
 	@Test

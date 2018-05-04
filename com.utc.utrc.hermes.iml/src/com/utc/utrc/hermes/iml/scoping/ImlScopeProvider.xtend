@@ -4,34 +4,34 @@
 package com.utc.utrc.hermes.iml.scoping
 
 import com.google.inject.Inject
+import com.utc.utrc.hermes.iml.iml.ArrayAccess
+import com.utc.utrc.hermes.iml.iml.ConstrainedType
+import com.utc.utrc.hermes.iml.iml.ImlPackage
 import com.utc.utrc.hermes.iml.iml.Model
+import com.utc.utrc.hermes.iml.iml.SignedAtomicFormula
+import com.utc.utrc.hermes.iml.iml.SimpleTypeReference
+import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
+import com.utc.utrc.hermes.iml.iml.SymbolReferenceTail
+import com.utc.utrc.hermes.iml.iml.SymbolReferenceTerm
+import com.utc.utrc.hermes.iml.iml.TermMemberSelection
+import com.utc.utrc.hermes.iml.iml.TupleType
+import com.utc.utrc.hermes.iml.iml.impl.TermMemberSelectionImpl
+import com.utc.utrc.hermes.iml.typing.ImlTypeProvider
 import java.util.HashSet
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
+import org.eclipse.xtext.EcoreUtil2
 import org.eclipse.xtext.naming.IQualifiedNameConverter
 import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.resource.IEObjectDescription
 import org.eclipse.xtext.scoping.IScope
+import org.eclipse.xtext.scoping.Scopes
 import org.eclipse.xtext.scoping.impl.AbstractDeclarativeScopeProvider
 import org.eclipse.xtext.scoping.impl.FilteringScope
 
-import static extension org.eclipse.xtext.EcoreUtil2.*
-import com.utc.utrc.hermes.iml.iml.TermMemberSelection
 import static extension com.utc.utrc.hermes.iml.typing.ImlTypeProvider.*
 import static extension com.utc.utrc.hermes.iml.typing.TypingServices.*
-import com.utc.utrc.hermes.iml.iml.SimpleTypeReference
-import org.eclipse.xtext.scoping.Scopes
-import com.utc.utrc.hermes.iml.iml.ConstrainedType
-import com.utc.utrc.hermes.iml.iml.SymbolReferenceTerm
-import com.utc.utrc.hermes.iml.iml.SignedAtomicFormula
-import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
-import com.utc.utrc.hermes.iml.iml.TupleType
-import com.utc.utrc.hermes.iml.iml.ImlPackage
-import com.utc.utrc.hermes.iml.iml.ArrayAccess
-import com.utc.utrc.hermes.iml.typing.ImlTypeProvider
-import com.utc.utrc.hermes.iml.iml.SymbolReferenceTail
-import com.utc.utrc.hermes.iml.iml.impl.TermMemberSelectionImpl
-import org.eclipse.xtext.EcoreUtil2
+import static extension org.eclipse.xtext.EcoreUtil2.*
 
 /**
  * This class contains custom scoping description.
@@ -132,16 +132,24 @@ class ImlScopeProvider extends AbstractDeclarativeScopeProvider {
 			if (tupleScope !== null) {
 				return tupleScope;
 			}
-			
-		}
+		} 
 		var scope = getGlobalScope(context, r)
-		val superTypes = context.getContainerOfType(ConstrainedType).allSuperTypes
+		
+		val typeConstructor = getTypeConstructorType(context)		
+		if (typeConstructor !== null) { // Include type symbols inside a type constructor term
+			scope = scopeOfConstrainedType(typeConstructor, scope)	
+		}
+		
+		return scopeOfConstrainedType(context.getContainerOfType(ConstrainedType), scope)
+	}
+	
+	protected def scopeOfConstrainedType(ConstrainedType type, IScope scope) {
+		val superTypes = type.allSuperTypes
 		var features = new HashSet
 		for (level : superTypes.reverseView) {
 			for (t : level) {
 				features.addAll(t.symbols)
 			}
-			scope = Scopes::scopeFor(features, scope)
 		}
 		return Scopes::scopeFor(features, scope)
 	}
