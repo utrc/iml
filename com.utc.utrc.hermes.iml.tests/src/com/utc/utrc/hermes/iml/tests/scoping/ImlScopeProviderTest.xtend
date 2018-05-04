@@ -186,7 +186,7 @@ class ImlScopeProviderTest {
 			}
 			
 			type t1 {
-				var1 : t2<(Int, (e1: Y, e2:Real))>;
+				var1 : t2<(Int, (e1: Int, e2:Real))>;
 				varx : Int := var1->vT[1][e2];
 			}
 		'''.parse

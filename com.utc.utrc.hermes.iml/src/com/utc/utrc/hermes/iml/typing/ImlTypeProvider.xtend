@@ -160,7 +160,10 @@ public class ImlTypeProvider {
 				return Bool;
 			}
 			LambdaExpression: {
-				return t.definition.termExpressionType(context)
+				return ImlFactory.eINSTANCE.createHigherOrderType => [
+					domain = t.signature
+					range = t.definition.termExpressionType(context)
+				]
 			}
 			TupleConstructor: {
 				return ImlFactory.eINSTANCE.createTupleType => [
