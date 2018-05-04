@@ -18,6 +18,8 @@ import com.utc.utrc.hermes.iml.iml.HigherOrderType
 import com.utc.utrc.hermes.iml.iml.SimpleTypeReference
 import com.utc.utrc.hermes.iml.iml.TupleType
 import com.utc.utrc.hermes.iml.iml.ArrayType
+import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
+
 /**
  * Test related helper methods
  * @author Ayman Elkfrawy
@@ -573,6 +575,36 @@ class ImlTypeProviderTest {
 		val exprType = ImlTypeProvider.termExpressionType(t1.findSymbol("varx").definition)
 		
 		assertEquals(t2, (exprType as SimpleTypeReference).ref)
+	}
+	
+	@Test
+	def testTermExpressionType_ComplexTail() {
+		val model = '''
+		    package p;
+		    type Int;
+		    type Real;
+		    type t1 {
+		    	vx: (Int, Real ~> (size: Int, matrix: Real[10][20]));
+		    	v1: (Int, Real ~> (Int, Real[10][20])) := vx;
+		    	v2: Int := vx[0];
+		    	v3: Real ~> (Int, Real[0][0]) := vx[1];
+		    	v4: (Int, Real[0][0]) := vx[1](100);
+		    	v5: Int := vx[1](100)[0];
+		    	v6: Real[0][0] := vx[1](100)[matrix];
+		    	v7: Real[0] := vx[1](100)[1][5];
+		    	v8: Real := vx[1](100)[matrix][5][50];
+		    }
+		'''.parse
+		
+		model.assertNoErrors
+		
+		val t1 = model.findSymbol("t1") as ConstrainedType
+		#["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"]
+		      .forEach[assertTypeMatches(t1.findSymbol(it))]
+	}
+	
+	def assertTypeMatches(SymbolDeclaration symbol) {
+		assertTrue(TypingServices.isEqual(symbol.type, ImlTypeProvider.termExpressionType(symbol.definition)))
 	}
 	
 }

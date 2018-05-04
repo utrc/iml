@@ -28,6 +28,8 @@ import com.utc.utrc.hermes.iml.iml.TupleConstructor
 import com.utc.utrc.hermes.iml.iml.LambdaExpression
 import com.utc.utrc.hermes.iml.iml.Program
 import com.utc.utrc.hermes.iml.iml.SymbolReferenceTerm
+import com.utc.utrc.hermes.iml.iml.SymbolReferenceTail
+import com.utc.utrc.hermes.iml.iml.ArrayAccess
 
 public class ImlTypeProvider {
 
@@ -115,24 +117,6 @@ public class ImlTypeProvider {
 				} else return null // TODO Should we raise an exception better?
 				
 			}
-//			ArrayAccess: {
-//				var term_type = termExpressionType(t.ref as AtomicTerm, context);
-//				if (term_type instanceof ArrayType) {
-//					term_type = accessArray(term_type as ArrayType, t.index.size)
-//				} else if (term_type instanceof TupleType) {
-//					// TODO dimension need to be size 1 and has integer or symbol reference
-//					val index = t.index.get(0);
-//					if (index instanceof SymbolReferenceExpression) {
-//						
-//					}
-//					val indexInt = getIntValueOf(index)
-//					if (indexInt >= 0 && indexInt < term_type.symbols.size) {
-//						
-//					}
-////					term_type = accessTuple(term_type as TupleType, t)
-//				}
-//				term_type
-//			}
 			SymbolReferenceTerm: {
 				if (t.symbol instanceof ConstrainedType) {
 					// Reference to a literal
@@ -143,18 +127,19 @@ public class ImlTypeProvider {
 					return createBasicType(t.symbol.eContainer as ConstrainedType)
 				} else {
 					// Reference to a symbol
-					var term_type = getType(t.symbol as SymbolDeclaration,context);
-					if (term_type.domain !== null) {
-						if (t.tail !== null) {
-							return term_type.range
-						} else {
-							return term_type
-						}
-					}
-					if (t.arrayAccess) {
-						term_type = getArrayAccessType(term_type, t)
-					}
-					return term_type;
+					return getSymbolReferenceType(t, context)
+//					var term_type = getType(t.symbol as SymbolDeclaration,context);
+//					if (term_type.domain !== null) {
+//						if (t.tail !== null) {
+//							return term_type.range
+//						} else {
+//							return term_type
+//						}
+//					}
+//					if (t.arrayAccess) {
+//						term_type = getArrayAccessType(term_type, t)
+//					}
+//					return term_type;
 				}
 
 			}
@@ -194,26 +179,53 @@ public class ImlTypeProvider {
 		}
 	}
 	
-	def static getArrayAccessType(HigherOrderType type, SymbolReferenceTerm term) {
-		if (term.arrayAccess) {
+	def static getSymbolReferenceType(SymbolReferenceTerm term, SimpleTypeReference context) {
+		var term_type = getType(term.symbol as SymbolDeclaration, context);
+		for (tail : term.tails) {
+			term_type = accessTail(term_type, tail)
+		}
+		return term_type
+	}
+	
+	def static accessTail(HigherOrderType type, SymbolReferenceTail tail) {
+		if (tail instanceof ArrayAccess) {
 			if (type instanceof ArrayType) {
-				return accessArray(type as ArrayType, term.index.size)
+				return accessArray(type as ArrayType, tail as ArrayAccess)
 			} else if (type instanceof TupleType) {
-				val index = term.index.get(0) // It should be integer or symbol a[0] or a[symbolName]
-				if (index.left !== null) {
-					val indexAtomic = index.left
-					if (indexAtomic instanceof SymbolReferenceTerm) { // Specific symbol
-						for (symbol : type.symbols) {
-							if (symbol.name !== null && symbol.name == indexAtomic.symbol.name) {
-								return symbol.type
-							}
-						}
-					} else if (indexAtomic instanceof NumberLiteral) { // Specific index
-						val indexValue = indexAtomic.value * (if (indexAtomic.neg) -1 else 1)
-						if (indexValue >= 0 && indexValue < type.symbols.size) {
-							return type.symbols.get(indexValue).type
-						}
+				return accessTuple(type as TupleType, tail as ArrayAccess)
+			}
+			
+		} else { // Method invocation using Tuple
+		    if (type.range !== null) {
+		    	return type.range
+		    }
+		}
+		return type
+	}
+	
+	def static accessArray(ArrayType type, ArrayAccess arrayAccessTail) {
+		type.dimension.remove(type.dimension.size - 1)
+		if (type.dimension.isEmpty) {
+			return type.type
+		} else {
+			return type
+		}
+	}
+	
+	def static accessTuple(TupleType type, ArrayAccess arrayAccessTail) {
+		val index = arrayAccessTail.index // It should be integer or symbol a[0] or a[symbolName]
+		if (index.left !== null) {
+			val indexAtomic = index.left
+			if (indexAtomic instanceof SymbolReferenceTerm) { // Specific symbol
+				for (symbol : type.symbols) {
+					if (symbol.name !== null && symbol.name == indexAtomic.symbol.name) {
+						return symbol.type
 					}
+				}
+			} else if (indexAtomic instanceof NumberLiteral) { // Specific index
+				val indexValue = indexAtomic.value * (if (indexAtomic.neg) -1 else 1)
+				if (indexValue >= 0 && indexValue < type.symbols.size) {
+					return type.symbols.get(indexValue).type
 				}
 			}
 		}
