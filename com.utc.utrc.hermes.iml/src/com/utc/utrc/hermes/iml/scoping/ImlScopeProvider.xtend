@@ -26,6 +26,12 @@ import com.utc.utrc.hermes.iml.iml.SymbolReferenceTerm
 import com.utc.utrc.hermes.iml.iml.SignedAtomicFormula
 import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
 import com.utc.utrc.hermes.iml.iml.TupleType
+import com.utc.utrc.hermes.iml.iml.ImlPackage
+import com.utc.utrc.hermes.iml.iml.ArrayAccess
+import com.utc.utrc.hermes.iml.typing.ImlTypeProvider
+import com.utc.utrc.hermes.iml.iml.SymbolReferenceTail
+import com.utc.utrc.hermes.iml.iml.impl.TermMemberSelectionImpl
+import org.eclipse.xtext.EcoreUtil2
 
 /**
  * This class contains custom scoping description.
@@ -120,17 +126,12 @@ class ImlScopeProvider extends AbstractDeclarativeScopeProvider {
 				return scope_SymbolReferenceTerm_symbol(container,r)
 			}
 		} else if (container instanceof SignedAtomicFormula && 
-					container.eContainer instanceof SymbolReferenceTerm) {
-
-			val symbolRef = container.eContainer as SymbolReferenceTerm
-			if (symbolRef.arrayAccess) { // trying to provide array access scope a[..]
-				if (symbolRef.symbol instanceof SymbolDeclaration && 
-					(symbolRef.symbol as SymbolDeclaration).type instanceof TupleType) {
-					// The only available scope is the symbols of tuple
-					val tuple = (symbolRef.symbol as SymbolDeclaration).type as TupleType
-					return Scopes::scopeFor(tuple.symbols.toList)
-				}
-			}			
+					container.eContainer instanceof ArrayAccess) {
+			// Scope provider for Tuple array access
+			val tupleScope = getScopeOfTupleAccess(container.eContainer as ArrayAccess)
+			if (tupleScope !== null) {
+				return tupleScope;
+			}
 			
 		}
 		var scope = getGlobalScope(context, r)
@@ -143,6 +144,42 @@ class ImlScopeProvider extends AbstractDeclarativeScopeProvider {
 			scope = Scopes::scopeFor(features, scope)
 		}
 		return Scopes::scopeFor(features, scope)
+	}
+	
+	def getScopeOfTupleAccess(ArrayAccess arrayAccess) {
+		val symbolRef = arrayAccess.eContainer as SymbolReferenceTerm
+			if (symbolRef.symbol instanceof SymbolDeclaration) {
+				var type = getTypeWithoutTail(symbolRef)
+				var break = false;
+				for (SymbolReferenceTail tail : symbolRef.tails) {
+					if (!break) {
+						if (tail === arrayAccess) {
+							if (type instanceof TupleType) {
+								return Scopes::scopeFor(type.symbols);
+							} else { // It is just normal array access not tuple
+								break = true;
+							}
+						} else {
+							type = ImlTypeProvider.accessTail(type, tail)
+						}
+					}
+				}
+			}
+	}
+	
+	def getTypeWithoutTail(SymbolReferenceTerm term) {
+// 		To Handle template type access
+//		TODO : the problem here is we can't get the scope of in-memory symbols created by bind function
+//		if (term.eContainer instanceof TermMemberSelection && 
+//			(term.eContainer as TermMemberSelection).member === term
+//		) {
+//			val tms = term.eContainer as TermMemberSelection			
+//			val receiverType = termExpressionType(tms.receiver)
+//			return getType(term.symbol as SymbolDeclaration, receiverType as SimpleTypeReference)
+//		}  else {
+//			return (term.symbol as SymbolDeclaration).type
+//		}
+		return (term.symbol as SymbolDeclaration).type
 	}
 	
 	def scope_SymbolReferenceTerm_symbol(TermMemberSelection context, EReference r) {
@@ -170,12 +207,21 @@ class ImlScopeProvider extends AbstractDeclarativeScopeProvider {
 		return parentScope
 	}
 	
-	def scope_FolFormula(SymbolReferenceTerm context, EReference r) {
-		var parentScope = IScope::NULLSCOPE
-		
-		return parentScope
+	def scope_SymbolReferenceTerm_symbol(ArrayAccess context, EReference r) {
+		val tupleScope = getScopeOfTupleAccess(context)
+		if (tupleScope !== null) {
+			return tupleScope
+		} else {
+			return getScope(context.eContainer, r)
+		}
 	}
 	
+//	def scope_FolFormula(SymbolReferenceTerm context, EReference r) {
+//		var parentScope = IScope::NULLSCOPE
+//		
+//		return parentScope
+//	}
+//	
 	//
 //	def scope_TypeReference_type(TypeReference context, EReference r) {
 //		val global = getGlobalScope(context, r)

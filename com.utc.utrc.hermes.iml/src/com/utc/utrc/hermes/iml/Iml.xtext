@@ -77,7 +77,7 @@ HigherOrderType:
 ;
 
 ArrayType returns HigherOrderType:
-	SimpleTypeReference ({ArrayType.type=current}'['(dimension+=TermExpression)?']' ('['(dimension+=TermExpression)?']')*)? |
+	SimpleTypeReference ({ArrayType.type=current} (('['dimension+=TermExpression?']'))+)? |
 	TupleType
 ;
 
@@ -175,7 +175,12 @@ TupleConstructor:
 ;
 
 SymbolReferenceTerm:
-	symbol=[Symbol|QualifiedName] (tail=TupleConstructor)? ( arrayAccess?= '['index+=FolFormula']' ('[' index+=FolFormula']')* )? 
+	symbol=[Symbol|QualifiedName] (tails+=SymbolReferenceTail)*
+;
+
+SymbolReferenceTail:
+	TupleConstructor |
+	{ArrayAccess} '['index=FolFormula']'
 ;
 
 IteTermExpression:
