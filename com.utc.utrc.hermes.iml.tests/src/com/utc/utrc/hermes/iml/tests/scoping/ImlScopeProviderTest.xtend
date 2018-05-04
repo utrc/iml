@@ -217,6 +217,78 @@ class ImlScopeProviderTest {
 		assertEquals("Couldn't resolve reference to Symbol 'e1'.", errors.get(0).message)
 	}
 	
+	
+	@Test
+	def scopeInsideLambda() {
+		val model = '''
+			package p;
+			type Int;
+			type Real;
+			type Bool;
+			
+			type T1 {
+				var1 : Int;
+			}
+			
+			type T2 {
+				fun : Int ~> Real;
+				formul : Bool := {
+					fun = lambda(x: T1) {
+						x->var1 = x->var1;
+					};
+				};
+			}
+		'''.parse
+		model.assertNoErrors
+	}
+	
+	@Test
+	def scopeInsideProgram() {
+		val model = '''
+			package p;
+			type Int;
+			type Real;
+			type Bool;
+			
+			type T1 {
+				var1 : Int;
+			}
+			
+			type T2 {
+				fun : Int ~> Real;
+				prog: Int := {
+					var t1 : T1;
+					t1->var1;	
+				};
+			}
+		'''.parse
+		model.assertNoErrors
+	}
+	
+	@Test
+	def scopeForTypeConstructor() {
+		val model = '''
+			package p;
+			type Int;
+			type Real;
+			type Bool;
+			
+			type T1 {
+				var1 : Int;
+				var2 : SubT;
+			}
+			
+			type T2 {
+				vv : T1 := T1(var1 = 5, var2->vsub=5);
+			}
+			
+			type SubT {
+				vsub: Int;
+			}
+		'''.parse
+		model.assertNoErrors
+	}
+	
 	def private assertScope(EObject context, EReference ref, List<String> expected) {
 		context.assertNoErrors
 		val scope = context.getScope(ref).allElements.map[name.toString].toList

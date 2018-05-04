@@ -30,6 +30,7 @@ import com.utc.utrc.hermes.iml.iml.Program
 import com.utc.utrc.hermes.iml.iml.SymbolReferenceTerm
 import com.utc.utrc.hermes.iml.iml.SymbolReferenceTail
 import com.utc.utrc.hermes.iml.iml.ArrayAccess
+import org.eclipse.xtext.EcoreUtil2
 
 public class ImlTypeProvider {
 
@@ -180,7 +181,18 @@ public class ImlTypeProvider {
 	}
 	
 	def static getSymbolReferenceType(SymbolReferenceTerm term, SimpleTypeReference context) {
-		var term_type = getType(term.symbol as SymbolDeclaration, context);
+		// If symbol reference is inside a type constructor
+		val typeConstructor = getTypeConstructorType(term)
+		var HigherOrderType term_type = null;
+		if (typeConstructor !== null) {
+			// TODO we try to get the type in context of the declared type
+			term_type = getType(term.symbol as SymbolDeclaration, ImlFactory.eINSTANCE.createSimpleTypeReference => [ref = typeConstructor])
+		}
+		
+		if (term_type === null) { // Get the type from normal container context
+			term_type = getType(term.symbol as SymbolDeclaration, context);
+		}
+		
 		for (tail : term.tails) {
 			term_type = accessTail(term_type, tail)
 		}
@@ -233,9 +245,12 @@ public class ImlTypeProvider {
 	}
 	
 	def static HigherOrderType getType(SymbolDeclaration s, SimpleTypeReference ctx) {
-		if ( ctx.ref.symbols.contains(s)) {
+		if ( ctx.ref.symbols.contains(s) || symbolInsideLambda(s) || 
+			symbolInsideProgram(s)
+		) {
 			return bind(s,ctx)
 		}
+		
 		for(rel : ctx.ref.relations) {
 			switch(rel){
 				com.utc.utrc.hermes.iml.iml.Extension :{
@@ -245,12 +260,38 @@ public class ImlTypeProvider {
 						var retval = getType(s,sup);
 						if (retval !== null) {
 							return retval;
-						}	
+						}
 					}
 				}
 			}
 		}
 		return null;
+	}
+	
+	/**
+	 * Check if symbol declaration is defined inside a program
+	 */
+	def static symbolInsideProgram(SymbolDeclaration symbol) {
+		return symbol.eContainer instanceof Program
+	}
+	
+	/**
+	 * Check if symbol declaration is defined inside a lambda signature
+	 */
+	def static symbolInsideLambda(SymbolDeclaration symbol) {
+		return symbol.eContainer instanceof TupleType && 
+			symbol.eContainer.eContainer instanceof LambdaExpression &&
+			(symbol.eContainer.eContainer as LambdaExpression).signature == symbol.eContainer
+	}
+	
+	def static getTypeConstructorType(TermExpression term) {
+		val tupleParent = EcoreUtil2.getContainerOfType(term, TupleConstructor)
+		if (tupleParent !== null) {
+			val srt = EcoreUtil2.getContainerOfType(tupleParent, SymbolReferenceTerm)
+			if (srt !== null && srt.symbol instanceof ConstrainedType) {
+				return srt.symbol as ConstrainedType
+			}
+		}
 	}
 	
 	def static bind(SymbolDeclaration s, SimpleTypeReference ctx) {
