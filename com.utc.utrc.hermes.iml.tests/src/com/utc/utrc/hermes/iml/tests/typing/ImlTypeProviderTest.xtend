@@ -433,7 +433,7 @@ class ImlTypeProviderTest {
 		val exprType = ImlTypeProvider.termExpressionType(t1.findSymbol("varx").definition)
 		
 		assertTrue(exprType instanceof ArrayType)
-		assertEquals(2, (exprType as ArrayType).dimension.size)
+		assertEquals(2, (exprType as ArrayType).dimensions.size)
 	}
 	
 	@Test

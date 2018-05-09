@@ -219,8 +219,8 @@ public class ImlTypeProvider {
 	}
 	
 	def static accessArray(ArrayType type, ArrayAccess arrayAccessTail) {
-		type.dimension.remove(type.dimension.size - 1)
-		if (type.dimension.isEmpty) {
+		type.dimensions.remove(type.dimensions.size - 1)
+		if (type.dimensions.isEmpty) {
 			return type.type
 		} else {
 			return type
@@ -317,9 +317,11 @@ public class ImlTypeProvider {
 			ArrayType:{
 				var retval = ImlFactory.eINSTANCE.createArrayType ;
 				retval.type = remap(t.type,map)	
-				for(d : t.dimension) {
+				for(d : t.dimensions) {
 					//TODO : Should we clone the term expressions?
-					retval.dimension.add(ImlFactory::eINSTANCE.createNumberLiteral => [value=0] ) ;
+					retval.dimensions.add(ImlFactory::eINSTANCE.createOptionalTermExpr => [
+						term=ImlFactory::eINSTANCE.createNumberLiteral => [value=0]
+					;])
 				}
 				return retval				
 			}

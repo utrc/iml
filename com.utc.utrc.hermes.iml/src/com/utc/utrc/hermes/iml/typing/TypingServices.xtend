@@ -110,24 +110,28 @@ public class TypingServices {
 	def static clone(ArrayType at) {
 		var ret = ImlFactory::eINSTANCE.createArrayType() ;
 		ret.type = clone(at.type)
-		for(d : at.dimension) {
+		for(d : at.dimensions) {
 			//TODO : Should we clone the term expressions?
-			ret.dimension.add(ImlFactory::eINSTANCE.createNumberLiteral => [value=0] ) ;
+			ret.dimensions.add(ImlFactory::eINSTANCE.createOptionalTermExpr => [
+						term=ImlFactory::eINSTANCE.createNumberLiteral => [value=0]
+					;])
 		}
 		return ret
 	}
 		
 	def static HigherOrderType accessArray(ArrayType type, int dim) {
-		if (dim == type.dimension.size) {
+		if (dim == type.dimensions.size) {
 			return type.type
 		} else {
 			var ret = ImlFactory::eINSTANCE.createArrayType() ;
 			//TODO We are not cloning the property list here
 			ret.type = clone(type.type);
 	
-			for( i : 0..<(type.dimension.size()- dim)) {
+			for( i : 0..<(type.dimensions.size()- dim)) {
 				//TODO : Should we clone the term expressions?
-				ret.dimension.add(ImlFactory::eINSTANCE.createNumberLiteral => [value=0] ) ;
+				ret.dimensions.add(ImlFactory::eINSTANCE.createOptionalTermExpr => [
+						term=ImlFactory::eINSTANCE.createNumberLiteral => [value=0]
+					;])
 			}
 			return ret
 		}
@@ -202,7 +206,7 @@ public class TypingServices {
 			return false
 		}
 		
-		if (left.dimension.size != right.dimension.size) {
+		if (left.dimensions.size != right.dimensions.size) {
 			return false
 		}
 		
