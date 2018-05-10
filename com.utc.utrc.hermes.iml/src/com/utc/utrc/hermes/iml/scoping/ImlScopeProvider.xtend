@@ -32,6 +32,7 @@ import org.eclipse.xtext.scoping.impl.FilteringScope
 import static extension com.utc.utrc.hermes.iml.typing.ImlTypeProvider.*
 import static extension com.utc.utrc.hermes.iml.typing.TypingServices.*
 import static extension org.eclipse.xtext.EcoreUtil2.*
+import com.utc.utrc.hermes.iml.iml.TypeConstructor
 
 /**
  * This class contains custom scoping description.
@@ -204,7 +205,7 @@ class ImlScopeProvider extends AbstractDeclarativeScopeProvider {
 			var features = new HashSet
 			for (t : level) {
 				if (t instanceof SimpleTypeReference) {
-					var theType = t.ref;
+					var theType = t.type;
 					switch (theType) {
 						ConstrainedType: features.addAll(theType.symbols)
 					}
@@ -224,6 +225,20 @@ class ImlScopeProvider extends AbstractDeclarativeScopeProvider {
 		}
 	}
 	
+	
+	def dispatch computeScope(EObject container, EObject context, IScope scope) {
+		return computeScope(container.eContainer, context, scope)
+	}
+	
+	def dispatch computeScope(TypeConstructor constructor, EObject context, IScope scope) {
+		var newScope = scopeOfConstrainedType((constructor.ref as SimpleTypeReference).type, scope);
+		return computeScope(constructor.eContainer, context, newScope)
+	}
+	
+	def dispatch computeScope(ConstrainedType type, EObject context, IScope scope) {
+		return scope;
+	}
+
 //	def scope_FolFormula(SymbolReferenceTerm context, EReference r) {
 //		var parentScope = IScope::NULLSCOPE
 //		

@@ -95,7 +95,7 @@ class ImlScopeProviderTest {
 			}
 			type t1 extends Parent {
 				var1 : Int;
-				varx : Int := var1;
+				varx : Int := varp;
 			}
 		'''.parse;
 		
@@ -279,7 +279,8 @@ class ImlScopeProviderTest {
 			}
 			
 			type T2 {
-				vv : T1 := T1(var1 = 5, var2->vsub=5);
+				vv : T1 := new T1{var1 = vvv; var2->vsub=5;};
+				vvv: Int;
 			}
 			
 			type SubT {
@@ -288,6 +289,32 @@ class ImlScopeProviderTest {
 		'''.parse
 		model.assertNoErrors
 	}
+	
+		@Test
+	def scopeForTypeConstructor_WithTemplate() {
+		val model = '''
+			package p;
+			type Int;
+			type Real;
+			type Bool;
+			
+			type T1 <type T> {
+				var1 : Int;
+				var2 : T;
+			}
+			
+			type T2 {
+				vv : T1<SubT> := new T1<SubT>{var1 = vvv; var2->vsub=5;};
+				vvv: Int;
+			}
+			
+			type SubT {
+				vsub: Int;
+			}
+		'''.parse
+		model.assertNoErrors
+	}
+	
 	
 	def private assertScope(EObject context, EReference ref, List<String> expected) {
 		context.assertNoErrors

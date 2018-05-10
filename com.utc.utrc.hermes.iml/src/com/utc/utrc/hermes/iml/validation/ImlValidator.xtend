@@ -122,7 +122,7 @@ class ImlValidator extends AbstractImlValidator {
 	def checkExtendsRelation(com.utc.utrc.hermes.iml.iml.Extension extendRelation) {
 		if (! (extendRelation.target instanceof SimpleTypeReference)) {
 			error("Types can extend only simple types", 
-				ImlPackage::eINSTANCE.extension_Target, INVALID_RELATION)
+				ImlPackage::eINSTANCE.relationInstance_Target, INVALID_RELATION)
 		}
 	}
 
@@ -177,8 +177,8 @@ class ImlValidator extends AbstractImlValidator {
 			val toAdd = <ConstrainedType>newArrayList()
 			for (cur : superTypeHierarchy.get(index)) {
 				for (supType : getExtensions(cur)) {
-					if (!visited.contains(supType.target.asSimpleTR.ref))
-						toAdd.add(supType.target.asSimpleTR.ref)
+					if (!visited.contains(supType.target.asSimpleTR.type))
+						toAdd.add(supType.target.asSimpleTR.type)
 					else {
 						error(
 							"Cycle in hierarchy of constrained type '" + cur.name + "'",

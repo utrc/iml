@@ -21,21 +21,21 @@ public class TypingServices {
 
 	def static createBasicType(String n) {
 		val ret = ImlFactory::eINSTANCE.createSimpleTypeReference => [
-			ref = ImlFactory::eINSTANCE.createConstrainedType => [name = n]
+			type = ImlFactory::eINSTANCE.createConstrainedType => [name = n]
 		];
 		return ret
 	}
 
 	def static createBasicType(ConstrainedType t) {
 		val ret = ImlFactory::eINSTANCE.createSimpleTypeReference => [
-			ref = t
+			type = t
 		];
 		return ret
 	}
 	
 	def static SimpleTypeReference createSimpleTypeRef(ConstrainedType t) {
 		ImlFactory::eINSTANCE.createSimpleTypeReference => [
-			ref = t
+			type = t
 		]
 	}
 
@@ -91,7 +91,7 @@ public class TypingServices {
 	
 	def static clone(SimpleTypeReference tr){
 		var ret = ImlFactory::eINSTANCE.createSimpleTypeReference();
-		ret.ref = tr.ref;
+		ret.type = tr.type;
 		for(t : tr.typeBinding) {
 			ret.typeBinding.add(clone(t))
 		}
@@ -242,7 +242,7 @@ public class TypingServices {
 
 	/* Check whether two type references are the same */
 	def static boolean isEqual(SimpleTypeReference left, SimpleTypeReference right) {
-		if (!left.ref.isEqual(right.ref)) {
+		if (!left.type.isEqual(right.type)) {
 			return false
 		} // if (left.type.name != right.type.name || left.type.template != right.type.template || left.type.extends != right.type.extends ) {
 		// return false
@@ -278,6 +278,7 @@ public class TypingServices {
 //				}
 			}
 		}
+		ImlFactory::eINSTANCE.createTypeConstructor
 		return tlist;
 	}
 
@@ -285,7 +286,7 @@ public class TypingServices {
 
 	/* Compute all super types of a ContrainedType  */
 	def static getAllSuperTypes(ConstrainedType ct) {
-		getSuperTypes(createSimpleTypeRef(ct)).map[it.map[it.ref]]
+		getSuperTypes(createSimpleTypeRef(ct)).map[it.map[it.type]]
 	}
 
 
@@ -308,17 +309,17 @@ public class TypingServices {
 		while (retVal.get(index).size() > 0) {
 			val toAdd = <SimpleTypeReference>newArrayList();
 			for (current : retVal.get(index)) {
-				val ctype = current.ref
+				val ctype = current.type
 				for(rel : ctype.relations) {
 					if (rel instanceof com.utc.utrc.hermes.iml.iml.Extension) {
 						if (rel.target instanceof SimpleTypeReference) {
-							if ( ! closed.contains((rel.target as SimpleTypeReference).ref)) {
+							if ( ! closed.contains((rel.target as SimpleTypeReference).type)) {
 								toAdd.add(rel.target as SimpleTypeReference)
 							}
 						}
 					}
 				}
-				closed.add(current.ref)
+				closed.add(current.type)
 			}
 			if (toAdd.size() > 0) {
 				retVal.add(toAdd)
