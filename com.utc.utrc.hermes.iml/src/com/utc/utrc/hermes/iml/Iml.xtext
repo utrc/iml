@@ -41,15 +41,15 @@ RelationInstance:
 	MetaRelation
 ;
 
-Extension :
+Extension returns RelationInstance:
 	{Extension} 'extends'  target=HigherOrderType
 ;
 
-Alias:
+Alias returns RelationInstance:
 	{Alias} 'sameas'  target=HigherOrderType
 ;
 
-MetaRelation:
+MetaRelation returns RelationInstance:
 	{MetaRelaion} propertylist=PropertyList  target=HigherOrderType
 ;
 
@@ -94,7 +94,7 @@ TupleSymbol returns SymbolDeclaration:
 ;
 
 SimpleTypeReference returns HigherOrderType:
-	{SimpleTypeReference} ref=[ConstrainedType|QualifiedName]
+	{SimpleTypeReference} type=[ConstrainedType|QualifiedName]
 	/*Optional type parameters for generic types */
 	('<' typeBinding+=HigherOrderType (',' typeBinding+=HigherOrderType)* '>')?
 ;
@@ -168,18 +168,23 @@ TerminalTerm returns TermExpression:
 	{FloatNumberLiteral} neg?=('-')? value = FLOAT |
 	TupleConstructor | 
 	SymbolReferenceTerm |
+	TypeConstructor |
 	IteTermExpression |
 	{This} 'this' |
 	TruthValue |
 	'{' Program '}' |
 	{LambdaExpression}'lambda' signature=TupleType '{'definition=Program'}' ;
 
-TupleConstructor:
+TypeConstructor returns TermExpression:
+	{TypeConstructor} 'new' ref=SimpleTypeReference '{'init=Program'}'
+;
+
+TupleConstructor returns TermExpression:
 	{TupleConstructor} '(' elements+=FolFormula (',' elements+=FolFormula)* ')'
 ;
 
-SymbolReferenceTerm:
-	symbol=[Symbol|QualifiedName] (tails+=SymbolReferenceTail)*
+SymbolReferenceTerm returns TermExpression:
+	{SymbolReferenceTerm}symbol=[Symbol|QualifiedName] (tails+=SymbolReferenceTail)*
 ;
 
 SymbolReferenceTail:
@@ -187,7 +192,7 @@ SymbolReferenceTail:
 	{ArrayAccess} '['index=FolFormula']'
 ;
 
-IteTermExpression:
+IteTermExpression returns TermExpression:
 	{IteTermExpression} 'if' '(' condition=FolFormula ')' '{' left=TermExpression '}' (=> 'else'  '{' right=TermExpression '}')?;
 
 Program returns TermExpression:

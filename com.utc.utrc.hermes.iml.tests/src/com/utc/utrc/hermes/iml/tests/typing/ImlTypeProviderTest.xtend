@@ -102,7 +102,7 @@ class ImlTypeProviderTest {
 		
 		val exprType = ImlTypeProvider.termExpressionType(folForm)
 		
-		assertEquals((exprType as SimpleTypeReference).ref, t2)
+		assertEquals((exprType as SimpleTypeReference).type, t2)
 	}
 	
 	@Test
@@ -130,7 +130,7 @@ class ImlTypeProviderTest {
 		
 		val exprType = ImlTypeProvider.termExpressionType(folForm)
 		
-		assertEquals((exprType as SimpleTypeReference).ref, intType)
+		assertEquals((exprType as SimpleTypeReference).type, intType)
 	}
 	
 	@Test
@@ -160,7 +160,7 @@ class ImlTypeProviderTest {
 		
 		val exprType = ImlTypeProvider.termExpressionType(folForm)
 		
-		assertEquals((exprType as SimpleTypeReference).ref, intType)
+		assertEquals((exprType as SimpleTypeReference).type, intType)
 	}
 	
 	@Test
@@ -183,7 +183,7 @@ class ImlTypeProviderTest {
 		
 		val exprType = ImlTypeProvider.termExpressionType(folForm)
 		
-		assertEquals((exprType as SimpleTypeReference).ref, intType)
+		assertEquals((exprType as SimpleTypeReference).type, intType)
 	}
 	
 	@Test
@@ -236,8 +236,8 @@ class ImlTypeProviderTest {
 		assertNotNull(exprType.domain)
 		assertNotNull(exprType.range)
 		val domain = exprType.domain as TupleType
-		assertEquals(Int, (domain.symbols.get(0).type as SimpleTypeReference).ref)
-		assertEquals(Real, (exprType.range as SimpleTypeReference).ref)
+		assertEquals(Int, (domain.symbols.get(0).type as SimpleTypeReference).type)
+		assertEquals(Real, (exprType.range as SimpleTypeReference).type)
 	}
 	
 	@Test
@@ -266,8 +266,8 @@ class ImlTypeProviderTest {
 		val folForm = var1.definition
 		val exprType = ImlTypeProvider.termExpressionType(folForm) as SimpleTypeReference	
 			
-		assertEquals(List, exprType.ref)		
-		assertEquals(Int, (exprType.typeBinding.get(0) as SimpleTypeReference).ref)
+		assertEquals(List, exprType.type)		
+		assertEquals(Int, (exprType.typeBinding.get(0) as SimpleTypeReference).type)
 	}
 	
 	@Test
@@ -300,8 +300,8 @@ class ImlTypeProviderTest {
 		assertNotNull(exprType.domain)
 		assertNotNull(exprType.range)
 		val domain = exprType.domain as TupleType
-		assertEquals(Int, (domain.symbols.get(0).type as SimpleTypeReference).ref)
-		assertEquals(Real, (exprType.range as SimpleTypeReference).ref)
+		assertEquals(Int, (domain.symbols.get(0).type as SimpleTypeReference).type)
+		assertEquals(Real, (exprType.range as SimpleTypeReference).type)
 	}
 	
 	@Test
@@ -334,8 +334,8 @@ class ImlTypeProviderTest {
 		val folForm = var1.definition
 		val exprType = ImlTypeProvider.termExpressionType(folForm) as SimpleTypeReference	// t2<List<Int>>
 			
-		assertEquals(List, exprType.ref)		
-		assertEquals(Int, (exprType.typeBinding.get(0) as SimpleTypeReference).ref)
+		assertEquals(List, exprType.type)		
+		assertEquals(Int, (exprType.typeBinding.get(0) as SimpleTypeReference).type)
 	}
 	
 	@Test
@@ -353,7 +353,7 @@ class ImlTypeProviderTest {
 		val Int = model.findSymbol("Int")
 		val exprType = ImlTypeProvider.termExpressionType(t1.findSymbol("varx").definition)
 		
-		assertEquals(Int, ((exprType.domain as TupleType).symbols.get(0).type as SimpleTypeReference).ref)
+		assertEquals(Int, ((exprType.domain as TupleType).symbols.get(0).type as SimpleTypeReference).type)
 		assertEquals(ImlTypeProvider.Bool, exprType.range)
 	}
 	
@@ -372,7 +372,7 @@ class ImlTypeProviderTest {
 		val exprType = ImlTypeProvider.termExpressionType(t1.findSymbol("varx").definition)
 		val Int = model.findSymbol("Int")
 		
-		assertEquals(Int,  ((exprType.domain as TupleType).symbols.get(0).type as SimpleTypeReference).ref)
+		assertEquals(Int,  ((exprType.domain as TupleType).symbols.get(0).type as SimpleTypeReference).type)
 		assertEquals(ImlTypeProvider.Int, exprType.range)
 	}
 	
@@ -413,7 +413,7 @@ class ImlTypeProviderTest {
 		val Real = model.findSymbol("Real") 
 		val exprType = ImlTypeProvider.termExpressionType(t1.findSymbol("varx").definition)
 		
-		assertEquals(Real, (exprType as SimpleTypeReference).ref)
+		assertEquals(Real, (exprType as SimpleTypeReference).type)
 	}
 	
 	@Test
@@ -453,7 +453,7 @@ class ImlTypeProviderTest {
 		val Real = model.findSymbol("Real")
 		val exprType = ImlTypeProvider.termExpressionType(t1.findSymbol("varx").definition)
 		
-		assertEquals(Real, (exprType as SimpleTypeReference).ref)
+		assertEquals(Real, (exprType as SimpleTypeReference).type)
 	}
 	
 	@Test
@@ -473,7 +473,7 @@ class ImlTypeProviderTest {
 		val Real = model.findSymbol("Real")
 		val exprType = ImlTypeProvider.termExpressionType(t1.findSymbol("varx").definition)
 		
-		assertEquals(Real, (exprType as SimpleTypeReference).ref)
+		assertEquals(Real, (exprType as SimpleTypeReference).type)
 	}
 	
 	@Test
@@ -538,7 +538,7 @@ class ImlTypeProviderTest {
 	}
 	
 	@Test
-	def testTermExpressionType_FinieSelection() {
+	def testTermExpressionType_FiniteSelection() {
 		val model = '''
 			package p;
 			type Int;
@@ -556,7 +556,7 @@ class ImlTypeProviderTest {
 		val t2 = model.findSymbol("t2") as ConstrainedType
 		val exprType = ImlTypeProvider.termExpressionType(t1.findSymbol("varx").definition)
 		
-		assertEquals(t2, (exprType as SimpleTypeReference).ref)
+		assertEquals(t2, (exprType as SimpleTypeReference).type)
 	}
 	
 	@Test
@@ -578,7 +578,7 @@ class ImlTypeProviderTest {
 		val t2 = model.findSymbol("t2") as ConstrainedType
 		val exprType = ImlTypeProvider.termExpressionType(t1.findSymbol("varx").definition)
 		
-		assertEquals(t2, (exprType as SimpleTypeReference).ref)
+		assertEquals(t2, (exprType as SimpleTypeReference).type)
 	}
 	
 	@Test
@@ -605,6 +605,28 @@ class ImlTypeProviderTest {
 		val t1 = model.findSymbol("t1") as ConstrainedType
 		#["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"]
 		      .forEach[assertTypeMatches(t1.findSymbol(it))]
+	}
+	
+	@Test
+	def testTermExpressionType_TypeConstructor() {
+		val model = '''
+			package p;
+			type Int;
+			type Bool;
+			type Real;
+			type t1 { 
+				varx : t2 := new t2{};
+			}
+			type t2;
+		'''.parse
+		
+		model.assertNoErrors
+		
+		val t1 = model.findSymbol("t1") as ConstrainedType
+		val t2 = model.findSymbol("t2") as ConstrainedType
+		val exprType = ImlTypeProvider.termExpressionType(t1.findSymbol("varx").definition)
+		
+		assertEquals(t2, (exprType as SimpleTypeReference).type)
 	}
 	
 	def assertTypeMatches(SymbolDeclaration symbol) {

@@ -31,6 +31,7 @@ import com.utc.utrc.hermes.iml.iml.SymbolReferenceTerm
 import com.utc.utrc.hermes.iml.iml.SymbolReferenceTail
 import com.utc.utrc.hermes.iml.iml.ArrayAccess
 import org.eclipse.xtext.EcoreUtil2
+import com.utc.utrc.hermes.iml.iml.TypeConstructor
 
 public class ImlTypeProvider {
 
@@ -50,6 +51,13 @@ public class ImlTypeProvider {
 	}
 
 	def static HigherOrderType termExpressionType(TermExpression t) {
+		val typeConstructor = EcoreUtil2.getContainerOfType(t, TypeConstructor)
+		if (typeConstructor !== null) {
+			val type = termExpressionType(t, typeConstructor.ref as SimpleTypeReference)
+			if(type !== null) {
+				return type
+			}
+		}
 		termExpressionType(t, createSimpleTypeRef(t.getContainerOfType(ConstrainedType)))
 	}
 
@@ -129,18 +137,6 @@ public class ImlTypeProvider {
 				} else {
 					// Reference to a symbol
 					return getSymbolReferenceType(t, context)
-//					var term_type = getType(t.symbol as SymbolDeclaration,context);
-//					if (term_type.domain !== null) {
-//						if (t.tail !== null) {
-//							return term_type.range
-//						} else {
-//							return term_type
-//						}
-//					}
-//					if (t.arrayAccess) {
-//						term_type = getArrayAccessType(term_type, t)
-//					}
-//					return term_type;
 				}
 
 			}
@@ -165,6 +161,9 @@ public class ImlTypeProvider {
 					range = t.definition.termExpressionType(context)
 				]
 			}
+			TypeConstructor: {
+				return t.ref
+			}
 			TupleConstructor: {
 				return ImlFactory.eINSTANCE.createTupleType => [
 					symbols.addAll(t.elements.map[
@@ -184,18 +183,7 @@ public class ImlTypeProvider {
 	}
 	
 	def static getSymbolReferenceType(SymbolReferenceTerm term, SimpleTypeReference context) {
-		// If symbol reference is inside a type constructor
-		val typeConstructor = getTypeConstructorType(term)
-		var HigherOrderType term_type = null;
-		if (typeConstructor !== null) {
-			// TODO we try to get the type in context of the declared type
-			term_type = getType(term.symbol as SymbolDeclaration, ImlFactory.eINSTANCE.createSimpleTypeReference => [ref = typeConstructor])
-		}
-		
-		if (term_type === null) { // Get the type from normal container context
-			term_type = getType(term.symbol as SymbolDeclaration, context);
-		}
-		
+		var term_type = getType(term.symbol as SymbolDeclaration, context);		
 		for (tail : term.tails) {
 			term_type = accessTail(term_type, tail)
 		}
@@ -248,13 +236,13 @@ public class ImlTypeProvider {
 	}
 	
 	def static HigherOrderType getType(SymbolDeclaration s, SimpleTypeReference ctx) {
-		if ( ctx.ref.symbols.contains(s) || symbolInsideLambda(s) || 
+		if ( ctx.type.symbols.contains(s) || symbolInsideLambda(s) || 
 			symbolInsideProgram(s)
 		) {
 			return bind(s,ctx)
 		}
 		
-		for(rel : ctx.ref.relations) {
+		for(rel : ctx.type.relations) {
 			switch(rel){
 				com.utc.utrc.hermes.iml.iml.Extension :{
 					val target = rel.target
@@ -288,13 +276,17 @@ public class ImlTypeProvider {
 	}
 	
 	def static getTypeConstructorType(TermExpression term) {
-		val tupleParent = EcoreUtil2.getContainerOfType(term, TupleConstructor)
-		if (tupleParent !== null) {
-			val srt = EcoreUtil2.getContainerOfType(tupleParent, SymbolReferenceTerm)
-			if (srt !== null && srt.symbol instanceof ConstrainedType) {
-				return srt.symbol as ConstrainedType
-			}
-		}
+		val typeConstructor = EcoreUtil2.getContainerOfType(term, TypeConstructor)
+		if (typeConstructor !== null) {
+			return (typeConstructor.ref as SimpleTypeReference).type
+		}		
+//		val tupleParent = EcoreUtil2.getContainerOfType(term, TupleConstructor)
+//		if (tupleParent !== null) {
+//			val srt = EcoreUtil2.getContainerOfType(tupleParent, SymbolReferenceTerm)
+//			if (srt !== null && srt.symbol instanceof ConstrainedType) {
+//				return srt.symbol as ConstrainedType
+//			}
+//		}
 	}
 	
 	def static bind(SymbolDeclaration s, SimpleTypeReference ctx) {
@@ -303,9 +295,9 @@ public class ImlTypeProvider {
 	
 	def static bind(HigherOrderType t, SimpleTypeReference ctx){
 		var ctxbinds = new HashMap<ConstrainedType, HigherOrderType>();
-		if (ctx.typeBinding.size == ctx.ref.typeParameter.size) {
-			for(i : 0 ..< ctx.ref.typeParameter.size) {
-				ctxbinds.put(ctx.ref.typeParameter.get(i),ctx.typeBinding.get(i))
+		if (ctx.typeBinding.size == ctx.type.typeParameter.size) {
+			for(i : 0 ..< ctx.type.typeParameter.size) {
+				ctxbinds.put(ctx.type.typeParameter.get(i),ctx.typeBinding.get(i))
 			}
 		}
 		
@@ -326,16 +318,16 @@ public class ImlTypeProvider {
 				return retval				
 			}
 			SimpleTypeReference:{
-				if (map.containsKey(t.ref)) {
-					return map.get(t.ref)					
+				if (map.containsKey(t.type)) {
+					return map.get(t.type)					
 				}
 				var retval = ImlFactory.eINSTANCE.createSimpleTypeReference ;
-				retval.ref = t.ref
+				retval.type = t.type
 				for( h : t.typeBinding) {
 					if(h instanceof SimpleTypeReference){
 						if ((h as SimpleTypeReference).typeBinding.size === 0) {
-							if (map.containsKey(h.ref)) {
-								retval.typeBinding.add(clone(map.get(h.ref)))
+							if (map.containsKey(h.type)) {
+								retval.typeBinding.add(clone(map.get(h.type)))
 							} else {
 								retval.typeBinding.add(clone(h))
 							}
@@ -384,7 +376,7 @@ public class ImlTypeProvider {
 	
 	/* Check whether t is numeric type reference */
 	def static boolean isNumeric(ConstrainedType t) {
-		if (t == Int.ref || t == Real.ref) {
+		if (t == Int.type || t == Real.type) {
 			return true;
 		}
 		return false;
