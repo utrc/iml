@@ -43,7 +43,7 @@ Workflow {
 			parserGenerator = {
 				debugGrammar = true
 			}
-			
+			fragment = exporting.QualifiedNamesFragment2 auto-inject {}
 		}
 	}
 }
