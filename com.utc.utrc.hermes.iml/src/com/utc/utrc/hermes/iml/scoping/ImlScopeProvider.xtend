@@ -6,7 +6,6 @@ package com.utc.utrc.hermes.iml.scoping
 import com.google.inject.Inject
 import com.utc.utrc.hermes.iml.iml.ArrayAccess
 import com.utc.utrc.hermes.iml.iml.ConstrainedType
-import com.utc.utrc.hermes.iml.iml.ImlPackage
 import com.utc.utrc.hermes.iml.iml.Model
 import com.utc.utrc.hermes.iml.iml.SignedAtomicFormula
 import com.utc.utrc.hermes.iml.iml.SimpleTypeReference
@@ -15,12 +14,10 @@ import com.utc.utrc.hermes.iml.iml.SymbolReferenceTail
 import com.utc.utrc.hermes.iml.iml.SymbolReferenceTerm
 import com.utc.utrc.hermes.iml.iml.TermMemberSelection
 import com.utc.utrc.hermes.iml.iml.TupleType
-import com.utc.utrc.hermes.iml.iml.impl.TermMemberSelectionImpl
 import com.utc.utrc.hermes.iml.typing.ImlTypeProvider
 import java.util.HashSet
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
-import org.eclipse.xtext.EcoreUtil2
 import org.eclipse.xtext.naming.IQualifiedNameConverter
 import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.resource.IEObjectDescription
@@ -179,16 +176,16 @@ class ImlScopeProvider extends AbstractDeclarativeScopeProvider {
 	def getTypeWithoutTail(SymbolReferenceTerm term) {
 // 		To Handle template type access
 //		TODO : the problem here is we can't get the scope of in-memory symbols created by bind function
-//		if (term.eContainer instanceof TermMemberSelection && 
-//			(term.eContainer as TermMemberSelection).member === term
-//		) {
-//			val tms = term.eContainer as TermMemberSelection			
-//			val receiverType = termExpressionType(tms.receiver)
-//			return getType(term.symbol as SymbolDeclaration, receiverType as SimpleTypeReference)
-//		}  else {
-//			return (term.symbol as SymbolDeclaration).type
-//		}
-		return (term.symbol as SymbolDeclaration).type
+		if (term.eContainer instanceof TermMemberSelection && 
+			(term.eContainer as TermMemberSelection).member === term
+		) {
+			val tms = term.eContainer as TermMemberSelection			
+			val receiverType = termExpressionType(tms.receiver)
+			return getType(term.symbol as SymbolDeclaration, receiverType as SimpleTypeReference)
+		}  else {
+			return (term.symbol as SymbolDeclaration).type
+		}
+//		return (term.symbol as SymbolDeclaration).type
 	}
 	
 	def scope_SymbolReferenceTerm_symbol(TermMemberSelection context, EReference r) {
