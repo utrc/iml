@@ -12,17 +12,17 @@ import com.utc.utrc.hermes.iml.iml.Model;
 
 public class SrlModelSymbol extends SrlSymbol {
 
-	private List<SrlNamedTypeSymbol> types;
+	private List<SrlTypeSymbol> types;
 	private List<SrlObjectSymbol> symbols ;
 	
-	public SrlModelSymbol(Model m) throws SrlSymbolException {
-		super(m);
-		types = new ArrayList<SrlNamedTypeSymbol>();
+	public SrlModelSymbol(IQualifiedNameProvider qnp)  {
+		super(qnp);
+		types = new ArrayList<SrlTypeSymbol>();
 		symbols = new ArrayList<SrlObjectSymbol>();
 	}
 	
 
-	public List<SrlNamedTypeSymbol> getTypes() {
+	public List<SrlTypeSymbol> getTypes() {
 		return types ;
 	}
 	

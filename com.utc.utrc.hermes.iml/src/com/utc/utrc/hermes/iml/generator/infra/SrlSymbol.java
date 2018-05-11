@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.xtext.naming.IQualifiedNameProvider;
 import org.eclipse.xtext.naming.QualifiedName;
 
 
@@ -22,12 +23,8 @@ import org.eclipse.xtext.naming.QualifiedName;
  */
 public  class SrlSymbol extends SrlSymbolId {
 	
-	public SrlSymbol() {
-		super();
-	}
-	
-	public SrlSymbol(EObject imlEObject) {
-		super(imlEObject);
+	public SrlSymbol(IQualifiedNameProvider qnp) {
+		super(qnp);
 	}
 
 }

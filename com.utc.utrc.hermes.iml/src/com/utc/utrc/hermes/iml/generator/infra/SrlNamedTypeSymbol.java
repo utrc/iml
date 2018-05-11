@@ -7,11 +7,9 @@ import java.util.List;
 import org.eclipse.xtext.naming.IQualifiedNameProvider;
 
 import com.google.inject.Inject;
-import com.utc.utrc.hermes.iml.iml.ConstrainedType;
 
 public class SrlNamedTypeSymbol extends SrlTypeSymbol {
 
-	@Inject IQualifiedNameProvider qnp;
 	
 	private List<SrlObjectSymbol> properties ;
 	private List<SrlObjectSymbol> constants ;
@@ -20,8 +18,8 @@ public class SrlNamedTypeSymbol extends SrlTypeSymbol {
 	private List<SrlObjectSymbol> symbols ;
 	private EnumSet<SrlTypeModifier> modifiers;
 	
-	public SrlNamedTypeSymbol(ConstrainedType t) throws SrlSymbolException {
-		super(t);
+	public SrlNamedTypeSymbol(IQualifiedNameProvider qnp)  {
+		super(qnp);
 		properties = new ArrayList<SrlObjectSymbol>();
 		constants = new ArrayList<SrlObjectSymbol>() ;
 		parameters = new ArrayList<SrlNamedTypeSymbol>();

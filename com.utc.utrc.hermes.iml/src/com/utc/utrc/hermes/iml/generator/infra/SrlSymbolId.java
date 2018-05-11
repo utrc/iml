@@ -10,13 +10,14 @@ import com.utc.utrc.hermes.iml.iml.FolFormula;
 import com.utc.utrc.hermes.iml.iml.HigherOrderType;
 import com.utc.utrc.hermes.iml.iml.Model;
 import com.utc.utrc.hermes.iml.iml.RelationInstance;
+import com.utc.utrc.hermes.iml.iml.SimpleTypeReference;
 import com.utc.utrc.hermes.iml.iml.Symbol;
 import com.utc.utrc.hermes.iml.iml.SymbolDeclaration;
 
 public class SrlSymbolId {
 
-	@Inject
-	IQualifiedNameProvider qnp;
+	
+	private IQualifiedNameProvider qnp;
 
 	private QualifiedName container;
 	private String name;
@@ -24,21 +25,16 @@ public class SrlSymbolId {
 	public static QualifiedName DEFAULT_CONTAINER = QualifiedName.create("__unnamed__");
 	public static String RELATION_PREFIX = "rel_";
 	
-	public SrlSymbolId() {
+	public SrlSymbolId(IQualifiedNameProvider qnp) {
+		this.qnp = qnp ;
 		container = DEFAULT_CONTAINER;
 		name = "";
 	}
 	
-	public SrlSymbolId(EObject imlEObject) {
-		if (imlEObject == null) {
-			container = DEFAULT_CONTAINER;
-			name = "";
-		} else {
-			setId(imlEObject);
-		}
-	}
+	
 
 	public void setId(EObject imlEObject) {
+		if (imlEObject == null) return ;
 		if (imlEObject instanceof Model) {
 			name = "";
 			container = qnp.getFullyQualifiedName(imlEObject);
@@ -47,8 +43,14 @@ public class SrlSymbolId {
 				container = qnp.getFullyQualifiedName(imlEObject.eContainer());
 				name = ((Symbol) imlEObject).getName();
 			} else if (imlEObject instanceof HigherOrderType) {
-				// use the serialization as name
-				container = DEFAULT_CONTAINER;
+				// use the serialization as name 
+				if (imlEObject instanceof SimpleTypeReference && ((SimpleTypeReference) imlEObject).getTypeBinding().size() == 0) {
+					container = qnp.getFullyQualifiedName(((SimpleTypeReference) imlEObject).getRef().eContainer());
+					name = ((SimpleTypeReference) imlEObject).getRef().getName();
+				} else {
+					container = DEFAULT_CONTAINER;
+					
+				}
 				//name to be determined
 			} else if (imlEObject instanceof RelationInstance) {
 				// use rel_<integer position>
@@ -98,6 +100,8 @@ public class SrlSymbolId {
 		return false;
 	}
 	
-	
+	public String stringId() {
+		return (container.toString() + "." + name);
+	}
 
 }

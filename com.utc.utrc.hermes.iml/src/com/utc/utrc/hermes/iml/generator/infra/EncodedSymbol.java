@@ -4,19 +4,19 @@ import com.utc.utrc.hermes.iml.iml.Symbol;
 
 public class EncodedSymbol {
 	
-	private Symbol symbol ;
+	private SrlSymbol symbol ;
 	private SExpr encoding ;
 	
-	public EncodedSymbol(Symbol s, SExpr e) {
+	public EncodedSymbol(SrlSymbol s, SExpr e) {
 		symbol = s ;
 		encoding = e ;
 	}
 
-	public Symbol getSymbol() {
+	public SrlSymbol getSymbol() {
 		return symbol;
 	}
 
-	public void setSymbol(Symbol symbol) {
+	public void setSymbol(SrlSymbol symbol) {
 		this.symbol = symbol;
 	}
 

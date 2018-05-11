@@ -1,13 +1,11 @@
 package com.utc.utrc.hermes.iml.generator.infra;
 
-import org.eclipse.emf.ecore.EObject;
-
-import com.utc.utrc.hermes.iml.iml.FolFormula;
+import org.eclipse.xtext.naming.IQualifiedNameProvider;
 
 public class SrlTerm extends SrlSymbol {
 
-	public SrlTerm(FolFormula imlEObject) {
-		super(imlEObject);
+	public SrlTerm(IQualifiedNameProvider qnp) {
+		super(qnp);
 	}
 
 }

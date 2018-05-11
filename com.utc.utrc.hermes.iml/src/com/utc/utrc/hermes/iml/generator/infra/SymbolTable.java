@@ -11,9 +11,7 @@ import com.utc.utrc.hermes.iml.iml.Symbol;
 
 public class SymbolTable {
 	
-	@Inject IQualifiedNameProvider qn ;
-	
-	private Map<QualifiedName, EncodedSymbol> symbols;
+	private Map<SrlSymbolId, EncodedSymbol> symbols;
 	
 	public SymbolTable() {
 		symbols = new HashMap<>();
@@ -24,18 +22,18 @@ public class SymbolTable {
 		symbols.putAll(other.getSymbols());
 	}
 	
-	public Map<QualifiedName,EncodedSymbol> getSymbols(){
+	public Map<SrlSymbolId,EncodedSymbol> getSymbols(){
 		return symbols;
 	}
 	
-	public boolean isDefined(Symbol s) {
-		if (symbols.containsKey(qn.getFullyQualifiedName(s)))
+	public boolean isDefined(SrlSymbolId s) {
+		if (symbols.containsKey(s))
 			return true ;
 		return false;
 	}
 	
-	public void add(Symbol s, EncodedSymbol se) {
-		symbols.put(qn.getFullyQualifiedName(s), se);
+	public void add(SrlSymbolId s, EncodedSymbol se) {
+		symbols.put(s, se);
 	}
 	
 	public void add(SymbolTable s) {

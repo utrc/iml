@@ -4,35 +4,30 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.xtext.naming.IQualifiedNameProvider;
 
 import com.utc.utrc.hermes.iml.iml.SymbolDeclaration;
 
 public class SrlObjectSymbol extends SrlSymbol {
 
 	
-	private SrlHigherOrderTypeSymbol type;
+	private SrlTypeSymbol type;
 	private List<SrlObjectSymbol> properties;
 	private SrlTerm definition;
 	
 	
-	public SrlObjectSymbol() {
-		super();
+	public SrlObjectSymbol(IQualifiedNameProvider qnp) {
+		super(qnp);
 		properties = new ArrayList<SrlObjectSymbol>();
 		type = null;
 		definition = null ;
 	}
-	public SrlObjectSymbol(SymbolDeclaration imlObject) {
-		super(imlObject);
-		properties = new ArrayList<SrlObjectSymbol>();
-		type = null;
-		definition = null ;
-	}
-
-	public SrlHigherOrderTypeSymbol getType() {
+	
+	public SrlTypeSymbol getType() {
 		return type;
 	}
 
-	public void setType(SrlHigherOrderTypeSymbol type) {
+	public void setType(SrlTypeSymbol type) {
 		this.type = type;
 	}
 

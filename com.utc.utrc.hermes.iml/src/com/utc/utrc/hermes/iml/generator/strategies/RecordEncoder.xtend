@@ -1,72 +1,51 @@
 package com.utc.utrc.hermes.iml.generator.strategies
 
 import com.utc.utrc.hermes.iml.generator.infra.SExpr
-import com.utc.utrc.hermes.iml.iml.Symbol
-import com.utc.utrc.hermes.iml.iml.Model
-import java.util.ArrayList
-import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
-import com.utc.utrc.hermes.iml.iml.ConstrainedType
 import com.utc.utrc.hermes.iml.generator.infra.SExprTokens
-import com.google.inject.Inject
-import org.eclipse.xtext.naming.IQualifiedNameProvider
+import com.utc.utrc.hermes.iml.generator.infra.SrlHigherOrderTypeSymbol
+import com.utc.utrc.hermes.iml.generator.infra.SrlNamedTypeSymbol
+import com.utc.utrc.hermes.iml.generator.infra.SrlObjectSymbol
 
 //TODO Should implement an interface which we don't have yet
-class RecordEncoder {
-	
-	@Inject extension IQualifiedNameProvider
-	
-	
-	
-	
-	def public  encode(Model m) {
-		var retval = new ArrayList<SExpr>();
-		//TODO: do we need to define the package and the imports?
-		
-		//define all its symbols
-		for(Symbol s  : m.getSymbols()) {
-			retval.add(encode(s)) ;
-		}
-		return retval;
-	}
-	
-	def public SExpr encode(Symbol s) {
-		switch(s){
-			SymbolDeclaration: {
-				return encode(s)
+class RecordEncoder extends SExprTokens {
+
+	def public SExpr encode(SrlNamedTypeSymbol ts) {
+
+		if (ts.symbols.size > 0) {
+			// Each named type is annotated	
+			var retval = createSequence(EXCLAMATION_POINT, DECLARE_DATATYPE)
+			// Add the list of data types (in this case only one)
+			var typelist = createSequence;
+			addToSequence(retval, typelist);
+			var thistype = createSequence(createToken(ts.stringId), createToken(ts.parameters.size));
+			addToSequence(typelist, thistype);
+			// Need to add symbols
+			var constructorlist = createSequence;
+			addToSequence(retval, constructorlist);
+			var thisconstructorlist = createSequence;
+			addToSequence(constructorlist, thisconstructorlist);
+			addToSequence(thisconstructorlist, REC_CONS);
+			for (SrlObjectSymbol s : ts.symbols) {
+				addToSequence(thisconstructorlist, createSequence(createToken(s.name), createToken(s.type.stringId)))
 			}
-			ConstrainedType: {
-				return encode(s)
+			if (ts.isMeta) {
+				retval.sexprs.add(SExprTokens.META);
 			}
-			
+			retval.sexprs.add(SExprTokens.TYPE);
+			return retval;
+		} else {
+			var retval = createSequence(EXCLAMATION_POINT, DECLARE_SORT) ;
+			addToSequence(retval,createToken(ts.stringId), createToken(ts.parameters.size))
+			if (ts.isMeta) {
+				retval.sexprs.add(SExprTokens.META);
+			}
+			retval.sexprs.add(SExprTokens.TYPE);
+			return retval;
 		}
-		
-		
-		var SExpr retval = new SExpr.Token<String>("") ;
-		return retval;
-	
+
 	}
-	
-	def public SExpr encode(SymbolDeclaration s) {
-		
+
+	def public SExpr encode(SrlHigherOrderTypeSymbol ts) {
 	}
-	
-	def public SExpr encode(ConstrainedType t) {
-		//Can be a meta-type
-		//Can have properties
-		//can be finite
-		//Can have template parameters
-		//Can have relations to other types
-		//Has a bunch of symbols
-		
-		if (! t.meta &&  t.propertylist === null && !t.finite && t.typeParameter.size === 0 && t.relations.size === 0){
-			var retval = new SExpr.Seq() ;
-			retval.sexprs.add(SExprTokens.DECLARE_SORT) ;
-			val fqn = t.fullyQualifiedName ;
-			retval.sexprs.add(SExprTokens.createToken(fqn.toString)) ;
-			return retval ;
-		}
-		
-	}
-	
-	
+
 }
