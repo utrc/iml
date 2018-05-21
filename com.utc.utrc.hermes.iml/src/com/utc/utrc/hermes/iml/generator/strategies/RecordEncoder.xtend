@@ -5,9 +5,10 @@ import com.utc.utrc.hermes.iml.generator.infra.SExprTokens
 import com.utc.utrc.hermes.iml.generator.infra.SrlHigherOrderTypeSymbol
 import com.utc.utrc.hermes.iml.generator.infra.SrlNamedTypeSymbol
 import com.utc.utrc.hermes.iml.generator.infra.SrlObjectSymbol
+import static com.utc.utrc.hermes.iml.generator.infra.SExprTokens.*
 
 //TODO Should implement an interface which we don't have yet
-class RecordEncoder extends SExprTokens {
+class RecordEncoder {
 
 	def public SExpr encode(SrlNamedTypeSymbol ts) {
 

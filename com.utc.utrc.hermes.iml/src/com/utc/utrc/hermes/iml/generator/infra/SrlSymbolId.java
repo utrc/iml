@@ -45,13 +45,14 @@ public class SrlSymbolId {
 			} else if (imlEObject instanceof HigherOrderType) {
 				// use the serialization as name 
 				if (imlEObject instanceof SimpleTypeReference && ((SimpleTypeReference) imlEObject).getTypeBinding().size() == 0) {
-					container = qnp.getFullyQualifiedName(((SimpleTypeReference) imlEObject).getRef().eContainer());
-					name = ((SimpleTypeReference) imlEObject).getRef().getName();
+					// TODO do we need this?
+					container = qnp.getFullyQualifiedName(((SimpleTypeReference) imlEObject).getType().eContainer());
+					name = ((SimpleTypeReference) imlEObject).getType().getName();
 				} else {
 					container = DEFAULT_CONTAINER;
+					//name to be determined
 					
 				}
-				//name to be determined
 			} else if (imlEObject instanceof RelationInstance) {
 				// use rel_<integer position>
 				ConstrainedType type = (ConstrainedType) imlEObject.eContainer() ;
@@ -87,17 +88,33 @@ public class SrlSymbolId {
 
 	@Override
 	public int hashCode() {
-		return container.hashCode();
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((container == null) ? 0 : container.hashCode());
+		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		return result;
 	}
 
 	@Override
 	public boolean equals(Object obj) {
-		if (obj instanceof SrlSymbolId) {
-			if (container.equals(((SrlSymbolId)obj).getContainer()) && name.equals(((SrlSymbolId)obj).getName())) {
-				return true;
-			}
-		}
-		return false;
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		SrlSymbolId other = (SrlSymbolId) obj;
+		if (container == null) {
+			if (other.container != null)
+				return false;
+		} else if (!container.equals(other.container))
+			return false;
+		if (name == null) {
+			if (other.name != null)
+				return false;
+		} else if (!name.equals(other.name))
+			return false;
+		return true;
 	}
 	
 	public String stringId() {
