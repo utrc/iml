@@ -21,7 +21,6 @@ import java.util.Arrays
 import java.util.List
 import com.utc.utrc.hermes.iml.iml.SymbolReferenceTerm
 import com.utc.utrc.hermes.iml.iml.ArrayAccess
-import org.eclipse.xtext.diagnostics.Diagnostic
 
 /**
  * 

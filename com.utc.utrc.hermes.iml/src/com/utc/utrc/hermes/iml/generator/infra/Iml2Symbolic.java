@@ -24,6 +24,10 @@ public class Iml2Symbolic {
 	public Iml2Symbolic() {
 		table = new SymbolTable();
 	}
+	
+	public void newTable() {
+		table = new SymbolTable();
+	}
 
 	public SrlSymbol encode(Model m) throws SrlSymbolException {
 		SrlModelSymbol retval = factory.createModelSymbol(m);
@@ -59,6 +63,11 @@ public class Iml2Symbolic {
 		retval.setType(encode(s.getType()));
 		addProperties(retval,s);
 		//TODO Add Definition
+		if (s.getDefinition() != null) {
+			SrlTerm defTerm = factory.createTerm();
+			defTerm.setFormula(s.getDefinition());
+			retval.setDefinition(defTerm);
+		}
 		return retval;
 	}
 

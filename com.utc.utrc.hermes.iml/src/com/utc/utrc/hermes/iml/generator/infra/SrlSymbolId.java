@@ -3,8 +3,8 @@ package com.utc.utrc.hermes.iml.generator.infra;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.naming.IQualifiedNameProvider;
 import org.eclipse.xtext.naming.QualifiedName;
+import org.eclipse.xtext.resource.XtextResource;
 
-import com.google.inject.Inject;
 import com.utc.utrc.hermes.iml.iml.ConstrainedType;
 import com.utc.utrc.hermes.iml.iml.FolFormula;
 import com.utc.utrc.hermes.iml.iml.HigherOrderType;
@@ -31,8 +31,6 @@ public class SrlSymbolId {
 		name = "";
 	}
 	
-	
-
 	public void setId(EObject imlEObject) {
 		if (imlEObject == null) return ;
 		if (imlEObject instanceof Model) {
@@ -50,8 +48,8 @@ public class SrlSymbolId {
 					name = ((SimpleTypeReference) imlEObject).getType().getName();
 				} else {
 					container = DEFAULT_CONTAINER;
-					//name to be determined
-					
+					// Use the name exactly as declared
+					name = hot2StringId((HigherOrderType) imlEObject);
 				}
 			} else if (imlEObject instanceof RelationInstance) {
 				// use rel_<integer position>
@@ -65,6 +63,17 @@ public class SrlSymbolId {
 		}
 	}
 	
+	private String hot2StringId(HigherOrderType imlEObject) {
+		if (imlEObject != null && imlEObject.eResource() instanceof XtextResource
+				&& imlEObject.eResource().getURI() != null) {
+    		
+    		return ((XtextResource) imlEObject.eResource()).getSerializer().serialize(imlEObject);
+    	} else {
+    		// TODO get it manually?
+    		return "";
+    	}
+	}
+
 	public void setContainer(EObject o) {
 		container = qnp.getFullyQualifiedName(o);
 	}
@@ -101,7 +110,7 @@ public class SrlSymbolId {
 			return true;
 		if (obj == null)
 			return false;
-		if (getClass() != obj.getClass())
+		if (!(this instanceof SrlSymbolId && obj instanceof SrlSymbolId))
 			return false;
 		SrlSymbolId other = (SrlSymbolId) obj;
 		if (container == null) {

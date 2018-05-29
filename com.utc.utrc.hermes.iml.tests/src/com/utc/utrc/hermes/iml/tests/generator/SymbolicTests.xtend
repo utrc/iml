@@ -38,6 +38,7 @@ class SymbolicTests {
 			type B ;
 			type C {
 				v : A ;
+				v2 : Bool := v > 5;
 			};
 		'''.parse
 		Assert.assertNotNull(model)
@@ -47,10 +48,14 @@ class SymbolicTests {
 		for(SrlSymbolId id : table.symbols.keySet){
 			val value = table.symbols.get(id)
 			if (value.symbol instanceof SrlNamedTypeSymbol) {
-				System.out.println(renc.encode(value.symbol as SrlNamedTypeSymbol))
+				for (expr : renc.encode(value.symbol as SrlNamedTypeSymbol)) {
+					System.out.println(expr)
+				}
 			}
 		}
 		
 	}
+	
+	
 	
 }
