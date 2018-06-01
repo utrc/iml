@@ -10,6 +10,12 @@ import com.utc.utrc.hermes.iml.generator.infra.SExprTokens
 import com.google.inject.Inject
 import org.eclipse.xtext.naming.IQualifiedNameProvider
 
+import com.utc.utrc.hermes.iml.iml.impl.SimpleTypeReferenceImpl
+import com.utc.utrc.hermes.iml.iml.impl.HigherOrderTypeImpl
+import com.utc.utrc.hermes.iml.iml.impl.TupleTypeImpl
+import com.utc.utrc.hermes.iml.iml.impl.ArrayTypeImpl
+import com.utc.utrc.hermes.iml.iml.HigherOrderType
+
 //TODO Should implement an interface which we don't have yet
 class FunctionEncoder {
 	
@@ -47,7 +53,54 @@ class FunctionEncoder {
 	}
 	
 	def public SExpr encode(SymbolDeclaration s) {
-		
+		// wangg: property list
+		var retval = new SExpr.Seq()
+		retval.sexprs.add(SExprTokens.DECLARE_FUN)
+		retval.sexprs.add(SExprTokens.createToken(s.fullyQualifiedName.toString()))
+		retval.sexprs.add(encode(s.type))
+		return retval
+	}
+
+	def public SExpr encode(HigherOrderType hot) {		
+		var retval = new SExpr.Seq() ;
+		if (hot instanceof SimpleTypeReferenceImpl) {
+			val fqn = (hot as SimpleTypeReferenceImpl).ref.fullyQualifiedName
+			retval.sexprs.add(SExprTokens.createToken(fqn.toString()))
+		} else if (hot instanceof HigherOrderTypeImpl) {
+			retval.sexprs.add(SExprTokens.HOT_ARROW)
+			retval.sexprs.add(SExprTokens.createToken("("))
+			// first process domain 
+			if (hot.domain instanceof SimpleTypeReferenceImpl) {
+				val fqn = (hot.domain as SimpleTypeReferenceImpl).ref.fullyQualifiedName
+				retval.sexprs.add(SExprTokens.createToken(fqn.toString()))				
+			} else if (hot.domain instanceof TupleTypeImpl) {
+				for (SymbolDeclaration sd : (hot.domain as TupleTypeImpl).symbols) {
+					retval.sexprs.add(encode(sd.type))
+				}			
+			} else if (hot.domain instanceof ArrayTypeImpl) {
+				println('domain is an ArrayTypeImpl')
+				// need to add 
+			}
+			retval.sexprs.add(SExprTokens.createToken(")"))
+			
+			// then process range
+			if (hot.range instanceof SimpleTypeReferenceImpl) {
+				val fqn = (hot.range as SimpleTypeReferenceImpl).ref.fullyQualifiedName
+				retval.sexprs.add(SExprTokens.createToken(fqn.toString()))				
+			} else {
+				retval.sexprs.add(SExprTokens.createToken("("))
+				if (hot.range instanceof TupleTypeImpl) {
+					for (SymbolDeclaration sd : (hot.range as TupleTypeImpl).symbols) {
+						retval.sexprs.add(encode(sd.type))
+					}			
+				} else if (hot.range instanceof ArrayTypeImpl) {
+					println('domain is an ArrayTypeImpl')
+					// need to add 
+				}
+				retval.sexprs.add(SExprTokens.createToken(")"))
+			}
+		}
+		return retval ;
 	}
 	
 	def public SExpr encode(ConstrainedType t) {

@@ -38,4 +38,68 @@ class FunctionEncoderTests {
 		
 	}
 	
+	@Test
+	def void TestDeclareFunForSymbolSimpleType() {
+		val model = '''
+			package p1;
+			type T1;
+			varx : T1;				
+		'''.parse	
+		Assert.assertNotNull(model)		
+		var expr = enc.encode(model);
+		System.out.println(expr)
+	}
+
+	@Test
+	def void TestDeclareFunAndInitForSimpleType() {
+		val model = '''
+			package p1;
+			type Int;
+			var1 : Int := 10;				
+		'''.parse	
+		Assert.assertNotNull(model)		
+		var expr = enc.encode(model);
+		System.out.println(expr)
+	}
+	
+	@Test
+	def void TestDeclareFunForSymbolHigherOrderType_v1() {
+		val model = '''
+			package p1;
+			type Int;
+			type Int ~> Int; // allowed???
+		'''.parse	
+		Assert.assertNotNull(model)		
+		var expr = enc.encode(model);
+		System.out.println(expr)
+	}
+
+	@Test
+	def void TestDeclareFunForSymbolHigherOrderType_v2() {
+		val model = '''
+			package p1;
+			type T1;
+			type T2;
+			type T3;
+			var1 : (p11 : T1, p12 : T2) ~> T3;
+		'''.parse	
+		Assert.assertNotNull(model)		
+		var expr = enc.encode(model);
+		System.out.println(expr)
+	}
+	
+	@Test
+	def void TestDeclareFunForSymbolHigherOrderType_v3() {
+		val model = '''
+			package p1;
+			type T1;
+			type T2;
+			var1 : (p11 : T1, p12 : T2) ~> (p21 : T2, p22 : T1) ;
+		'''.parse	
+		Assert.assertNotNull(model)		
+		var expr = enc.encode(model);
+		System.out.println(expr)
+	}
+	
+	
 }
