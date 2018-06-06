@@ -109,11 +109,11 @@ class ImlValidatorTest {
 		model2.assertNoErrors
 		// Check if shadowing work
 		val model1T = model1.findSymbol("T1")
-		val model1Ref = ((model1.findSymbol("x") as ConstrainedType).findSymbol("varx").type as SimpleTypeReference).ref
+		val model1Ref = ((model1.findSymbol("x") as ConstrainedType).findSymbol("varx").type as SimpleTypeReference).type
 		assertSame(model1T, model1Ref)
 		
 		val model2T = model2.findSymbol("T1")
-		val model2Ref = ((model2.findSymbol("x") as ConstrainedType).findSymbol("varx").type as SimpleTypeReference).ref
+		val model2Ref = ((model2.findSymbol("x") as ConstrainedType).findSymbol("varx").type as SimpleTypeReference).type
 		assertSame(model2T, model2Ref)
 		assertNotSame(model1Ref, model2Ref)
 	}

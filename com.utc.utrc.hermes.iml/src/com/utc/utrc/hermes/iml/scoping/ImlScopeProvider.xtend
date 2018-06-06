@@ -4,7 +4,17 @@
 package com.utc.utrc.hermes.iml.scoping
 
 import com.google.inject.Inject
+import com.utc.utrc.hermes.iml.iml.ArrayAccess
+import com.utc.utrc.hermes.iml.iml.ConstrainedType
 import com.utc.utrc.hermes.iml.iml.Model
+import com.utc.utrc.hermes.iml.iml.SignedAtomicFormula
+import com.utc.utrc.hermes.iml.iml.SimpleTypeReference
+import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
+import com.utc.utrc.hermes.iml.iml.SymbolReferenceTail
+import com.utc.utrc.hermes.iml.iml.SymbolReferenceTerm
+import com.utc.utrc.hermes.iml.iml.TermMemberSelection
+import com.utc.utrc.hermes.iml.iml.TupleType
+import com.utc.utrc.hermes.iml.typing.ImlTypeProvider
 import java.util.HashSet
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
@@ -12,20 +22,14 @@ import org.eclipse.xtext.naming.IQualifiedNameConverter
 import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.resource.IEObjectDescription
 import org.eclipse.xtext.scoping.IScope
+import org.eclipse.xtext.scoping.Scopes
 import org.eclipse.xtext.scoping.impl.AbstractDeclarativeScopeProvider
 import org.eclipse.xtext.scoping.impl.FilteringScope
 
-import static extension org.eclipse.xtext.EcoreUtil2.*
-import com.utc.utrc.hermes.iml.iml.TermMemberSelection
 import static extension com.utc.utrc.hermes.iml.typing.ImlTypeProvider.*
 import static extension com.utc.utrc.hermes.iml.typing.TypingServices.*
-import com.utc.utrc.hermes.iml.iml.SimpleTypeReference
-import org.eclipse.xtext.scoping.Scopes
-import com.utc.utrc.hermes.iml.iml.ConstrainedType
-import com.utc.utrc.hermes.iml.iml.SymbolReferenceTerm
-import com.utc.utrc.hermes.iml.iml.SignedAtomicFormula
-import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
-import com.utc.utrc.hermes.iml.iml.TupleType
+import static extension org.eclipse.xtext.EcoreUtil2.*
+import com.utc.utrc.hermes.iml.iml.TypeConstructor
 
 /**
  * This class contains custom scoping description.
@@ -120,29 +124,68 @@ class ImlScopeProvider extends AbstractDeclarativeScopeProvider {
 				return scope_SymbolReferenceTerm_symbol(container,r)
 			}
 		} else if (container instanceof SignedAtomicFormula && 
-					container.eContainer instanceof SymbolReferenceTerm) {
-
-			val symbolRef = container.eContainer as SymbolReferenceTerm
-			if (symbolRef.arrayAccess) { // trying to provide array access scope a[..]
-				if (symbolRef.symbol instanceof SymbolDeclaration && 
-					(symbolRef.symbol as SymbolDeclaration).type instanceof TupleType) {
-					// The only available scope is the symbols of tuple
-					val tuple = (symbolRef.symbol as SymbolDeclaration).type as TupleType
-					return Scopes::scopeFor(tuple.symbols.toList)
-				}
-			}			
-			
-		}
+					container.eContainer instanceof ArrayAccess) {
+			// Scope provider for Tuple array access
+			val tupleScope = getScopeOfTupleAccess(container.eContainer as ArrayAccess)
+			if (tupleScope !== null) {
+				return tupleScope;
+			}
+		} 
 		var scope = getGlobalScope(context, r)
-		val superTypes = context.getContainerOfType(ConstrainedType).allSuperTypes
+		
+		val typeConstructor = getTypeConstructorType(context)		
+		if (typeConstructor !== null) { // Include type symbols inside a type constructor term
+			scope = scopeOfConstrainedType(typeConstructor, scope)	
+		}
+		
+		return scopeOfConstrainedType(context.getContainerOfType(ConstrainedType), scope)
+	}
+	
+	protected def scopeOfConstrainedType(ConstrainedType type, IScope scope) {
+		val superTypes = type.allSuperTypes
 		var features = new HashSet
 		for (level : superTypes.reverseView) {
 			for (t : level) {
 				features.addAll(t.symbols)
 			}
-			scope = Scopes::scopeFor(features, scope)
 		}
 		return Scopes::scopeFor(features, scope)
+	}
+	
+	def getScopeOfTupleAccess(ArrayAccess arrayAccess) {
+		val symbolRef = arrayAccess.eContainer as SymbolReferenceTerm
+			if (symbolRef.symbol instanceof SymbolDeclaration) {
+				var type = getTypeWithoutTail(symbolRef)
+				var break = false;
+				for (SymbolReferenceTail tail : symbolRef.tails) {
+					if (!break) {
+						if (tail === arrayAccess) {
+							if (type instanceof TupleType) {
+								return Scopes::scopeFor(type.symbols);
+							} else { // It is just normal array access not tuple
+								break = true;
+							}
+						} else {
+							type = ImlTypeProvider.accessTail(type, tail)
+						}
+					}
+				}
+			}
+	}
+	
+	def getTypeWithoutTail(SymbolReferenceTerm term) {
+// 		To Handle template type access
+//		TODO : the problem here is we can't get the scope of in-memory symbols created by bind function
+		if (term.eContainer instanceof TermMemberSelection && 
+			(term.eContainer as TermMemberSelection).member === term
+		) {
+			val tms = term.eContainer as TermMemberSelection			
+			val receiverType = termExpressionType(tms.receiver)
+			return getType(term.symbol as SymbolDeclaration, receiverType as SimpleTypeReference)
+		}  else {
+			return (term.symbol as SymbolDeclaration).type
+		}
+//		return (term.symbol as SymbolDeclaration).type
 	}
 	
 	def scope_SymbolReferenceTerm_symbol(TermMemberSelection context, EReference r) {
@@ -159,7 +202,7 @@ class ImlScopeProvider extends AbstractDeclarativeScopeProvider {
 			var features = new HashSet
 			for (t : level) {
 				if (t instanceof SimpleTypeReference) {
-					var theType = t.ref;
+					var theType = t.type;
 					switch (theType) {
 						ConstrainedType: features.addAll(theType.symbols)
 					}
@@ -170,12 +213,35 @@ class ImlScopeProvider extends AbstractDeclarativeScopeProvider {
 		return parentScope
 	}
 	
-	def scope_FolFormula(SymbolReferenceTerm context, EReference r) {
-		var parentScope = IScope::NULLSCOPE
-		
-		return parentScope
+	def scope_SymbolReferenceTerm_symbol(ArrayAccess context, EReference r) {
+		val tupleScope = getScopeOfTupleAccess(context)
+		if (tupleScope !== null) {
+			return tupleScope
+		} else {
+			return getScope(context.eContainer, r)
+		}
 	}
 	
+	
+	def dispatch computeScope(EObject container, EObject context, IScope scope) {
+		return computeScope(container.eContainer, context, scope)
+	}
+	
+	def dispatch computeScope(TypeConstructor constructor, EObject context, IScope scope) {
+		var newScope = scopeOfConstrainedType((constructor.ref as SimpleTypeReference).type, scope);
+		return computeScope(constructor.eContainer, context, newScope)
+	}
+	
+	def dispatch computeScope(ConstrainedType type, EObject context, IScope scope) {
+		return scope;
+	}
+
+//	def scope_FolFormula(SymbolReferenceTerm context, EReference r) {
+//		var parentScope = IScope::NULLSCOPE
+//		
+//		return parentScope
+//	}
+//	
 	//
 //	def scope_TypeReference_type(TypeReference context, EReference r) {
 //		val global = getGlobalScope(context, r)

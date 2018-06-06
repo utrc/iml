@@ -41,15 +41,15 @@ RelationInstance:
 	MetaRelation
 ;
 
-Extension :
+Extension returns RelationInstance:
 	{Extension} 'extends'  target=HigherOrderType
 ;
 
-Alias:
+Alias returns RelationInstance:
 	{Alias} 'sameas'  target=HigherOrderType
 ;
 
-MetaRelation:
+MetaRelation returns RelationInstance:
 	{MetaRelaion} propertylist=PropertyList  target=HigherOrderType
 ;
 
@@ -77,8 +77,12 @@ HigherOrderType:
 ;
 
 ArrayType returns HigherOrderType:
-	SimpleTypeReference ({ArrayType.type=current}'['(dimension+=TermExpression)?']' ('['(dimension+=TermExpression)?']')*)? |
+	SimpleTypeReference ({ArrayType.type=current} (('['dimensions+=OptionalTermExpr']'))+)? |
 	TupleType
+;
+
+OptionalTermExpr:
+	{OptionalTermExpr} term=TermExpression?
 ;
 
 TupleType returns HigherOrderType:
@@ -90,7 +94,7 @@ TupleSymbol returns SymbolDeclaration:
 ;
 
 SimpleTypeReference returns HigherOrderType:
-	{SimpleTypeReference} ref=[ConstrainedType|QualifiedName]
+	{SimpleTypeReference} type=[ConstrainedType|QualifiedName]
 	/*Optional type parameters for generic types */
 	('<' typeBinding+=HigherOrderType (',' typeBinding+=HigherOrderType)* '>')?
 ;
@@ -164,21 +168,31 @@ TerminalTerm returns TermExpression:
 	{FloatNumberLiteral} neg?=('-')? value = FLOAT |
 	TupleConstructor | 
 	SymbolReferenceTerm |
+	TypeConstructor |
 	IteTermExpression |
 	{This} 'this' |
 	TruthValue |
 	'{' Program '}' |
 	{LambdaExpression}'lambda' signature=TupleType '{'definition=Program'}' ;
 
-TupleConstructor:
+TypeConstructor returns TermExpression:
+	{TypeConstructor} 'new' ref=SimpleTypeReference '{'init=Program'}'
+;
+
+TupleConstructor returns TermExpression:
 	{TupleConstructor} '(' elements+=FolFormula (',' elements+=FolFormula)* ')'
 ;
 
-SymbolReferenceTerm:
-	symbol=[Symbol|QualifiedName] (tail=TupleConstructor)? ( arrayAccess?= '['index+=FolFormula']' ('[' index+=FolFormula']')* )? 
+SymbolReferenceTerm returns TermExpression:
+	{SymbolReferenceTerm}symbol=[Symbol|QualifiedName] (tails+=SymbolReferenceTail)*
 ;
 
-IteTermExpression:
+SymbolReferenceTail:
+	TupleConstructor |
+	{ArrayAccess} '['index=FolFormula']'
+;
+
+IteTermExpression returns TermExpression:
 	{IteTermExpression} 'if' '(' condition=FolFormula ')' '{' left=TermExpression '}' (=> 'else'  '{' right=TermExpression '}')?;
 
 Program returns TermExpression:

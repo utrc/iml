@@ -28,6 +28,10 @@ import com.utc.utrc.hermes.iml.iml.TupleConstructor
 import com.utc.utrc.hermes.iml.iml.LambdaExpression
 import com.utc.utrc.hermes.iml.iml.Program
 import com.utc.utrc.hermes.iml.iml.SymbolReferenceTerm
+import com.utc.utrc.hermes.iml.iml.SymbolReferenceTail
+import com.utc.utrc.hermes.iml.iml.ArrayAccess
+import org.eclipse.xtext.EcoreUtil2
+import com.utc.utrc.hermes.iml.iml.TypeConstructor
 
 public class ImlTypeProvider {
 
@@ -47,6 +51,13 @@ public class ImlTypeProvider {
 	}
 
 	def static HigherOrderType termExpressionType(TermExpression t) {
+		val typeConstructor = EcoreUtil2.getContainerOfType(t, TypeConstructor)
+		if (typeConstructor !== null) {
+			val type = termExpressionType(t, typeConstructor.ref as SimpleTypeReference)
+			if(type !== null) {
+				return type
+			}
+		}
 		termExpressionType(t, createSimpleTypeRef(t.getContainerOfType(ConstrainedType)))
 	}
 
@@ -115,24 +126,6 @@ public class ImlTypeProvider {
 				} else return null // TODO Should we raise an exception better?
 				
 			}
-//			ArrayAccess: {
-//				var term_type = termExpressionType(t.ref as AtomicTerm, context);
-//				if (term_type instanceof ArrayType) {
-//					term_type = accessArray(term_type as ArrayType, t.index.size)
-//				} else if (term_type instanceof TupleType) {
-//					// TODO dimension need to be size 1 and has integer or symbol reference
-//					val index = t.index.get(0);
-//					if (index instanceof SymbolReferenceExpression) {
-//						
-//					}
-//					val indexInt = getIntValueOf(index)
-//					if (indexInt >= 0 && indexInt < term_type.symbols.size) {
-//						
-//					}
-////					term_type = accessTuple(term_type as TupleType, t)
-//				}
-//				term_type
-//			}
 			SymbolReferenceTerm: {
 				if (t.symbol instanceof ConstrainedType) {
 					// Reference to a literal
@@ -143,18 +136,7 @@ public class ImlTypeProvider {
 					return createBasicType(t.symbol.eContainer as ConstrainedType)
 				} else {
 					// Reference to a symbol
-					var term_type = getType(t.symbol as SymbolDeclaration,context);
-					if (term_type.domain !== null) {
-						if (t.tail !== null) {
-							return term_type.range
-						} else {
-							return term_type
-						}
-					}
-					if (t.arrayAccess) {
-						term_type = getArrayAccessType(term_type, t)
-					}
-					return term_type;
+					return getSymbolReferenceType(t, context)
 				}
 
 			}
@@ -174,7 +156,13 @@ public class ImlTypeProvider {
 				return Bool;
 			}
 			LambdaExpression: {
-				return t.definition.termExpressionType(context)
+				return ImlFactory.eINSTANCE.createHigherOrderType => [
+					domain = t.signature
+					range = t.definition.termExpressionType(context)
+				]
+			}
+			TypeConstructor: {
+				return t.ref
 			}
 			TupleConstructor: {
 				return ImlFactory.eINSTANCE.createTupleType => [
@@ -194,26 +182,53 @@ public class ImlTypeProvider {
 		}
 	}
 	
-	def static getArrayAccessType(HigherOrderType type, SymbolReferenceTerm term) {
-		if (term.arrayAccess) {
+	def static getSymbolReferenceType(SymbolReferenceTerm term, SimpleTypeReference context) {
+		var term_type = getType(term.symbol as SymbolDeclaration, context);		
+		for (tail : term.tails) {
+			term_type = accessTail(term_type, tail)
+		}
+		return term_type
+	}
+	
+	def static accessTail(HigherOrderType type, SymbolReferenceTail tail) {
+		if (tail instanceof ArrayAccess) {
 			if (type instanceof ArrayType) {
-				return accessArray(type as ArrayType, term.index.size)
+				return accessArray(type as ArrayType, tail as ArrayAccess)
 			} else if (type instanceof TupleType) {
-				val index = term.index.get(0) // It should be integer or symbol a[0] or a[symbolName]
-				if (index.left !== null) {
-					val indexAtomic = index.left
-					if (indexAtomic instanceof SymbolReferenceTerm) { // Specific symbol
-						for (symbol : type.symbols) {
-							if (symbol.name !== null && symbol.name == indexAtomic.symbol.name) {
-								return symbol.type
-							}
-						}
-					} else if (indexAtomic instanceof NumberLiteral) { // Specific index
-						val indexValue = indexAtomic.value * (if (indexAtomic.neg) -1 else 1)
-						if (indexValue >= 0 && indexValue < type.symbols.size) {
-							return type.symbols.get(indexValue).type
-						}
+				return accessTuple(type as TupleType, tail as ArrayAccess)
+			}
+			
+		} else { // Method invocation using Tuple
+		    if (type.range !== null) {
+		    	return type.range
+		    }
+		}
+		return type
+	}
+	
+	def static accessArray(ArrayType type, ArrayAccess arrayAccessTail) {
+		type.dimensions.remove(type.dimensions.size - 1)
+		if (type.dimensions.isEmpty) {
+			return type.type
+		} else {
+			return type
+		}
+	}
+	
+	def static accessTuple(TupleType type, ArrayAccess arrayAccessTail) {
+		val index = arrayAccessTail.index // It should be integer or symbol a[0] or a[symbolName]
+		if (index.left !== null) {
+			val indexAtomic = index.left
+			if (indexAtomic instanceof SymbolReferenceTerm) { // Specific symbol
+				for (symbol : type.symbols) {
+					if (symbol.name !== null && symbol.name == indexAtomic.symbol.name) {
+						return symbol.type
 					}
+				}
+			} else if (indexAtomic instanceof NumberLiteral) { // Specific index
+				val indexValue = indexAtomic.value * (if (indexAtomic.neg) -1 else 1)
+				if (indexValue >= 0 && indexValue < type.symbols.size) {
+					return type.symbols.get(indexValue).type
 				}
 			}
 		}
@@ -221,10 +236,13 @@ public class ImlTypeProvider {
 	}
 	
 	def static HigherOrderType getType(SymbolDeclaration s, SimpleTypeReference ctx) {
-		if ( ctx.ref.symbols.contains(s)) {
+		if ( ctx.type.symbols.contains(s) || symbolInsideLambda(s) || 
+			symbolInsideProgram(s)
+		) {
 			return bind(s,ctx)
 		}
-		for(rel : ctx.ref.relations) {
+		
+		for(rel : ctx.type.relations) {
 			switch(rel){
 				com.utc.utrc.hermes.iml.iml.Extension :{
 					val target = rel.target
@@ -233,12 +251,42 @@ public class ImlTypeProvider {
 						var retval = getType(s,sup);
 						if (retval !== null) {
 							return retval;
-						}	
+						}
 					}
 				}
 			}
 		}
 		return null;
+	}
+	
+	/**
+	 * Check if symbol declaration is defined inside a program
+	 */
+	def static symbolInsideProgram(SymbolDeclaration symbol) {
+		return symbol.eContainer instanceof Program
+	}
+	
+	/**
+	 * Check if symbol declaration is defined inside a lambda signature
+	 */
+	def static symbolInsideLambda(SymbolDeclaration symbol) {
+		return symbol.eContainer instanceof TupleType && 
+			symbol.eContainer.eContainer instanceof LambdaExpression &&
+			(symbol.eContainer.eContainer as LambdaExpression).signature == symbol.eContainer
+	}
+	
+	def static getTypeConstructorType(TermExpression term) {
+		val typeConstructor = EcoreUtil2.getContainerOfType(term, TypeConstructor)
+		if (typeConstructor !== null) {
+			return (typeConstructor.ref as SimpleTypeReference).type
+		}		
+//		val tupleParent = EcoreUtil2.getContainerOfType(term, TupleConstructor)
+//		if (tupleParent !== null) {
+//			val srt = EcoreUtil2.getContainerOfType(tupleParent, SymbolReferenceTerm)
+//			if (srt !== null && srt.symbol instanceof ConstrainedType) {
+//				return srt.symbol as ConstrainedType
+//			}
+//		}
 	}
 	
 	def static bind(SymbolDeclaration s, SimpleTypeReference ctx) {
@@ -247,9 +295,9 @@ public class ImlTypeProvider {
 	
 	def static bind(HigherOrderType t, SimpleTypeReference ctx){
 		var ctxbinds = new HashMap<ConstrainedType, HigherOrderType>();
-		if (ctx.typeBinding.size == ctx.ref.typeParameter.size) {
-			for(i : 0 ..< ctx.ref.typeParameter.size) {
-				ctxbinds.put(ctx.ref.typeParameter.get(i),ctx.typeBinding.get(i))
+		if (ctx.typeBinding.size == ctx.type.typeParameter.size) {
+			for(i : 0 ..< ctx.type.typeParameter.size) {
+				ctxbinds.put(ctx.type.typeParameter.get(i),ctx.typeBinding.get(i))
 			}
 		}
 		
@@ -261,23 +309,25 @@ public class ImlTypeProvider {
 			ArrayType:{
 				var retval = ImlFactory.eINSTANCE.createArrayType ;
 				retval.type = remap(t.type,map)	
-				for(d : t.dimension) {
+				for(d : t.dimensions) {
 					//TODO : Should we clone the term expressions?
-					retval.dimension.add(ImlFactory::eINSTANCE.createNumberLiteral => [value=0] ) ;
+					retval.dimensions.add(ImlFactory::eINSTANCE.createOptionalTermExpr => [
+						term=ImlFactory::eINSTANCE.createNumberLiteral => [value=0]
+					;])
 				}
 				return retval				
 			}
 			SimpleTypeReference:{
-				if (map.containsKey(t.ref)) {
-					return map.get(t.ref)					
+				if (map.containsKey(t.type)) {
+					return map.get(t.type)					
 				}
 				var retval = ImlFactory.eINSTANCE.createSimpleTypeReference ;
-				retval.ref = t.ref
+				retval.type = t.type
 				for( h : t.typeBinding) {
 					if(h instanceof SimpleTypeReference){
 						if ((h as SimpleTypeReference).typeBinding.size === 0) {
-							if (map.containsKey(h.ref)) {
-								retval.typeBinding.add(clone(map.get(h.ref)))
+							if (map.containsKey(h.type)) {
+								retval.typeBinding.add(clone(map.get(h.type)))
 							} else {
 								retval.typeBinding.add(clone(h))
 							}
@@ -326,7 +376,7 @@ public class ImlTypeProvider {
 	
 	/* Check whether t is numeric type reference */
 	def static boolean isNumeric(ConstrainedType t) {
-		if (t == Int.ref || t == Real.ref) {
+		if (t == Int.type || t == Real.type) {
 			return true;
 		}
 		return false;
