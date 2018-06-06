@@ -43,7 +43,6 @@ public class SrlSymbolId {
 			} else if (imlEObject instanceof HigherOrderType) {
 				// use the serialization as name 
 				if (imlEObject instanceof SimpleTypeReference && ((SimpleTypeReference) imlEObject).getTypeBinding().size() == 0) {
-					// TODO do we need this?
 					container = qnp.getFullyQualifiedName(((SimpleTypeReference) imlEObject).getType().eContainer());
 					name = ((SimpleTypeReference) imlEObject).getType().getName();
 				} else {

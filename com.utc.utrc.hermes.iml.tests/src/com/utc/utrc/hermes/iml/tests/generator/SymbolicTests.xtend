@@ -38,10 +38,12 @@ class SymbolicTests {
 			type B ;
 			type C {
 				v : A ;
-				v2 : Bool := v > 5;
+				v2 : A := v > 5;
 			};
 		'''.parse
-		Assert.assertNotNull(model)
+		
+		model.assertNoErrors
+		
 		enc.encode(model);
 		val table = enc.symbolTable;
 		var renc = new RecordEncoder

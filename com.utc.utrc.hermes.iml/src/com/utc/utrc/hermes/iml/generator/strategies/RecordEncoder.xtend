@@ -9,7 +9,6 @@ import static com.utc.utrc.hermes.iml.generator.infra.SExprTokens.*
 import java.util.List
 import java.util.ArrayList
 import com.utc.utrc.hermes.iml.generator.infra.SrlTerm
-import com.utc.utrc.hermes.iml.iml.FolFormula
 import com.utc.utrc.hermes.iml.iml.SignedAtomicFormula
 import com.utc.utrc.hermes.iml.iml.SymbolReferenceTerm
 import com.utc.utrc.hermes.iml.iml.NumberLiteral
@@ -35,7 +34,6 @@ class RecordEncoder {
 		}
 		
 		return retval;
-
 	}
 	
 	def createDeclarationExpr(SrlNamedTypeSymbol ts) {
