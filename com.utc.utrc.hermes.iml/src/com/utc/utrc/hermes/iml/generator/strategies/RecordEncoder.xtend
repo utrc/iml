@@ -46,6 +46,7 @@ class RecordEncoder extends SExprTokens {
 	}
 
 	def public SExpr encode(SrlHigherOrderTypeSymbol ts) {
+		
 	}
 
 }

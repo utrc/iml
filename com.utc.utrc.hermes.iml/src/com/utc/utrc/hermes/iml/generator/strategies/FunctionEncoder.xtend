@@ -64,14 +64,14 @@ class FunctionEncoder {
 	def public SExpr encode(HigherOrderType hot) {		
 		var retval = new SExpr.Seq() ;
 		if (hot instanceof SimpleTypeReferenceImpl) {
-			val fqn = (hot as SimpleTypeReferenceImpl).ref.fullyQualifiedName
+			val fqn = (hot as SimpleTypeReferenceImpl).type.fullyQualifiedName
 			retval.sexprs.add(SExprTokens.createToken(fqn.toString()))
 		} else if (hot instanceof HigherOrderTypeImpl) {
 			retval.sexprs.add(SExprTokens.HOT_ARROW)
 			retval.sexprs.add(SExprTokens.createToken("("))
 			// first process domain 
 			if (hot.domain instanceof SimpleTypeReferenceImpl) {
-				val fqn = (hot.domain as SimpleTypeReferenceImpl).ref.fullyQualifiedName
+				val fqn = (hot.domain as SimpleTypeReferenceImpl).type.fullyQualifiedName
 				retval.sexprs.add(SExprTokens.createToken(fqn.toString()))				
 			} else if (hot.domain instanceof TupleTypeImpl) {
 				for (SymbolDeclaration sd : (hot.domain as TupleTypeImpl).symbols) {
@@ -85,7 +85,7 @@ class FunctionEncoder {
 			
 			// then process range
 			if (hot.range instanceof SimpleTypeReferenceImpl) {
-				val fqn = (hot.range as SimpleTypeReferenceImpl).ref.fullyQualifiedName
+				val fqn = (hot.range as SimpleTypeReferenceImpl).type.fullyQualifiedName
 				retval.sexprs.add(SExprTokens.createToken(fqn.toString()))				
 			} else {
 				retval.sexprs.add(SExprTokens.createToken("("))

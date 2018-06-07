@@ -8,6 +8,7 @@ import com.utc.utrc.hermes.iml.iml.Extension;
 import com.utc.utrc.hermes.iml.iml.HigherOrderType;
 import com.utc.utrc.hermes.iml.iml.MetaRelaion;
 import com.utc.utrc.hermes.iml.iml.Model;
+import com.utc.utrc.hermes.iml.iml.OptionalTermExpr;
 import com.utc.utrc.hermes.iml.iml.RelationInstance;
 import com.utc.utrc.hermes.iml.iml.SimpleTypeReference;
 import com.utc.utrc.hermes.iml.iml.Symbol;
@@ -92,7 +93,7 @@ public class Iml2Symbolic {
 		if (t instanceof SimpleTypeReference) {
 			SrlHigherOrderTypeSymbol h = factory.createHigherOrderTypeSymbol(t);
 			SimpleTypeReference str = (SimpleTypeReference) t ;
-			h.setDomain( encode(str.getRef()) );
+			h.setDomain( encode(str.getType()) );
 			for(HigherOrderType param : str.getTypeBinding()) {
 				h.getBindings().add(encode(param)) ;
 			}
@@ -101,7 +102,7 @@ public class Iml2Symbolic {
 			ArrayType at = (ArrayType) t ;
 			SrlHigherOrderTypeSymbol h = factory.createHigherOrderTypeSymbol(at) ; 
 			h.setDomain(encode(at.getType())); 
-			for(TermExpression e : at.getDimension()) {
+			for(OptionalTermExpr e : at.getDimensions()) {
 				//TODO Compile terms
 				h.getDimensions().add(factory.createTerm(e)) ;
 			}
