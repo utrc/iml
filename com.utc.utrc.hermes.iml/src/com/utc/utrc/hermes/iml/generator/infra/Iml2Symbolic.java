@@ -126,6 +126,7 @@ public class Iml2Symbolic {
 			SrlHigherOrderTypeSymbol h = factory.createHigherOrderTypeSymbol(t) ; 
 			h.setDomain(encode(t.getDomain()));
 			h.setRange(encode(t.getRange()));
+			s = h;
 		}
 		table.add(s, new EncodedSymbol(s, null));
 		return s;
