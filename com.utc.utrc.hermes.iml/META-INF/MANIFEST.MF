@@ -18,6 +18,8 @@ Require-Bundle: org.eclipse.xtext,
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Export-Package: com.utc.utrc.hermes.iml,
  com.utc.utrc.hermes.iml.generator,
+ com.utc.utrc.hermes.iml.generator.infra,
+ com.utc.utrc.hermes.iml.generator.strategies,
  com.utc.utrc.hermes.iml.iml,
  com.utc.utrc.hermes.iml.iml.impl,
  com.utc.utrc.hermes.iml.iml.util,
@@ -29,3 +31,4 @@ Export-Package: com.utc.utrc.hermes.iml,
  com.utc.utrc.hermes.iml.typing,
  com.utc.utrc.hermes.iml.validation
 Import-Package: org.apache.log4j
+Bundle-ClassPath: .,libs/jgrapht-core-1.1.0.jar
