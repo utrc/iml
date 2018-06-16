@@ -60,6 +60,8 @@ public class Iml2Symbolic {
 		retval.setType(encode(s.getType()));
 		addProperties(retval,s);
 		//TODO Add Definition
+		
+		table.add(retval, new EncodedSymbol(retval, null));
 		return retval;
 	}
 
@@ -114,6 +116,11 @@ public class Iml2Symbolic {
 				h.getTupleElements().add(encode(d));
 			}
 			s = h;
+		} else { // HOT
+			SrlHigherOrderTypeSymbol hot = factory.createHigherOrderTypeSymbol(t);
+			hot.setDomain(encode(t.getDomain()));
+			hot.setRange(encode(t.getRange()));
+			s = hot;
 		}
 		table.add(s, new EncodedSymbol(s, null));
 		return s;

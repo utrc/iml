@@ -101,5 +101,33 @@ class FunctionEncoderTests {
 		System.out.println(expr)
 	}
 	
+	@Test
+	def void TestEncodingForIMLLANG() {
+		val model = '''
+		    package iml.lang; 
+		    type Int ; 
+		    type Real ; 
+		    type Bool ; 
+		    
+		    meta type Assert; 
+		    meta type Goal; 
+		    meta type Modality; 
+		    
+		    sqrt : Real ~> Real ; 
+		    sin : Real ~> Real ; 
+		    cos : Real ~> Real ;
+		'''.parse
+		Assert.assertNotNull(model)
+		var expr = enc.encode(model);
+		System.out.println(expr)
+	}
+	
+
+
+	
+	
+	
+	
+	
 	
 }

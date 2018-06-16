@@ -18,6 +18,9 @@ import com.utc.utrc.hermes.iml.generator.infra.Iml2Symbolic
 import com.utc.utrc.hermes.iml.generator.infra.SrlSymbolId
 import com.utc.utrc.hermes.iml.generator.infra.SrlNamedTypeSymbol
 import com.utc.utrc.hermes.iml.generator.strategies.RecordEncoder
+import com.utc.utrc.hermes.iml.generator.strategies.FunctionEncodeStrategy
+import com.utc.utrc.hermes.iml.generator.infra.SrlObjectSymbol
+import com.utc.utrc.hermes.iml.generator.infra.SrlHigherOrderTypeSymbol
 
 @RunWith(typeof(XtextRunner))
 @InjectWith(typeof(ImlInjectorProvider))
@@ -52,5 +55,104 @@ class SymbolicTests {
 		}
 		
 	}
+	
+	@Test
+	def void TestEncodingForIMLLand() {
+		val model = '''
+		    package iml.lang; 
+		    type Int ; 
+		    type Real ; 
+		    type Bool ; 
+		    
+		    meta type Assert; 
+		    meta type Goal; 
+		    meta type Modality; 
+		    
+		    sqrt : Real ~> Real ; 
+		    sin : Real ~> Real ; 
+		    cos : Real ~> Int ;
+		'''.parse
+		Assert.assertNotNull(model)
+		enc.encode(model)
+		val table = enc.symbolTable;
+		var fenc = new FunctionEncodeStrategy()
+		fenc.encode(table);
+		
+		for (SrlSymbolId id : table.symbols.keySet) {
+			val value = table.symbols.get(id)
+			System.out.println(value.encoding)			
+		}
+	}	
+	
+	@Test
+	def void TestEncodingForUTRCTest1() {
+		var model = '''
+			package hermes.iml.aadl ;
+			import iml.lang.* ;
+			type Integer sameas Int;
+			type Float sameas Real ;
+			type Boolean sameas Bool ;
+		    type system ;
+«««			meta type system ;
+			meta type implementation ;
+			meta type in ;
+			meta type out;
+			meta type port;
+			meta type connection;
+			meta type subcomponent;
+«««			type Connection<type T> {
+«««				source : T ;
+«««				target : T;
+«««				a1 <<a:Assert>> : Bool := source = target;
+«««			}
+			'''.parse()
+		
+		model = '''
+			package hermes.iml.contracts;
+			meta type Assume ;
+			meta type Guarantee;
+			'''.parse(model.eResource.resourceSet)
+				
+		model = '''
+			package iml.lang;
+			type Int ;
+			type Real ;
+			type Bool ;
+			meta type Assert;
+			meta type Goal;
+			meta type Modality;
+			
+			sqrt : Real ~> Real ;
+			sin : Real ~> Real ;
+			cos : Real ~> Real ;
+			'''.parse(model.eResource.resourceSet)
+
+		model = '''
+			package utrc.test1 ;
+			import iml.lang.*;
+			import hermes.iml.aadl.* ;
+			import hermes.iml.contracts.* ;
+			
+			
+			type <<s:system>> S1 {
+«««				i1 <<i:in,p:port>>: Float;
+«««				i2 <<i:in,p:port>>: Float ;
+«««				o1 <<o:out,p:port>>: Float ;
+«««				n <<i:in,p:port>>: Integer;
+«««			    a1 <<a:Assume>> : Bool := n >=1 && (exists x:Int, y:Int { (y >= 1 && y <= n && x>=1 && x <= 0) && ( (i1 = x/n || i1 = -1 * x/n) && ( i2 = y/n || i2 =  -1 *y/n))   } ) ;
+«««				g1 <<g:Guarantee>>: Bool := o1 <=1 && o1 >=-1;
+			}
+		'''.parse(model.eResource.resourceSet)
+		Assert.assertNotNull(model)
+		enc.encode(model)
+		val table = enc.symbolTable;
+		var fenc = new FunctionEncodeStrategy()
+		fenc.encode(table);
+		
+		for (SrlSymbolId id : table.symbols.keySet) {
+			val value = table.symbols.get(id)
+			System.out.println(value.encoding)			
+		}
+	}	
 	
 }

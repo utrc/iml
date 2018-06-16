@@ -3,6 +3,7 @@ package com.utc.utrc.hermes.iml.generator.infra;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.naming.IQualifiedNameProvider;
 import org.eclipse.xtext.naming.QualifiedName;
+import org.eclipse.xtext.resource.XtextResource;
 
 import com.google.inject.Inject;
 import com.utc.utrc.hermes.iml.iml.ConstrainedType;
@@ -49,7 +50,8 @@ public class SrlSymbolId {
 					name = ((SimpleTypeReference) imlEObject).getType().getName();
 				} else {
 					container = DEFAULT_CONTAINER;
-					
+					// Use the name exactly as declared 					
+					name = hot2StringId((HigherOrderType) imlEObject);
 				}
 				//name to be determined
 			} else if (imlEObject instanceof RelationInstance) {
@@ -63,6 +65,15 @@ public class SrlSymbolId {
 			}
 		}
 	}
+	
+	private String hot2StringId(HigherOrderType imlEObject) {
+		if (imlEObject != null && imlEObject.eResource() instanceof XtextResource && imlEObject.eResource().getURI() != null) {
+			return ((XtextResource) imlEObject.eResource()).getSerializer().serialize(imlEObject);     	
+		} else {     		
+			// TODO get it manually?     		
+			return "";     	
+		} 	
+	}	
 	
 	public void setContainer(EObject o) {
 		container = qnp.getFullyQualifiedName(o);
