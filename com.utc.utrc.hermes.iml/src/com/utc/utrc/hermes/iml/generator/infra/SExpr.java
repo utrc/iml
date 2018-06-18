@@ -22,6 +22,12 @@ public abstract class SExpr {
 		public List<SExpr> sexprs() {
 			return sexprs;
 		}
+		
+		public void add(SExpr ... e) {
+			for(int i = 0 ; i < e.length ; i++) {
+				sexprs.add(e[i]);
+			}
+		}
 
 		@Override
 		public String toString() {

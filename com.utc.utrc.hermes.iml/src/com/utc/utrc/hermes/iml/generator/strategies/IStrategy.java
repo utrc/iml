@@ -1,3 +1,4 @@
+//<<<<<<< HEAD
 package com.utc.utrc.hermes.iml.generator.strategies;
 
 import com.utc.utrc.hermes.iml.generator.infra.SExpr;
@@ -18,3 +19,16 @@ public interface IStrategy {
 	public SExpr encode (SrlHigherOrderTypeSymbol hot);
 
 }
+//=======
+//package com.utc.utrc.hermes.iml.generator.strategies;
+//
+//import java.util.List;
+//
+//import com.utc.utrc.hermes.iml.generator.infra.SExpr;
+//
+//public interface IStrategy {
+//	
+//	List<SExpr> encode();
+//
+//}
+//>>>>>>> master

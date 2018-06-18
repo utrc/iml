@@ -41,16 +41,21 @@ class SymbolicTests {
 			type B ;
 			type C {
 				v : A ;
+				v2 : A := v > 5;
 			};
 		'''.parse
-		Assert.assertNotNull(model)
+		
+		model.assertNoErrors
+		
 		enc.encode(model);
 		val table = enc.symbolTable;
 		var renc = new RecordEncoder
 		for(SrlSymbolId id : table.symbols.keySet){
 			val value = table.symbols.get(id)
 			if (value.symbol instanceof SrlNamedTypeSymbol) {
-				System.out.println(renc.encode(value.symbol as SrlNamedTypeSymbol))
+				for (expr : renc.encode(value.symbol as SrlNamedTypeSymbol)) {
+					System.out.println(expr)
+				}
 			}
 		}
 		
@@ -154,5 +159,4 @@ class SymbolicTests {
 			System.out.println(value.encoding)			
 		}
 	}	
-	
 }

@@ -5,7 +5,6 @@ import org.eclipse.xtext.naming.IQualifiedNameProvider;
 import org.eclipse.xtext.naming.QualifiedName;
 import org.eclipse.xtext.resource.XtextResource;
 
-import com.google.inject.Inject;
 import com.utc.utrc.hermes.iml.iml.ConstrainedType;
 import com.utc.utrc.hermes.iml.iml.FolFormula;
 import com.utc.utrc.hermes.iml.iml.HigherOrderType;
@@ -32,8 +31,6 @@ public class SrlSymbolId {
 		name = "";
 	}
 	
-	
-
 	public void setId(EObject imlEObject) {
 		if (imlEObject == null) return ;
 		if (imlEObject instanceof Model) {
@@ -50,10 +47,13 @@ public class SrlSymbolId {
 					name = ((SimpleTypeReference) imlEObject).getType().getName();
 				} else {
 					container = DEFAULT_CONTAINER;
+//<<<<<<< HEAD
 					// Use the name exactly as declared 					
+//=======
+//					 Use the name exactly as declared
+//>>>>>>> master
 					name = hot2StringId((HigherOrderType) imlEObject);
 				}
-				//name to be determined
 			} else if (imlEObject instanceof RelationInstance) {
 				// use rel_<integer position>
 				ConstrainedType type = (ConstrainedType) imlEObject.eContainer() ;
@@ -67,14 +67,27 @@ public class SrlSymbolId {
 	}
 	
 	private String hot2StringId(HigherOrderType imlEObject) {
-		if (imlEObject != null && imlEObject.eResource() instanceof XtextResource && imlEObject.eResource().getURI() != null) {
-			return ((XtextResource) imlEObject.eResource()).getSerializer().serialize(imlEObject);     	
-		} else {     		
-			// TODO get it manually?     		
-			return "";     	
-		} 	
-	}	
-	
+//<<<<<<< HEAD
+//		if (imlEObject != null && imlEObject.eResource() instanceof XtextResource && imlEObject.eResource().getURI() != null) {
+//			return ((XtextResource) imlEObject.eResource()).getSerializer().serialize(imlEObject);     	
+//		} else {     		
+//			// TODO get it manually?     		
+//			return "";     	
+//		} 	
+//	}	
+//	
+//=======
+		if (imlEObject != null && imlEObject.eResource() instanceof XtextResource
+				&& imlEObject.eResource().getURI() != null) {
+    		
+    		return ((XtextResource) imlEObject.eResource()).getSerializer().serialize(imlEObject);
+    	} else {
+    		// TODO get it manually?
+    		return "";
+    	}
+	}
+
+//>>>>>>> master
 	public void setContainer(EObject o) {
 		container = qnp.getFullyQualifiedName(o);
 	}
@@ -98,17 +111,33 @@ public class SrlSymbolId {
 
 	@Override
 	public int hashCode() {
-		return container.hashCode();
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((container == null) ? 0 : container.hashCode());
+		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		return result;
 	}
 
 	@Override
 	public boolean equals(Object obj) {
-		if (obj instanceof SrlSymbolId) {
-			if (container.equals(((SrlSymbolId)obj).getContainer()) && name.equals(((SrlSymbolId)obj).getName())) {
-				return true;
-			}
-		}
-		return false;
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (!(this instanceof SrlSymbolId && obj instanceof SrlSymbolId))
+			return false;
+		SrlSymbolId other = (SrlSymbolId) obj;
+		if (container == null) {
+			if (other.container != null)
+				return false;
+		} else if (!container.equals(other.container))
+			return false;
+		if (name == null) {
+			if (other.name != null)
+				return false;
+		} else if (!name.equals(other.name))
+			return false;
+		return true;
 	}
 	
 	public String stringId() {
