@@ -7,12 +7,15 @@ import com.utc.utrc.hermes.iml.generator.infra.SExpr.Token;
 
 public class SExprTokens {
 
+	public static SExpr.Token<String> OPEN_PARANTHESIS = new SExpr.Token<String>("(") ;
+	public static SExpr.Token<String> CLOSE_PARANTHESIS = new SExpr.Token<String>(")") ;
 	public static SExpr.Token<String> EXCLAMATION_POINT = new SExpr.Token<String>("!") ;
 	public static SExpr.Token<String> DECLARE_SORT = new SExpr.Token<String>("declare-sort") ;
 	public static SExpr.Token<String> DECLARE_DATATYPE = new SExpr.Token<String>("declare-datatype") ;
 //<<<<<<< HEAD
 
 	public static SExpr.Token<String> DECLARE_FUN = new SExpr.Token<String>("declare-fun") ;
+	public static SExpr.Token<String> DEFINE_FUN = new SExpr.Token<String>("define-fun") ;
 	public static SExpr.Token<String> HOT_ARROW = new SExpr.Token<String>("~>") ;
 
 //=======
@@ -31,7 +34,19 @@ public class SExprTokens {
 	public static SExpr.Token<String> EQ = new SExpr.Token<String>("=") ;
 	public static SExpr.Token<String> NOT = new SExpr.Token<String>("not") ;
 	public static SExpr.Token<String> NEG = new SExpr.Token<String>("neg") ;
-//>>>>>>> master
+
+	public static SExpr.Token<String> EXISTS = new SExpr.Token<String>("exists") ;
+	
+	
+	public static SExpr.Token<String> AND = new SExpr.Token<String>("and") ;
+	public static SExpr.Token<String> OR = new SExpr.Token<String>("or") ;
+	
+	public static SExpr.Token<String> GREATER = new SExpr.Token<String>(">") ;
+	public static SExpr.Token<String> SMALLER = new SExpr.Token<String>("<") ;
+	public static SExpr.Token<String> GREATEREQ = new SExpr.Token<String>(">=") ;
+	public static SExpr.Token<String> SMALLEREQ = new SExpr.Token<String>("<=") ;
+	
+	//>>>>>>> master
 	
 	public static void addToSequence(Seq s, SExpr e) {
 		s.sexprs.add(e);

@@ -35,8 +35,14 @@ public abstract class SExpr {
 			Iterator<? extends SExpr> iter = sexprs.iterator();
 			sb.append("( ");
 			while (iter.hasNext()) {
-				sb.append(iter.next().toString());
+				SExpr testMe = iter.next();
+//				System.out.println("TestMe name" + testMe.getClass().getName());
+//				if (testMe.getClass().getName().equals("com.utc.utrc.hermes.iml.generator.infra.SExpr$Seq")) 
+//					sb.append("( ");
+				sb.append(testMe.toString());
 				sb.append(" ");
+//				if (testMe.getClass().getName().equals("com.utc.utrc.hermes.iml.generator.infra.SExpr$Seq")) 
+//					sb.append(")\n");
 			}
 			sb.append(")");
 			return sb.toString();
@@ -65,7 +71,7 @@ public abstract class SExpr {
 		public String toString() {
 			return value.toString();
 		}
-
+		
 		public String kind() {
 			return "token";
 		}

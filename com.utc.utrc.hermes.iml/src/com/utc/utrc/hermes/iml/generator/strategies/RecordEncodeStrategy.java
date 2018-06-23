@@ -38,7 +38,7 @@ public class RecordEncodeStrategy implements IStrategy {
 	}
 
 	@Override
-	public SExpr encode(SrlNamedTypeSymbol t) {
+	public SExpr encode(SrlNamedTypeSymbol t, String name) {
 		// TODO Auto-generated method stub
 		return null;
 	}

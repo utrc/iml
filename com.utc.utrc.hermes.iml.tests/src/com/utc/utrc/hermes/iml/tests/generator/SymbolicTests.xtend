@@ -31,6 +31,7 @@ class SymbolicTests {
 	@Inject extension ValidationTestHelper
 	
 	@Inject Iml2Symbolic enc ;
+	@Inject FunctionEncodeStrategy fenc ;
 	
 	
 	@Test
@@ -85,7 +86,7 @@ class SymbolicTests {
 		
 		for (SrlSymbolId id : table.symbols.keySet) {
 			val value = table.symbols.get(id)
-			System.out.println(value.encoding)			
+			System.out.println(value.encoding)
 		}
 	}	
 	
@@ -97,19 +98,18 @@ class SymbolicTests {
 			type Integer sameas Int;
 			type Float sameas Real ;
 			type Boolean sameas Bool ;
-		    type system ;
-«««			meta type system ;
+			meta type system ;
 			meta type implementation ;
 			meta type in ;
 			meta type out;
 			meta type port;
 			meta type connection;
 			meta type subcomponent;
-«««			type Connection<type T> {
-«««				source : T ;
-«««				target : T;
-«««				a1 <<a:Assert>> : Bool := source = target;
-«««			}
+			type Connection<type T> {
+				source : T ;
+				target : T;
+				a1 <<a:Assert>> : Bool := source = target;
+			}
 			'''.parse()
 		
 		model = '''
@@ -137,26 +137,46 @@ class SymbolicTests {
 			import iml.lang.*;
 			import hermes.iml.aadl.* ;
 			import hermes.iml.contracts.* ;
-			
-			
+						
 			type <<s:system>> S1 {
-«««				i1 <<i:in,p:port>>: Float;
-«««				i2 <<i:in,p:port>>: Float ;
-«««				o1 <<o:out,p:port>>: Float ;
-«««				n <<i:in,p:port>>: Integer;
-«««			    a1 <<a:Assume>> : Bool := n >=1 && (exists x:Int, y:Int { (y >= 1 && y <= n && x>=1 && x <= 0) && ( (i1 = x/n || i1 = -1 * x/n) && ( i2 = y/n || i2 =  -1 *y/n))   } ) ;
-«««				g1 <<g:Guarantee>>: Bool := o1 <=1 && o1 >=-1;
+				i1 <<i:in,p:port>>: Float;
+				i2 <<i:in,p:port>>: Float ;
+				o1 <<o:out,p:port>>: Float ;
+				n <<i:in,p:port>>: Integer;
+			    a1 <<a:Assume>> : Bool := n >=1 && (exists x:Int, y:Int { (y >= 1 && y <= n && x>=1 && x <= 0) && ( (i1 = x/n || i1 = -1 * x/n) && ( i2 = y/n || i2 =  -1 *y/n))   } ) ;
+				g1 <<g:Guarantee>>: Bool := o1 <=1 && o1 >=-1;
+«««				o1_to_i1 : Connection<Float> := new Connection<Float> {source = o1; target = i1};
+			}
+			
+			type <<s:system>> S2 {
+				i1 <<i:in,p:port>>: Float;
+				i2 <<i:in,p:port>>: Float ;
+				o1 <<o:out,p:port>>: Float ;
+				alpha <<i:in,p:port>>: Float;
+			    a1 <<a:Assume>> : Bool := (i1 =1 || i1=-1) && (i2=0 || i2 =1 || i2 = -1) ;
+				g1 <<g:Guarantee>>: Bool := o1 = i1 * sqrt(2) * sin(alpha) + i2 * sqrt(2) * cos(alpha);
+			}
+			
+			type <<s:system,i:implementation>> S1__impl extends S1 {
+				S2_sub <<c:subcomponent>>: S2 ;
+				i1_TO_A : Connection<Float> := new Connection<Float> {source=i1; target = S2_sub->i1;};
+				i2_TO_A : Connection<Float> := new Connection<Float> {source=i2 ; target = S2_sub->i2;};
+				S2_TO_o1 : Connection<Float> := new Connection<Float> {source=S2_sub->o1 ; target =o1 ;} ; 	
+				
+				//i1_TO_A <<c:connection>>: Bool := i1 = S2_sub->i1;
+				//i2_TO_A <<c:connection>>: Bool := i2 = S2_sub->i2;
+				//S2_TO_o1 <<c:connection>>: Bool := S2_sub->o1 = o1 ; 	
 			}
 		'''.parse(model.eResource.resourceSet)
 		Assert.assertNotNull(model)
 		enc.encode(model)
 		val table = enc.symbolTable;
-		var fenc = new FunctionEncodeStrategy()
 		fenc.encode(table);
 		
 		for (SrlSymbolId id : table.symbols.keySet) {
 			val value = table.symbols.get(id)
-			System.out.println(value.encoding)			
+			if (value.encoding !== null)
+				System.out.println(value.encoding)
 		}
 	}	
 }

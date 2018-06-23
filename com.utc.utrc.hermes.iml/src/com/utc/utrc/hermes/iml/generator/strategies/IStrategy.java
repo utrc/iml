@@ -15,7 +15,7 @@ public interface IStrategy {
 	public SExpr encode (SrlSymbol s);
 	public SExpr encode (SrlObjectSymbol s); 
 	public SExpr encode (SrlTypeSymbol t);
-	public SExpr encode (SrlNamedTypeSymbol t);
+	public SExpr encode (SrlNamedTypeSymbol t, String name);
 	public SExpr encode (SrlHigherOrderTypeSymbol hot);
 
 }
