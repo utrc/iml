@@ -13,13 +13,13 @@ public class Encoder {
 	
 	public void encode(SymbolTable st) throws EncodeStrategyException {
 		
-		for (SrlSymbolId ssid : st.getSymbols().keySet()) {
-			EncodedSymbol es = st.getSymbols().get(ssid);
-			SrlSymbol ss = es.getSymbol();
-			if (es.getEncoding() != null)
-				throw new EncodeStrategyException("Solver level encode: expect not processed (null)");
-			es.setEncoding((sttgs.getStrategy(ss)).encode(ss));
-		}		
+//		for (SrlSymbolId ssid : st.getSymbols().keySet()) {
+//			EncodedSymbol es = st.getSymbols().get(ssid);
+//			SrlSymbol ss = es.getSymbol();
+//			if (es.getEncoding() != null)
+//				throw new EncodeStrategyException("Solver level encode: expect not processed (null)");
+//			es.setEncoding((sttgs.getStrategy(ss)).encode(ss));
+//		}		
 	}
 
 	private Strategies sttgs = null;
