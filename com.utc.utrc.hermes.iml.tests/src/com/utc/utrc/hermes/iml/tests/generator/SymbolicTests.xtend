@@ -183,6 +183,7 @@ class SymbolicTests {
 //					System.out.println( (value.encoding as Seq).sexprs )
 //				}				
 				System.out.println(value.encoding)
+				System.out.println;
 				}
 				
 		}

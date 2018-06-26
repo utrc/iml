@@ -96,7 +96,7 @@ public class FunctionEncodeStrategy implements IStrategy {
 			SrlTypeSymbol dmn = (SrlTypeSymbol) hots.getDomain();
 			if (dmn instanceof SrlNamedTypeSymbol) {
 				SrlNamedTypeSymbol namedDmn = (SrlNamedTypeSymbol) dmn;
-				encode(namedDmn, hots.getName().trim(), hots.getBindings(), retVal);
+				encode(namedDmn, hots.getName() /*.trim()*/, hots.getBindings(), retVal);
 			}
 		}
 		return (retVal.toString().equals("( )") ? null : retVal);
@@ -208,7 +208,7 @@ public class FunctionEncodeStrategy implements IStrategy {
 		// process definition
 		if (def != null) { // need to worry about template parameter
 			FolFormula f = def.getFormula();
-			encodeWithTemplatePar(f, retVal, t.getName().trim(), realizedTemplateName);
+			encodeWithTemplatePar(f, retVal, t.getName()/*.trim()*/, realizedTemplateName);
 		}
 		return (retVal.toString().equals("( )") ? null : retVal);
 	}
@@ -243,7 +243,7 @@ public class FunctionEncodeStrategy implements IStrategy {
 					Seq initSExpr = new SExpr.Seq();
 					initSExpr.add(SExprTokens.EQ);
 					initSExpr.add(SExprTokens.OPEN_PARANTHESIS);
-					initSExpr.add(SExprTokens.createToken(sos.stringId() + ".init " + s.getName()));
+					initSExpr.add(SExprTokens.createToken(sos.stringId() + ".init " + s.stringId()));
 					initSExpr.add(SExprTokens.CLOSE_PARANTHESIS);
 					initSExpr.add(SExprTokens.TRUE);
 					retVal.add(initSExpr);
@@ -257,7 +257,7 @@ public class FunctionEncodeStrategy implements IStrategy {
 					connA1SExpr.add(SExprTokens.createToken(sos.getType().stringId() + ".a1"));
 					connA1SExpr.add(SExprTokens.OPEN_PARANTHESIS);
 					connA1SExpr.add(SExprTokens.createToken(sos.stringId()));
-					connA1SExpr.add(SExprTokens.createToken(s.getName()));
+					connA1SExpr.add(SExprTokens.createToken(s.stringId()));
 					connA1SExpr.add(SExprTokens.CLOSE_PARANTHESIS);
 					connA1SExpr.add(SExprTokens.CLOSE_PARANTHESIS);
 					connA1SExpr.add(SExprTokens.TRUE);
@@ -284,12 +284,13 @@ public class FunctionEncodeStrategy implements IStrategy {
 				retVal.add(SExprTokens.DEFINE_FUN);
 			}
 		}
+		boolean donotGenParam = s.getDefinition() == null || (s.getDefinition() != null && isTypeConstructor(def));
 		retVal.add(SExprTokens.createToken(s.stringId()));
 		retVal.add(SExprTokens.createToken("("));
-		retVal.add(SExprTokens.createToken(s.getDefinition() == null ? "" : "("));
-		retVal.add(SExprTokens.createToken(s.getDefinition() == null ? "" : "x!1"));
+		retVal.add(SExprTokens.createToken(donotGenParam ? "" : "("));
+		retVal.add(SExprTokens.createToken(donotGenParam ? "" : "x!1"));
 		retVal.add(SExprTokens.createToken(s.getContainer().toString()));
-		retVal.add(SExprTokens.createToken(s.getDefinition() == null ? "" : ")"));
+		retVal.add(SExprTokens.createToken(donotGenParam ? "" : ")"));
 		retVal.add(SExprTokens.createToken(")"));
 
 		String origName = "";
@@ -298,7 +299,7 @@ public class FunctionEncodeStrategy implements IStrategy {
 			SrlHigherOrderTypeSymbol hots = (SrlHigherOrderTypeSymbol) s.getType();
 			if (!hots.isHigherOrder()) {
 				if (!hots.getBindings().isEmpty()) {
-					realizedName = hots.getName().trim();
+					realizedName = hots.getName(); //.trim();
 				}
 				if (hots.getDomain() instanceof SrlNamedTypeSymbol) {
 					SrlNamedTypeSymbol nts = (SrlNamedTypeSymbol) hots.getDomain();
@@ -845,7 +846,7 @@ public class FunctionEncodeStrategy implements IStrategy {
 	private void encodeExtension(SrlNamedTypeSymbol t, SrlObjectSymbol sos, Seq seq) {
 		Seq retVal = new SExpr.Seq();
 		retVal.add(SExprTokens.DECLARE_FUN);
-		retVal.add(SExprTokens.createToken(t.stringId() + "_base_0"));
+		retVal.add(SExprTokens.createToken(t.stringId() + ".base_0"));
 		retVal.add(SExprTokens.OPEN_PARANTHESIS);
 		retVal.add(SExprTokens.createToken(t.stringId()));
 		retVal.add(SExprTokens.CLOSE_PARANTHESIS);
