@@ -8,11 +8,9 @@ import com.utc.utrc.hermes.iml.iml.Symbol;
 public class EncodedSymbol {
 
 	private SrlSymbol symbol;
-	private SExpr encoding ;
-//	private List<Seq> encoding;
+	private List<Seq> encoding;
 
-	public EncodedSymbol(SrlSymbol s, SExpr e) {
-//	public EncodedSymbol(SrlSymbol s, List<Seq> e) {
+	public EncodedSymbol(SrlSymbol s, List<Seq> e) {
 		symbol = s;
 		encoding = e;
 	}
@@ -25,13 +23,11 @@ public class EncodedSymbol {
 		this.symbol = symbol;
 	}
 
-	public SExpr getEncoding() {
-//	public List<Seq> getEncoding() {
+	public List<Seq> getEncoding() {
 		return encoding;
 	}
 
-	public void setEncoding(SExpr encoding) {
-//	public void setEncoding(List<Seq> encoding) {
+	public void setEncoding(List<Seq> encoding) {
 		this.encoding = encoding;
 	}
 

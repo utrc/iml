@@ -36,13 +36,8 @@ public abstract class SExpr {
 			sb.append("( ");
 			while (iter.hasNext()) {
 				SExpr testMe = iter.next();
-//				System.out.println("TestMe name" + testMe.getClass().getName());
-//				if (testMe.getClass().getName().equals("com.utc.utrc.hermes.iml.generator.infra.SExpr$Seq")) 
-//					sb.append("( ");
 				sb.append(testMe.toString());
 				sb.append(" ");
-//				if (testMe.getClass().getName().equals("com.utc.utrc.hermes.iml.generator.infra.SExpr$Seq")) 
-//					sb.append(")\n");
 			}
 			sb.append(")");
 			return sb.toString();

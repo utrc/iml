@@ -1,7 +1,5 @@
 package com.utc.utrc.hermes.iml.generator.strategies;
 
-import org.eclipse.xtext.validation.IConcreteSyntaxConstraintProvider.ConstraintType;
-
 import com.utc.utrc.hermes.iml.generator.infra.SrlSymbol;
 
 public class Strategies {

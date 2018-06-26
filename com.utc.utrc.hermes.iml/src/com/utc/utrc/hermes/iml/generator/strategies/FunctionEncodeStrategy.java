@@ -1,5 +1,6 @@
 package com.utc.utrc.hermes.iml.generator.strategies;
 
+import java.util.ArrayList;
 import java.util.List;
 import com.google.inject.Inject;
 import com.utc.utrc.hermes.iml.generator.infra.EncodedSymbol;
@@ -45,30 +46,28 @@ public class FunctionEncodeStrategy implements IStrategy {
 			if (es.getEncoding() == null) {
 				if (es.getSymbol() instanceof SrlNamedTypeSymbol) {
 					SrlNamedTypeSymbol nts = (SrlNamedTypeSymbol) es.getSymbol();
-					
-					// declare sort
 					if (!nts.isTemplate()) {
+						List<Seq> seqList = new ArrayList<>();
 						Seq seq = new SExpr.Seq();
-						encodeSort(nts, seq);
-						// handle extension
-						if (!nts.getRelations().isEmpty()) {
+						encodeSort(nts, seq); // declare sort
+						seqList.add(seq);
+						if (!nts.getRelations().isEmpty()) { // handle extension
 							for (SrlObjectSymbol sos : nts.getRelations()) {
 								if (sos.getName().equals("rel_0")) { // extension; single extension assumption???
-									encodeExtension(nts, sos, seq);
+									seqList.add(encodeExtension(nts, sos));
 								}
 							}
 						}
 						for (SrlObjectSymbol os : nts.getSymbols()) {
-							encode(os, seq);
+							seqList.addAll(encode(os));
 						}
-						es.setEncoding(seq);
+						es.setEncoding(seqList);
 					}					
 					
 				} else if (es.getSymbol() instanceof SrlObjectSymbol) {
-					Seq seq = new SExpr.Seq();
-//					encode((SrlObjectSymbol)es.getSymbol(), seq);
-					encodeTLObjectSymbol((SrlObjectSymbol)es.getSymbol(), seq);
-					es.setEncoding(seq);
+					List<Seq> seqList = new ArrayList<>();
+					encodeTLObjectSymbol((SrlObjectSymbol)es.getSymbol(), seqList);
+					es.setEncoding(seqList);
 				} else if (es.getSymbol() instanceof SrlHigherOrderTypeSymbol) {
 					SrlHigherOrderTypeSymbol hots = (SrlHigherOrderTypeSymbol) es.getSymbol();
 					String realizedTemplateName = "";
@@ -90,19 +89,21 @@ public class FunctionEncodeStrategy implements IStrategy {
 		}
 	}
 
-	private SExpr encodeBoundedTemplateType(SrlHigherOrderTypeSymbol hots) {
-		Seq retVal = new SExpr.Seq();
+	private List<Seq> encodeBoundedTemplateType(SrlHigherOrderTypeSymbol hots) {
+		List<Seq> seqList = new ArrayList<>();
 		if (!hots.isHigherOrder()) {
 			SrlTypeSymbol dmn = (SrlTypeSymbol) hots.getDomain();
 			if (dmn instanceof SrlNamedTypeSymbol) {
 				SrlNamedTypeSymbol namedDmn = (SrlNamedTypeSymbol) dmn;
-				encode(namedDmn, hots.getName() /*.trim()*/, hots.getBindings(), retVal);
+				seqList.addAll(encode(namedDmn, hots.getName(), hots.getBindings()));
 			}
 		}
-		return (retVal.toString().equals("( )") ? null : retVal);
+		return seqList;
 	}
 
-	private SExpr encode(SrlNamedTypeSymbol t, String realizedTemplateName, List<SrlTypeSymbol> bindings, Seq retVal) {
+	private List<Seq> encode(SrlNamedTypeSymbol t, String realizedTemplateName, List<SrlTypeSymbol> bindings) {
+		List<Seq> seqList = new ArrayList<>();
+		
 		if (!t.isMeta()) {
 			if (t.getProperties().isEmpty()) {
 				if (t.isTemplate()) {
@@ -112,21 +113,31 @@ public class FunctionEncodeStrategy implements IStrategy {
 							seq.add(SExprTokens.DECLARE_SORT);
 							String fqRealizedTemplateName = t.stringId().replaceAll(t.getName(), realizedTemplateName);
 							seq.add(SExprTokens.createToken(fqRealizedTemplateName));
-							retVal.add(seq);
+							seqList.add(seq);
 						}
 					} 
 				} else {
 					if (t.getRelations().isEmpty()) {
 						if (!(t.getContainer().toString()).equals("iml.lang")) {
-							retVal.add(SExprTokens.DECLARE_SORT);
-							retVal.add(SExprTokens.createToken(t.stringId()));
+							// double check gqw originally directly appended to retVal
+//							retVal.add(SExprTokens.DECLARE_SORT);
+//							retVal.add(SExprTokens.createToken(t.stringId()));
+							Seq seq = new SExpr.Seq();
+							seq.add(SExprTokens.DECLARE_SORT);
+							seq.add(SExprTokens.createToken(t.stringId()));
+							seqList.add(seq);
 						}
 					} else {
 						// handle sameas
 						SrlObjectSymbol os = (t.getRelations()).get(0);
 						if (!(os.getType().getContainer().toString()).equals("iml.lang")) {
-							retVal.add(SExprTokens.DECLARE_SORT);
-							retVal.add(SExprTokens.createToken((os.getType().getContainer() + "." + os.getType().getName())));
+							// double check gqw originally directly appended to retVal
+//							retVal.add(SExprTokens.DECLARE_SORT);
+//							retVal.add(SExprTokens.createToken((os.getType().getContainer() + "." + os.getType().getName())));
+							Seq seq = new SExpr.Seq();
+							seq.add(SExprTokens.DECLARE_SORT);
+							seq.add(SExprTokens.createToken((os.getType().getContainer() + "." + os.getType().getName())));
+							seqList.add(seq);
 						}
 					}
 				}
@@ -134,13 +145,14 @@ public class FunctionEncodeStrategy implements IStrategy {
 		}
 		// Process its symbols
 		for (SrlObjectSymbol os : t.getSymbols()) {
-			retVal.add(encode(os, t, bindings, realizedTemplateName));
+			seqList.addAll(encode(os, t, bindings, realizedTemplateName));
 		}
-		return (retVal.toString().equals("( )") ? null : retVal);
+		return seqList;
 	}
 
-	private SExpr encode(SrlObjectSymbol s, SrlNamedTypeSymbol t, List<SrlTypeSymbol> bindings,
+	private List<Seq> encode(SrlObjectSymbol s, SrlNamedTypeSymbol t, List<SrlTypeSymbol> bindings,
 			String realizedTemplateName) {
+		List<Seq> seqList = new ArrayList<>();
 		Seq retVal = new SExpr.Seq();
 		SrlTerm def = s.getDefinition();
 		if (def == null) {
@@ -208,9 +220,10 @@ public class FunctionEncodeStrategy implements IStrategy {
 		// process definition
 		if (def != null) { // need to worry about template parameter
 			FolFormula f = def.getFormula();
-			encodeWithTemplatePar(f, retVal, t.getName()/*.trim()*/, realizedTemplateName);
+			encodeWithTemplatePar(f, retVal, t.getName(), realizedTemplateName);
 		}
-		return (retVal.toString().equals("( )") ? null : retVal);
+		seqList.add(retVal);
+		return seqList;
 	}
 
 	private boolean isTypeConstructor(SrlTerm st) {
@@ -225,7 +238,7 @@ public class FunctionEncodeStrategy implements IStrategy {
 		return retVal;
 	}
 	
-	private void encodeTLObjectSymbol(SrlObjectSymbol s, Seq seq) {
+	private void encodeTLObjectSymbol(SrlObjectSymbol s, List<Seq> seqList) {
 		Seq retVal = new SExpr.Seq();
 		retVal.add(SExprTokens.DECLARE_FUN);
 		retVal.add(SExprTokens.createToken(s.stringId()));
@@ -234,7 +247,7 @@ public class FunctionEncodeStrategy implements IStrategy {
 		if (s.getType() instanceof SrlNamedTypeSymbol) {
 			SrlNamedTypeSymbol snts = (SrlNamedTypeSymbol) s.getType();
 			retVal.add(SExprTokens.createToken(snts.stringId()));
-			seq.add(retVal);
+			seqList.add(retVal);
 
 			for (SrlObjectSymbol sos : snts.getSymbols()) {
 				if (sos.getType().getName().contains("Connection")) {
@@ -247,7 +260,7 @@ public class FunctionEncodeStrategy implements IStrategy {
 					initSExpr.add(SExprTokens.CLOSE_PARANTHESIS);
 					initSExpr.add(SExprTokens.TRUE);
 					retVal.add(initSExpr);
-					seq.add(retVal);
+					seqList.add(retVal);
 					
 					retVal = new SExpr.Seq();
 					retVal.add(SExprTokens.ASSERT);
@@ -263,43 +276,45 @@ public class FunctionEncodeStrategy implements IStrategy {
 					connA1SExpr.add(SExprTokens.TRUE);
 					retVal.add(connA1SExpr);
 
-					seq.add(retVal);				
+					seqList.add(retVal);				
 				}
-			}
-		
-		}
-		
+			}		
+		}	
 	}
 
 	@Override
-	public void encode(SrlObjectSymbol s, Seq seq) {
+	public List<Seq> encode(SrlObjectSymbol s) {
+		List<Seq> seqList = new ArrayList<>();		
 		Seq retVal = new SExpr.Seq();
+		
 		SrlTerm def = s.getDefinition();
+		boolean donotGenParam = true;
 		if (def == null) {
 			retVal.add(SExprTokens.DECLARE_FUN);
 		} else {
 			if (isTypeConstructor(def)) {
 				retVal.add(SExprTokens.DECLARE_FUN);
+				
 			} else {
 				retVal.add(SExprTokens.DEFINE_FUN);
+				donotGenParam = false;
 			}
 		}
-		boolean donotGenParam = s.getDefinition() == null || (s.getDefinition() != null && isTypeConstructor(def));
 		retVal.add(SExprTokens.createToken(s.stringId()));
 		retVal.add(SExprTokens.createToken("("));
 		retVal.add(SExprTokens.createToken(donotGenParam ? "" : "("));
 		retVal.add(SExprTokens.createToken(donotGenParam ? "" : "x!1"));
 		retVal.add(SExprTokens.createToken(s.getContainer().toString()));
 		retVal.add(SExprTokens.createToken(donotGenParam ? "" : ")"));
-		retVal.add(SExprTokens.createToken(")"));
-
+		retVal.add(SExprTokens.createToken(")"));		
+		
 		String origName = "";
 		String realizedName = "";
 		if ((s.getType()) instanceof SrlHigherOrderTypeSymbol) {
 			SrlHigherOrderTypeSymbol hots = (SrlHigherOrderTypeSymbol) s.getType();
 			if (!hots.isHigherOrder()) {
 				if (!hots.getBindings().isEmpty()) {
-					realizedName = hots.getName(); //.trim();
+					realizedName = hots.getName();
 				}
 				if (hots.getDomain() instanceof SrlNamedTypeSymbol) {
 					SrlNamedTypeSymbol nts = (SrlNamedTypeSymbol) hots.getDomain();
@@ -331,14 +346,15 @@ public class FunctionEncodeStrategy implements IStrategy {
 			FolFormula f = def.getFormula();
 			encode(f, retVal);
 		}
-		seq.add(retVal);
+		seqList.add(retVal);
 		if (def != null && isTypeConstructor(def)) {
 			// generate init function
-			seq.add(encodeInit(s, origName, realizedName));
+			seqList.add(encodeInit(s, origName, realizedName));
 		}
+		return seqList;
 	}
 
-	private SExpr encodeInit(SrlObjectSymbol s, String origName, String replacement) {
+	private Seq encodeInit(SrlObjectSymbol s, String origName, String replacement) {
 		Seq retVal = new SExpr.Seq();
 		SrlTerm def = s.getDefinition();
 		retVal.add(SExprTokens.DEFINE_FUN);
@@ -360,7 +376,6 @@ public class FunctionEncodeStrategy implements IStrategy {
 		FolFormula lFol = saf.getLeft();
 		TypeConstructor tc = (TypeConstructor) lFol;
 		Program init = (Program) tc.getInit();
-		SimpleTypeReference str = (SimpleTypeReference) tc.getRef();
 		Seq seq = new SExpr.Seq();
 		seq.add(SExprTokens.AND);
 		encodeInitWithTemplatePar(init.getRelations().get(0), seq, null, s, origName, replacement);
@@ -405,7 +420,7 @@ public class FunctionEncodeStrategy implements IStrategy {
 						seq.sexprs().add(SExprTokens.CLOSE_PARANTHESIS);
 					}
 				} else if (leftFol instanceof SymbolReferenceTerm) {
-					SymbolReferenceTerm tmpSRTI = (SymbolReferenceTerm) leftFol;
+//					SymbolReferenceTerm tmpSRTI = (SymbolReferenceTerm) leftFol;
 					encode(leftFol, seq);
 				}
 			} else if (f instanceof SymbolReferenceTerm) {
@@ -513,7 +528,7 @@ public class FunctionEncodeStrategy implements IStrategy {
 						seq.add(SExprTokens.CLOSE_PARANTHESIS);
 					}
 				} else if (leftFol instanceof SymbolReferenceTerm) {
-					SymbolReferenceTerm tmpSRTI = (SymbolReferenceTerm) leftFol; // ?????? bugggggggg
+//					SymbolReferenceTerm tmpSRTI = (SymbolReferenceTerm) leftFol; // ?????? bugggggggg
 					encode(leftFol, seq);
 				}
 			} else if (f instanceof SymbolReferenceTerm) {
@@ -837,13 +852,11 @@ public class FunctionEncodeStrategy implements IStrategy {
 	}
 
 	private void encodeSort(SrlNamedTypeSymbol t, Seq seq) {
-		Seq retVal = new SExpr.Seq();
-		retVal.add(SExprTokens.DECLARE_SORT);
-		retVal.add(SExprTokens.createToken(t.stringId()));
-		seq.add(retVal);
+		seq.add(SExprTokens.DECLARE_SORT);
+		seq.add(SExprTokens.createToken(t.stringId()));
 	}
 
-	private void encodeExtension(SrlNamedTypeSymbol t, SrlObjectSymbol sos, Seq seq) {
+	private Seq encodeExtension(SrlNamedTypeSymbol t, SrlObjectSymbol sos) {
 		Seq retVal = new SExpr.Seq();
 		retVal.add(SExprTokens.DECLARE_FUN);
 		retVal.add(SExprTokens.createToken(t.stringId() + ".base_0"));
@@ -851,12 +864,12 @@ public class FunctionEncodeStrategy implements IStrategy {
 		retVal.add(SExprTokens.createToken(t.stringId()));
 		retVal.add(SExprTokens.CLOSE_PARANTHESIS);
 		retVal.add(SExprTokens.createToken(sos.getType().stringId()));
-		seq.add(retVal);
+		return retVal;
 	}
 
 	@Override
-	public SExpr encode(SrlNamedTypeSymbol t, String realizedTemplateName) {
-		Seq retVal = new SExpr.Seq();
+	public List<Seq> encode(SrlNamedTypeSymbol t, String realizedTemplateName) {
+		List<Seq> seqList = new ArrayList<>();
 		if (!t.isMeta()) {
 			if (t.getProperties().isEmpty()) {
 				if (!t.isFinite()) {
@@ -868,22 +881,31 @@ public class FunctionEncodeStrategy implements IStrategy {
 								String fqRealizedTemplateName = t.stringId().replaceAll(t.getName(),
 										realizedTemplateName);
 								seq.sexprs().add(SExprTokens.createToken(fqRealizedTemplateName));
-								retVal.add(seq);
+								seqList.add(seq);
 							}
 						} 
 					} else {
 						if (t.getRelations().isEmpty()) {
 							if (!(t.getContainer().toString()).equals("iml.lang")) {
-								retVal.sexprs().add(SExprTokens.DECLARE_SORT);
-								retVal.sexprs().add(SExprTokens.createToken(t.stringId()));
+								Seq seq = new SExpr.Seq();
+//								retVal.sexprs().add(SExprTokens.DECLARE_SORT);
+//								retVal.sexprs().add(SExprTokens.createToken(t.stringId()));
+								seq.add(SExprTokens.DECLARE_SORT);
+								seq.add(SExprTokens.createToken(t.stringId()));
+								seqList.add(seq);
 							}
 						} else {
 							// handle sameas
 							SrlObjectSymbol os = (t.getRelations()).get(0);
 							if (!(os.getType().getContainer().toString()).equals("iml.lang")) {
-								retVal.sexprs().add(SExprTokens.DECLARE_SORT);
-								retVal.sexprs().add(SExprTokens
+								Seq seq = new SExpr.Seq();
+//								retVal.sexprs().add(SExprTokens.DECLARE_SORT);
+//								retVal.sexprs().add(SExprTokens
+//										.createToken((os.getType().getContainer() + "." + os.getType().getName())));
+								seq.add(SExprTokens.DECLARE_SORT);
+								seq.add(SExprTokens
 										.createToken((os.getType().getContainer() + "." + os.getType().getName())));
+								seqList.add(seq);
 							}
 						}
 					}
@@ -892,9 +914,9 @@ public class FunctionEncodeStrategy implements IStrategy {
 		}
 		// Process its symbols
 		for (SrlObjectSymbol os : t.getSymbols()) {
-			encode(os, retVal);
+			seqList.addAll(encode(os));
 		}
-		return (retVal.toString().equals("( )") ? null : retVal);
+		return seqList;
 	}
 
 //	@Override

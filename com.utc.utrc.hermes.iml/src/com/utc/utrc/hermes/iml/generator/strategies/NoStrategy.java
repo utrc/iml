@@ -27,12 +27,13 @@ public class NoStrategy extends AbstracIStrategy{
 	}
 	
 	@Override
-	public void encode (SrlObjectSymbol s, Seq seq) { 
+	public List<Seq> encode (SrlObjectSymbol s) { 
 		// TODO Auto-generated method stub
+		return null;
 	}
 	
 	@Override
-	public SExpr encode(SrlNamedTypeSymbol t, String name) {
+	public List<Seq> encode(SrlNamedTypeSymbol t, String name) {
 		// TODO Auto-generated method stub
 		return null;
 	}

@@ -12,24 +12,19 @@ public class SExprTokens {
 	public static SExpr.Token<String> EXCLAMATION_POINT = new SExpr.Token<String>("!") ;
 	public static SExpr.Token<String> DECLARE_SORT = new SExpr.Token<String>("declare-sort") ;
 	public static SExpr.Token<String> DECLARE_DATATYPE = new SExpr.Token<String>("declare-datatype") ;
-//<<<<<<< HEAD
 
 	public static SExpr.Token<String> DECLARE_FUN = new SExpr.Token<String>("declare-fun") ;
 	public static SExpr.Token<String> DEFINE_FUN = new SExpr.Token<String>("define-fun") ;
 	public static SExpr.Token<String> HOT_ARROW = new SExpr.Token<String>("~>") ;
 
-//=======
 	public static SExpr.Token<String> DECLARE_DATATYPES = new SExpr.Token<String>("declare-datatypes") ;
-//>>>>>>> master
+
 	public static SExpr.Token<String> REC_CONS = new SExpr.Token<String>("rec") ;
 	public static SExpr.Token<String> ASSERT = new SExpr.Token<String>("assert") ;
 	public static SExpr.Token<String> FOR_ALL = new SExpr.Token<String>("forall") ;
 	public static SExpr.Token<String> META = new SExpr.Token<String>(":meta") ;
 	public static SExpr.Token<String> TYPE = new SExpr.Token<String>(":type") ;
-//<<<<<<< HEAD
-//
-//	public static SExpr.Token<String> ASSERT = new SExpr.Token<String>("assert") ;
-//=======
+
 	public static SExpr.Token<String> DEFINES = new SExpr.Token<String>(":defines") ;
 	public static SExpr.Token<String> EQ = new SExpr.Token<String>("=") ;
 	public static SExpr.Token<String> NOT = new SExpr.Token<String>("not") ;
@@ -46,9 +41,7 @@ public class SExprTokens {
 	public static SExpr.Token<String> GREATEREQ = new SExpr.Token<String>(">=") ;
 	public static SExpr.Token<String> SMALLEREQ = new SExpr.Token<String>("<=") ;
 	public static SExpr.Token<String> TRUE = new SExpr.Token<String>("true") ;
-	
-	//>>>>>>> master
-	
+		
 	public static void addToSequence(Seq s, SExpr e) {
 		s.sexprs.add(e);
 	}

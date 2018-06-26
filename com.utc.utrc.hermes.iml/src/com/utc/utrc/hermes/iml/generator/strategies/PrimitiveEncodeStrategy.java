@@ -19,12 +19,13 @@ public class PrimitiveEncodeStrategy implements IStrategy {
 	}
 	
 	@Override
-	public void encode (SrlObjectSymbol s, Seq seq) { 
+	public List<Seq> encode (SrlObjectSymbol s) { 
+		return null;
 		// TODO Auto-generated method stub
 	}
 	
 	@Override
-	public SExpr encode(SrlNamedTypeSymbol t, String name) {
+	public List<Seq> encode(SrlNamedTypeSymbol t, String name) {
 		// TODO Auto-generated method stub
 		return null;
 	}

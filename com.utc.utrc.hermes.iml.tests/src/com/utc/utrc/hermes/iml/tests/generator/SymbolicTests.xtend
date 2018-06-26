@@ -4,24 +4,21 @@
 package com.utc.utrc.hermes.iml.tests.generator
 
 import com.google.inject.Inject
+import com.utc.utrc.hermes.iml.generator.infra.Iml2Symbolic
+import com.utc.utrc.hermes.iml.generator.infra.SExpr.Seq
+import com.utc.utrc.hermes.iml.generator.infra.SrlNamedTypeSymbol
+import com.utc.utrc.hermes.iml.generator.infra.SrlSymbolId
+import com.utc.utrc.hermes.iml.generator.strategies.FunctionEncodeStrategy
+import com.utc.utrc.hermes.iml.generator.strategies.RecordEncoder
 import com.utc.utrc.hermes.iml.iml.Model
+import com.utc.utrc.hermes.iml.tests.ImlInjectorProvider
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.XtextRunner
 import org.eclipse.xtext.testing.util.ParseHelper
+import org.eclipse.xtext.testing.validation.ValidationTestHelper
 import org.junit.Assert
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.eclipse.xtext.testing.validation.ValidationTestHelper
-import com.utc.utrc.hermes.iml.tests.ImlInjectorProvider
-import com.utc.utrc.hermes.iml.generator.strategies.FunctionEncoder
-import com.utc.utrc.hermes.iml.generator.infra.Iml2Symbolic
-import com.utc.utrc.hermes.iml.generator.infra.SrlSymbolId
-import com.utc.utrc.hermes.iml.generator.infra.SrlNamedTypeSymbol
-import com.utc.utrc.hermes.iml.generator.strategies.RecordEncoder
-import com.utc.utrc.hermes.iml.generator.strategies.FunctionEncodeStrategy
-import com.utc.utrc.hermes.iml.generator.infra.SrlObjectSymbol
-import com.utc.utrc.hermes.iml.generator.infra.SrlHigherOrderTypeSymbol
-import com.utc.utrc.hermes.iml.generator.infra.SExpr.Seq
 
 @RunWith(typeof(XtextRunner))
 @InjectWith(typeof(ImlInjectorProvider))
@@ -178,14 +175,12 @@ class SymbolicTests {
 		
 		for (SrlSymbolId id : table.symbols.keySet) {
 			val value = table.symbols.get(id)
-			if (value.encoding !== null) {				
-//				if (value.encoding instanceof Seq) {
-//					System.out.println( (value.encoding as Seq).sexprs )
-//				}				
-				System.out.println(value.encoding)
-				System.out.println;
-				}
-				
+			if (value.encoding !== null) {
+				for (Seq seq : value.encoding) {
+					System.out.println(seq)
+//					System.out.println;
+				}	
+			}
 		}
 	}	
 }

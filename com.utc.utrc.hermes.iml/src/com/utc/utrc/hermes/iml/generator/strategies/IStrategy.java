@@ -1,4 +1,3 @@
-//<<<<<<< HEAD
 package com.utc.utrc.hermes.iml.generator.strategies;
 
 import java.util.List;
@@ -15,19 +14,6 @@ import com.utc.utrc.hermes.iml.generator.infra.SymbolTable;
 public interface IStrategy {
 	
 	public void encode(SymbolTable st);
-	public void encode (SrlObjectSymbol s, Seq seq); 
-	public SExpr encode (SrlNamedTypeSymbol t, String name);
+	public List<Seq> encode (SrlObjectSymbol s); 
+	public List<Seq> encode (SrlNamedTypeSymbol t, String name);
 }
-//=======
-//package com.utc.utrc.hermes.iml.generator.strategies;
-//
-//import java.util.List;
-//
-//import com.utc.utrc.hermes.iml.generator.infra.SExpr;
-//
-//public interface IStrategy {
-//	
-//	List<SExpr> encode();
-//
-//}
-//>>>>>>> master
