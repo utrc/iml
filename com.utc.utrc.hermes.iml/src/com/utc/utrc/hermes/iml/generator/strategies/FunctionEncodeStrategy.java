@@ -45,9 +45,10 @@ public class FunctionEncodeStrategy implements IStrategy {
 			if (es.getEncoding() == null) {
 				if (es.getSymbol() instanceof SrlNamedTypeSymbol) {
 					SrlNamedTypeSymbol nts = (SrlNamedTypeSymbol) es.getSymbol();
-					Seq seq = new SExpr.Seq();
+					
 					// declare sort
 					if (!nts.isTemplate()) {
+						Seq seq = new SExpr.Seq();
 						encodeSort(nts, seq);
 						// handle extension
 						if (!nts.getRelations().isEmpty()) {
@@ -60,11 +61,13 @@ public class FunctionEncodeStrategy implements IStrategy {
 						for (SrlObjectSymbol os : nts.getSymbols()) {
 							encode(os, seq);
 						}
-					}
-					es.setEncoding(seq);
+						es.setEncoding(seq);
+					}					
+					
 				} else if (es.getSymbol() instanceof SrlObjectSymbol) {
 					Seq seq = new SExpr.Seq();
-					encode((SrlObjectSymbol)es.getSymbol(), seq);
+//					encode((SrlObjectSymbol)es.getSymbol(), seq);
+					encodeTLObjectSymbol((SrlObjectSymbol)es.getSymbol(), seq);
 					es.setEncoding(seq);
 				} else if (es.getSymbol() instanceof SrlHigherOrderTypeSymbol) {
 					SrlHigherOrderTypeSymbol hots = (SrlHigherOrderTypeSymbol) es.getSymbol();
@@ -220,6 +223,52 @@ public class FunctionEncodeStrategy implements IStrategy {
 			}
 		}
 		return retVal;
+	}
+	
+	private void encodeTLObjectSymbol(SrlObjectSymbol s, Seq seq) {
+		Seq retVal = new SExpr.Seq();
+		retVal.add(SExprTokens.DECLARE_FUN);
+		retVal.add(SExprTokens.createToken(s.stringId()));
+		retVal.add(SExprTokens.OPEN_PARANTHESIS);
+		retVal.add(SExprTokens.CLOSE_PARANTHESIS);
+		if (s.getType() instanceof SrlNamedTypeSymbol) {
+			SrlNamedTypeSymbol snts = (SrlNamedTypeSymbol) s.getType();
+			retVal.add(SExprTokens.createToken(snts.stringId()));
+			seq.add(retVal);
+
+			for (SrlObjectSymbol sos : snts.getSymbols()) {
+				if (sos.getType().getName().contains("Connection")) {
+					retVal = new SExpr.Seq();
+					retVal.add(SExprTokens.ASSERT);
+					Seq initSExpr = new SExpr.Seq();
+					initSExpr.add(SExprTokens.EQ);
+					initSExpr.add(SExprTokens.OPEN_PARANTHESIS);
+					initSExpr.add(SExprTokens.createToken(sos.stringId() + ".init " + s.getName()));
+					initSExpr.add(SExprTokens.CLOSE_PARANTHESIS);
+					initSExpr.add(SExprTokens.TRUE);
+					retVal.add(initSExpr);
+					seq.add(retVal);
+					
+					retVal = new SExpr.Seq();
+					retVal.add(SExprTokens.ASSERT);
+					Seq connA1SExpr = new SExpr.Seq();
+					connA1SExpr.add(SExprTokens.EQ);
+					connA1SExpr.add(SExprTokens.OPEN_PARANTHESIS);
+					connA1SExpr.add(SExprTokens.createToken(sos.getType().stringId() + ".a1"));
+					connA1SExpr.add(SExprTokens.OPEN_PARANTHESIS);
+					connA1SExpr.add(SExprTokens.createToken(sos.stringId()));
+					connA1SExpr.add(SExprTokens.createToken(s.getName()));
+					connA1SExpr.add(SExprTokens.CLOSE_PARANTHESIS);
+					connA1SExpr.add(SExprTokens.CLOSE_PARANTHESIS);
+					connA1SExpr.add(SExprTokens.TRUE);
+					retVal.add(connA1SExpr);
+
+					seq.add(retVal);				
+				}
+			}
+		
+		}
+		
 	}
 
 	@Override

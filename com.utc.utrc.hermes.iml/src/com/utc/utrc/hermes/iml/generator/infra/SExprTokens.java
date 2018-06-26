@@ -45,6 +45,7 @@ public class SExprTokens {
 	public static SExpr.Token<String> SMALLER = new SExpr.Token<String>("<") ;
 	public static SExpr.Token<String> GREATEREQ = new SExpr.Token<String>(">=") ;
 	public static SExpr.Token<String> SMALLEREQ = new SExpr.Token<String>("<=") ;
+	public static SExpr.Token<String> TRUE = new SExpr.Token<String>("true") ;
 	
 	//>>>>>>> master
 	

@@ -239,6 +239,7 @@ public class Iml2Symbolic {
 			} else if (s instanceof SymbolDeclaration) {
 				SrlObjectSymbol t = encode((SymbolDeclaration) s);
 				retval.getSymbols().add(t);
+				table.add(t, new EncodedSymbol(t, null));
 			}
 		}
 		return retval;

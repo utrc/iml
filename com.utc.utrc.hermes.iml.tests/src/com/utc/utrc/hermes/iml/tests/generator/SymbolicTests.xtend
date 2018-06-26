@@ -21,6 +21,7 @@ import com.utc.utrc.hermes.iml.generator.strategies.RecordEncoder
 import com.utc.utrc.hermes.iml.generator.strategies.FunctionEncodeStrategy
 import com.utc.utrc.hermes.iml.generator.infra.SrlObjectSymbol
 import com.utc.utrc.hermes.iml.generator.infra.SrlHigherOrderTypeSymbol
+import com.utc.utrc.hermes.iml.generator.infra.SExpr.Seq
 
 @RunWith(typeof(XtextRunner))
 @InjectWith(typeof(ImlInjectorProvider))
@@ -167,6 +168,8 @@ class SymbolicTests {
 				//i2_TO_A <<c:connection>>: Bool := i2 = S2_sub->i2;
 				//S2_TO_o1 <<c:connection>>: Bool := S2_sub->o1 = o1 ; 	
 			}
+			
+			inst : S1__impl;
 		'''.parse(model.eResource.resourceSet)
 		Assert.assertNotNull(model)
 		enc.encode(model)
@@ -175,8 +178,13 @@ class SymbolicTests {
 		
 		for (SrlSymbolId id : table.symbols.keySet) {
 			val value = table.symbols.get(id)
-			if (value.encoding !== null)
+			if (value.encoding !== null) {				
+//				if (value.encoding instanceof Seq) {
+//					System.out.println( (value.encoding as Seq).sexprs )
+//				}				
 				System.out.println(value.encoding)
+				}
+				
 		}
 	}	
 }
