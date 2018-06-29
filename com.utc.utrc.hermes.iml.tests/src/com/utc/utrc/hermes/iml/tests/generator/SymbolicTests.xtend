@@ -157,13 +157,15 @@ class SymbolicTests {
 			
 			type <<s:system,i:implementation>> S1__impl extends S1 {
 				S2_sub <<c:subcomponent>>: S2 ;
-				i1_TO_A : Connection<Float> := new Connection<Float> {source=i1; target = S2_sub->i1;};
-				i2_TO_A : Connection<Float> := new Connection<Float> {source=i2 ; target = S2_sub->i2;};
-				S2_TO_o1 : Connection<Float> := new Connection<Float> {source=S2_sub->o1 ; target =o1 ;} ; 	
+«««				i1_TO_A : Connection<Float> := new Connection<Float> {source=i1; target = S2_sub->i1;};
+«««				i2_TO_A : Connection<Float> := new Connection<Float> {source=i2 ; target = S2_sub->i2;};
+«««				S2_TO_o1 : Connection<Float> := new Connection<Float> {source=S2_sub->o1 ; target =o1 ;} ; 	
 				
 				//i1_TO_A <<c:connection>>: Bool := i1 = S2_sub->i1;
 				//i2_TO_A <<c:connection>>: Bool := i2 = S2_sub->i2;
 				//S2_TO_o1 <<c:connection>>: Bool := S2_sub->o1 = o1 ; 	
+				
+				
 			}
 			
 			inst : S1__impl;
@@ -182,5 +184,158 @@ class SymbolicTests {
 				}	
 			}
 		}
+	}
+
+
+	@Test
+	def void TestEncodingForUTRCTest1_premise() {
+		var model = '''
+			package hermes.iml.aadl ;
+			import iml.lang.* ;
+			type Integer sameas Int;
+			type Float sameas Real ;
+			type Boolean sameas Bool ;
+			meta type system ;
+			meta type implementation ;
+			meta type in ;
+			meta type out;
+			meta type port;
+			meta type connection;
+			meta type subcomponent;
+			type Connection<type T> {
+				source : T ;
+				target : T;
+				a1 <<a:Assert>> : Bool := source = target;
+			}
+			'''.parse()
+		
+		model = '''
+			package hermes.iml.contracts;
+			meta type Assume ;
+			meta type Guarantee;
+			'''.parse(model.eResource.resourceSet)
+				
+		model = '''
+			package iml.lang;
+			type Int ;
+			type Real ;
+			type Bool ;
+			meta type Assert;
+			meta type Goal;
+			meta type Modality;
+			
+			sqrt : Real ~> Real ;
+			sin : Real ~> Real ;
+			cos : Real ~> Real ;
+			'''.parse(model.eResource.resourceSet)
+
+		model = '''
+			package utrc.test1 ;
+			import iml.lang.*;
+			import hermes.iml.aadl.* ;
+			import hermes.iml.contracts.* ;
+						
+			type <<s:system>> S1 {
+				i1 <<i:in,p:port>>: Float;
+				i2 <<i:in,p:port>>: Float ;
+				o1 <<o:out,p:port>>: Float ;
+				n <<i:in,p:port>>: Integer;
+			    a1 <<a:Assume>> : Bool := n >=1 && (exists x:Int, y:Int { (y >= 1 && y <= n && x>=1 && x <= 0) && ( (i1 = x/n || i1 = -1 * x/n) && ( i2 = y/n || i2 =  -1 *y/n))   } ) ;
+			    a1 <<a:Assume>> : Bool := o1 >=1 ;
+				g1 <<g:Guarantee>>: Bool := o1 <=1 && o1 >=-1;
+«««				g1 <<g:Guarantee>>: Bool := o1 <=1 ;
+			}
+			
+			type <<s:system>> S2 {
+				i1 <<i:in,p:port>>: Float ;
+				i2 <<i:in,p:port>>: Float ;
+				o1 <<o:out,p:port>>: Float ;
+				alpha <<i:in,p:port>>: Float ;
+			    a1 <<a:Assume>> : Bool := (i1 =1 || i1=-1) && (i2=0 || i2 =1 || i2 = -1) ;
+«««			    a1 <<a:Assume>> : Bool := i1 =1 ;
+				g1 <<g:Guarantee>>: Bool := o1 = i1 * sqrt(2) * sin(alpha) + i2 * sqrt(2) * cos(alpha);
+«««				g1 <<g:Guarantee>>: Bool := o1 = i1 ;
+			}
+			
+			type <<s:system,i:implementation>> S1__impl extends S1 {
+				S2_sub <<c:subcomponent>>: S2 ;				
+			}
+			
+			type <<s:system>> S3 {
+				inst : S1__impl;
+				a1 <<a:Assume>> : Bool := (inst->S2_sub->a1 => inst->S2_sub->g1) && inst->a1 ;
+				g1 <<g:Guarantee>> : Bool := inst->S2_sub->a1;
+			}
+		'''.parse(model.eResource.resourceSet)
+		Assert.assertNotNull(model)
+		enc.encode(model)
+		val table = enc.symbolTable;
+		fenc.encode(table);
+		
+		for (SrlSymbolId id : table.symbols.keySet) {
+			val value = table.symbols.get(id)
+			if (value.encoding !== null) {
+				for (Seq seq : value.encoding) {
+					System.out.println(seq)
+//					System.out.println;
+				}	
+			}
+		}
+	}
+	
+	@Test
+	def void TestEncodingForUTRCTest1Premise() {
+		var model = '''
+			package p;
+			
+			meta type Assume ;
+			meta type Guarantee;
+			meta type Subcomponent;
+			
+			type Int;
+			type Bool;
+			
+			type S1 {
+				S2_sub <<s:Subcomponent>>: S2;
+				i1: Int;
+				o1: Int;
+				a1 <<a:Assume>> : Bool := i1 > 0;
+				g1 <<g:Guarantee>>: Bool := o1 > 0;
+			}
+			
+			type S2 {
+				i1: Int;
+				o1: Int;
+				a1 <<a:Assume>> : Bool := i1 > 1;
+				g1 <<g:Guarantee>>: Bool := o1 = i1*2;
+			}
+			
+«««			inst : S1;
+			
+			// The following are the formulas that need to be encoded
+			
+«««			(inst->S2_sub->a1 => inst->S2_sub->g1) && inst->a1
+«««			
+«««			inst->g1
+«««			
+«««			inst->a1
+«««			
+«««			inst->S2_sub->a1
+		'''.parse()
+		Assert.assertNotNull(model)
+		enc.encode(model)
+		val table = enc.symbolTable;
+		fenc.encode(table);
+		
+		for (SrlSymbolId id : table.symbols.keySet) {
+			val value = table.symbols.get(id)
+			if (value.encoding !== null) {
+				for (Seq seq : value.encoding) {
+					System.out.println(seq)
+//					System.out.println;
+				}	
+			}
+		}
 	}	
+	
 }

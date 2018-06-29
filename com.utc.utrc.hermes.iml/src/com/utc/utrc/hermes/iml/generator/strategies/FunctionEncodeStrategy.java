@@ -344,7 +344,7 @@ public class FunctionEncodeStrategy implements IStrategy {
 		// process definition
 		if (def != null && !isTypeConstructor(def)) {
 			FolFormula f = def.getFormula();
-			encode(f, retVal);
+			encode(f, retVal, null);
 		}
 		seqList.add(retVal);
 		if (def != null && isTypeConstructor(def)) {
@@ -383,80 +383,59 @@ public class FunctionEncodeStrategy implements IStrategy {
 		retVal.add(seq);
 	}
 
-	private void encode(FolFormula f, Seq seq) {
+	private void encode(FolFormula f, Seq seq, TermExpression rcv) {
 		String op = f.getOp();
 		if (op != null) {
 			if (op.equals("&&")) {
 				Seq retVal = new SExpr.Seq();
-				retVal.sexprs().add(SExprTokens.AND);
-				encode(f.getLeft(), retVal);
-				encode(f.getRight(), retVal);
+				retVal.add(SExprTokens.AND);
+				encode(f.getLeft(), retVal, rcv);
+				encode(f.getRight(), retVal, rcv);
 				seq.add(retVal);
 			} else if (op.equals("||")) {
 				Seq retVal = new SExpr.Seq();
-				retVal.sexprs().add(SExprTokens.OR);
-				encode(f.getLeft(), retVal);
-				encode(f.getRight(), retVal);
+				retVal.add(SExprTokens.OR);
+				encode(f.getLeft(), retVal, rcv);
+				encode(f.getRight(), retVal, rcv);
 				seq.add(retVal);
 			}
+			// TOIMPLEMENT =>, <=>, forall, exists
 		} else {
 			if (f instanceof SignedAtomicFormula) {
 				SignedAtomicFormula safi = (SignedAtomicFormula) f;
 				FolFormula leftFol = safi.getLeft();
 				if (leftFol instanceof AtomicExpression) {
 					AtomicExpression aei = (AtomicExpression) leftFol;
-					encode(aei, seq);
+					encode(aei, seq, rcv);
 				} else if (leftFol instanceof TupleConstructor) {
 					TupleConstructor tci = (TupleConstructor) leftFol;
-					encode(tci, seq);
+					encode(tci, seq, rcv);
 				} else if (leftFol instanceof NumberLiteral) {
 					NumberLiteral nli = (NumberLiteral) leftFol;
 					if (nli.isNeg()) {
-						seq.sexprs().add(SExprTokens.OPEN_PARANTHESIS);
-						seq.sexprs().add(SExprTokens.createToken("-"));
+						seq.add(SExprTokens.OPEN_PARANTHESIS);
+						seq.add(SExprTokens.createToken("-"));
 					}
-					seq.sexprs().add(SExprTokens.createToken(nli.getValue()));
+					seq.add(SExprTokens.createToken(nli.getValue()));
 					if (nli.isNeg()) {
 						seq.sexprs().add(SExprTokens.CLOSE_PARANTHESIS);
 					}
 				} else if (leftFol instanceof SymbolReferenceTerm) {
 //					SymbolReferenceTerm tmpSRTI = (SymbolReferenceTerm) leftFol;
-					encode(leftFol, seq);
-				}
-			} else if (f instanceof SymbolReferenceTerm) {
-				SymbolReferenceTerm srti = (SymbolReferenceTerm) f;
-				SymbolDeclaration sdi = (SymbolDeclaration) srti.getSymbol();
-				String sfqn = sdi.getName();
-				String n = sdi.getName();
-				if (!(sdi.eContainer() instanceof FolFormula)) {
-					SrlObjectSymbol srlObject = factory.createObjectSymbol(sdi);
-					sfqn = srlObject.stringId();
-				}
-				if (srti.getTails() != null && !srti.getTails().isEmpty()) {
-					seq.add(SExprTokens.OPEN_PARANTHESIS);
-					if (n.equals("sqrt")) {
-						seq.add(SExprTokens.createToken("^"));
-					} else {
-						seq.add(SExprTokens.createToken(n));
-					}
-					SymbolReferenceTail srtailI = srti.getTails().get(0);
-					if (srtailI instanceof TupleConstructor) {
-						encode(((TupleConstructor) srtailI).getElements().get(0), seq);
-					}
-					if (n.equals("sqrt")) {
-						seq.add(SExprTokens.createToken(0.5f));
-					}
-					seq.add(SExprTokens.CLOSE_PARANTHESIS);
-				} else {
-					if (!(sdi.eContainer() instanceof FolFormula)) {
-						seq.add(SExprTokens.OPEN_PARANTHESIS);
-					}
-					seq.add(SExprTokens.createToken(sfqn));
-					if (!(sdi.eContainer() instanceof FolFormula)) {
-						seq.add(SExprTokens.createToken(" x!1"));
+					encode(leftFol, seq, rcv);
+				} else if (leftFol instanceof TermMemberSelection) {
+					TermMemberSelection tms = (TermMemberSelection) leftFol;
+					TermExpression rcv_ = tms.getReceiver();
+					TermExpression mbr = tms.getMember();
+					if (mbr instanceof SymbolReferenceTerm) {
+						SymbolReferenceTerm srt = (SymbolReferenceTerm) mbr;
+						encode(srt, seq, rcv_);
+						encode (rcv_, seq, null);
 						seq.add(SExprTokens.CLOSE_PARANTHESIS);
 					}
 				}
+			} else if (f instanceof SymbolReferenceTerm) {
+				encode ((SymbolReferenceTerm) f, seq);
 			} else if (f instanceof NumberLiteral) {
 				NumberLiteral nli = (NumberLiteral) f;
 				if (nli.isNeg()) {
@@ -471,26 +450,98 @@ public class FunctionEncodeStrategy implements IStrategy {
 				Multiplication mi = (Multiplication) f;
 				Seq retVal = new SExpr.Seq();
 				retVal.add(SExprTokens.createToken(mi.getSign())); 
-				encode(mi.getLeft(), retVal);
-				encode(mi.getRight(), retVal);
+				encode(mi.getLeft(), retVal, rcv);
+				encode(mi.getRight(), retVal, rcv);
 				seq.add(retVal);
 			} else if (f instanceof Addition) {
 				Addition ai = (Addition) f;
 				Seq retVal = new SExpr.Seq();
 				retVal.add(SExprTokens.createToken(ai.getSign())); 
-				encode(ai.getLeft(), retVal);
-				encode(ai.getRight(), retVal);
+				encode(ai.getLeft(), retVal, rcv);
+				encode(ai.getRight(), retVal, rcv);
 				seq.add(retVal);
 
 			} else if (f instanceof AtomicExpression) {
 				Seq retVal = new SExpr.Seq();
 				AtomicExpression ae = (AtomicExpression) f;
-				encode(ae, retVal);
+				encode(ae, retVal, rcv);
 				seq.add(retVal);
+			} else if (f instanceof TermMemberSelection) { //????NEW
+				TermMemberSelection tms = (TermMemberSelection) f;
+				TermExpression rcv_ = tms.getReceiver();
+				TermExpression mbr = tms.getMember();
+				if (mbr instanceof SymbolReferenceTerm) {
+					SymbolReferenceTerm srt = (SymbolReferenceTerm) mbr;
+					encode(srt, seq, rcv_);
+					encode (rcv_, seq, null);
+					seq.add(SExprTokens.CLOSE_PARANTHESIS);
+				}
 			}
 		}
 	}
 
+	// no receiver
+	private void encode(SymbolReferenceTerm sr, Seq seq) {
+		SymbolReferenceTerm srti = (SymbolReferenceTerm) sr;
+		SymbolDeclaration sdi = (SymbolDeclaration) srti.getSymbol();
+		String sfqn = sdi.getName();
+		String n = sdi.getName();
+		if (!(sdi.eContainer() instanceof FolFormula)) {
+			SrlObjectSymbol srlObject = factory.createObjectSymbol(sdi);
+			sfqn = srlObject.stringId();
+		}
+		if (srti.getTails() != null && !srti.getTails().isEmpty()) {
+			seq.add(SExprTokens.OPEN_PARANTHESIS);
+			if (n.equals("sqrt")) {
+				seq.add(SExprTokens.createToken("^"));
+			} else {
+				seq.add(SExprTokens.createToken(n));
+			}
+			SymbolReferenceTail srtailI = srti.getTails().get(0);
+			if (srtailI instanceof TupleConstructor) {
+				encode(((TupleConstructor) srtailI).getElements().get(0), seq, null);
+			}
+			if (n.equals("sqrt")) {
+				seq.add(SExprTokens.createToken(0.5f));
+			}
+			seq.add(SExprTokens.CLOSE_PARANTHESIS);
+		} else {
+			if (!(sdi.eContainer() instanceof FolFormula)) {
+				seq.add(SExprTokens.OPEN_PARANTHESIS);
+			}
+			seq.add(SExprTokens.createToken(sfqn));
+			if (!(sdi.eContainer() instanceof FolFormula)) {
+				seq.add(SExprTokens.createToken(" x!1"));
+				seq.add(SExprTokens.CLOSE_PARANTHESIS);
+			}
+		}
+	}
+
+	private void encode(SymbolReferenceTerm f, Seq seq, TermExpression rcv) {
+		SymbolReferenceTerm srti = (SymbolReferenceTerm) f;
+		SymbolDeclaration sdi = (SymbolDeclaration) srti.getSymbol();
+		String sfqn = sdi.getName();
+		String n = sdi.getName();
+		if (!(sdi.eContainer() instanceof FolFormula)) {
+			SrlObjectSymbol srlObject = factory.createObjectSymbol(sdi);
+			sfqn = srlObject.stringId();
+		}
+		if (srti.getTails() != null && !srti.getTails().isEmpty()) {
+			seq.add(SExprTokens.OPEN_PARANTHESIS);
+			seq.add(SExprTokens.createToken(n));
+			SymbolReferenceTail srtailI = srti.getTails().get(0);
+			if (srtailI instanceof TupleConstructor) {
+				encode(((TupleConstructor) srtailI).getElements().get(0), seq, rcv);
+			}
+			seq.add(SExprTokens.CLOSE_PARANTHESIS);
+		} else {
+			if (!(sdi.eContainer() instanceof FolFormula)) {
+				seq.add(SExprTokens.OPEN_PARANTHESIS);
+			}
+			seq.add(SExprTokens.createToken(sfqn));
+		}
+	}	
+	
 	public void encodeWithTemplatePar(FolFormula f, Seq seq, String origName, String replacement) {
 		String op = f.getOp();
 		if (op != null) {
@@ -529,7 +580,7 @@ public class FunctionEncodeStrategy implements IStrategy {
 					}
 				} else if (leftFol instanceof SymbolReferenceTerm) {
 //					SymbolReferenceTerm tmpSRTI = (SymbolReferenceTerm) leftFol; // ?????? bugggggggg
-					encode(leftFol, seq);
+//					encodeWithTemplatePar(leftFol, seq, origName, replacement);
 				}
 			} else if (f instanceof SymbolReferenceTerm) {
 				SymbolReferenceTerm srti = (SymbolReferenceTerm) f;
@@ -759,21 +810,21 @@ public class FunctionEncodeStrategy implements IStrategy {
 		return retVal;
 	}
 
-	public void encode(AtomicExpression aei, Seq seq) {
+	public void encode(AtomicExpression aei, Seq seq, TermExpression rcv) {
 		Seq retVal = new SExpr.Seq();
 		RelationKind rk = aei.getRel();
 		if (rk.getName().toString().equals("LEQ")) {
 			retVal.add(SExprTokens.SMALLEREQ);
-			encode(aei.getLeft(), retVal);
-			encode(aei.getRight(), retVal);
+			encode(aei.getLeft(), retVal, rcv);
+			encode(aei.getRight(), retVal, rcv);
 		} else if (rk.getName().toString().equals("GEQ")) {
 			retVal.add(SExprTokens.GREATEREQ);
-			encode(aei.getLeft(), retVal);
-			encode(aei.getRight(), retVal);
+			encode(aei.getLeft(), retVal, rcv);
+			encode(aei.getRight(), retVal, rcv);
 		} else if (rk.getName().toString().equals("EQ")) {
 			retVal.add(SExprTokens.EQ);
-			encode(aei.getLeft(), retVal);
-			encode(aei.getRight(), retVal);
+			encode(aei.getLeft(), retVal, rcv);
+			encode(aei.getRight(), retVal, rcv);
 		}
 		seq.add(retVal);
 	}
@@ -817,7 +868,7 @@ public class FunctionEncodeStrategy implements IStrategy {
 		 seq.add(retVal);
 	}
 
-	public void encode(TupleConstructor tci, Seq seq) {
+	public void encode(TupleConstructor tci, Seq seq, TermExpression rcv) {
 		Seq retVal = new SExpr.Seq();
 		// list? how many elements???
 		FolFormula ffi = (FolFormula) tci.getElements().get(0);
@@ -835,18 +886,22 @@ public class FunctionEncodeStrategy implements IStrategy {
 					retVal.add(SExprTokens.CLOSE_PARANTHESIS);
 				}
 				retVal.add(SExprTokens.CLOSE_PARANTHESIS);
-				encode(ffi.getLeft(), retVal);
+				encode(ffi.getLeft(), retVal, rcv);
 			} else if (op.equals("&&")) {
 				retVal.add(SExprTokens.AND);
-				encode(ffi.getLeft(), retVal);
-				encode(ffi.getRight(), retVal);
+				encode(ffi.getLeft(), retVal, rcv);
+				encode(ffi.getRight(), retVal, rcv);
 			} else if (op.equals("||")) {
 				retVal.add(SExprTokens.OR);
-				encode(ffi.getLeft(), retVal);
-				encode(ffi.getRight(), retVal);
+				encode(ffi.getLeft(), retVal, rcv);
+				encode(ffi.getRight(), retVal, rcv);
+			} else if (op.equals("=>")) {
+				retVal.add(SExprTokens.IMPLICATION);
+				encode(ffi.getLeft(), retVal, rcv);
+				encode(ffi.getRight(), retVal, rcv);				
 			}
 		} else {
-			encode(ffi.getLeft(), retVal);
+			encode(ffi.getLeft(), retVal, rcv);
 		}
 		seq.add(retVal);
 	}
