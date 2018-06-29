@@ -253,7 +253,7 @@ class SymbolicTest {
 				alpha <<i:in,p:port>>: Float ;
 			    a1 <<a:Assume>> : Bool := (i1 =1 || i1=-1) && (i2=0 || i2 =1 || i2 = -1) ;
 «««			    a1 <<a:Assume>> : Bool := i1 =1 ;
-				g1 <<g:Guarantee>>: Bool := o1 = i1 * sqrt(2) * sin(alpha) + i2 * sqrt(2) * cos(alpha);
+				g1 <<g:Guarantee>>: Bool := o1 = i1 * sqrt(2.0) * sin(alpha) + i2 * sqrt(2.0) * cos(alpha);
 «««				g1 <<g:Guarantee>>: Bool := o1 = i1 ;
 			}
 			
@@ -293,21 +293,23 @@ class SymbolicTest {
 			meta type Subcomponent;
 			
 			type Int;
+			type Real;
 			type Bool;
 			
-			type S1 {
-				S2_sub <<s:Subcomponent>>: S2;
-				i1: Int;
-				o1: Int;
-				a1 <<a:Assume>> : Bool := i1 > 0;
-				g1 <<g:Guarantee>>: Bool := o1 > 0;
-			}
+«««			type S1 {
+«««				S2_sub <<s:Subcomponent>>: S2;
+«««				i1: Int;
+«««				o1: Int;
+«««				a1 <<a:Assume>> : Bool := i1 > 0;
+«««				g1 <<g:Guarantee>>: Bool := o1 > 0;
+«««			}
 			
 			type S2 {
-				i1: Int;
+«««				i1: Int;
+				i1: Real;
 				o1: Int;
-				a1 <<a:Assume>> : Bool := i1 > 1;
-				g1 <<g:Guarantee>>: Bool := o1 = i1*2;
+				a1 <<a:Assume>> : Bool := i1 > 1.0;
+«««				g1 <<g:Guarantee>>: Bool := o1 = i1*2;
 			}
 			
 «««			inst : S1;

@@ -18,6 +18,7 @@ import com.utc.utrc.hermes.iml.generator.infra.SrlTypeSymbol;
 import com.utc.utrc.hermes.iml.generator.infra.SymbolTable;
 import com.utc.utrc.hermes.iml.iml.Addition;
 import com.utc.utrc.hermes.iml.iml.AtomicExpression;
+import com.utc.utrc.hermes.iml.iml.FloatNumberLiteral;
 import com.utc.utrc.hermes.iml.iml.FolFormula;
 import com.utc.utrc.hermes.iml.iml.HigherOrderType;
 import com.utc.utrc.hermes.iml.iml.Multiplication;
@@ -443,6 +444,16 @@ public class FunctionEncodeStrategy implements IStrategy {
 					if (nli.isNeg()) {
 						seq.sexprs().add(SExprTokens.CLOSE_PARANTHESIS);
 					}
+				}  else if (leftFol instanceof FloatNumberLiteral) {
+					FloatNumberLiteral nli = (FloatNumberLiteral) leftFol;
+					if (nli.isNeg()) {
+						seq.add(SExprTokens.OPEN_PARANTHESIS);
+						seq.add(SExprTokens.createToken("-"));
+					}
+					seq.add(SExprTokens.createToken(nli.getValue()));
+					if (nli.isNeg()) {
+						seq.sexprs().add(SExprTokens.CLOSE_PARANTHESIS);
+					}
 				} else if (leftFol instanceof SymbolReferenceTerm) {
 //					SymbolReferenceTerm tmpSRTI = (SymbolReferenceTerm) leftFol;
 					encode(leftFol, seq, rcv);
@@ -461,6 +472,16 @@ public class FunctionEncodeStrategy implements IStrategy {
 				encode ((SymbolReferenceTerm) f, seq);
 			} else if (f instanceof NumberLiteral) {
 				NumberLiteral nli = (NumberLiteral) f;
+				if (nli.isNeg()) {
+					seq.add(SExprTokens.OPEN_PARANTHESIS);
+					seq.add(SExprTokens.createToken("-"));
+				}
+				seq.add(SExprTokens.createToken(nli.getValue()));
+				if (nli.isNeg()) {
+					seq.add(SExprTokens.CLOSE_PARANTHESIS);
+				}
+			} else if (f instanceof FloatNumberLiteral) {
+				FloatNumberLiteral nli = (FloatNumberLiteral) f;
 				if (nli.isNeg()) {
 					seq.add(SExprTokens.OPEN_PARANTHESIS);
 					seq.add(SExprTokens.createToken("-"));
@@ -601,6 +622,16 @@ public class FunctionEncodeStrategy implements IStrategy {
 					if (nli.isNeg()) {
 						seq.add(SExprTokens.CLOSE_PARANTHESIS);
 					}
+				}  else if (leftFol instanceof FloatNumberLiteral) {
+					FloatNumberLiteral nli = (FloatNumberLiteral) leftFol;
+					if (nli.isNeg()) {
+						seq.add(SExprTokens.OPEN_PARANTHESIS);
+						seq.add(SExprTokens.createToken("-"));
+					}
+					seq.add(SExprTokens.createToken(nli.getValue()));
+					if (nli.isNeg()) {
+						seq.add(SExprTokens.CLOSE_PARANTHESIS);
+					}
 				} else if (leftFol instanceof SymbolReferenceTerm) {
 //					SymbolReferenceTerm tmpSRTI = (SymbolReferenceTerm) leftFol; // ?????? bugggggggg
 //					encodeWithTemplatePar(leftFol, seq, origName, replacement);
@@ -643,6 +674,16 @@ public class FunctionEncodeStrategy implements IStrategy {
 				}
 			} else if (f instanceof NumberLiteral) {
 				NumberLiteral nli = (NumberLiteral) f;
+				if (nli.isNeg()) {
+					seq.add(SExprTokens.OPEN_PARANTHESIS);
+					seq.add(SExprTokens.createToken("-"));
+				}
+				seq.add(SExprTokens.createToken(nli.getValue()));
+				if (nli.isNeg()) {
+					seq.add(SExprTokens.CLOSE_PARANTHESIS);
+				}
+			}  else if (f instanceof FloatNumberLiteral) {
+				FloatNumberLiteral nli = (FloatNumberLiteral) f;
 				if (nli.isNeg()) {
 					seq.add(SExprTokens.OPEN_PARANTHESIS);
 					seq.add(SExprTokens.createToken("-"));
@@ -705,6 +746,16 @@ public class FunctionEncodeStrategy implements IStrategy {
 					encodeInitWithTemplatePar(tci, seq, rcv, s, origName, replacement);
 				} else if (leftFol instanceof NumberLiteral) {
 					NumberLiteral nli = (NumberLiteral) leftFol;
+					if (nli.isNeg()) {
+						seq.add(SExprTokens.OPEN_PARANTHESIS);
+						seq.add(SExprTokens.createToken("-"));
+					}
+					seq.add(SExprTokens.createToken(nli.getValue()));
+					if (nli.isNeg()) {
+						seq.add(SExprTokens.CLOSE_PARANTHESIS);
+					}
+				}  else if (leftFol instanceof FloatNumberLiteral) {
+					FloatNumberLiteral nli = (FloatNumberLiteral) leftFol;
 					if (nli.isNeg()) {
 						seq.add(SExprTokens.OPEN_PARANTHESIS);
 						seq.add(SExprTokens.createToken("-"));
@@ -779,6 +830,16 @@ public class FunctionEncodeStrategy implements IStrategy {
 				}
 			} else if (f instanceof NumberLiteral) {
 				NumberLiteral nli = (NumberLiteral) f;
+				if (nli.isNeg()) {
+					seq.add(SExprTokens.OPEN_PARANTHESIS);
+					seq.add(SExprTokens.createToken("-"));
+				}
+				seq.add(SExprTokens.createToken(nli.getValue()));
+				if (nli.isNeg()) {
+					seq.add(SExprTokens.CLOSE_PARANTHESIS);
+				}
+			}  else if (f instanceof FloatNumberLiteral) {
+				FloatNumberLiteral nli = (FloatNumberLiteral) f;
 				if (nli.isNeg()) {
 					seq.add(SExprTokens.OPEN_PARANTHESIS);
 					seq.add(SExprTokens.createToken("-"));
