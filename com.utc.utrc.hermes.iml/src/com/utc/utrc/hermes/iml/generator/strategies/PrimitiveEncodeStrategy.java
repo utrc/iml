@@ -3,30 +3,25 @@ package com.utc.utrc.hermes.iml.generator.strategies;
 import java.util.List;
 
 import com.utc.utrc.hermes.iml.generator.infra.SExpr;
+import com.utc.utrc.hermes.iml.generator.infra.SExpr.Seq;
 import com.utc.utrc.hermes.iml.generator.infra.SrlHigherOrderTypeSymbol;
 import com.utc.utrc.hermes.iml.generator.infra.SrlNamedTypeSymbol;
 import com.utc.utrc.hermes.iml.generator.infra.SrlObjectSymbol;
 import com.utc.utrc.hermes.iml.generator.infra.SrlSymbol;
-import com.utc.utrc.hermes.iml.generator.infra.SrlSymbolId;
 import com.utc.utrc.hermes.iml.generator.infra.SrlTypeSymbol;
 import com.utc.utrc.hermes.iml.generator.infra.SymbolTable;
-import com.utc.utrc.hermes.iml.generator.infra.SExpr.Seq;
 
-public class EmptyStrategy extends AbstracIStrategy {
-
-	public EmptyStrategy(SrlSymbolId srlObject) {
-		super(srlObject);
-	}
+public class PrimitiveEncodeStrategy implements IStrategy {
 
 	@Override
 	public void encode(SymbolTable st) {
 		// TODO Auto-generated method stub
 	}
-
+	
 	@Override
-	public List<Seq> encode (SrlObjectSymbol s) {
-		// TODO Auto-generated method stub
+	public List<Seq> encode (SrlObjectSymbol s) { 
 		return null;
+		// TODO Auto-generated method stub
 	}
 	
 	@Override
@@ -34,4 +29,5 @@ public class EmptyStrategy extends AbstracIStrategy {
 		// TODO Auto-generated method stub
 		return null;
 	}
+
 }

@@ -1,4 +1,4 @@
-package com.utc.utrc.hermes.iml.generator.infra;
+package com.utc.utrc.hermes.iml.generator.strategies;
 
 public class Pair<X, Y> {
 	private X first;
