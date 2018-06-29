@@ -248,7 +248,12 @@ public class Iml2Symbolic {
 	public SrlTypeSymbol encode(ConstrainedType t) throws SrlSymbolException {
 		SrlNamedTypeSymbol retval = factory.createNamedTypeSymbol(t);
 		if (table.isDefined(retval)) {
-			return (SrlNamedTypeSymbol) table.getSymbols().get(retval).getSymbol() ;
+			SrlSymbol symbol = table.getSymbols().get(retval).getSymbol();
+			if (symbol instanceof SrlHigherOrderTypeSymbol) {
+				return (SrlTypeSymbol) ((SrlHigherOrderTypeSymbol) symbol).getDomain();
+			} else {
+				return (SrlNamedTypeSymbol) symbol ;
+			}
 		}
 		setModifiers(retval, t);
 		addProperties(retval, t);
@@ -271,6 +276,12 @@ public class Iml2Symbolic {
 			retval.setDefinition(defTerm);
 		}
 		return retval;
+	}
+	
+	public SrlObjectSymbol encodeInst(SymbolDeclaration s) throws SrlSymbolException {
+		SrlObjectSymbol encoding = encode(s);
+		table.add(encoding, new EncodedSymbol(encoding, null));
+		return encoding;
 	}
 
 	public SrlObjectSymbol encode(RelationInstance r) throws SrlSymbolException {

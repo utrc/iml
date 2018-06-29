@@ -88,6 +88,19 @@ public class FunctionEncodeStrategy implements IStrategy {
 			}
 		}
 	}
+	
+	
+	public SExpr assemble(SymbolTable table) {
+		Seq result = new SExpr.Seq();
+		for (EncodedSymbol value : table.getSymbols().values()) {
+			if (value.getEncoding() != null) {
+				for (Seq seq : value.getEncoding()) {
+					result.add(seq);
+				}
+			}
+		}
+		return result;
+	}
 
 	private List<Seq> encodeBoundedTemplateType(SrlHigherOrderTypeSymbol hots) {
 		List<Seq> seqList = new ArrayList<>();
@@ -383,7 +396,7 @@ public class FunctionEncodeStrategy implements IStrategy {
 		retVal.add(seq);
 	}
 
-	private void encode(FolFormula f, Seq seq) {
+	public void encode(FolFormula f, Seq seq) {
 		String op = f.getOp();
 		if (op != null) {
 			if (op.equals("&&")) {

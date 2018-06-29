@@ -35,7 +35,7 @@ public class ImlStandaloneParseHelper {
 	}
 	
 	private ImlStandaloneParseHelper() {
-		injector = new ImlStandaloneSetup().createInjectorAndDoEMFRegistration();
+		injector = ImlStandaloneSetup.getInjector();
 		parseHelper = injector.getInstance(ParseHelper.class);
 		validationTestHelper = injector.getInstance(ValidationTestHelper.class);
 	}

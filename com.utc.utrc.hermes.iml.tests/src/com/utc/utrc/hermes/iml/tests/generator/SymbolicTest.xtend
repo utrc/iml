@@ -23,7 +23,7 @@ import org.junit.runner.RunWith
 @RunWith(typeof(XtextRunner))
 @InjectWith(typeof(ImlInjectorProvider))
 
-class SymbolicTests {
+class SymbolicTest {
 	
 	@Inject extension ParseHelper<Model> 
 	@Inject extension ValidationTestHelper

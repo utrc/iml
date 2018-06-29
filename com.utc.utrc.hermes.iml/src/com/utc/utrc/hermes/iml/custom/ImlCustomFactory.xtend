@@ -52,6 +52,7 @@ class ImlCustomFactory extends ImlFactoryImpl {
 	def createSymbolDeclaration(ConstrainedType type, String name) {
 		createSymbolDeclaration => [
 			it.type = createSimpleTypeReference(type)
+			it.name = name
 		]
 	}
 	

@@ -8,6 +8,7 @@ import com.utc.utrc.hermes.iml.iml.ConstrainedType;
 import com.utc.utrc.hermes.iml.iml.Extension;
 import com.utc.utrc.hermes.iml.iml.Model;
 import com.utc.utrc.hermes.iml.iml.SimpleTypeReference;
+import com.utc.utrc.hermes.iml.iml.Symbol;
 import com.utc.utrc.hermes.iml.iml.SymbolDeclaration;
 
 public class ImlUtils {
@@ -36,7 +37,7 @@ public class ImlUtils {
 			.collect(Collectors.toList());
 	}
 
-	public static boolean hasProperty(SymbolDeclaration symbol, String property) {
+	public static boolean hasProperty(Symbol symbol, String property) {
 		if (symbol.getPropertylist() == null) return false;
 		for (SymbolDeclaration actualProperty: symbol.getPropertylist().getProperties()) {
 			if (((SimpleTypeReference)actualProperty.getType()).getType().getName().equals(property)) {
@@ -50,6 +51,13 @@ public class ImlUtils {
 		return (ConstrainedType) model.getSymbols().stream()
 			.filter(it -> it instanceof ConstrainedType && it.getName().equals(name))
 			.findFirst().orElse(null);
+	}
+
+	public static List<ConstrainedType> getConstrainedTypes(Model model) {
+		return model.getSymbols().stream()
+			.filter(it -> it instanceof ConstrainedType)
+			.map(ConstrainedType.class::cast)
+			.collect(Collectors.toList());
 	}
 
 }

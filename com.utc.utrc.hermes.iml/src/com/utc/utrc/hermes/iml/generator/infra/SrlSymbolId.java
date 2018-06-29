@@ -80,12 +80,6 @@ public class SrlSymbolId {
 	public void setName(String n) {
 		name = n;
 	}
-	
-	public EObject getEObject(Model m) {
-
-		return null;
-	}
-
 
 	public QualifiedName getContainer() {
 		return container;
