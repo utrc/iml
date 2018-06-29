@@ -48,7 +48,7 @@ public class SExprTokens {
 	public static SExpr.Token<String> EXISTS = new SExpr.Token<String>("exists") ;
 	
 	public static SExpr.Token<String> GREATER = new SExpr.Token<String>(">") ;
-	public static SExpr.Token<String> SMALLER = new SExpr.Token<String>("<") ;
+	public static SExpr.Token<String> LESS = new SExpr.Token<String>("<") ;
 	public static SExpr.Token<String> GREATEREQ = new SExpr.Token<String>(">=") ;
 	public static SExpr.Token<String> SMALLEREQ = new SExpr.Token<String>("<=") ;
 	public static SExpr.Token<String> TRUE = new SExpr.Token<String>("true") ;
