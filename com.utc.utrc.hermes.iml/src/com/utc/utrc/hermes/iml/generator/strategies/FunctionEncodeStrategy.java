@@ -398,6 +398,13 @@ public class FunctionEncodeStrategy implements IStrategy {
 		encodeInitWithTemplatePar(init.getRelations().get(1), seq, null, s, origName, replacement);
 		retVal.add(seq);
 	}
+	
+    public SExpr encode(FolFormula formula) {
+    	Seq result = new Seq();
+		encode(formula, result, null);
+		return result;
+	}
+
 
 	public void encode(FolFormula f, Seq seq, TermExpression rcv) {
 		String op = f.getOp();
