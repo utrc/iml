@@ -126,6 +126,7 @@ public class FunctionEncodeStrategy implements IStrategy {
 							seq.add(SExprTokens.DECLARE_SORT);
 							String fqRealizedTemplateName = t.stringId().replaceAll(t.getName(), realizedTemplateName);
 							seq.add(SExprTokens.createToken(fqRealizedTemplateName));
+							seq.add(SExprTokens.createToken(0));
 							seqList.add(seq);
 						}
 					} 
@@ -138,6 +139,7 @@ public class FunctionEncodeStrategy implements IStrategy {
 							Seq seq = new SExpr.Seq();
 							seq.add(SExprTokens.DECLARE_SORT);
 							seq.add(SExprTokens.createToken(t.stringId()));
+							seq.add(SExprTokens.createToken(0));
 							seqList.add(seq);
 						}
 					} else {
@@ -150,6 +152,7 @@ public class FunctionEncodeStrategy implements IStrategy {
 							Seq seq = new SExpr.Seq();
 							seq.add(SExprTokens.DECLARE_SORT);
 							seq.add(SExprTokens.createToken((os.getType().getContainer() + "." + os.getType().getName())));
+							seq.add(SExprTokens.createToken(0));
 							seqList.add(seq);
 						}
 					}
@@ -506,7 +509,7 @@ public class FunctionEncodeStrategy implements IStrategy {
 		if (srti.getTails() != null && !srti.getTails().isEmpty()) {
 			seq.add(SExprTokens.OPEN_PARANTHESIS);
 			if (n.equals("sqrt")) {
-				seq.add(SExprTokens.createToken("^"));
+				seq.add(SExprTokens.createToken("pow"));
 			} else {
 				seq.add(SExprTokens.createToken(n));
 			}
@@ -608,7 +611,7 @@ public class FunctionEncodeStrategy implements IStrategy {
 				if (srti.getTails() != null && !srti.getTails().isEmpty()) {
 					seq.add(SExprTokens.OPEN_PARANTHESIS);
 					if (n.equals("sqrt")) {
-						seq.add(SExprTokens.createToken("^"));
+						seq.add(SExprTokens.createToken("pow"));
 					} else {
 						seq.add(SExprTokens.createToken(n));
 					}
@@ -722,7 +725,7 @@ public class FunctionEncodeStrategy implements IStrategy {
 				if (srti.getTails() != null && !srti.getTails().isEmpty()) {
 					seq.add(SExprTokens.OPEN_PARANTHESIS);
 					if (n.equals("sqrt")) {
-						seq.add(SExprTokens.createToken("^"));
+						seq.add(SExprTokens.createToken("pow"));
 					} else {
 						seq.add(SExprTokens.createToken(n));
 					}
@@ -838,6 +841,14 @@ public class FunctionEncodeStrategy implements IStrategy {
 			retVal.add(SExprTokens.EQ);
 			encode(aei.getLeft(), retVal, rcv);
 			encode(aei.getRight(), retVal, rcv);
+		} else if (rk.getName().toString().equals("LESS")) {
+			retVal.add(SExprTokens.LESS);
+			encode(aei.getLeft(), retVal, rcv);
+			encode(aei.getRight(), retVal, rcv);
+		} else if (rk.getName().toString().equals("GREATER")) {
+			retVal.add(SExprTokens.GREATER);
+			encode(aei.getLeft(), retVal, rcv);
+			encode(aei.getRight(), retVal, rcv);
 		}
 		seq.add(retVal);
 	}
@@ -855,6 +866,14 @@ public class FunctionEncodeStrategy implements IStrategy {
 			encodeWithTemplatePar(aei.getRight(), retVal, origName, replacement);
 		} else if (rk.getName().toString().equals("EQ")) {
 			retVal.add(SExprTokens.EQ);
+			encodeWithTemplatePar(aei.getLeft(), retVal, origName, replacement);
+			encodeWithTemplatePar(aei.getRight(), retVal, origName, replacement);
+		}  else if (rk.getName().toString().equals("LESS")) {
+			retVal.add(SExprTokens.LESS);
+			encodeWithTemplatePar(aei.getLeft(), retVal, origName, replacement);
+			encodeWithTemplatePar(aei.getRight(), retVal, origName, replacement);
+		} else if (rk.getName().toString().equals("GREATER")) {
+			retVal.add(SExprTokens.GREATER);
 			encodeWithTemplatePar(aei.getLeft(), retVal, origName, replacement);
 			encodeWithTemplatePar(aei.getRight(), retVal, origName, replacement);
 		}
@@ -877,7 +896,15 @@ public class FunctionEncodeStrategy implements IStrategy {
 			retVal.add(SExprTokens.EQ);
 			encodeInitWithTemplatePar(aei.getLeft(), retVal, rcv, s, origName, replacement);
 			encodeInitWithTemplatePar(aei.getRight(), retVal, rcv, s, origName, replacement);
-		}
+		}  else if (rk.getName().toString().equals("LESS")) {
+			retVal.add(SExprTokens.LESS);
+			encodeInitWithTemplatePar(aei.getLeft(), retVal, rcv, s, origName, replacement);
+			encodeInitWithTemplatePar(aei.getRight(), retVal, rcv, s, origName, replacement);
+		} else if (rk.getName().toString().equals("GREATER")) {
+			retVal.add(SExprTokens.GREATER);
+			encodeInitWithTemplatePar(aei.getLeft(), retVal, rcv, s, origName, replacement);
+			encodeInitWithTemplatePar(aei.getRight(), retVal, rcv, s, origName, replacement);
+		} 
 		 seq.add(retVal);
 	}
 
@@ -922,6 +949,7 @@ public class FunctionEncodeStrategy implements IStrategy {
 	private void encodeSort(SrlNamedTypeSymbol t, Seq seq) {
 		seq.add(SExprTokens.DECLARE_SORT);
 		seq.add(SExprTokens.createToken(t.stringId()));
+		seq.add(SExprTokens.createToken(0));
 	}
 
 	private Seq encodeExtension(SrlNamedTypeSymbol t, SrlObjectSymbol sos) {
@@ -949,6 +977,7 @@ public class FunctionEncodeStrategy implements IStrategy {
 								String fqRealizedTemplateName = t.stringId().replaceAll(t.getName(),
 										realizedTemplateName);
 								seq.sexprs().add(SExprTokens.createToken(fqRealizedTemplateName));
+								seq.add(SExprTokens.createToken(0));
 								seqList.add(seq);
 							}
 						} 
@@ -960,6 +989,7 @@ public class FunctionEncodeStrategy implements IStrategy {
 //								retVal.sexprs().add(SExprTokens.createToken(t.stringId()));
 								seq.add(SExprTokens.DECLARE_SORT);
 								seq.add(SExprTokens.createToken(t.stringId()));
+								seq.add(SExprTokens.createToken(0));
 								seqList.add(seq);
 							}
 						} else {
@@ -973,6 +1003,7 @@ public class FunctionEncodeStrategy implements IStrategy {
 								seq.add(SExprTokens.DECLARE_SORT);
 								seq.add(SExprTokens
 										.createToken((os.getType().getContainer() + "." + os.getType().getName())));
+								seq.add(SExprTokens.createToken(0));
 								seqList.add(seq);
 							}
 						}
