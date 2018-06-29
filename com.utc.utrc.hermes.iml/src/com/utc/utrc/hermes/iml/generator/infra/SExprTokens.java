@@ -7,26 +7,40 @@ import com.utc.utrc.hermes.iml.generator.infra.SExpr.Token;
 
 public class SExprTokens {
 
+	public static SExpr.Token<String> OPEN_PARANTHESIS = new SExpr.Token<String>("(") ;
+	public static SExpr.Token<String> CLOSE_PARANTHESIS = new SExpr.Token<String>(")") ;
 	public static SExpr.Token<String> EXCLAMATION_POINT = new SExpr.Token<String>("!") ;
 	public static SExpr.Token<String> DECLARE_SORT = new SExpr.Token<String>("declare-sort") ;
 	public static SExpr.Token<String> DECLARE_DATATYPE = new SExpr.Token<String>("declare-datatype") ;
+
+	public static SExpr.Token<String> DECLARE_FUN = new SExpr.Token<String>("declare-fun") ;
+	public static SExpr.Token<String> DEFINE_FUN = new SExpr.Token<String>("define-fun") ;
+	public static SExpr.Token<String> HOT_ARROW = new SExpr.Token<String>("~>") ;
+
 	public static SExpr.Token<String> DECLARE_DATATYPES = new SExpr.Token<String>("declare-datatypes") ;
+
 	public static SExpr.Token<String> REC_CONS = new SExpr.Token<String>("rec") ;
 	public static SExpr.Token<String> ASSERT = new SExpr.Token<String>("assert") ;
 	public static SExpr.Token<String> FOR_ALL = new SExpr.Token<String>("forall") ;
 	public static SExpr.Token<String> META = new SExpr.Token<String>(":meta") ;
 	public static SExpr.Token<String> TYPE = new SExpr.Token<String>(":type") ;
+
 	public static SExpr.Token<String> DEFINES = new SExpr.Token<String>(":defines") ;
 	public static SExpr.Token<String> EQ = new SExpr.Token<String>("=") ;
 	public static SExpr.Token<String> NOT = new SExpr.Token<String>("not") ;
 	public static SExpr.Token<String> NEG = new SExpr.Token<String>("neg") ;
+
+	public static SExpr.Token<String> EXISTS = new SExpr.Token<String>("exists") ;
+	
+	
+	public static SExpr.Token<String> AND = new SExpr.Token<String>("and") ;
+	public static SExpr.Token<String> OR = new SExpr.Token<String>("or") ;
 	
 	// Reasoning Graph
 	public static SExpr.Token<String> GRAPH = new SExpr.Token<String>("graph") ;
 	public static SExpr.Token<String> NODE = new SExpr.Token<String>("node") ;
 	public static SExpr.Token<String> EDGE = new SExpr.Token<String>("edge") ;
 	public static SExpr.Token<String> ENTAILMENT = new SExpr.Token<String>("entailment") ;
-	public static SExpr.Token<String> AND = new SExpr.Token<String>("and") ;
 	public static SExpr.Token<String> DONE = new SExpr.Token<String>("done") ;
 	public static SExpr.Token<String> SMT_25 = new SExpr.Token<String>("smt25") ;
 	public static SExpr.Token<String> BOOLX = new SExpr.Token<String>("boolX") ;
@@ -35,6 +49,14 @@ public class SExprTokens {
 	
 	public static SExpr.Token<String> EMPTY_TOKEN = new SExpr.Token<String>("") ;
 	
+	public static SExpr.Token<String> GREATER = new SExpr.Token<String>(">") ;
+	public static SExpr.Token<String> SMALLER = new SExpr.Token<String>("<") ;
+	public static SExpr.Token<String> GREATEREQ = new SExpr.Token<String>(">=") ;
+	public static SExpr.Token<String> SMALLEREQ = new SExpr.Token<String>("<=") ;
+	public static SExpr.Token<String> TRUE = new SExpr.Token<String>("true") ;
+	public static SExpr.Token<String> IMPLICATION = new SExpr.Token<String>("=>") ;
+		
+
 	public static void addToSequence(Seq s, SExpr e) {
 		s.sexprs.add(e);
 	}

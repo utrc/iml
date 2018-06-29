@@ -46,8 +46,9 @@ public class SrlSymbolId {
 					container = qnp.getFullyQualifiedName(((SimpleTypeReference) imlEObject).getType().eContainer());
 					name = ((SimpleTypeReference) imlEObject).getType().getName();
 				} else {
-					container = DEFAULT_CONTAINER;
-					// Use the name exactly as declared
+//					container = DEFAULT_CONTAINER;
+					container = qnp.getFullyQualifiedName(((SimpleTypeReference) imlEObject).getType().eContainer());					
+					// Use the name exactly as declared 					
 					name = hot2StringId((HigherOrderType) imlEObject);
 				}
 			} else if (imlEObject instanceof RelationInstance) {
@@ -66,7 +67,7 @@ public class SrlSymbolId {
 		if (imlEObject != null && imlEObject.eResource() instanceof XtextResource
 				&& imlEObject.eResource().getURI() != null) {
     		
-    		return ((XtextResource) imlEObject.eResource()).getSerializer().serialize(imlEObject);
+    		return ((XtextResource) imlEObject.eResource()).getSerializer().serialize(imlEObject).trim();
     	} else {
     		// TODO get it manually?
     		return "";
