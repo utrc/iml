@@ -21,12 +21,14 @@ public class SExprTokens {
 	public static SExpr.Token<String> NOT = new SExpr.Token<String>("not") ;
 	public static SExpr.Token<String> NEG = new SExpr.Token<String>("neg") ;
 	
+	public static SExpr.Token<String> AND = new SExpr.Token<String>("and") ;
+	public static SExpr.Token<String> OR = new SExpr.Token<String>("or") ;
+	
 	// Reasoning Graph
 	public static SExpr.Token<String> GRAPH = new SExpr.Token<String>("graph") ;
 	public static SExpr.Token<String> NODE = new SExpr.Token<String>("node") ;
 	public static SExpr.Token<String> EDGE = new SExpr.Token<String>("edge") ;
 	public static SExpr.Token<String> ENTAILMENT = new SExpr.Token<String>("entailment") ;
-	public static SExpr.Token<String> AND = new SExpr.Token<String>("and") ;
 	public static SExpr.Token<String> DONE = new SExpr.Token<String>("done") ;
 	public static SExpr.Token<String> SMT_25 = new SExpr.Token<String>("smt25") ;
 	public static SExpr.Token<String> BOOLX = new SExpr.Token<String>("boolX") ;
@@ -45,14 +47,14 @@ public class SExprTokens {
 
 	public static SExpr.Token<String> EXISTS = new SExpr.Token<String>("exists") ;
 	
-	public static SExpr.Token<String> OR = new SExpr.Token<String>("or") ;
-	
 	public static SExpr.Token<String> GREATER = new SExpr.Token<String>(">") ;
 	public static SExpr.Token<String> SMALLER = new SExpr.Token<String>("<") ;
 	public static SExpr.Token<String> GREATEREQ = new SExpr.Token<String>(">=") ;
 	public static SExpr.Token<String> SMALLEREQ = new SExpr.Token<String>("<=") ;
 	public static SExpr.Token<String> TRUE = new SExpr.Token<String>("true") ;
-	
+	public static SExpr.Token<String> IMPLICATION = new SExpr.Token<String>("=>") ;
+		
+
 	public static void addToSequence(Seq s, SExpr e) {
 		s.sexprs.add(e);
 	}
