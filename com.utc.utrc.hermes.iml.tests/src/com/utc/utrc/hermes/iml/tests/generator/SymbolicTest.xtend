@@ -312,7 +312,7 @@ class SymbolicTest {
 «««				g1 <<g:Guarantee>>: Bool := o1 = i1*2;
 			}
 			
-«««			inst : S1;
+			inst : S1;
 			
 			// The following are the formulas that need to be encoded
 			
