@@ -24,8 +24,10 @@ public class FormulaHelper {
 	public static FolFormula AND_ALL(List<FolFormula> formulas) {
 		if (!formulas.isEmpty()) {
 			FolFormula conjunction = formulas.get(0);
-			for (int i=1 ; i<formulas.size() ; i++) {
-				conjunction = AND(conjunction, formulas.get(i));
+			if (formulas.size() > 1) {
+				for (int i=1 ; i<formulas.size() ; i++) {
+					conjunction = AND(conjunction, formulas.get(i));
+				}
 			}
 			return conjunction;
 		}
