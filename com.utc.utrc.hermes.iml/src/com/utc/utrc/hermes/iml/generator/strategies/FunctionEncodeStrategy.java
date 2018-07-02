@@ -17,10 +17,12 @@ import com.utc.utrc.hermes.iml.generator.infra.SrlTerm;
 import com.utc.utrc.hermes.iml.generator.infra.SrlTypeSymbol;
 import com.utc.utrc.hermes.iml.generator.infra.SymbolTable;
 import com.utc.utrc.hermes.iml.iml.Addition;
+import com.utc.utrc.hermes.iml.iml.AndExpression;
 import com.utc.utrc.hermes.iml.iml.AtomicExpression;
 import com.utc.utrc.hermes.iml.iml.FloatNumberLiteral;
 import com.utc.utrc.hermes.iml.iml.FolFormula;
 import com.utc.utrc.hermes.iml.iml.HigherOrderType;
+import com.utc.utrc.hermes.iml.iml.Model;
 import com.utc.utrc.hermes.iml.iml.Multiplication;
 import com.utc.utrc.hermes.iml.iml.NumberLiteral;
 import com.utc.utrc.hermes.iml.iml.Program;
@@ -520,6 +522,8 @@ public class FunctionEncodeStrategy implements IStrategy {
 					encode (rcv_, seq, null);
 					seq.add(SExprTokens.CLOSE_PARANTHESIS);
 				}
+			} else if (f instanceof AndExpression) {
+				
 			}
 		}
 	}
@@ -550,11 +554,11 @@ public class FunctionEncodeStrategy implements IStrategy {
 			}
 			seq.add(SExprTokens.CLOSE_PARANTHESIS);
 		} else {
-			if (!(sdi.eContainer() instanceof FolFormula)) {
+			if (!(sdi.eContainer() instanceof FolFormula) && !(sdi.eContainer() instanceof Model)) {
 				seq.add(SExprTokens.OPEN_PARANTHESIS);
 			}
 			seq.add(SExprTokens.createToken(sfqn));
-			if (!(sdi.eContainer() instanceof FolFormula)) {
+			if (!(sdi.eContainer() instanceof FolFormula) && !(sdi.eContainer() instanceof Model)) {
 				seq.add(SExprTokens.createToken(" x!1"));
 				seq.add(SExprTokens.CLOSE_PARANTHESIS);
 			}
