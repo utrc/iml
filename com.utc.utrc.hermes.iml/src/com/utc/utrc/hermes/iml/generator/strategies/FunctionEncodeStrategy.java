@@ -424,8 +424,14 @@ public class FunctionEncodeStrategy implements IStrategy {
 				encode(f.getLeft(), retVal, rcv);
 				encode(f.getRight(), retVal, rcv);
 				seq.add(retVal);
+			} else if (op.equals("=>")) {
+				Seq retVal = new SExpr.Seq();
+				retVal.add(SExprTokens.IMPLICATION);
+				encode(f.getLeft(), retVal, rcv);
+				encode(f.getRight(), retVal, rcv);
+				seq.add(retVal);
 			}
-			// TOIMPLEMENT =>, <=>, forall, exists
+			// TOIMPLEMENT, <=>, forall, exists
 		} else {
 			if (f instanceof SignedAtomicFormula) {
 				SignedAtomicFormula safi = (SignedAtomicFormula) f;
@@ -519,7 +525,9 @@ public class FunctionEncodeStrategy implements IStrategy {
 				if (mbr instanceof SymbolReferenceTerm) {
 					SymbolReferenceTerm srt = (SymbolReferenceTerm) mbr;
 					encode(srt, seq, rcv_);
-					encode (rcv_, seq, null);
+					if (rcv_ != null) {
+						encode (rcv_, seq, null);
+					}
 					seq.add(SExprTokens.CLOSE_PARANTHESIS);
 				}
 			} else if (f instanceof AndExpression) {
