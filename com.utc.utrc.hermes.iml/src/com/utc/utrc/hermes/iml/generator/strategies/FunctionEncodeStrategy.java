@@ -638,7 +638,7 @@ public class FunctionEncodeStrategy implements IStrategy {
 					}
 				} else if (leftFol instanceof SymbolReferenceTerm) {
 //					SymbolReferenceTerm tmpSRTI = (SymbolReferenceTerm) leftFol; // ?????? bugggggggg
-//					encodeWithTemplatePar(leftFol, seq, origName, replacement);
+					encodeWithTemplatePar(leftFol, seq, origName, replacement);
 				}
 			} else if (f instanceof SymbolReferenceTerm) {
 				SymbolReferenceTerm srti = (SymbolReferenceTerm) f;
@@ -772,7 +772,7 @@ public class FunctionEncodeStrategy implements IStrategy {
 				if (leftFol instanceof SymbolReferenceTerm) {
 					// SymbolReferenceTerm tmpSRTI = (SymbolReferenceTerm) leftFol; //??????
 					// bugggggggg
-					// encode(leftFol, seq);
+					encodeInitWithTemplatePar(leftFol, seq, rcv, s, origName, replacement);
 				}
 			} else if (f instanceof SymbolReferenceTerm) {
 				SymbolReferenceTerm srti = (SymbolReferenceTerm) f;
