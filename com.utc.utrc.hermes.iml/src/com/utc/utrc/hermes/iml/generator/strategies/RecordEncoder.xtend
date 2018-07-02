@@ -89,6 +89,7 @@ class RecordEncoder {
 	}
 
 	def public SExpr encode(SrlHigherOrderTypeSymbol ts) {
+		
 	}
 	
 	def public SExpr encode(SrlTerm ts) {

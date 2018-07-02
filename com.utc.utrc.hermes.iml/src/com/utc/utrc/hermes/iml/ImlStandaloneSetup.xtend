@@ -3,13 +3,19 @@
  */
 package com.utc.utrc.hermes.iml
 
+import com.google.inject.Injector
 
 /**
  * Initialization support for running Xtext languages without Equinox extension registry.
  */
 class ImlStandaloneSetup extends ImlStandaloneSetupGenerated {
-
-	def static void doSetup() {
-		new ImlStandaloneSetup().createInjectorAndDoEMFRegistration()
+	
+	private static Injector injector;
+	
+	def static synchronized getInjector() {
+		if (injector === null) {
+			injector = new ImlStandaloneSetup().createInjectorAndDoEMFRegistration();
+		}
+		return injector;
 	}
 }

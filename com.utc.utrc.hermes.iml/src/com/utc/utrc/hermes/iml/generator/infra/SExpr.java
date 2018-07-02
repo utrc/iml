@@ -35,7 +35,8 @@ public abstract class SExpr {
 			Iterator<? extends SExpr> iter = sexprs.iterator();
 			sb.append("( ");
 			while (iter.hasNext()) {
-				sb.append(iter.next().toString());
+				SExpr testMe = iter.next();
+				sb.append(testMe.toString());
 				sb.append(" ");
 			}
 			sb.append(")");
@@ -65,7 +66,7 @@ public abstract class SExpr {
 		public String toString() {
 			return value.toString();
 		}
-
+		
 		public String kind() {
 			return "token";
 		}

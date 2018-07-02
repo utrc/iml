@@ -7,31 +7,31 @@ import com.utc.utrc.hermes.iml.generator.infra.SrlHigherOrderTypeSymbol;
 import com.utc.utrc.hermes.iml.generator.infra.SrlNamedTypeSymbol;
 import com.utc.utrc.hermes.iml.generator.infra.SrlObjectSymbol;
 import com.utc.utrc.hermes.iml.generator.infra.SrlSymbol;
-import com.utc.utrc.hermes.iml.generator.infra.SrlSymbolId;
 import com.utc.utrc.hermes.iml.generator.infra.SrlTypeSymbol;
 import com.utc.utrc.hermes.iml.generator.infra.SymbolTable;
 import com.utc.utrc.hermes.iml.generator.infra.SExpr.Seq;
 
-public class EmptyStrategy extends AbstracIStrategy {
+public class RecordEncodeStrategy implements IStrategy {
 
-	public EmptyStrategy(SrlSymbolId srlObject) {
-		super(srlObject);
+	public RecordEncodeStrategy() {
+		// TODO Auto-generated constructor stub
 	}
-
+	
 	@Override
 	public void encode(SymbolTable st) {
 		// TODO Auto-generated method stub
 	}
 
 	@Override
-	public List<Seq> encode (SrlObjectSymbol s) {
+	public List<Seq> encode (SrlObjectSymbol s) { 
 		// TODO Auto-generated method stub
 		return null;
 	}
-	
+
 	@Override
 	public List<Seq> encode(SrlNamedTypeSymbol t, String name) {
 		// TODO Auto-generated method stub
 		return null;
 	}
+
 }

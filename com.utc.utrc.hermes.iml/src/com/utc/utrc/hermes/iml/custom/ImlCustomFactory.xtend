@@ -38,6 +38,7 @@ class ImlCustomFactory extends ImlFactoryImpl {
 		createAndExpression => [
 			it.left = left;
 			it.right = right;
+			it.op = "&&"; // FIXME is there an enum better to use?
 		]
 	}
 	
@@ -52,6 +53,7 @@ class ImlCustomFactory extends ImlFactoryImpl {
 	def createSymbolDeclaration(ConstrainedType type, String name) {
 		createSymbolDeclaration => [
 			it.type = createSimpleTypeReference(type)
+			it.name = name
 		]
 	}
 	
