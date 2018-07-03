@@ -241,7 +241,7 @@ class SymbolicTest {
 				o1 <<o:out,p:port>>: Float ;
 				n <<i:in,p:port>>: Integer;
 			    a1 <<a:Assume>> : Bool := n >=1 && (exists x:Int, y:Int { (y >= 1 && y <= n && x>=1 && x <= 0) && ( (i1 = x/n || i1 = -1 * x/n) && ( i2 = y/n || i2 =  -1 *y/n))   } ) ;
-			    a1 <<a:Assume>> : Bool := o1 >=1 ;
+«««			    a1 <<a:Assume>> : Bool := o1 >=1 ;
 				g1 <<g:Guarantee>>: Bool := o1 <=1 && o1 >=-1;
 «««				g1 <<g:Guarantee>>: Bool := o1 <=1 ;
 			}
@@ -284,7 +284,7 @@ class SymbolicTest {
 	}
 	
 	@Test
-	def void TestEncodingForUTRCTest1Premise() {
+	def void TestEncodingForUTRCContrivedExamplePremise() {
 		var model = '''
 			package p;
 			
