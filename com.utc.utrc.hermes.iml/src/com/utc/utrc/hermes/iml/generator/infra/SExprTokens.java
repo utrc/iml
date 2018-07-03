@@ -34,6 +34,7 @@ public class SExprTokens {
 	public static SExpr.Token<String> BOOLX = new SExpr.Token<String>("boolX") ;
 	public static SExpr.Token<String> EVALUATE = new SExpr.Token<String>("evaluate") ;
 	public static SExpr.Token<String> NOT_AVAILABLE = new SExpr.Token<String>("__") ;
+	public static SExpr.Token<String> GET_VALUE = new SExpr.Token<String>("get-value") ;
 	
 	public static SExpr.Token<String> EMPTY_TOKEN = new SExpr.Token<String>("") ;
 	
