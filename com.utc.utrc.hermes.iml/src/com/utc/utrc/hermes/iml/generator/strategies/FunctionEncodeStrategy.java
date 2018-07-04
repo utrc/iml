@@ -17,6 +17,7 @@ import com.utc.utrc.hermes.iml.generator.infra.SrlTerm;
 import com.utc.utrc.hermes.iml.generator.infra.SrlTypeSymbol;
 import com.utc.utrc.hermes.iml.generator.infra.SymbolTable;
 import com.utc.utrc.hermes.iml.iml.Addition;
+import com.utc.utrc.hermes.iml.iml.AndExpression;
 import com.utc.utrc.hermes.iml.iml.AtomicExpression;
 import com.utc.utrc.hermes.iml.iml.FloatNumberLiteral;
 import com.utc.utrc.hermes.iml.iml.FolFormula;
@@ -51,7 +52,7 @@ public class FunctionEncodeStrategy implements IStrategy {
 					if (!nts.isTemplate()) {
 						List<Seq> seqList = new ArrayList<>();
 						Seq seq = new SExpr.Seq();
-						encodeSort(nts, seq); // declare sort
+						encodeSort(nts.stringId(), seq); // declare sort
 						seqList.add(seq);
 						if (!nts.getRelations().isEmpty()) { // handle extension
 							for (SrlObjectSymbol sos : nts.getRelations()) {
@@ -125,36 +126,25 @@ public class FunctionEncodeStrategy implements IStrategy {
 					if (t.getRelations().isEmpty()) {
 						if (!(t.getContainer().toString()).equals("iml.lang")) {
 							Seq seq = new SExpr.Seq();
-							seq.add(SExprTokens.DECLARE_SORT);
 							String fqRealizedTemplateName = t.stringId().replaceAll(t.getName(), realizedTemplateName);
-							seq.add(SExprTokens.createToken(fqRealizedTemplateName));
-							seq.add(SExprTokens.createToken(0));
+							encodeSort(fqRealizedTemplateName, seq);
 							seqList.add(seq);
 						}
 					} 
 				} else {
 					if (t.getRelations().isEmpty()) {
 						if (!(t.getContainer().toString()).equals("iml.lang")) {
-							// double check gqw originally directly appended to retVal
-//							retVal.add(SExprTokens.DECLARE_SORT);
-//							retVal.add(SExprTokens.createToken(t.stringId()));
 							Seq seq = new SExpr.Seq();
-							seq.add(SExprTokens.DECLARE_SORT);
-							seq.add(SExprTokens.createToken(t.stringId()));
-							seq.add(SExprTokens.createToken(0));
+							encodeSort(t.stringId(), seq);
 							seqList.add(seq);
 						}
 					} else {
 						// handle sameas
 						SrlObjectSymbol os = (t.getRelations()).get(0);
 						if (!(os.getType().getContainer().toString()).equals("iml.lang")) {
-							// double check gqw originally directly appended to retVal
-//							retVal.add(SExprTokens.DECLARE_SORT);
-//							retVal.add(SExprTokens.createToken((os.getType().getContainer() + "." + os.getType().getName())));
 							Seq seq = new SExpr.Seq();
-							seq.add(SExprTokens.DECLARE_SORT);
-							seq.add(SExprTokens.createToken((os.getType().getContainer() + "." + os.getType().getName())));
-							seq.add(SExprTokens.createToken(0));
+							String name = os.getType().getContainer() + "." + os.getType().getName();
+							encodeSort(name, seq);
 							seqList.add(seq);
 						}
 					}
@@ -179,13 +169,13 @@ public class FunctionEncodeStrategy implements IStrategy {
 			retVal.add(SExprTokens.DEFINE_FUN);
 		}
 		String nm = s.stringId().replaceAll(t.getName(), realizedTemplateName);
-		retVal.add(SExprTokens.createToken(nm));
+		retVal.add(SExprTokens.createToken(genQuotedName(nm)));
 
 		retVal.add(SExprTokens.createToken("("));
 		retVal.add(SExprTokens.createToken(s.getDefinition() == null ? "" : "("));
 		retVal.add(SExprTokens.createToken(s.getDefinition() == null ? "" : "x!1"));
 		nm = s.getContainer().toString().replaceAll(t.getName(), realizedTemplateName);
-		retVal.add(SExprTokens.createToken(nm));
+		retVal.add(SExprTokens.createToken(genQuotedName(nm)));
 		retVal.add(SExprTokens.createToken(s.getDefinition() == null ? "" : ")"));
 		retVal.add(SExprTokens.createToken(")"));
 
@@ -202,9 +192,9 @@ public class FunctionEncodeStrategy implements IStrategy {
 					}
 					if (idx == t.getParameters().size()) {
 						if (!nts.getContainer().toString().equals("iml.lang")) {
-							retVal.add(SExprTokens.createToken(nts.stringId()));
+							retVal.add(SExprTokens.createToken(genQuotedName(nts.stringId())));
 						} else {
-							retVal.add(SExprTokens.createToken(nts.getName()));
+							retVal.add(SExprTokens.createToken(genQuotedName(nts.getName())));
 						}
 					} else { // parameter
 						SrlTypeSymbol boundT = bindings.get(idx);
@@ -216,9 +206,9 @@ public class FunctionEncodeStrategy implements IStrategy {
 									SrlNamedTypeSymbol snts = (SrlNamedTypeSymbol) dmn;
 									if (snts.getRelations().isEmpty()) {
 										if (!snts.getContainer().toString().equals("iml.lang")) {
-											retVal.add(SExprTokens.createToken(snts.stringId()));
+											retVal.add(SExprTokens.createToken(genQuotedName(snts.stringId())));
 										} else {
-											retVal.add(SExprTokens.createToken(snts.getName()));
+											retVal.add(SExprTokens.createToken(genQuotedName(snts.getName())));
 										}
 									} else {
 										// sameas info
@@ -233,7 +223,7 @@ public class FunctionEncodeStrategy implements IStrategy {
 			} 
 		} else if ((s.getType()) instanceof SrlNamedTypeSymbol) {
 			SrlNamedTypeSymbol snts = (SrlNamedTypeSymbol) s.getType();
-			retVal.add(SExprTokens.createToken(snts.stringId()));
+			retVal.add(SExprTokens.createToken(genQuotedName(snts.stringId())));
 		}
 		// process definition
 		if (def != null) { // need to worry about template parameter
@@ -261,12 +251,12 @@ public class FunctionEncodeStrategy implements IStrategy {
 	private void encodeTLObjectSymbol(SrlObjectSymbol s, List<Seq> seqList) {
 		Seq retVal = new SExpr.Seq();
 		retVal.add(SExprTokens.DECLARE_FUN);
-		retVal.add(SExprTokens.createToken(s.stringId()));
+		retVal.add(SExprTokens.createToken(genQuotedName(s.stringId())));
 		retVal.add(SExprTokens.OPEN_PARANTHESIS);
 		retVal.add(SExprTokens.CLOSE_PARANTHESIS);
 		if (s.getType() instanceof SrlNamedTypeSymbol) {
 			SrlNamedTypeSymbol snts = (SrlNamedTypeSymbol) s.getType();
-			retVal.add(SExprTokens.createToken(snts.stringId()));
+			retVal.add(SExprTokens.createToken(genQuotedName(snts.stringId())));
 			seqList.add(retVal);
 
 			for (SrlObjectSymbol sos : snts.getSymbols()) {
@@ -276,7 +266,7 @@ public class FunctionEncodeStrategy implements IStrategy {
 					Seq initSExpr = new SExpr.Seq();
 					initSExpr.add(SExprTokens.EQ);
 					initSExpr.add(SExprTokens.OPEN_PARANTHESIS);
-					initSExpr.add(SExprTokens.createToken(sos.stringId() + ".init " + s.stringId()));
+					initSExpr.add(SExprTokens.createToken(genQuotedName(sos.stringId() + ".init") + " " + genQuotedName(s.stringId())));
 					initSExpr.add(SExprTokens.CLOSE_PARANTHESIS);
 					initSExpr.add(SExprTokens.TRUE);
 					retVal.add(initSExpr);
@@ -287,10 +277,10 @@ public class FunctionEncodeStrategy implements IStrategy {
 					Seq connA1SExpr = new SExpr.Seq();
 					connA1SExpr.add(SExprTokens.EQ);
 					connA1SExpr.add(SExprTokens.OPEN_PARANTHESIS);
-					connA1SExpr.add(SExprTokens.createToken(sos.getType().stringId() + ".a1"));
+					connA1SExpr.add(SExprTokens.createToken(genQuotedName(sos.getType().stringId() + ".a1")));
 					connA1SExpr.add(SExprTokens.OPEN_PARANTHESIS);
-					connA1SExpr.add(SExprTokens.createToken(sos.stringId()));
-					connA1SExpr.add(SExprTokens.createToken(s.stringId()));
+					connA1SExpr.add(SExprTokens.createToken(genQuotedName(sos.stringId())));
+					connA1SExpr.add(SExprTokens.createToken(genQuotedName(s.stringId())));
 					connA1SExpr.add(SExprTokens.CLOSE_PARANTHESIS);
 					connA1SExpr.add(SExprTokens.CLOSE_PARANTHESIS);
 					connA1SExpr.add(SExprTokens.TRUE);
@@ -320,11 +310,11 @@ public class FunctionEncodeStrategy implements IStrategy {
 				donotGenParam = false;
 			}
 		}
-		retVal.add(SExprTokens.createToken(s.stringId()));
+		retVal.add(SExprTokens.createToken(genQuotedName(s.stringId())));
 		retVal.add(SExprTokens.createToken("("));
 		retVal.add(SExprTokens.createToken(donotGenParam ? "" : "("));
 		retVal.add(SExprTokens.createToken(donotGenParam ? "" : "x!1"));
-		retVal.add(SExprTokens.createToken(s.getContainer().toString()));
+		retVal.add(SExprTokens.createToken(genQuotedName(s.getContainer().toString())));
 		retVal.add(SExprTokens.createToken(donotGenParam ? "" : ")"));
 		retVal.add(SExprTokens.createToken(")"));		
 		
@@ -342,14 +332,14 @@ public class FunctionEncodeStrategy implements IStrategy {
 					if (nts.getRelations().isEmpty()) {
 						if (!nts.getContainer().toString().equals("iml.lang")) {
 							if (realizedName.isEmpty()) {
-								retVal.add(SExprTokens.createToken(nts.stringId()));
+								retVal.add(SExprTokens.createToken(genQuotedName(nts.stringId())));
 							} else {
 								origName = nts.getName();
 								retVal.add(SExprTokens
-										.createToken(nts.stringId().replaceAll(origName, realizedName)));
+										.createToken(genQuotedName(nts.stringId().replaceAll(origName, realizedName))));
 							}
 						} else {
-							retVal.add(SExprTokens.createToken(nts.getName()));
+							retVal.add(SExprTokens.createToken(genQuotedName(nts.getName())));
 						}
 					} else {
 						// sameas info
@@ -359,7 +349,7 @@ public class FunctionEncodeStrategy implements IStrategy {
 			} 
 		} else if ((s.getType()) instanceof SrlNamedTypeSymbol) {
 			SrlNamedTypeSymbol snts = (SrlNamedTypeSymbol) s.getType();
-			retVal.add(SExprTokens.createToken(snts.stringId()));
+			retVal.add(SExprTokens.createToken(genQuotedName(snts.stringId())));
 		}
 		// process definition
 		if (def != null && !isTypeConstructor(def)) {
@@ -380,11 +370,11 @@ public class FunctionEncodeStrategy implements IStrategy {
 		Seq retVal = new SExpr.Seq();
 		SrlTerm def = s.getDefinition();
 		retVal.add(SExprTokens.DEFINE_FUN);
-		retVal.add(SExprTokens.createToken(s.stringId() + ".init"));
+		retVal.add(SExprTokens.createToken(genQuotedName(s.stringId() + ".init")));
 		retVal.add(SExprTokens.createToken("("));
 		retVal.add(SExprTokens.createToken("("));
 		retVal.add(SExprTokens.createToken("x!1"));
-		retVal.add(SExprTokens.createToken(s.getContainer().toString()));
+		retVal.add(SExprTokens.createToken(genQuotedName(s.getContainer().toString())));
 		retVal.add(SExprTokens.createToken(")"));
 		retVal.add(SExprTokens.createToken(")"));
 		retVal.add(SExprTokens.createToken("Bool"));
@@ -567,9 +557,9 @@ public class FunctionEncodeStrategy implements IStrategy {
 			}
 			SymbolReferenceTail srtailI = srti.getTails().get(0);
 			if (srtailI instanceof TupleConstructor) {
-//				encode(((TupleConstructor) srtailI).getElements().get(0), seq, null);
+				encode(((TupleConstructor) srtailI).getElements().get(0), seq, null);
 //				need to consolidate
-				encode(((TupleConstructor) srtailI).getElements().get(0), seq, null, null, null, null);
+//				encode(((TupleConstructor) srtailI).getElements().get(0), seq, null, null, null, null);
 			}
 			if (n.equals("sqrt")) {
 				seq.add(SExprTokens.createToken(0.5f));
@@ -598,7 +588,7 @@ public class FunctionEncodeStrategy implements IStrategy {
 		}
 		if (srti.getTails() != null && !srti.getTails().isEmpty()) {
 			seq.add(SExprTokens.OPEN_PARANTHESIS);
-			seq.add(SExprTokens.createToken(n));
+			seq.add(SExprTokens.createToken(genQuotedName(n)));
 			SymbolReferenceTail srtailI = srti.getTails().get(0);
 			if (srtailI instanceof TupleConstructor) {
 //				encode(((TupleConstructor) srtailI).getElements().get(0), seq, rcv);				
@@ -610,7 +600,7 @@ public class FunctionEncodeStrategy implements IStrategy {
 			if (!(sdi.eContainer() instanceof FolFormula)) {
 				seq.add(SExprTokens.OPEN_PARANTHESIS);
 			}
-			seq.add(SExprTokens.createToken(sfqn));
+			seq.add(SExprTokens.createToken(genQuotedName(sfqn)));
 		}
 	}	
 /*	
@@ -974,12 +964,12 @@ public class FunctionEncodeStrategy implements IStrategy {
 						if (rcv_ != null) {
 							encode (rcv_, seq, null, s, origName, replacement);
 						}
-						seq.add(SExprTokens.CLOSE_PARANTHESIS);
+						seq.add(SExprTokens.CLOSE_PARANTHESIS); // what to close????
 					}
 				} else if (leftFol instanceof SymbolReferenceTerm) {
-					// SymbolReferenceTerm tmpSRTI = (SymbolReferenceTerm) leftFol; //??????
+					 SymbolReferenceTerm tmpSRTI = (SymbolReferenceTerm) leftFol; //??????
 					// bugggggggg
-					encode(leftFol, seq, rcv, s, origName, replacement);
+					encode(tmpSRTI, seq, rcv, s, origName, replacement); // precise type defined?????
 				}
 				
 				// need to consolidate symbolreferenceTerm
@@ -1000,7 +990,7 @@ public class FunctionEncodeStrategy implements IStrategy {
 					if (n.equals("sqrt")) {
 						seq.add(SExprTokens.createToken("pow"));
 					} else {
-						seq.add(SExprTokens.createToken(n));
+						seq.add(SExprTokens.createToken(genQuotedName(n)));
 					}
 					SymbolReferenceTail srtailI = srti.getTails().get(0);
 					if (srtailI instanceof TupleConstructor) {
@@ -1018,36 +1008,44 @@ public class FunctionEncodeStrategy implements IStrategy {
 					if (!(sdi.eContainer() instanceof FolFormula) && !(sdi.eContainer() instanceof Model)) {
 						seq.add(SExprTokens.OPEN_PARANTHESIS);
 					}
-					seq.add(SExprTokens.createToken(sfqn));
+					seq.add(SExprTokens.createToken(genQuotedName(sfqn)));
 					if (!(sdi.eContainer() instanceof FolFormula) && !(sdi.eContainer() instanceof Model)) {
+						boolean flag = false;
 						if (s != null) {						
-							seq.add(SExprTokens.OPEN_PARANTHESIS);
+//							seq.add(SExprTokens.OPEN_PARANTHESIS);
 							SrlHigherOrderTypeSymbol symCT = (SrlHigherOrderTypeSymbol) s.getType();
 							// NOT CONSIDERING HOT
 							SrlNamedTypeSymbol ct = (SrlNamedTypeSymbol) symCT.getDomain();
 							String symbolFqn = ct.getContainer() + "." + ct.getName();
-							if (sfqn.contains(symbolFqn)) {
-								seq.add(SExprTokens.createToken(s.stringId()));
+							if (sfqn.contains(symbolFqn)) {								
+								seq.add(SExprTokens.OPEN_PARANTHESIS);
+								seq.add(SExprTokens.createToken(genQuotedName(s.stringId())));
+								flag = true;
 							} else {
 								if (rcv != null) { // member selection
+									seq.add(SExprTokens.OPEN_PARANTHESIS);
 									String rcvStr = generateReveiverString(rcv);
-									seq.add(SExprTokens.createToken(rcvStr));
+									seq.add(SExprTokens.createToken(genQuotedName(rcvStr)));
+									flag = true;
 								} else { // extension
 									String ctnr1 = s.getContainer().toString();
 									String ctnr2 = sfqn.substring(0, sfqn.lastIndexOf('.'));
 									if (ctnr1.equals(ctnr2)) {
-										seq.add(SExprTokens.createToken(sfqn));
+										//seq.add(SExprTokens.createToken(sfqn));
+										;
 									} else { // inherited
-										seq.add(SExprTokens.createToken(ctnr1 + ".base_0"));
+										seq.add(SExprTokens.OPEN_PARANTHESIS);
+										seq.add(SExprTokens.createToken(genQuotedName(ctnr1 + ".base_0")));
+										flag = true;
 									}
 								}
 							}
 						}
-						if (rcv == null) {
+						if (rcv == null || s == null) {
 							seq.add(SExprTokens.createToken("x!1"));
 							seq.add(SExprTokens.CLOSE_PARANTHESIS);
 						}
-						if (s != null) {
+						if (flag) {
 							seq.add(SExprTokens.CLOSE_PARANTHESIS);
 						}
 					}
@@ -1097,7 +1095,8 @@ public class FunctionEncodeStrategy implements IStrategy {
 				TermExpression mbr = tms.getMember();
 				if (mbr instanceof SymbolReferenceTerm) {
 					SymbolReferenceTerm srt = (SymbolReferenceTerm) mbr;
-					encode(srt, seq, rcv_, s, origName, replacement);
+					encode(srt, seq, rcv_);
+//					encode(srt, seq, rcv_, s, origName, replacement); // purposely pass null in for rcv_
 					if (rcv_ != null) {
 						encode (rcv_, seq, null, s, origName, replacement);
 					}
@@ -1292,21 +1291,27 @@ public class FunctionEncodeStrategy implements IStrategy {
 		}
 		seq.add(retVal);
 	}
-
+/*
 	private void encodeSort(SrlNamedTypeSymbol t, Seq seq) {
 		seq.add(SExprTokens.DECLARE_SORT);
 		seq.add(SExprTokens.createToken(t.stringId()));
 		seq.add(SExprTokens.createToken(0));
 	}
-
+*/
+	private void encodeSort(String name, Seq seq) {
+		seq.add(SExprTokens.DECLARE_SORT);
+		seq.add(SExprTokens.createToken("|" + name + "|"));
+		seq.add(SExprTokens.createToken(0));
+	}
+	
 	private Seq encodeExtension(SrlNamedTypeSymbol t, SrlObjectSymbol sos) {
 		Seq retVal = new SExpr.Seq();
 		retVal.add(SExprTokens.DECLARE_FUN);
-		retVal.add(SExprTokens.createToken(t.stringId() + ".base_0"));
+		retVal.add(SExprTokens.createToken(genQuotedName(t.stringId() + ".base_0")));
 		retVal.add(SExprTokens.OPEN_PARANTHESIS);
-		retVal.add(SExprTokens.createToken(t.stringId()));
+		retVal.add(SExprTokens.createToken(genQuotedName(t.stringId())));
 		retVal.add(SExprTokens.CLOSE_PARANTHESIS);
-		retVal.add(SExprTokens.createToken(sos.getType().stringId()));
+		retVal.add(SExprTokens.createToken(genQuotedName(sos.getType().stringId())));
 		return retVal;
 	}
 
@@ -1320,11 +1325,9 @@ public class FunctionEncodeStrategy implements IStrategy {
 						if (t.getRelations().isEmpty()) {
 							if (!(t.getContainer().toString()).equals("iml.lang")) {
 								Seq seq = new SExpr.Seq();
-								seq.sexprs().add(SExprTokens.DECLARE_SORT);
 								String fqRealizedTemplateName = t.stringId().replaceAll(t.getName(),
 										realizedTemplateName);
-								seq.sexprs().add(SExprTokens.createToken(fqRealizedTemplateName));
-								seq.add(SExprTokens.createToken(0));
+								encodeSort(fqRealizedTemplateName, seq);
 								seqList.add(seq);
 							}
 						} 
@@ -1332,11 +1335,7 @@ public class FunctionEncodeStrategy implements IStrategy {
 						if (t.getRelations().isEmpty()) {
 							if (!(t.getContainer().toString()).equals("iml.lang")) {
 								Seq seq = new SExpr.Seq();
-//								retVal.sexprs().add(SExprTokens.DECLARE_SORT);
-//								retVal.sexprs().add(SExprTokens.createToken(t.stringId()));
-								seq.add(SExprTokens.DECLARE_SORT);
-								seq.add(SExprTokens.createToken(t.stringId()));
-								seq.add(SExprTokens.createToken(0));
+								encodeSort(t.stringId(), seq);
 								seqList.add(seq);
 							}
 						} else {
@@ -1344,13 +1343,8 @@ public class FunctionEncodeStrategy implements IStrategy {
 							SrlObjectSymbol os = (t.getRelations()).get(0);
 							if (!(os.getType().getContainer().toString()).equals("iml.lang")) {
 								Seq seq = new SExpr.Seq();
-//								retVal.sexprs().add(SExprTokens.DECLARE_SORT);
-//								retVal.sexprs().add(SExprTokens
-//										.createToken((os.getType().getContainer() + "." + os.getType().getName())));
-								seq.add(SExprTokens.DECLARE_SORT);
-								seq.add(SExprTokens
-										.createToken((os.getType().getContainer() + "." + os.getType().getName())));
-								seq.add(SExprTokens.createToken(0));
+								String name = os.getType().getContainer() + "." + os.getType().getName();
+								encodeSort(name, seq);
 								seqList.add(seq);
 							}
 						}
@@ -1364,8 +1358,12 @@ public class FunctionEncodeStrategy implements IStrategy {
 		}
 		return seqList;
 	}
+
 	
-	/*
+	private String genQuotedName(String name) {
+		return ("|" + name + "|");
+	}
+/*
 	@Override
 	public SExpr encode(SrlHigherOrderTypeSymbol hot) {
 		 System.out.println(24);
@@ -1414,5 +1412,6 @@ public class FunctionEncodeStrategy implements IStrategy {
 		}
 		return retVal;
 	}
-	*/
+*/
+	
 }

@@ -152,14 +152,14 @@ class SymbolicTest {
 				o1 <<o:out,p:port>>: Float ;
 				alpha <<i:in,p:port>>: Float;
 			    a1 <<a:Assume>> : Bool := (i1 =1 || i1=-1) && (i2=0 || i2 =1 || i2 = -1) ;
-				g1 <<g:Guarantee>>: Bool := o1 = i1 * sqrt(2) * sin(alpha) + i2 * sqrt(2) * cos(alpha);
+				g1 <<g:Guarantee>>: Bool := o1 = i1 * sqrt(2.0) * sin(alpha) + i2 * sqrt(2.0) * cos(alpha);
 			}
 			
 			type <<s:system,i:implementation>> S1__impl extends S1 {
 				S2_sub <<c:subcomponent>>: S2 ;
-«««				i1_TO_A : Connection<Float> := new Connection<Float> {source=i1; target = S2_sub->i1;};
-«««				i2_TO_A : Connection<Float> := new Connection<Float> {source=i2 ; target = S2_sub->i2;};
-«««				S2_TO_o1 : Connection<Float> := new Connection<Float> {source=S2_sub->o1 ; target =o1 ;} ; 	
+				i1_TO_A : Connection<Float> := new Connection<Float> {source=i1; target = S2_sub->i1;};
+				i2_TO_A : Connection<Float> := new Connection<Float> {source=i2 ; target = S2_sub->i2;};
+				S2_TO_o1 : Connection<Float> := new Connection<Float> {source=S2_sub->o1 ; target =o1 ;} ; 	
 				
 				//i1_TO_A <<c:connection>>: Bool := i1 = S2_sub->i1;
 				//i2_TO_A <<c:connection>>: Bool := i2 = S2_sub->i2;
