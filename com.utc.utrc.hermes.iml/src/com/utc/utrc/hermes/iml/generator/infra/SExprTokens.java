@@ -54,6 +54,7 @@ public class SExprTokens {
 	public static SExpr.Token<String> SMALLEREQ = new SExpr.Token<String>("<=") ;
 	public static SExpr.Token<String> TRUE = new SExpr.Token<String>("true") ;
 	public static SExpr.Token<String> IMPLICATION = new SExpr.Token<String>("=>") ;
+	public static SExpr.Token<String> VERTICALBAR = new SExpr.Token<String>("|") ;
 		
 
 	public static void addToSequence(Seq s, SExpr e) {
