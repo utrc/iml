@@ -401,12 +401,11 @@ public class FunctionEncodeStrategy implements IStrategy {
 		retVal.add(seq);
 	}
 	
-    public SExpr encode(FolFormula formula) {
-    	Seq result = new Seq();
+    public SExpr encode(FolFormula formula, Seq seq) {
 //		encode(formula, result, null);
 //		need to consoditate
-		encode(formula, result, null, null, null, null);
-		return result;
+		encode(formula, seq, null, null, null, null);
+		return seq;
 	}
 
 /*
@@ -577,7 +576,7 @@ public class FunctionEncodeStrategy implements IStrategy {
 		}
 	}
 */
-	private void encode(SymbolReferenceTerm f, Seq seq, TermExpression rcv) {
+	public void encode(SymbolReferenceTerm f, Seq seq, TermExpression rcv) {
 		SymbolReferenceTerm srti = (SymbolReferenceTerm) f;
 		SymbolDeclaration sdi = (SymbolDeclaration) srti.getSymbol();
 		String sfqn = sdi.getName();

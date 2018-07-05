@@ -48,4 +48,24 @@ public class FileUtil {
 		}
 	}
 
+	public static void writeFileContent(String filePath, String content) {
+		try {
+			Files.write(new File(filePath).toPath(), content.getBytes());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public static void removeFile(String filePath) {
+		try {
+			Files.delete(new File(filePath).toPath());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public static boolean exists(String filePath) {
+		return Files.exists(new File(filePath).toPath());
+	}
+
 }
