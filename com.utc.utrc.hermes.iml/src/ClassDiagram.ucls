@@ -56,17 +56,7 @@
       <operations public="true" package="true" protected="true" private="true" static="true"/>    
     </display>  
   </class>  
-  <class id="6" language="java" name="com.utc.utrc.hermes.iml.generator.infra.Pair" project="com.utc.utrc.hermes.iml" 
-    file="/com.utc.utrc.hermes.iml/src/com/utc/utrc/hermes/iml/generator/infra/Pair.java" binary="false" 
-    corner="BOTTOM_RIGHT">    
-    <position height="-1" width="-1" x="901" y="252"/>    
-    <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
-      sort-features="false" accessors="true" visibility="true">      
-      <attributes public="true" package="true" protected="true" private="true" static="true"/>      
-      <operations public="true" package="true" protected="true" private="true" static="true"/>    
-    </display>  
-  </class>  
-  <class id="7" language="java" name="com.utc.utrc.hermes.iml.generator.infra.EncodedSymbol" 
+  <class id="6" language="java" name="com.utc.utrc.hermes.iml.generator.infra.EncodedSymbol" 
     project="com.utc.utrc.hermes.iml" 
     file="/com.utc.utrc.hermes.iml/src/com/utc/utrc/hermes/iml/generator/infra/EncodedSymbol.java" binary="false" 
     corner="BOTTOM_RIGHT">    
@@ -77,7 +67,7 @@
       <operations public="true" package="true" protected="true" private="true" static="true"/>    
     </display>  
   </class>  
-  <class id="8" language="java" name="com.utc.utrc.hermes.iml.generator.infra.SrlFactory" 
+  <class id="7" language="java" name="com.utc.utrc.hermes.iml.generator.infra.SrlFactory" 
     project="com.utc.utrc.hermes.iml" 
     file="/com.utc.utrc.hermes.iml/src/com/utc/utrc/hermes/iml/generator/infra/SrlFactory.java" binary="false" 
     corner="BOTTOM_RIGHT">    
@@ -88,7 +78,7 @@
       <operations public="true" package="true" protected="true" private="true" static="true"/>    
     </display>  
   </class>  
-  <class id="9" language="java" name="com.utc.utrc.hermes.iml.generator.infra.SrlSymbol" 
+  <class id="8" language="java" name="com.utc.utrc.hermes.iml.generator.infra.SrlSymbol" 
     project="com.utc.utrc.hermes.iml" 
     file="/com.utc.utrc.hermes.iml/src/com/utc/utrc/hermes/iml/generator/infra/SrlSymbol.java" binary="false" 
     corner="BOTTOM_RIGHT">    
@@ -99,7 +89,7 @@
       <operations public="true" package="true" protected="true" private="true" static="true"/>    
     </display>  
   </class>  
-  <class id="10" language="java" name="com.utc.utrc.hermes.iml.generator.infra.SrlTypeSymbol" 
+  <class id="9" language="java" name="com.utc.utrc.hermes.iml.generator.infra.SrlTypeSymbol" 
     project="com.utc.utrc.hermes.iml" 
     file="/com.utc.utrc.hermes.iml/src/com/utc/utrc/hermes/iml/generator/infra/SrlTypeSymbol.java" binary="false" 
     corner="BOTTOM_RIGHT">    
@@ -110,7 +100,7 @@
       <operations public="true" package="true" protected="true" private="true" static="true"/>    
     </display>  
   </class>  
-  <class id="11" language="java" name="com.utc.utrc.hermes.iml.generator.infra.SrlTerm" 
+  <class id="10" language="java" name="com.utc.utrc.hermes.iml.generator.infra.SrlTerm" 
     project="com.utc.utrc.hermes.iml" 
     file="/com.utc.utrc.hermes.iml/src/com/utc/utrc/hermes/iml/generator/infra/SrlTerm.java" binary="false" 
     corner="BOTTOM_RIGHT">    
@@ -121,9 +111,8 @@
       <operations public="true" package="true" protected="true" private="true" static="true"/>    
     </display>  
   </class>  
-  <class id="12" language="java" name="com.utc.utrc.hermes.iml.generator.infra.SExpr" project="com.utc.utrc.hermes.iml" 
-    file="/com.utc.utrc.hermes.iml/src/com/utc/utrc/hermes/iml/generator/infra/SExpr.java" binary="false" 
-    corner="BOTTOM_RIGHT">    
+  <class id="11" language="java" name="com.utc.utrc.hermes.iml.sexpr.SExpr" project="com.utc.utrc.hermes.iml" 
+    file="/com.utc.utrc.hermes.iml/src/com/utc/utrc/hermes/iml/sexpr/SExpr.java" binary="false" corner="BOTTOM_RIGHT">    
     <position height="-1" width="-1" x="1261" y="1093"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
@@ -131,10 +120,8 @@
       <operations public="true" package="true" protected="true" private="true" static="true"/>    
     </display>  
   </class>  
-  <class id="13" language="java" name="com.utc.utrc.hermes.iml.generator.infra.SExpr.Seq" 
-    project="com.utc.utrc.hermes.iml" 
-    file="/com.utc.utrc.hermes.iml/src/com/utc/utrc/hermes/iml/generator/infra/SExpr.java" binary="false" 
-    corner="BOTTOM_RIGHT">    
+  <class id="12" language="java" name="com.utc.utrc.hermes.iml.sexpr.SExpr.Seq" project="com.utc.utrc.hermes.iml" 
+    file="/com.utc.utrc.hermes.iml/src/com/utc/utrc/hermes/iml/sexpr/SExpr.java" binary="false" corner="BOTTOM_RIGHT">    
     <position height="-1" width="-1" x="1297" y="1472"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
@@ -142,7 +129,7 @@
       <operations public="true" package="true" protected="true" private="true" static="true"/>    
     </display>  
   </class>  
-  <enumeration id="14" language="java" name="com.utc.utrc.hermes.iml.generator.infra.SrlTypeModifier" 
+  <enumeration id="13" language="java" name="com.utc.utrc.hermes.iml.generator.infra.SrlTypeModifier" 
     project="com.utc.utrc.hermes.iml" 
     file="/com.utc.utrc.hermes.iml/src/com/utc/utrc/hermes/iml/generator/infra/SrlTypeModifier.java" binary="false" 
     corner="BOTTOM_RIGHT">    
@@ -153,7 +140,7 @@
       <operations public="true" package="true" protected="true" private="true" static="true"/>    
     </display>  
   </enumeration>  
-  <class id="15" language="java" name="com.utc.utrc.hermes.iml.generator.infra.Iml2Symbolic" 
+  <class id="14" language="java" name="com.utc.utrc.hermes.iml.generator.infra.Iml2Symbolic" 
     project="com.utc.utrc.hermes.iml" 
     file="/com.utc.utrc.hermes.iml/src/com/utc/utrc/hermes/iml/generator/infra/Iml2Symbolic.java" binary="false" 
     corner="BOTTOM_RIGHT">    
@@ -164,9 +151,8 @@
       <operations public="true" package="true" protected="true" private="true" static="true"/>    
     </display>  
   </class>  
-  <class id="16" language="java" name="com.utc.utrc.hermes.iml.generator.infra.SExprTokens" 
-    project="com.utc.utrc.hermes.iml" 
-    file="/com.utc.utrc.hermes.iml/src/com/utc/utrc/hermes/iml/generator/infra/SExprTokens.java" binary="false" 
+  <class id="15" language="java" name="com.utc.utrc.hermes.iml.sexpr.SExprTokens" project="com.utc.utrc.hermes.iml" 
+    file="/com.utc.utrc.hermes.iml/src/com/utc/utrc/hermes/iml/sexpr/SExprTokens.java" binary="false" 
     corner="BOTTOM_RIGHT">    
     <position height="-1" width="-1" x="1544" y="906"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
@@ -175,7 +161,7 @@
       <operations public="true" package="true" protected="true" private="true" static="true"/>    
     </display>  
   </class>  
-  <class id="17" language="java" name="com.utc.utrc.hermes.iml.generator.infra.SrlObjectSymbol" 
+  <class id="16" language="java" name="com.utc.utrc.hermes.iml.generator.infra.SrlObjectSymbol" 
     project="com.utc.utrc.hermes.iml" 
     file="/com.utc.utrc.hermes.iml/src/com/utc/utrc/hermes/iml/generator/infra/SrlObjectSymbol.java" binary="false" 
     corner="BOTTOM_RIGHT">    
@@ -186,21 +172,8 @@
       <operations public="true" package="true" protected="true" private="true" static="true"/>    
     </display>  
   </class>  
-  <interface id="18" language="java" name="com.utc.utrc.hermes.iml.generator.infra.IStrategy" 
-    project="com.utc.utrc.hermes.iml" 
-    file="/com.utc.utrc.hermes.iml/src/com/utc/utrc/hermes/iml/generator/infra/IStrategy.java" binary="false" 
-    corner="BOTTOM_RIGHT">    
-    <position height="-1" width="-1" x="633" y="363"/>    
-    <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
-      sort-features="false" accessors="true" visibility="true">      
-      <attributes public="true" package="true" protected="true" private="true" static="true"/>      
-      <operations public="true" package="true" protected="true" private="true" static="true"/>    
-    </display>  
-  </interface>  
-  <class id="19" language="java" name="com.utc.utrc.hermes.iml.generator.infra.SExpr.Token" 
-    project="com.utc.utrc.hermes.iml" 
-    file="/com.utc.utrc.hermes.iml/src/com/utc/utrc/hermes/iml/generator/infra/SExpr.java" binary="false" 
-    corner="BOTTOM_RIGHT">    
+  <class id="17" language="java" name="com.utc.utrc.hermes.iml.sexpr.SExpr.Token" project="com.utc.utrc.hermes.iml" 
+    file="/com.utc.utrc.hermes.iml/src/com/utc/utrc/hermes/iml/sexpr/SExpr.java" binary="false" corner="BOTTOM_RIGHT">    
     <position height="-1" width="-1" x="1585" y="1373"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
@@ -208,7 +181,7 @@
       <operations public="true" package="true" protected="true" private="true" static="true"/>    
     </display>  
   </class>  
-  <class id="20" language="java" name="com.utc.utrc.hermes.iml.generator.infra.SrlHigherOrderTypeSymbol" 
+  <class id="18" language="java" name="com.utc.utrc.hermes.iml.generator.infra.SrlHigherOrderTypeSymbol" 
     project="com.utc.utrc.hermes.iml" 
     file="/com.utc.utrc.hermes.iml/src/com/utc/utrc/hermes/iml/generator/infra/SrlHigherOrderTypeSymbol.java" 
     binary="false" corner="BOTTOM_RIGHT">    
@@ -219,18 +192,7 @@
       <operations public="true" package="true" protected="true" private="true" static="true"/>    
     </display>  
   </class>  
-  <class id="21" language="java" name="com.utc.utrc.hermes.iml.generator.infra.StrategyMap" 
-    project="com.utc.utrc.hermes.iml" 
-    file="/com.utc.utrc.hermes.iml/src/com/utc/utrc/hermes/iml/generator/infra/StrategyMap.java" binary="false" 
-    corner="BOTTOM_RIGHT">    
-    <position height="-1" width="-1" x="588" y="226"/>    
-    <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
-      sort-features="false" accessors="true" visibility="true">      
-      <attributes public="true" package="true" protected="true" private="true" static="true"/>      
-      <operations public="true" package="true" protected="true" private="true" static="true"/>    
-    </display>  
-  </class>  
-  <class id="22" language="java" name="com.utc.utrc.hermes.iml.generator.strategies.FunctionEncoder" 
+  <class id="19" language="java" name="com.utc.utrc.hermes.iml.generator.strategies.FunctionEncoder" 
     project="com.utc.utrc.hermes.iml" 
     file="/com.utc.utrc.hermes.iml/xtend-gen/com/utc/utrc/hermes/iml/generator/strategies/FunctionEncoder.java" 
     binary="false" corner="BOTTOM_RIGHT">    
@@ -241,7 +203,7 @@
       <operations public="true" package="true" protected="true" private="true" static="true"/>    
     </display>  
   </class>  
-  <class id="23" language="java" name="com.utc.utrc.hermes.iml.generator.strategies.RecordEncoder" 
+  <class id="20" language="java" name="com.utc.utrc.hermes.iml.generator.strategies.RecordEncoder" 
     project="com.utc.utrc.hermes.iml" 
     file="/com.utc.utrc.hermes.iml/xtend-gen/com/utc/utrc/hermes/iml/generator/strategies/RecordEncoder.java" 
     binary="false" corner="BOTTOM_RIGHT">    
@@ -252,290 +214,374 @@
       <operations public="true" package="true" protected="true" private="true" static="true"/>    
     </display>  
   </class>  
-  <generalization id="24">    
-    <end type="SOURCE" refId="13"/>    
-    <end type="TARGET" refId="12"/>  
-  </generalization>  
-  <association id="25">    
-    <end type="SOURCE" refId="3" navigable="false">      
-      <attribute id="26" name="symbols"/>      
-      <multiplicity id="27" minimum="0" maximum="2147483647"/>    
-    </end>    
-    <end type="TARGET" refId="17" navigable="true"/>    
-    <display labels="true" multiplicity="true"/>  
-  </association>  
-  <association id="28">    
-    <end type="SOURCE" refId="1" navigable="false">      
-      <attribute id="29" name="modifiers"/>      
-      <multiplicity id="30" minimum="0" maximum="2147483647"/>    
-    </end>    
-    <end type="TARGET" refId="14" navigable="true"/>    
-    <display labels="true" multiplicity="true"/>  
-  </association>  
-  <generalization id="31">    
+  <generalization id="21">    
     <end type="SOURCE" refId="3"/>    
+    <end type="TARGET" refId="8"/>  
+  </generalization>  
+  <generalization id="22">    
+    <end type="SOURCE" refId="17"/>    
+    <end type="TARGET" refId="11"/>  
+  </generalization>  
+  <generalization id="23">    
+    <end type="SOURCE" refId="18"/>    
     <end type="TARGET" refId="9"/>  
   </generalization>  
-  <generalization id="32">    
-    <end type="SOURCE" refId="19"/>    
-    <end type="TARGET" refId="12"/>  
-  </generalization>  
-  <association id="33">    
-    <end type="SOURCE" refId="3" navigable="false">      
-      <attribute id="34" name="types"/>      
-      <multiplicity id="35" minimum="0" maximum="2147483647"/>    
+  <association id="24">    
+    <end type="SOURCE" refId="16" navigable="false">      
+      <attribute id="25" name="definition">        
+        <position height="0" width="0" x="0" y="0"/>      
+      </attribute>      
+      <multiplicity id="26" minimum="0" maximum="1">        
+        <position height="0" width="0" x="0" y="0"/>      
+      </multiplicity>    
     </end>    
     <end type="TARGET" refId="10" navigable="true"/>    
     <display labels="true" multiplicity="true"/>  
   </association>  
-  <association id="36">    
-    <end type="SOURCE" refId="15" navigable="false">      
-      <attribute id="37" name="factory"/>      
-      <multiplicity id="38" minimum="0" maximum="1"/>    
+  <association id="27">    
+    <end type="SOURCE" refId="5" navigable="false">      
+      <attribute id="28" name="symbols">        
+        <position height="0" width="0" x="0" y="0"/>      
+      </attribute>      
+      <multiplicity id="29" minimum="0" maximum="2147483647">        
+        <position height="0" width="0" x="0" y="0"/>      
+      </multiplicity>    
+    </end>    
+    <end type="TARGET" refId="6" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <association id="30">    
+    <end type="SOURCE" refId="18" navigable="false">      
+      <attribute id="31" name="domain">        
+        <position height="0" width="0" x="0" y="0"/>      
+      </attribute>      
+      <multiplicity id="32" minimum="0" maximum="1">        
+        <position height="0" width="0" x="0" y="0"/>      
+      </multiplicity>    
+    </end>    
+    <end type="TARGET" refId="9" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <association id="33">    
+    <end type="SOURCE" refId="14" navigable="false">      
+      <attribute id="34" name="table">        
+        <position height="0" width="0" x="0" y="0"/>      
+      </attribute>      
+      <multiplicity id="35" minimum="0" maximum="1">        
+        <position height="0" width="0" x="0" y="0"/>      
+      </multiplicity>    
+    </end>    
+    <end type="TARGET" refId="5" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <generalization id="36">    
+    <end type="SOURCE" refId="1"/>    
+    <end type="TARGET" refId="9"/>  
+  </generalization>  
+  <association id="37">    
+    <end type="SOURCE" refId="6" navigable="false">      
+      <attribute id="38" name="symbol">        
+        <position height="0" width="0" x="0" y="0"/>      
+      </attribute>      
+      <multiplicity id="39" minimum="0" maximum="1">        
+        <position height="0" width="0" x="0" y="0"/>      
+      </multiplicity>    
     </end>    
     <end type="TARGET" refId="8" navigable="true"/>    
     <display labels="true" multiplicity="true"/>  
   </association>  
-  <association id="39">    
-    <end type="SOURCE" refId="20" navigable="false">      
-      <attribute id="40" name="dimensions"/>      
-      <multiplicity id="41" minimum="0" maximum="2147483647"/>    
-    </end>    
-    <end type="TARGET" refId="11" navigable="true"/>    
-    <display labels="true" multiplicity="true"/>  
-  </association>  
-  <association id="42">    
-    <end type="SOURCE" refId="7" navigable="false">      
-      <attribute id="43" name="encoding"/>      
-      <multiplicity id="44" minimum="0" maximum="1"/>    
-    </end>    
-    <end type="TARGET" refId="12" navigable="true"/>    
-    <display labels="true" multiplicity="true"/>  
-  </association>  
-  <generalization id="45">    
-    <end type="SOURCE" refId="17"/>    
-    <end type="TARGET" refId="9"/>  
+  <generalization id="40">    
+    <end type="SOURCE" refId="10"/>    
+    <end type="TARGET" refId="8"/>  
   </generalization>  
-  <association id="46">    
+  <association id="41">    
     <end type="SOURCE" refId="1" navigable="false">      
-      <attribute id="47" name="constants">        
+      <attribute id="42" name="constants">        
         <position height="16" width="56" x="523" y="1516"/>      
       </attribute>      
-      <multiplicity id="48" minimum="0" maximum="2147483647"/>    
+      <multiplicity id="43" minimum="0" maximum="2147483647">        
+        <position height="0" width="0" x="0" y="0"/>      
+      </multiplicity>    
+    </end>    
+    <end type="TARGET" refId="16" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <generalization id="44">    
+    <end type="SOURCE" refId="16"/>    
+    <end type="TARGET" refId="8"/>  
+  </generalization>  
+  <generalization id="45">    
+    <end type="SOURCE" refId="9"/>    
+    <end type="TARGET" refId="8"/>  
+  </generalization>  
+  <association id="46">    
+    <end type="SOURCE" refId="15" navigable="false">      
+      <attribute id="47" name="META">        
+        <position height="0" width="0" x="0" y="0"/>      
+      </attribute>      
+      <multiplicity id="48" minimum="0" maximum="1">        
+        <position height="0" width="0" x="0" y="0"/>      
+      </multiplicity>    
     </end>    
     <end type="TARGET" refId="17" navigable="true"/>    
     <display labels="true" multiplicity="true"/>  
   </association>  
   <association id="49">    
-    <end type="SOURCE" refId="20" navigable="false">      
-      <attribute id="50" name="range"/>      
-      <multiplicity id="51" minimum="0" maximum="1"/>    
-    </end>    
-    <end type="TARGET" refId="10" navigable="true"/>    
-    <display labels="true" multiplicity="true"/>  
-  </association>  
-  <generalization id="52">    
-    <end type="SOURCE" refId="11"/>    
-    <end type="TARGET" refId="9"/>  
-  </generalization>  
-  <association id="53">    
-    <end type="SOURCE" refId="1" navigable="false">      
-      <attribute id="54" name="properties">        
-        <position height="16" width="57" x="504" y="1469"/>      
+    <end type="SOURCE" refId="18" navigable="false">      
+      <attribute id="50" name="dimensions">        
+        <position height="0" width="0" x="0" y="0"/>      
       </attribute>      
-      <multiplicity id="55" minimum="0" maximum="2147483647"/>    
-    </end>    
-    <end type="TARGET" refId="17" navigable="true"/>    
-    <display labels="true" multiplicity="true"/>  
-  </association>  
-  <association id="56">    
-    <end type="SOURCE" refId="20" navigable="false">      
-      <attribute id="57" name="bindings"/>      
-      <multiplicity id="58" minimum="0" maximum="2147483647"/>    
+      <multiplicity id="51" minimum="0" maximum="2147483647">        
+        <position height="0" width="0" x="0" y="0"/>      
+      </multiplicity>    
     </end>    
     <end type="TARGET" refId="10" navigable="true"/>    
     <display labels="true" multiplicity="true"/>  
   </association>  
-  <association id="59">    
-    <end type="SOURCE" refId="5" navigable="false">      
-      <attribute id="60" name="symbols"/>      
-      <multiplicity id="61" minimum="0" maximum="2147483647"/>    
-    </end>    
-    <end type="TARGET" refId="7" navigable="true"/>    
-    <display labels="true" multiplicity="true"/>  
-  </association>  
-  <association id="62">    
-    <end type="SOURCE" refId="7" navigable="false">      
-      <attribute id="63" name="symbol"/>      
-      <multiplicity id="64" minimum="0" maximum="1"/>    
+  <association id="52">    
+    <end type="SOURCE" refId="3" navigable="false">      
+      <attribute id="53" name="types">        
+        <position height="0" width="0" x="0" y="0"/>      
+      </attribute>      
+      <multiplicity id="54" minimum="0" maximum="2147483647">        
+        <position height="0" width="0" x="0" y="0"/>      
+      </multiplicity>    
     </end>    
     <end type="TARGET" refId="9" navigable="true"/>    
     <display labels="true" multiplicity="true"/>  
   </association>  
-  <association id="65">    
-    <end type="SOURCE" refId="16" navigable="false">      
-      <attribute id="66" name="DECLARE_SORT"/>      
-      <multiplicity id="67" minimum="0" maximum="1"/>    
-    </end>    
-    <end type="TARGET" refId="19" navigable="true"/>    
-    <display labels="true" multiplicity="true"/>  
-  </association>  
-  <generalization id="68">    
-    <end type="SOURCE" refId="9"/>    
-    <end type="TARGET" refId="2"/>  
-  </generalization>  
-  <association id="69">    
-    <end type="SOURCE" refId="16" navigable="false">      
-      <attribute id="70" name="DECLARE_DATATYPE"/>      
-      <multiplicity id="71" minimum="0" maximum="1"/>    
-    </end>    
-    <end type="TARGET" refId="19" navigable="true"/>    
-    <display labels="true" multiplicity="true"/>  
-  </association>  
-  <nesting id="72">    
-    <end type="SOURCE" refId="12"/>    
-    <end type="TARGET" refId="19"/>  
-  </nesting>  
-  <association id="73">    
-    <end type="SOURCE" refId="21" navigable="false">      
-      <attribute id="74" name="strategies"/>      
-      <multiplicity id="75" minimum="0" maximum="2147483647"/>    
-    </end>    
-    <end type="TARGET" refId="18" navigable="true"/>    
-    <display labels="true" multiplicity="true"/>  
-  </association>  
-  <generalization id="76">    
-    <end type="SOURCE" refId="1"/>    
-    <end type="TARGET" refId="10"/>  
-  </generalization>  
-  <association id="77">    
-    <end type="SOURCE" refId="17" navigable="false">      
-      <attribute id="78" name="type"/>      
-      <multiplicity id="79" minimum="0" maximum="1"/>    
-    </end>    
-    <end type="TARGET" refId="10" navigable="true"/>    
-    <display labels="true" multiplicity="true"/>  
-  </association>  
-  <association id="80">    
-    <end type="SOURCE" refId="17" navigable="false">      
-      <attribute id="81" name="properties"/>      
-      <multiplicity id="82" minimum="0" maximum="2147483647"/>    
-    </end>    
-    <end type="TARGET" refId="17" navigable="true"/>    
-    <display labels="true" multiplicity="true"/>  
-  </association>  
-  <association id="83">    
-    <end type="SOURCE" refId="20" navigable="false">      
-      <attribute id="84" name="domain"/>      
-      <multiplicity id="85" minimum="0" maximum="1"/>    
-    </end>    
-    <end type="TARGET" refId="10" navigable="true"/>    
-    <display labels="true" multiplicity="true"/>  
-  </association>  
-  <association id="86">    
-    <end type="SOURCE" refId="16" navigable="false">      
-      <attribute id="87" name="REC_CONS"/>      
-      <multiplicity id="88" minimum="0" maximum="1"/>    
-    </end>    
-    <end type="TARGET" refId="19" navigable="true"/>    
-    <display labels="true" multiplicity="true"/>  
-  </association>  
-  <association id="89">    
-    <end type="SOURCE" refId="16" navigable="false">      
-      <attribute id="90" name="EXCLAMATION_POINT"/>      
-      <multiplicity id="91" minimum="0" maximum="1"/>    
-    </end>    
-    <end type="TARGET" refId="19" navigable="true"/>    
-    <display labels="true" multiplicity="true"/>  
-  </association>  
-  <association id="92">    
-    <end type="SOURCE" refId="1" navigable="false">      
-      <attribute id="93" name="relations">        
-        <position height="16" width="49" x="513" y="1516"/>      
+  <association id="55">    
+    <end type="SOURCE" refId="18" navigable="false">      
+      <attribute id="56" name="range">        
+        <position height="0" width="0" x="0" y="0"/>      
       </attribute>      
-      <multiplicity id="94" minimum="0" maximum="2147483647"/>    
+      <multiplicity id="57" minimum="0" maximum="1">        
+        <position height="0" width="0" x="0" y="0"/>      
+      </multiplicity>    
     </end>    
-    <end type="TARGET" refId="17" navigable="true"/>    
+    <end type="TARGET" refId="9" navigable="true"/>    
     <display labels="true" multiplicity="true"/>  
   </association>  
-  <association id="95">    
-    <end type="SOURCE" refId="16" navigable="false">      
-      <attribute id="96" name="META"/>      
-      <multiplicity id="97" minimum="0" maximum="1"/>    
-    </end>    
-    <end type="TARGET" refId="19" navigable="true"/>    
-    <display labels="true" multiplicity="true"/>  
-  </association>  
-  <association id="98">    
-    <end type="SOURCE" refId="13" navigable="false">      
-      <attribute id="99" name="sexprs"/>      
-      <multiplicity id="100" minimum="0" maximum="2147483647"/>    
-    </end>    
-    <end type="TARGET" refId="12" navigable="true"/>    
-    <display labels="true" multiplicity="true"/>  
-  </association>  
-  <association id="101">    
-    <end type="SOURCE" refId="20" navigable="false">      
-      <attribute id="102" name="tupleElements"/>      
-      <multiplicity id="103" minimum="0" maximum="2147483647"/>    
-    </end>    
-    <end type="TARGET" refId="17" navigable="true"/>    
-    <display labels="true" multiplicity="true"/>  
-  </association>  
-  <association id="104">    
+  <association id="58">    
     <end type="SOURCE" refId="15" navigable="false">      
-      <attribute id="105" name="table"/>      
-      <multiplicity id="106" minimum="0" maximum="1"/>    
+      <attribute id="59" name="DECLARE_DATATYPE">        
+        <position height="0" width="0" x="0" y="0"/>      
+      </attribute>      
+      <multiplicity id="60" minimum="0" maximum="1">        
+        <position height="0" width="0" x="0" y="0"/>      
+      </multiplicity>    
     </end>    
-    <end type="TARGET" refId="5" navigable="true"/>    
+    <end type="TARGET" refId="17" navigable="true"/>    
     <display labels="true" multiplicity="true"/>  
   </association>  
-  <association id="107">    
-    <end type="SOURCE" refId="17" navigable="false">      
-      <attribute id="108" name="definition"/>      
-      <multiplicity id="109" minimum="0" maximum="1"/>    
+  <association id="61">    
+    <end type="SOURCE" refId="18" navigable="false">      
+      <attribute id="62" name="bindings">        
+        <position height="0" width="0" x="0" y="0"/>      
+      </attribute>      
+      <multiplicity id="63" minimum="0" maximum="2147483647">        
+        <position height="0" width="0" x="0" y="0"/>      
+      </multiplicity>    
+    </end>    
+    <end type="TARGET" refId="9" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <association id="64">    
+    <end type="SOURCE" refId="12" navigable="false">      
+      <attribute id="65" name="sexprs">        
+        <position height="0" width="0" x="0" y="0"/>      
+      </attribute>      
+      <multiplicity id="66" minimum="0" maximum="2147483647">        
+        <position height="0" width="0" x="0" y="0"/>      
+      </multiplicity>    
     </end>    
     <end type="TARGET" refId="11" navigable="true"/>    
     <display labels="true" multiplicity="true"/>  
   </association>  
-  <association id="110">    
-    <end type="SOURCE" refId="16" navigable="false">      
-      <attribute id="111" name="TYPE"/>      
-      <multiplicity id="112" minimum="0" maximum="1"/>    
+  <association id="67">    
+    <end type="SOURCE" refId="1" navigable="false">      
+      <attribute id="68" name="modifiers">        
+        <position height="0" width="0" x="0" y="0"/>      
+      </attribute>      
+      <multiplicity id="69" minimum="0" maximum="2147483647">        
+        <position height="0" width="0" x="0" y="0"/>      
+      </multiplicity>    
     </end>    
-    <end type="TARGET" refId="19" navigable="true"/>    
+    <end type="TARGET" refId="13" navigable="true"/>    
     <display labels="true" multiplicity="true"/>  
   </association>  
-  <generalization id="113">    
-    <end type="SOURCE" refId="20"/>    
-    <end type="TARGET" refId="10"/>  
-  </generalization>  
-  <nesting id="114">    
-    <end type="SOURCE" refId="12"/>    
-    <end type="TARGET" refId="13"/>  
-  </nesting>  
-  <association id="115">    
+  <association id="70">    
     <end type="SOURCE" refId="1" navigable="false">      
-      <attribute id="116" name="symbols">        
+      <attribute id="71" name="symbols">        
         <position height="16" width="49" x="512" y="1483"/>      
       </attribute>      
-      <multiplicity id="117" minimum="0" maximum="2147483647"/>    
+      <multiplicity id="72" minimum="0" maximum="2147483647">        
+        <position height="0" width="0" x="0" y="0"/>      
+      </multiplicity>    
+    </end>    
+    <end type="TARGET" refId="16" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <association id="73">    
+    <end type="SOURCE" refId="15" navigable="false">      
+      <attribute id="74" name="TYPE">        
+        <position height="0" width="0" x="0" y="0"/>      
+      </attribute>      
+      <multiplicity id="75" minimum="0" maximum="1">        
+        <position height="0" width="0" x="0" y="0"/>      
+      </multiplicity>    
     </end>    
     <end type="TARGET" refId="17" navigable="true"/>    
     <display labels="true" multiplicity="true"/>  
   </association>  
-  <generalization id="118">    
-    <end type="SOURCE" refId="10"/>    
-    <end type="TARGET" refId="9"/>  
+  <generalization id="76">    
+    <end type="SOURCE" refId="8"/>    
+    <end type="TARGET" refId="2"/>  
   </generalization>  
-  <association id="119">    
+  <association id="77">    
+    <end type="SOURCE" refId="3" navigable="false">      
+      <attribute id="78" name="symbols">        
+        <position height="0" width="0" x="0" y="0"/>      
+      </attribute>      
+      <multiplicity id="79" minimum="0" maximum="2147483647">        
+        <position height="0" width="0" x="0" y="0"/>      
+      </multiplicity>    
+    </end>    
+    <end type="TARGET" refId="16" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <association id="80">    
+    <end type="SOURCE" refId="15" navigable="false">      
+      <attribute id="81" name="DECLARE_SORT">        
+        <position height="0" width="0" x="0" y="0"/>      
+      </attribute>      
+      <multiplicity id="82" minimum="0" maximum="1">        
+        <position height="0" width="0" x="0" y="0"/>      
+      </multiplicity>    
+    </end>    
+    <end type="TARGET" refId="17" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <nesting id="83">    
+    <end type="SOURCE" refId="11"/>    
+    <end type="TARGET" refId="17"/>  
+  </nesting>  
+  <association id="84">    
     <end type="SOURCE" refId="1" navigable="false">      
-      <attribute id="120" name="parameters"/>      
-      <multiplicity id="121" minimum="0" maximum="2147483647"/>    
+      <attribute id="85" name="parameters">        
+        <position height="0" width="0" x="0" y="0"/>      
+      </attribute>      
+      <multiplicity id="86" minimum="0" maximum="2147483647">        
+        <position height="0" width="0" x="0" y="0"/>      
+      </multiplicity>    
     </end>    
     <end type="TARGET" refId="1" navigable="true"/>    
     <display labels="true" multiplicity="true"/>  
   </association>  
+  <generalization id="87">    
+    <end type="SOURCE" refId="12"/>    
+    <end type="TARGET" refId="11"/>  
+  </generalization>  
+  <association id="88">    
+    <end type="SOURCE" refId="1" navigable="false">      
+      <attribute id="89" name="relations">        
+        <position height="16" width="49" x="513" y="1516"/>      
+      </attribute>      
+      <multiplicity id="90" minimum="0" maximum="2147483647">        
+        <position height="0" width="0" x="0" y="0"/>      
+      </multiplicity>    
+    </end>    
+    <end type="TARGET" refId="16" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <association id="91">    
+    <end type="SOURCE" refId="14" navigable="false">      
+      <attribute id="92" name="factory">        
+        <position height="0" width="0" x="0" y="0"/>      
+      </attribute>      
+      <multiplicity id="93" minimum="0" maximum="1">        
+        <position height="0" width="0" x="0" y="0"/>      
+      </multiplicity>    
+    </end>    
+    <end type="TARGET" refId="7" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <association id="94">    
+    <end type="SOURCE" refId="15" navigable="false">      
+      <attribute id="95" name="EXCLAMATION_POINT">        
+        <position height="0" width="0" x="0" y="0"/>      
+      </attribute>      
+      <multiplicity id="96" minimum="0" maximum="1">        
+        <position height="0" width="0" x="0" y="0"/>      
+      </multiplicity>    
+    </end>    
+    <end type="TARGET" refId="17" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <association id="97">    
+    <end type="SOURCE" refId="1" navigable="false">      
+      <attribute id="98" name="properties">        
+        <position height="16" width="57" x="504" y="1469"/>      
+      </attribute>      
+      <multiplicity id="99" minimum="0" maximum="2147483647">        
+        <position height="0" width="0" x="0" y="0"/>      
+      </multiplicity>    
+    </end>    
+    <end type="TARGET" refId="16" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <association id="100">    
+    <end type="SOURCE" refId="18" navigable="false">      
+      <attribute id="101" name="tupleElements">        
+        <position height="0" width="0" x="0" y="0"/>      
+      </attribute>      
+      <multiplicity id="102" minimum="0" maximum="2147483647">        
+        <position height="0" width="0" x="0" y="0"/>      
+      </multiplicity>    
+    </end>    
+    <end type="TARGET" refId="16" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <association id="103">    
+    <end type="SOURCE" refId="16" navigable="false">      
+      <attribute id="104" name="type">        
+        <position height="0" width="0" x="0" y="0"/>      
+      </attribute>      
+      <multiplicity id="105" minimum="0" maximum="1">        
+        <position height="0" width="0" x="0" y="0"/>      
+      </multiplicity>    
+    </end>    
+    <end type="TARGET" refId="9" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <association id="106">    
+    <end type="SOURCE" refId="15" navigable="false">      
+      <attribute id="107" name="REC_CONS">        
+        <position height="0" width="0" x="0" y="0"/>      
+      </attribute>      
+      <multiplicity id="108" minimum="0" maximum="1">        
+        <position height="0" width="0" x="0" y="0"/>      
+      </multiplicity>    
+    </end>    
+    <end type="TARGET" refId="17" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <association id="109">    
+    <end type="SOURCE" refId="16" navigable="false">      
+      <attribute id="110" name="properties">        
+        <position height="0" width="0" x="0" y="0"/>      
+      </attribute>      
+      <multiplicity id="111" minimum="0" maximum="2147483647">        
+        <position height="0" width="0" x="0" y="0"/>      
+      </multiplicity>    
+    </end>    
+    <end type="TARGET" refId="16" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <nesting id="112">    
+    <end type="SOURCE" refId="11"/>    
+    <end type="TARGET" refId="12"/>  
+  </nesting>  
   <classifier-display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
     sort-features="false" accessors="true" visibility="true">    
     <attributes public="true" package="true" protected="true" private="true" static="true"/>    

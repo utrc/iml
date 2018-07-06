@@ -1,11 +1,11 @@
 package com.utc.utrc.hermes.iml.generator.strategies
 
-import com.utc.utrc.hermes.iml.generator.infra.SExpr
-import com.utc.utrc.hermes.iml.generator.infra.SExprTokens
+import com.utc.utrc.hermes.iml.sexpr.SExpr
+import com.utc.utrc.hermes.iml.sexpr.SExprTokens
 import com.utc.utrc.hermes.iml.generator.infra.SrlHigherOrderTypeSymbol
 import com.utc.utrc.hermes.iml.generator.infra.SrlNamedTypeSymbol
 import com.utc.utrc.hermes.iml.generator.infra.SrlObjectSymbol
-import static com.utc.utrc.hermes.iml.generator.infra.SExprTokens.*
+import static com.utc.utrc.hermes.iml.sexpr.SExprTokens.*
 import java.util.List
 import java.util.ArrayList
 import com.utc.utrc.hermes.iml.generator.infra.SrlTerm

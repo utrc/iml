@@ -1,9 +1,9 @@
-package com.utc.utrc.hermes.iml.generator.infra;
+package com.utc.utrc.hermes.iml.sexpr;
 
 import java.util.List;
 
-import com.utc.utrc.hermes.iml.generator.infra.SExpr.Seq;
-import com.utc.utrc.hermes.iml.generator.infra.SExpr.Token;
+import com.utc.utrc.hermes.iml.sexpr.SExpr.Seq;
+import com.utc.utrc.hermes.iml.sexpr.SExpr.Token;
 
 public class SExprTokens {
 
@@ -34,6 +34,7 @@ public class SExprTokens {
 	public static SExpr.Token<String> BOOLX = new SExpr.Token<String>("boolX") ;
 	public static SExpr.Token<String> EVALUATE = new SExpr.Token<String>("evaluate") ;
 	public static SExpr.Token<String> NOT_AVAILABLE = new SExpr.Token<String>("__") ;
+	public static SExpr.Token<String> GET_VALUE = new SExpr.Token<String>("get-value") ;
 	
 	public static SExpr.Token<String> EMPTY_TOKEN = new SExpr.Token<String>("") ;
 	
@@ -53,6 +54,7 @@ public class SExprTokens {
 	public static SExpr.Token<String> SMALLEREQ = new SExpr.Token<String>("<=") ;
 	public static SExpr.Token<String> TRUE = new SExpr.Token<String>("true") ;
 	public static SExpr.Token<String> IMPLICATION = new SExpr.Token<String>("=>") ;
+	public static SExpr.Token<String> VERTICALBAR = new SExpr.Token<String>("|") ;
 		
 
 	public static void addToSequence(Seq s, SExpr e) {

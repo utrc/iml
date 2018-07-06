@@ -1,8 +1,10 @@
-package com.utc.utrc.hermes.iml.generator.infra;
+package com.utc.utrc.hermes.iml.sexpr;
 
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+
+// TODO need major refactoring
 
 /** This is the root class for S-expressions in the concrete syntax */
 public abstract class SExpr {

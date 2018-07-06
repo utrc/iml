@@ -5,7 +5,7 @@ package com.utc.utrc.hermes.iml.tests.generator
 
 import com.google.inject.Inject
 import com.utc.utrc.hermes.iml.generator.infra.Iml2Symbolic
-import com.utc.utrc.hermes.iml.generator.infra.SExpr.Seq
+import com.utc.utrc.hermes.iml.sexpr.SExpr.Seq
 import com.utc.utrc.hermes.iml.generator.infra.SrlNamedTypeSymbol
 import com.utc.utrc.hermes.iml.generator.infra.SrlSymbolId
 import com.utc.utrc.hermes.iml.generator.strategies.FunctionEncodeStrategy
@@ -152,14 +152,14 @@ class SymbolicTest {
 				o1 <<o:out,p:port>>: Float ;
 				alpha <<i:in,p:port>>: Float;
 			    a1 <<a:Assume>> : Bool := (i1 =1 || i1=-1) && (i2=0 || i2 =1 || i2 = -1) ;
-				g1 <<g:Guarantee>>: Bool := o1 = i1 * sqrt(2) * sin(alpha) + i2 * sqrt(2) * cos(alpha);
+				g1 <<g:Guarantee>>: Bool := o1 = i1 * sqrt(2.0) * sin(alpha) + i2 * sqrt(2.0) * cos(alpha);
 			}
 			
 			type <<s:system,i:implementation>> S1__impl extends S1 {
 				S2_sub <<c:subcomponent>>: S2 ;
-«««				i1_TO_A : Connection<Float> := new Connection<Float> {source=i1; target = S2_sub->i1;};
-«««				i2_TO_A : Connection<Float> := new Connection<Float> {source=i2 ; target = S2_sub->i2;};
-«««				S2_TO_o1 : Connection<Float> := new Connection<Float> {source=S2_sub->o1 ; target =o1 ;} ; 	
+				i1_TO_A : Connection<Float> := new Connection<Float> {source=i1; target = S2_sub->i1;};
+				i2_TO_A : Connection<Float> := new Connection<Float> {source=i2 ; target = S2_sub->i2;};
+				S2_TO_o1 : Connection<Float> := new Connection<Float> {source=S2_sub->o1 ; target =o1 ;} ; 	
 				
 				//i1_TO_A <<c:connection>>: Bool := i1 = S2_sub->i1;
 				//i2_TO_A <<c:connection>>: Bool := i2 = S2_sub->i2;
@@ -241,7 +241,7 @@ class SymbolicTest {
 				o1 <<o:out,p:port>>: Float ;
 				n <<i:in,p:port>>: Integer;
 			    a1 <<a:Assume>> : Bool := n >=1 && (exists x:Int, y:Int { (y >= 1 && y <= n && x>=1 && x <= 0) && ( (i1 = x/n || i1 = -1 * x/n) && ( i2 = y/n || i2 =  -1 *y/n))   } ) ;
-			    a1 <<a:Assume>> : Bool := o1 >=1 ;
+«««			    a1 <<a:Assume>> : Bool := o1 >=1 ;
 				g1 <<g:Guarantee>>: Bool := o1 <=1 && o1 >=-1;
 «««				g1 <<g:Guarantee>>: Bool := o1 <=1 ;
 			}
@@ -284,7 +284,7 @@ class SymbolicTest {
 	}
 	
 	@Test
-	def void TestEncodingForUTRCTest1Premise() {
+	def void TestEncodingForUTRCContrivedExamplePremise() {
 		var model = '''
 			package p;
 			

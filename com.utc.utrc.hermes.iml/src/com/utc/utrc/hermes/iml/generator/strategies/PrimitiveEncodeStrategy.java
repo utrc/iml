@@ -2,14 +2,14 @@ package com.utc.utrc.hermes.iml.generator.strategies;
 
 import java.util.List;
 
-import com.utc.utrc.hermes.iml.generator.infra.SExpr;
-import com.utc.utrc.hermes.iml.generator.infra.SExpr.Seq;
 import com.utc.utrc.hermes.iml.generator.infra.SrlHigherOrderTypeSymbol;
 import com.utc.utrc.hermes.iml.generator.infra.SrlNamedTypeSymbol;
 import com.utc.utrc.hermes.iml.generator.infra.SrlObjectSymbol;
 import com.utc.utrc.hermes.iml.generator.infra.SrlSymbol;
 import com.utc.utrc.hermes.iml.generator.infra.SrlTypeSymbol;
 import com.utc.utrc.hermes.iml.generator.infra.SymbolTable;
+import com.utc.utrc.hermes.iml.sexpr.SExpr;
+import com.utc.utrc.hermes.iml.sexpr.SExpr.Seq;
 
 public class PrimitiveEncodeStrategy implements IStrategy {
 
