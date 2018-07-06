@@ -1,12 +1,12 @@
 package com.utc.utrc.hermes.iml.generator.strategies
 
-import com.utc.utrc.hermes.iml.generator.infra.SExpr
+import com.utc.utrc.hermes.iml.sexpr.SExpr
 import com.utc.utrc.hermes.iml.iml.Symbol
 import com.utc.utrc.hermes.iml.iml.Model
 import java.util.ArrayList
 import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
 import com.utc.utrc.hermes.iml.iml.ConstrainedType
-import com.utc.utrc.hermes.iml.generator.infra.SExprTokens
+import com.utc.utrc.hermes.iml.sexpr.SExprTokens
 import com.google.inject.Inject
 import org.eclipse.xtext.naming.IQualifiedNameProvider
 

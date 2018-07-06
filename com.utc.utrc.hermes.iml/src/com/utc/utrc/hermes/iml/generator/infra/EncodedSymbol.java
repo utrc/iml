@@ -2,8 +2,8 @@ package com.utc.utrc.hermes.iml.generator.infra;
 
 import java.util.List;
 
-import com.utc.utrc.hermes.iml.generator.infra.SExpr.Seq;
 import com.utc.utrc.hermes.iml.iml.Symbol;
+import com.utc.utrc.hermes.iml.sexpr.SExpr.Seq;
 
 public class EncodedSymbol {
 

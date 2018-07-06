@@ -4,9 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import com.google.inject.Inject;
 import com.utc.utrc.hermes.iml.generator.infra.EncodedSymbol;
-import com.utc.utrc.hermes.iml.generator.infra.SExpr;
-import com.utc.utrc.hermes.iml.generator.infra.SExpr.Seq;
-import com.utc.utrc.hermes.iml.generator.infra.SExprTokens;
 import com.utc.utrc.hermes.iml.generator.infra.SrlFactory;
 import com.utc.utrc.hermes.iml.generator.infra.SrlHigherOrderTypeSymbol;
 import com.utc.utrc.hermes.iml.generator.infra.SrlNamedTypeSymbol;
@@ -36,6 +33,9 @@ import com.utc.utrc.hermes.iml.iml.TermExpression;
 import com.utc.utrc.hermes.iml.iml.TermMemberSelection;
 import com.utc.utrc.hermes.iml.iml.TupleConstructor;
 import com.utc.utrc.hermes.iml.iml.TypeConstructor;
+import com.utc.utrc.hermes.iml.sexpr.SExpr;
+import com.utc.utrc.hermes.iml.sexpr.SExprTokens;
+import com.utc.utrc.hermes.iml.sexpr.SExpr.Seq;
 
 public class FunctionEncodeStrategy implements IStrategy {
 

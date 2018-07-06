@@ -5,7 +5,7 @@ package com.utc.utrc.hermes.iml.tests.generator
 
 import com.google.inject.Inject
 import com.utc.utrc.hermes.iml.generator.infra.Iml2Symbolic
-import com.utc.utrc.hermes.iml.generator.infra.SExpr.Seq
+import com.utc.utrc.hermes.iml.sexpr.SExpr.Seq
 import com.utc.utrc.hermes.iml.generator.infra.SrlNamedTypeSymbol
 import com.utc.utrc.hermes.iml.generator.infra.SrlSymbolId
 import com.utc.utrc.hermes.iml.generator.strategies.FunctionEncodeStrategy

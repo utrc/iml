@@ -58,7 +58,9 @@ public class FileUtil {
 
 	public static void removeFile(String filePath) {
 		try {
-			Files.delete(new File(filePath).toPath());
+			if (Files.exists(new File(filePath).toPath())) {
+				Files.delete(new File(filePath).toPath());
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

@@ -1,9 +1,9 @@
-package com.utc.utrc.hermes.iml.generator.infra;
+package com.utc.utrc.hermes.iml.sexpr;
 
 import java.util.List;
 
-import com.utc.utrc.hermes.iml.generator.infra.SExpr.Seq;
-import com.utc.utrc.hermes.iml.generator.infra.SExpr.Token;
+import com.utc.utrc.hermes.iml.sexpr.SExpr.Seq;
+import com.utc.utrc.hermes.iml.sexpr.SExpr.Token;
 
 public class SExprTokens {
 
