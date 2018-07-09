@@ -39,6 +39,7 @@ import com.utc.utrc.hermes.iml.iml.TupleConstructor;
 import com.utc.utrc.hermes.iml.iml.TypeConstructor;
 import com.utc.utrc.hermes.iml.sexpr.SExpr;
 import com.utc.utrc.hermes.iml.sexpr.SExprTokens;
+import static com.utc.utrc.hermes.iml.sexpr.SExprTokens.*;
 import com.utc.utrc.hermes.iml.sexpr.SExpr.Seq;
 import com.utc.utrc.hermes.iml.util.ImlUtils;
 
@@ -610,43 +611,18 @@ public class FunctionEncodeStrategy implements IStrategy {
 				Seq retVal = new SExpr.Seq();
 				retVal.add(SExprTokens.createToken(mi.getSign()));
 				
-				boolean flag = false;
 				if (mi.getSign().equals("/")) {
-					retVal.add(SExprTokens.SPACE);
-					retVal.add(SExprTokens.TOREAL);
-					flag = (mi.getLeft() instanceof SymbolReferenceTerm ||
-							mi.getLeft() instanceof NumberLiteral ||
-							mi.getLeft() instanceof FloatNumberLiteral);
-					if (flag) {
-						retVal.add(SExprTokens.OPEN_PARANTHESIS);
-					}
-				}				
-				
-				encode(mi.getLeft(), retVal, rcv, mbr, s, origName, replacement);
-
-				if (flag) {
-					retVal.add(SExprTokens.CLOSE_PARANTHESIS);
+					Seq divSeqLeft = createSequence();
+					divSeqLeft.add(TOREAL);
+					encode(mi.getLeft(), divSeqLeft, rcv, mbr, s, origName, replacement);
+					Seq divSeqRight = createSequence();
+					divSeqRight.add(SExprTokens.TOREAL);
+					encode(mi.getRight(), divSeqRight, rcv, mbr, s, origName, replacement);
+					retVal.add(divSeqLeft, divSeqRight);
+				} else {
+					encode(mi.getLeft(), retVal, rcv, mbr, s, origName, replacement);
+					encode(mi.getRight(), retVal, rcv, mbr, s, origName, replacement);
 				}
-				
-				flag = false;
-				
-				if (mi.getSign().equals("/")) {
-					retVal.add(SExprTokens.SPACE);
-					retVal.add(SExprTokens.TOREAL);
-					flag = (mi.getLeft() instanceof SymbolReferenceTerm ||
-							mi.getLeft() instanceof NumberLiteral ||
-							mi.getLeft() instanceof FloatNumberLiteral);
-					if (flag) {
-						retVal.add(SExprTokens.OPEN_PARANTHESIS);
-					}
-				}								
-				
-				encode(mi.getRight(), retVal, rcv, mbr, s, origName, replacement);
-
-				if (flag) {
-					retVal.add(SExprTokens.CLOSE_PARANTHESIS);
-				}
-
 				seq.add(retVal);
 			} else if (f instanceof Addition) {
 				Addition ai = (Addition) f;
