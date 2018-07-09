@@ -614,38 +614,38 @@ public class FunctionEncodeStrategy implements IStrategy {
 				if (mi.getSign().equals("/")) {
 					retVal.add(SExprTokens.SPACE);
 					retVal.add(SExprTokens.TOREAL);
-					flag = (mi.getLeft() instanceof SymbolReferenceTerm ||
-							mi.getLeft() instanceof NumberLiteral ||
-							mi.getLeft() instanceof FloatNumberLiteral);
-					if (flag) {
-						retVal.add(SExprTokens.OPEN_PARANTHESIS);
-					}
+//					flag = (mi.getLeft() instanceof SymbolReferenceTerm ||
+//							mi.getLeft() instanceof NumberLiteral ||
+//							mi.getLeft() instanceof FloatNumberLiteral);
+//					if (flag) {
+//						retVal.add(SExprTokens.OPEN_PARANTHESIS);
+//					}
 				}				
 				
 				encode(mi.getLeft(), retVal, rcv, mbr, s, origName, replacement);
 
-				if (flag) {
-					retVal.add(SExprTokens.CLOSE_PARANTHESIS);
-				}
+//				if (flag) {
+//					retVal.add(SExprTokens.CLOSE_PARANTHESIS);
+//				}
 				
 				flag = false;
 				
 				if (mi.getSign().equals("/")) {
 					retVal.add(SExprTokens.SPACE);
 					retVal.add(SExprTokens.TOREAL);
-					flag = (mi.getLeft() instanceof SymbolReferenceTerm ||
-							mi.getLeft() instanceof NumberLiteral ||
-							mi.getLeft() instanceof FloatNumberLiteral);
-					if (flag) {
-						retVal.add(SExprTokens.OPEN_PARANTHESIS);
-					}
+//					flag = (mi.getLeft() instanceof SymbolReferenceTerm ||
+//							mi.getLeft() instanceof NumberLiteral ||
+//							mi.getLeft() instanceof FloatNumberLiteral);
+//					if (flag) {
+//						retVal.add(SExprTokens.OPEN_PARANTHESIS);
+//					}
 				}								
 				
 				encode(mi.getRight(), retVal, rcv, mbr, s, origName, replacement);
 
-				if (flag) {
-					retVal.add(SExprTokens.CLOSE_PARANTHESIS);
-				}
+//				if (flag) {
+//					retVal.add(SExprTokens.CLOSE_PARANTHESIS);
+//				}
 
 				seq.add(retVal);
 			} else if (f instanceof Addition) {
