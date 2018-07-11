@@ -109,7 +109,7 @@ public class FunctionEncodeStrategy implements IStrategy {
 				}
 			}
 		}
-
+		
 		// Declare-sort first
 		for (SExpr value : result.sexprs()) {
 			if (value instanceof SExpr.Seq) {
@@ -118,9 +118,8 @@ public class FunctionEncodeStrategy implements IStrategy {
 					System.out.println(value);
 				}
 			}
-
 		}
-		// Declare-sort first
+		// Declare-fun second
 		for (SExpr value : result.sexprs()) {
 			if (value instanceof SExpr.Seq) {
 				if (((SExpr.Seq) value).sexprs().get(0) == DECLARE_FUN) {
@@ -128,10 +127,9 @@ public class FunctionEncodeStrategy implements IStrategy {
 					System.out.println(value);
 				}
 			}
-
 		}
 
-		// Declare-sort first
+		// Define-fun third
 		for (SExpr value : result.sexprs()) {
 			if (value instanceof SExpr.Seq) {
 				if (((SExpr.Seq) value).sexprs().get(0) == DEFINE_FUN) {
@@ -139,11 +137,18 @@ public class FunctionEncodeStrategy implements IStrategy {
 					System.out.println(value);
 				}
 			}
-
 		}
-
 		
-	
+		// everything else
+		for (SExpr value : result.sexprs()) {
+			if (value instanceof SExpr.Seq) {
+				SExpr token = ((SExpr.Seq) value).sexprs().get(0);
+				if ((token != DECLARE_SORT) && (token != DECLARE_FUN) && (token != DEFINE_FUN)) {
+					ordered.add(value);
+					System.out.println(value);
+				}
+			}
+		}
 
 		// for (EncodedSymbol value : table.getSymbols().values()) {
 		// if (value.getEncoding() != null) {
