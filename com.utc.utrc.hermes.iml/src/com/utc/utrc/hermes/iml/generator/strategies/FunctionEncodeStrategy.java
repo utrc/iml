@@ -35,6 +35,7 @@ import com.utc.utrc.hermes.iml.iml.SymbolReferenceTail;
 import com.utc.utrc.hermes.iml.iml.SymbolReferenceTerm;
 import com.utc.utrc.hermes.iml.iml.TermExpression;
 import com.utc.utrc.hermes.iml.iml.TermMemberSelection;
+import com.utc.utrc.hermes.iml.iml.TruthValue;
 import com.utc.utrc.hermes.iml.iml.TupleConstructor;
 import com.utc.utrc.hermes.iml.iml.TypeConstructor;
 import com.utc.utrc.hermes.iml.sexpr.SExpr;
@@ -791,6 +792,13 @@ public class FunctionEncodeStrategy implements IStrategy {
 		} else if (leftFol instanceof SymbolReferenceTerm) {
 			SymbolReferenceTerm tmpSRT = (SymbolReferenceTerm) leftFol;
 			encode(tmpSRT, seq, rcv, null, s, origName, replacement); // precise type defined?????
+		} else if (leftFol instanceof TruthValue) {
+			TruthValue tv = (TruthValue) leftFol;
+			if (tv.isTRUE()) {
+				seq.add(SExprTokens.TRUE);
+			} else {
+				seq.add(SExprTokens.FALSE);				
+			}
 		}
 	}
 
