@@ -30,6 +30,10 @@ class ImlValidatorTest {
 	
 	@Inject extension TestHelper
 	
+	/***********************************
+	 *  test checkNoDuplicateElement   *
+	 * *********************************/
+	
 	@Test
 	def testCheckNoDuplicateElement_CT_noDuplicates() {
 		val model = '''
@@ -157,6 +161,10 @@ class ImlValidatorTest {
 		model.assertError(ImlPackage.eINSTANCE.constrainedType, DUPLICATE_ELEMENT)
 	}
 	
+	/*****************************
+	 *  test checkTemplateType   *
+	 * ***************************/
+	
 	@Test
 	def testCheckTemplateType_valid() {
 		val model = '''
@@ -186,6 +194,10 @@ class ImlValidatorTest {
 		'''.parse
 		model.assertError(ImlPackage.eINSTANCE.constrainedType, INVALID_TYPE_PARAMETER);
 	}
+	
+	/**************************
+	 *  test checkExtension   *
+	 * ************************/	
 	
 	@Test
 	def testCheckExtendsSimpleType_Valid() {
@@ -231,6 +243,10 @@ class ImlValidatorTest {
 		
 		model.assertError(ImlPackage.eINSTANCE.relationInstance, INVALID_RELATION)
 	}
+	
+	/************************
+	 *  test checkNoCycle   *
+	 * **********************/	
 	
 	@Test
 	def testNoCycle_Valid() {
