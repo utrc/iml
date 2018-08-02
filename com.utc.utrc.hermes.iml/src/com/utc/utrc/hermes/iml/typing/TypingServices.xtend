@@ -336,7 +336,7 @@ public class TypingServices {
 	/* Check whether actual paramemter's type is compatible with formal/signature parameter's type.
 	 * If the flag checkStereotypes is true, then also compare stereotypes. 
 	 * */
-	def static boolean isCompatible(HigherOrderType actual, HigherOrderType sig, boolean checkStereotypes) {
+	def static boolean isCompatible(HigherOrderType actual, HigherOrderType sig) {
 		/* 
 		if (actual.array || sig.array) {
 			if (actual.dimension.size != sig.dimension.size) {

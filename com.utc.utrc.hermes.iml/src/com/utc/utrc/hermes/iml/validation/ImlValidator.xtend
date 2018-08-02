@@ -16,7 +16,7 @@ import org.eclipse.xtext.validation.Check
 
 import static extension com.utc.utrc.hermes.iml.typing.ImlTypeProvider.*
 import static extension com.utc.utrc.hermes.iml.typing.TypingServices.*
-import static extension org.eclipse.xtext.EcoreUtil2.*
+import static extension com.utc.utrc.hermes.iml.util.ImlUtils.*
 import com.utc.utrc.hermes.iml.iml.Addition
 import com.google.inject.Inject
 import org.eclipse.xtext.validation.EValidatorRegistrar
@@ -27,6 +27,9 @@ import com.utc.utrc.hermes.iml.iml.ImlPackage
 import com.utc.utrc.hermes.iml.iml.HigherOrderType
 import com.utc.utrc.hermes.iml.iml.SimpleTypeReference
 import com.utc.utrc.hermes.iml.iml.SymbolReferenceTerm
+import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
+import com.utc.utrc.hermes.iml.typing.ImlTypeProvider
+import com.utc.utrc.hermes.iml.typing.TypingServices
 
 /**
  * This class contains custom validation rules. 
@@ -402,6 +405,19 @@ class ImlValidator extends AbstractImlValidator {
 //					)
 //				}
 //			}
+		}
+		
+		@Check
+		def checkCompatibleDeclarationAndDefinition(SymbolDeclaration symbol) {
+			if (symbol.type !== null && symbol.definition !== null) {
+				val defType = ImlTypeProvider.termExpressionType(symbol.definition)
+				if (!TypingServices.isCompatible(symbol.type, defType)) {
+					error('''Incompatible types, expected  «getTypeName(symbol.type)» but actual was «getTypeName(defType)»''',
+						ImlPackage.eINSTANCE.symbolDeclaration_Definition,
+						TYPE_MISMATCH_IN_TERM_EXPRESSION
+					)
+				}	
+			}	
 		}
 
 	}

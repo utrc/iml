@@ -316,7 +316,7 @@ class ImlValidatorTest {
 		model.assertNoErrors
 	}
 	
-		@Test
+	@Test
 	def testCheckParameterList_() {
 		val model = '''
 			package p;
@@ -330,4 +330,34 @@ class ImlValidatorTest {
 		
 		model.assertNoErrors
 	}
+	
+	/**********************************************
+	 *  test CompatibleDeclarationAndDefinition   *
+	 * ********************************************/
+	 @Test
+	 def testCompatibleDeclarationAndDefinition() {
+		val model = '''
+			package p;
+			type Int;
+			type x {
+				var1 : Int := 5;
+			}
+		'''.parse
+		
+		model.assertNoErrors	 	
+	 }
+	 
+	 @Test
+	 def testCompatibleDeclarationAndDefinition_ReatToInt() {
+		val model = '''
+			package p;
+			type Int;
+			type x {
+				var1 : Int := 5.5;
+			}
+		'''.parse
+		
+		model.assertError(ImlPackage.eINSTANCE.symbolDeclaration, TYPE_MISMATCH_IN_TERM_EXPRESSION)
+	 }
+	
 }
