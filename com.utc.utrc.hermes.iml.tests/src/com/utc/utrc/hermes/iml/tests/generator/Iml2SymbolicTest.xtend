@@ -45,55 +45,55 @@ class Iml2SymbolicTest {
 		assertEquals(2, iml2Symbolic.symbolTable.symbols.size);
 	}
 	
-	@Test
-	def testEncodeModel_WithHOT() {
-		var model = '''
-			package p;
-			type Int;
-			
-			type T1 {
-				var1 : Int ~> Int;
-			}
-		'''.parse
-		
-		iml2Symbolic.encode(model)
-		
-		assertEquals(3, iml2Symbolic.symbolTable.symbols.size);
-	}
-	
-	@Test
-	def testEncodeModel_WithMultipleSameHOT() {
-		var model = '''
-			package p;
-			type Int;
-			
-			type T1 {
-				var1 : Int ~> Int;
-				var2 : Int ~> Int;
-			}
-		'''.parse
-		
-		iml2Symbolic.encode(model)
-		
-		assertEquals(3, iml2Symbolic.symbolTable.symbols.size);
-	}
-	
-	@Test
-	def testEncodeModel_WithMultipleDifferentHOT() {
-		var model = '''
-			package p;
-			type Int;
-			type Real;
-			
-			type T1 {
-				var1 : Int ~> Int;
-				var2 : Int ~>Real;
-			}
-		'''.parse
-		
-		iml2Symbolic.encode(model)
-		
-		assertEquals(4, iml2Symbolic.symbolTable.symbols.size);
-	}
+//	@Test
+//	def testEncodeModel_WithHOT() {
+//		var model = '''
+//			package p;
+//			type Int;
+//			
+//			type T1 {
+//				var1 : Int ~> Int;
+//			}
+//		'''.parse
+//		
+//		iml2Symbolic.encode(model)
+//		
+//		assertEquals(3, iml2Symbolic.symbolTable.symbols.size);
+//	}
+//	
+//	@Test
+//	def testEncodeModel_WithMultipleSameHOT() {
+//		var model = '''
+//			package p;
+//			type Int;
+//			
+//			type T1 {
+//				var1 : Int ~> Int;
+//				var2 : Int ~> Int;
+//			}
+//		'''.parse
+//		
+//		iml2Symbolic.encode(model)
+//		
+//		assertEquals(3, iml2Symbolic.symbolTable.symbols.size);
+//	}
+//	
+//	@Test
+//	def testEncodeModel_WithMultipleDifferentHOT() {
+//		var model = '''
+//			package p;
+//			type Int;
+//			type Real;
+//			
+//			type T1 {
+//				var1 : Int ~> Int;
+//				var2 : Int ~>Real;
+//			}
+//		'''.parse
+//		
+//		iml2Symbolic.encode(model)
+//		
+//		assertEquals(4, iml2Symbolic.symbolTable.symbols.size);
+//	}
 	
 }
