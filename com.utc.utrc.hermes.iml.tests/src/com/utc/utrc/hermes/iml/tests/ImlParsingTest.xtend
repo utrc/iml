@@ -41,4 +41,45 @@ class ImlParsingTest {
 		
 		model.assertNoErrors
 	}
+	
+	@Test
+	def void testParsingArrayOfTuple() {
+		val model = '''
+			package p;
+			type Int;
+			type t {
+				var1 : (Int, Int)[];
+			}
+		'''.parse
+		
+		model.assertNoErrors
+	}
+	
+		
+	@Test
+	def void testParsingArrayOfHot() {
+		val model = '''
+			package p;
+			type Int;
+			type t {
+				var1 : (Int ~> Int)[];
+			}
+		'''.parse
+		
+		model.assertNoErrors
+	}
+	
+		
+	@Test
+	def void testParsingArrayOfSimpleType() {
+		val model = '''
+			package p;
+			type Int;
+			type t {
+				var1 : Int[];
+			}
+		'''.parse
+		
+		model.assertNoErrors
+	}
 }
