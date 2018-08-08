@@ -8,12 +8,12 @@ Model:
 	root=Seq
 ;
 
-Element:
-	Atom | Seq
-;
-
 Seq:
 	{Seq} '(' elements+=Element* ')'
+;
+
+Element:
+	Atom | Seq
 ;
 
 Atom:
@@ -27,18 +27,3 @@ terminal SYMBOL:
 terminal ACCEPTABLE_CHAR: 
 	( '\u0021'..'\u0027') | ('\u002A'..'\u007E')
 ;
-
-//terminal ExtendedToken:
-//	'^'?('a'..'z'|'A'..'Z'|'_') ('a'..'z'|'A'..'Z'|'_'|'0'..'9')*
-//;
-
-//Anything:
-//	(ID | STRING | INT | ANY_OTHER)*
-//;
-
-//terminal ANYTHING:
-//	(!('('|')'|WS))*
-//;
-
-//terminal EXT_INT: INT ('e'|'E')('-'|'+') INT;
-//terminal FLOAT returns ecore::EFloat : ('0'..'9')+ '.' ('0'..'9')+;

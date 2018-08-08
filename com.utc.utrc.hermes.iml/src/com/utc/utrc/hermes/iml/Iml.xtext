@@ -77,8 +77,7 @@ HigherOrderType:
 ;
 
 ArrayType returns HigherOrderType:
-	SimpleTypeReference ({ArrayType.type=current} (('['dimensions+=OptionalTermExpr']'))+)? |
-	TupleType
+	(SimpleTypeReference|TupleType) ({ArrayType.type=current} (('['dimensions+=OptionalTermExpr']'))+)?
 ;
 
 OptionalTermExpr:
