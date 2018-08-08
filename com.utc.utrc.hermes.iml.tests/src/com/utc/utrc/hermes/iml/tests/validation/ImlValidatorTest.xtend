@@ -283,6 +283,11 @@ class ImlValidatorTest {
 		model.assertError(ImlPackage.eINSTANCE.constrainedType, CYCLIC_CONSTRAINEDTYPE_HIERARCHY)
 	}
 	
+	
+	/******************************
+	 *  test checkParameterList   *
+	 * ****************************/	
+	
 	@Test
 	def testCheckParameterList_Valid() {
 		val model = '''
@@ -357,6 +362,30 @@ class ImlValidatorTest {
 			}
 		'''.parse
 		
+		model.assertError(ImlPackage.eINSTANCE.symbolDeclaration, TYPE_MISMATCH_IN_TERM_EXPRESSION)
+	 }
+	 
+	 @Test
+	 def testCompatibleDeclarationAndDefinition_Tuple() {
+	 	val model = '''
+			package p;
+			type Int;
+			type x {
+				var1 : (Int, Int) := (5, 3);
+			}
+		'''.parse
+		model.assertNoErrors
+	 }
+	 
+	 @Test
+	 def testCompatibleDeclarationAndDefinition_TupleMismatch() {
+	 	val model = '''
+			package p;
+			type Int;
+			type x {
+				var1 : (Int, Int) := (5, 3.5);
+			}
+		'''.parse
 		model.assertError(ImlPackage.eINSTANCE.symbolDeclaration, TYPE_MISMATCH_IN_TERM_EXPRESSION)
 	 }
 	

@@ -44,7 +44,7 @@ public class ImlTypeProvider {
 	public static val Real = createBasicType('Real')
 
 	public static val Bool = createBasicType('Bool')
-
+	
 	
 	def static HigherOrderType termExpressionType(FolFormula t) {
 		termExpressionType(t, createSimpleTypeRef(t.getContainerOfType(ConstrainedType)))

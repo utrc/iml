@@ -18,6 +18,7 @@ import com.utc.utrc.hermes.iml.iml.Model;
 import com.utc.utrc.hermes.iml.iml.SimpleTypeReference;
 import com.utc.utrc.hermes.iml.iml.Symbol;
 import com.utc.utrc.hermes.iml.iml.SymbolDeclaration;
+import com.utc.utrc.hermes.iml.iml.TupleType;
 
 public class ImlUtils {
 
@@ -82,16 +83,27 @@ public class ImlUtils {
 		}
 	}
 	
-	private static String getTypeNameManually(HigherOrderType hot) {
+	public static String getTypeNameManually(HigherOrderType hot) {
 		if (hot instanceof SimpleTypeReference) {
 			String name = ((SimpleTypeReference) hot).getType().getName();
-			return name + "<" + ((SimpleTypeReference) hot).getTypeBinding().stream()
-				.map(binding -> getTypeName(binding))
-				.reduce((acc, current) -> acc + "," + current) + ">";
+			if (((SimpleTypeReference) hot).getTypeBinding().isEmpty()) {
+				return name;
+			} else {
+				return name + "<" + ((SimpleTypeReference) hot).getTypeBinding().stream()
+						.map(binding -> getTypeName(binding))
+						.reduce((acc, current) -> acc + ", " + current).get() + ">";
+			}
 		} else if (hot instanceof ArrayType) {
 			String name =  getTypeName(((ArrayType) hot).getType());
 			return name + ((ArrayType) hot).getDimensions().stream()
-					.map(dim -> )
+					.map(dim -> "[]")
+					.reduce((accum, current) -> accum + current).get();
+		} else if (hot instanceof TupleType) {
+			return "(" + ((TupleType) hot).getSymbols().stream()
+				.map(symbol -> getTypeName(symbol.getType()))
+				.reduce((accum, current) -> accum + ", " + current).get() + ")";
+		} else {
+			return getTypeName(hot.getDomain()) + "~>" + getTypeName(hot.getRange());
 		}
 	}
 
