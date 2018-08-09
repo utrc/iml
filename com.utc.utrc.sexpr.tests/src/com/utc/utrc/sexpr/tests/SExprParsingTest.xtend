@@ -85,4 +85,20 @@ class SExprParsingTest {
 		assertEquals(2, model.root.elements.size)
 		assertEquals("-24.51", (model.root.elements.get(1) as Atom).value)
 	}
+	
+	@Test
+	def void testAllowMultipleRootElements() {
+		val model = '''
+		(a b)
+		(c d)
+		'''.parse
+		model.assertNoErrors
+		
+		assertEquals(2, model.elements.size)
+		assertEquals(2, model.elements.get(1).elements.size)
+	}
+	
+	def root(Model model) {
+		model.elements.get(0)
+	}
 }
