@@ -54,7 +54,7 @@ MetaRelation returns RelationInstance:
 ;
 
 PropertyList:
-	'<<' properties+=SymbolDeclaration (',' properties+=SymbolDeclaration)* '>>'
+ '<<' properties+=SymbolDeclaration (',' properties+=SymbolDeclaration)* '>>'
 ;
 
 ConstrainedType:
@@ -69,7 +69,13 @@ ConstrainedType:
 	('{' (symbols+=SymbolDeclaration ';')* '}')?);
 
 SymbolDeclaration:
-	 name=ID (propertylist=PropertyList)? (':' type=HigherOrderType)? (':=' definition=FolFormula)? 
+	 name=ID primitiveProperty=PrimitiveProperty (propertylist=PropertyList)? (':' type=HigherOrderType)? (':=' definition=FolFormula)? 
+;
+
+PrimitiveProperty:
+	{Assertion} 'assertion' |
+	{Assumption} 'assumption' |
+	{Guarantee} 'guarantee'
 ;
 
 HigherOrderType:
