@@ -94,11 +94,11 @@ class SExprParsingTest {
 		'''.parse
 		model.assertNoErrors
 		
-		assertEquals(2, model.elements.size)
-		assertEquals(2, model.elements.get(1).elements.size)
+		assertEquals(2, model.sequences.size)
+		assertEquals(2, model.sequences.get(1).elements.size)
 	}
 	
 	def root(Model model) {
-		model.elements.get(0)
+		model.sequences.get(0)
 	}
 }
