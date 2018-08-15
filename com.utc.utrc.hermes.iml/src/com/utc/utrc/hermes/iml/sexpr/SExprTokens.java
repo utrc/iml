@@ -30,9 +30,9 @@ public class SExprTokens {
 	public static SExpr.Token<String> EDGE = new SExpr.Token<String>("edge") ;
 	public static SExpr.Token<String> ENTAILMENT = new SExpr.Token<String>("entailment") ;
 	public static SExpr.Token<String> DONE = new SExpr.Token<String>("done") ;
-	public static SExpr.Token<String> SMT_25 = new SExpr.Token<String>("smt25") ;
-	public static SExpr.Token<String> BOOLX = new SExpr.Token<String>("boolX") ;
-	public static SExpr.Token<String> EVALUATE = new SExpr.Token<String>("evaluate") ;
+	public static SExpr.Token<String> SMT_25 = new SExpr.Token<String>(":smt25") ;
+	public static SExpr.Token<String> BOOLX = new SExpr.Token<String>(":boolX") ;
+	public static SExpr.Token<String> EVALUATE = new SExpr.Token<String>(":evaluate") ;
 	public static SExpr.Token<String> NOT_AVAILABLE = new SExpr.Token<String>("__") ;
 	public static SExpr.Token<String> GET_VALUE = new SExpr.Token<String>("get-value") ;
 	

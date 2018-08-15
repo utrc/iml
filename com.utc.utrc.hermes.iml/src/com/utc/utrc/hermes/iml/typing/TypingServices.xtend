@@ -16,6 +16,7 @@ import com.utc.utrc.hermes.iml.iml.FloatNumberLiteral
 import com.utc.utrc.hermes.iml.iml.Symbol
 import org.eclipse.emf.ecore.EObject
 import com.utc.utrc.hermes.iml.iml.Model
+import static extension com.utc.utrc.hermes.iml.typing.ImlTypeProvider.*
 
 public class TypingServices {
 
@@ -242,6 +243,10 @@ public class TypingServices {
 
 	/* Check whether two type references are the same */
 	def static boolean isEqual(SimpleTypeReference left, SimpleTypeReference right) {
+		// Check pre condition for primitives
+		if (left.isPrimitive || right.isPrimitive) {
+			return left.type.name.equals(right.type.name)
+		}
 		if (!left.type.isEqual(right.type)) {
 			return false
 		} // if (left.type.name != right.type.name || left.type.template != right.type.template || left.type.extends != right.type.extends ) {
@@ -336,7 +341,7 @@ public class TypingServices {
 	/* Check whether actual paramemter's type is compatible with formal/signature parameter's type.
 	 * If the flag checkStereotypes is true, then also compare stereotypes. 
 	 * */
-	def static boolean isCompatible(HigherOrderType actual, HigherOrderType sig, boolean checkStereotypes) {
+	def static boolean isCompatible(HigherOrderType actual, HigherOrderType sig) {
 		/* 
 		if (actual.array || sig.array) {
 			if (actual.dimension.size != sig.dimension.size) {

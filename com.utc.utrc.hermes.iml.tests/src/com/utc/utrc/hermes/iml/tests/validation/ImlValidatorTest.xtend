@@ -30,6 +30,10 @@ class ImlValidatorTest {
 	
 	@Inject extension TestHelper
 	
+	/***********************************
+	 *  test checkNoDuplicateElement   *
+	 * *********************************/
+	
 	@Test
 	def testCheckNoDuplicateElement_CT_noDuplicates() {
 		val model = '''
@@ -157,6 +161,10 @@ class ImlValidatorTest {
 		model.assertError(ImlPackage.eINSTANCE.constrainedType, DUPLICATE_ELEMENT)
 	}
 	
+	/*****************************
+	 *  test checkTemplateType   *
+	 * ***************************/
+	
 	@Test
 	def testCheckTemplateType_valid() {
 		val model = '''
@@ -186,6 +194,10 @@ class ImlValidatorTest {
 		'''.parse
 		model.assertError(ImlPackage.eINSTANCE.constrainedType, INVALID_TYPE_PARAMETER);
 	}
+	
+	/**************************
+	 *  test checkExtension   *
+	 * ************************/	
 	
 	@Test
 	def testCheckExtendsSimpleType_Valid() {
@@ -232,6 +244,10 @@ class ImlValidatorTest {
 		model.assertError(ImlPackage.eINSTANCE.relationInstance, INVALID_RELATION)
 	}
 	
+	/************************
+	 *  test checkNoCycle   *
+	 * **********************/	
+	
 	@Test
 	def testNoCycle_Valid() {
 		val model = '''
@@ -267,6 +283,11 @@ class ImlValidatorTest {
 		model.assertError(ImlPackage.eINSTANCE.constrainedType, CYCLIC_CONSTRAINEDTYPE_HIERARCHY)
 	}
 	
+	
+	/******************************
+	 *  test checkParameterList   *
+	 * ****************************/	
+	
 	@Test
 	def testCheckParameterList_Valid() {
 		val model = '''
@@ -300,7 +321,7 @@ class ImlValidatorTest {
 		model.assertNoErrors
 	}
 	
-		@Test
+	@Test
 	def testCheckParameterList_() {
 		val model = '''
 			package p;
@@ -314,4 +335,58 @@ class ImlValidatorTest {
 		
 		model.assertNoErrors
 	}
+	
+	/**********************************************
+	 *  test CompatibleDeclarationAndDefinition   *
+	 * ********************************************/
+	 @Test
+	 def testCompatibleDeclarationAndDefinition() {
+		val model = '''
+			package p;
+			type Int;
+			type x {
+				var1 : Int := 5;
+			}
+		'''.parse
+		
+		model.assertNoErrors	 	
+	 }
+	 
+	 @Test
+	 def testCompatibleDeclarationAndDefinition_ReatToInt() {
+		val model = '''
+			package p;
+			type Int;
+			type x {
+				var1 : Int := 5.5;
+			}
+		'''.parse
+		
+		model.assertError(ImlPackage.eINSTANCE.symbolDeclaration, TYPE_MISMATCH_IN_TERM_EXPRESSION)
+	 }
+	 
+	 @Test
+	 def testCompatibleDeclarationAndDefinition_Tuple() {
+	 	val model = '''
+			package p;
+			type Int;
+			type x {
+				var1 : (Int, Int) := (5, 3);
+			}
+		'''.parse
+		model.assertNoErrors
+	 }
+	 
+	 @Test
+	 def testCompatibleDeclarationAndDefinition_TupleMismatch() {
+	 	val model = '''
+			package p;
+			type Int;
+			type x {
+				var1 : (Int, Int) := (5, 3.5);
+			}
+		'''.parse
+		model.assertError(ImlPackage.eINSTANCE.symbolDeclaration, TYPE_MISMATCH_IN_TERM_EXPRESSION)
+	 }
+	
 }
