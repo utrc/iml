@@ -319,7 +319,7 @@ class ImlScopeProviderTest {
 		model.assertNoErrors
 	}
 	
-		@Test
+	@Test
 	def scopeForTypeConstructor_WithTemplate() {
 		val model = '''
 			package p;
@@ -339,6 +339,25 @@ class ImlScopeProviderTest {
 			
 			type SubT {
 				vsub: Int;
+			}
+		'''.parse
+		model.assertNoErrors
+	}
+	
+	@Test
+	def scopeInsidePrograms() {
+		val model = '''
+			package p;
+			type Int;
+			type A {
+				b: Int;
+			}
+			
+			type B {
+				b: Int;
+				a : A := new A {
+						this->b = b;
+					};
 			}
 		'''.parse
 		model.assertNoErrors
