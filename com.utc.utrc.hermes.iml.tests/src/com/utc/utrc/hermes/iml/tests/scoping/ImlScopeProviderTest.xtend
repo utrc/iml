@@ -21,6 +21,9 @@ import java.util.Arrays
 import java.util.List
 import com.utc.utrc.hermes.iml.iml.SymbolReferenceTerm
 import com.utc.utrc.hermes.iml.iml.ArrayAccess
+import com.utc.utrc.hermes.iml.iml.TypeConstructor
+import com.utc.utrc.hermes.iml.iml.AtomicExpression
+import com.utc.utrc.hermes.iml.iml.Program
 
 /**
  * 
@@ -361,6 +364,13 @@ class ImlScopeProviderTest {
 			}
 		'''.parse
 		model.assertNoErrors
+		val ab = (model.findSymbol("A") as ConstrainedType).findSymbol("b");
+		val bb = (model.findSymbol("B") as ConstrainedType).findSymbol("b");
+		val assignment = (((model.findSymbol("B") as ConstrainedType).findSymbol("a").definition.left as TypeConstructor)
+					.init as Program).relations.get(0).left as AtomicExpression;
+		
+		assertEquals(((assignment.left as TermMemberSelection).member as SymbolReferenceTerm).symbol, ab)
+		assertEquals((assignment.right as SymbolReferenceTerm).symbol, bb)
 	}
 	
 	
