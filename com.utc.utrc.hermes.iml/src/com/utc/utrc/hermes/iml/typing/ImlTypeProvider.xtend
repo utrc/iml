@@ -87,6 +87,9 @@ public class ImlTypeProvider {
 			// If the expression is "this", then its type is the 
 			// type of the container type.
 			This: {
+				if (context.eContainer instanceof TypeConstructor) {
+					return context // This here refers to the container type constructor
+				}
 				return bind(createBasicType(t.getContainerOfType(ConstrainedType)), context)
 			}
 			// Additions are among numeric types and the result is a numeric 
