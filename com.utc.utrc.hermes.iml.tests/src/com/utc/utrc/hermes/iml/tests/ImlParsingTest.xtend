@@ -41,4 +41,70 @@ class ImlParsingTest {
 		
 		model.assertNoErrors
 	}
+	
+	@Test
+	def void testParsingArrayOfTuple() {
+		val model = '''
+			package p;
+			type Int;
+			type t {
+				var1 : (Int, Int)[];
+			}
+		'''.parse
+		
+		model.assertNoErrors
+	}
+	
+		
+	@Test
+	def void testParsingArrayOfHot() {
+		val model = '''
+			package p;
+			type Int;
+			type t {
+				var1 : (Int ~> Int)[];
+			}
+		'''.parse
+		
+		model.assertNoErrors
+	}
+	
+		
+	@Test
+	def void testParsingArrayOfSimpleType() {
+		val model = '''
+			package p;
+			type Int;
+			type t {
+				var1 : Int[];
+			}
+		'''.parse
+		
+		model.assertNoErrors
+	}
+	
+	@Test
+	def void testParsingShortProperty() {
+		val model = '''
+			package p;
+			type t {
+				a1 assertion := True;
+			}
+		'''.parse
+		
+		model.assertNoErrors
+	}
+	
+	@Test
+	def void testParsingMetaProperty() {
+		val model = '''
+			package p;
+			meta type myassertion;
+			type t {
+				a1 <<a:myassertion>> := True;
+			}
+		'''.parse
+		
+		model.assertNoErrors
+	}
 }
