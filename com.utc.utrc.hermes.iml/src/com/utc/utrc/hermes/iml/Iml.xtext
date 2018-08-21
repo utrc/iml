@@ -69,7 +69,7 @@ ConstrainedType:
 	('{' (symbols+=SymbolDeclaration ';')* '}')?);
 
 SymbolDeclaration:
-	 name=ID primitiveProperty=PrimitiveProperty (propertylist=PropertyList)? (':' type=HigherOrderType)? (':=' definition=FolFormula)? 
+	 name=ID primitiveProperty=PrimitiveProperty? (propertylist=PropertyList)? (':' type=HigherOrderType)? (':=' definition=FolFormula)? 
 ;
 
 PrimitiveProperty:

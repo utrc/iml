@@ -100,8 +100,9 @@ class ImlParsingTest {
 		val model = '''
 			package p;
 			meta type myassertion;
+			type Bool;
 			type t {
-				a1 <<a:myassertion>> := True;
+				a1 <<a:myassertion>> : Bool := True;
 			}
 		'''.parse
 		

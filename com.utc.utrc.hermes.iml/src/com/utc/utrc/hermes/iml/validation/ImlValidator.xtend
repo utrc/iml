@@ -429,9 +429,9 @@ class ImlValidator extends AbstractImlValidator {
 			val container = symbol.eContainer
 			switch (container) {
 				ConstrainedType: {
-					if (container.symbols.contains(symbol)) { // Symbols must have a type
-						if (symbol.type === null) {
-							error('''Symobl declaration  "«symbol.name»" must has a type''',
+					if (container.symbols.contains(symbol)) { // Symbols must have a type if there is no primitive properties
+						if (symbol.type === null && symbol.primitiveProperty === null) {
+							error('''Symobl declaration  "«symbol.name»" must have a type''',
 							ImlPackage.eINSTANCE.symbolDeclaration_Type,
 							INVALID_SYMBOL_DECLARATION
 						)
@@ -445,10 +445,19 @@ class ImlValidator extends AbstractImlValidator {
 						}
 					}
 				}
+				
+				Program: { // Must have a type if there is no primitive properties
+					if (symbol.type === null && symbol.primitiveProperty === null) {
+						error('''Symobl declaration  "«symbol.name»" must have a type''',
+							ImlPackage.eINSTANCE.symbolDeclaration_Type,
+							INVALID_SYMBOL_DECLARATION
+						)
+					}
+				}
 
-				PropertyList, Program: { // Must have a type
+				PropertyList: { // Must have a type
 					if (symbol.type === null) {
-						error('''Symobl declaration  "«symbol.name»" must has a type''',
+						error('''Symobl declaration  "«symbol.name»" must have a type''',
 							ImlPackage.eINSTANCE.symbolDeclaration_Type,
 							INVALID_SYMBOL_DECLARATION
 						)
