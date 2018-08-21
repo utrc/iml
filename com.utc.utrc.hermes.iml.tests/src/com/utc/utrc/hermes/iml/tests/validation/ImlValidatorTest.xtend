@@ -388,5 +388,88 @@ class ImlValidatorTest {
 		'''.parse
 		model.assertError(ImlPackage.eINSTANCE.symbolDeclaration, TYPE_MISMATCH_IN_TERM_EXPRESSION)
 	 }
-	
+	 
+	 
+	/************************************
+	 *  test CorrectSymbolDeclaration   *
+	 * **********************************/
+	 
+	 @Test
+	 def testCTSymbolDeclarationMustHaveType() {
+	 	val model = '''
+			package p;
+			type x {
+				var1;
+			}
+		'''.parse
+		model.assertError(ImlPackage.eINSTANCE.symbolDeclaration, INVALID_SYMBOL_DECLARATION)
+	 }
+	 
+	 @Test
+	 def testPropertySymbolDeclarationMustHaveType() {
+	 	val model = '''
+			package p;
+			meta type prop;
+			type <<a>> x;
+		'''.parse
+		model.assertError(ImlPackage.eINSTANCE.symbolDeclaration, INVALID_SYMBOL_DECLARATION)
+	 }
+	 
+	 @Test
+	 def testProgramSymbolDeclarationMustHaveType() {
+	 	val model = '''
+			package p;
+			type Int;
+			type x {
+				var1 : Int := {
+					var var2;
+				};
+			}
+		'''.parse
+		model.assertError(ImlPackage.eINSTANCE.symbolDeclaration, INVALID_SYMBOL_DECLARATION)
+	 }
+	 
+	 @Test
+	 def testCTLiteralsShoudNotHaveType() {
+	 	val model = '''
+			package p;
+			type Int;
+			type X finite |a : Int|;
+		'''.parse
+		model.assertError(ImlPackage.eINSTANCE.symbolDeclaration, INVALID_SYMBOL_DECLARATION)
+	 }
+	 
+	 @Test
+	 def testCTLiteralsShoudNotHaveDefinition() {
+	 	val model = '''
+			package p;
+			type Int;
+			type X finite |a := 1|;
+		'''.parse
+		model.assertError(ImlPackage.eINSTANCE.symbolDeclaration, INVALID_SYMBOL_DECLARATION)
+	 }
+	 
+	 @Test
+	 def testCTLiteralsNoError() {
+	 	val model = '''
+			package p;
+			type Int;
+			type X finite |a|;
+		'''.parse
+		model.assertNoErrors
+	 }
+	 
+	 @Test
+	 def testFolFormulaScopeShouldNotHaveDefinition() {
+	 	val model = '''
+			package p;
+			type Int;
+			type X  {
+				var1 : Int := forall a : Int:= 0 {5};
+			};
+		'''.parse
+		model.assertError(ImlPackage.eINSTANCE.symbolDeclaration, INVALID_SYMBOL_DECLARATION)
+	 }
+	 
+	 
 }

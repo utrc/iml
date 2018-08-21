@@ -30,6 +30,9 @@ import com.utc.utrc.hermes.iml.iml.SymbolReferenceTerm
 import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
 import com.utc.utrc.hermes.iml.typing.ImlTypeProvider
 import com.utc.utrc.hermes.iml.typing.TypingServices
+import com.utc.utrc.hermes.iml.iml.PropertyList
+import com.utc.utrc.hermes.iml.iml.Program
+import com.utc.utrc.hermes.iml.iml.TupleType
 
 /**
  * This class contains custom validation rules. 
@@ -56,7 +59,8 @@ class ImlValidator extends AbstractImlValidator {
 	public static val INVALID_TYPE_DECLARATION = 'com.utc.utrc.hermes.iml.validation.InvalidTypeDeclaration';
 	public static val INVALID_ELEMENT = 'com.utc.utrc.hermes.iml.validation.InvalidElement';
 	public static val INVALID_RELATION = 'com.utc.utrc.hermes.iml.validation.InvalidRelation';
-
+	public static val INVALID_SYMBOL_DECLARATION = 'com.utc.utrc.hermes.iml.validation.InvalidSymbolDeclaration';
+	
 	@Inject
 	override void register(EValidatorRegistrar registrar) {
 	
@@ -419,6 +423,51 @@ class ImlValidator extends AbstractImlValidator {
 				}	
 			}	
 		}
+		
+		@Check
+		def checkCorrectSymbolDeclaration(SymbolDeclaration symbol) {
+			val container = symbol.eContainer
+			switch (container) {
+				ConstrainedType: {
+					if (container.symbols.contains(symbol)) { // Symbols must have a type
+						if (symbol.type === null) {
+							error('''Symobl declaration  "«symbol.name»" must has a type''',
+							ImlPackage.eINSTANCE.symbolDeclaration_Type,
+							INVALID_SYMBOL_DECLARATION
+						)
+						}
+					} else if (container.literals.contains(symbol)) { // Symbols must not have type nor definition
+						if (symbol.type !== null || symbol.definition !== null) {
+							error('''Type literal "«symbol.name»" shoud not have a type nor a definition''',
+								ImlPackage.eINSTANCE.symbolDeclaration_Type,
+								INVALID_SYMBOL_DECLARATION
+							)
+						}
+					}
+				}
 
-	}
+				PropertyList, Program: { // Must have a type
+					if (symbol.type === null) {
+						error('''Symobl declaration  "«symbol.name»" must has a type''',
+							ImlPackage.eINSTANCE.symbolDeclaration_Type,
+							INVALID_SYMBOL_DECLARATION
+						)
+					}
+				}
+				
+				FolFormula: {
+					if (container.scope.contains(symbol)) { // Scope shoudn't include definition
+						if (symbol.definition !== null) {
+							error('''Formula scope "«symbol.name»" shoud not have a definition''',
+								ImlPackage.eINSTANCE.symbolDeclaration_Type,
+								INVALID_SYMBOL_DECLARATION
+							)
+						}
+					}
+				}
+				
+			}
+		}
+
+}
 	
