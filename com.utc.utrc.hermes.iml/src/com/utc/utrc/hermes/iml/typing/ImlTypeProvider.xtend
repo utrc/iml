@@ -157,7 +157,7 @@ public class ImlTypeProvider {
 			}
 			LambdaExpression: {
 				return ImlFactory.eINSTANCE.createHigherOrderType => [
-					domain = t.signature
+					domain = EcoreUtil2.clone(t.signature)
 					range = t.definition.termExpressionType(context)
 				]
 			}

@@ -36,36 +36,37 @@ class ImlTypeProviderTest {
 	
 	@Test
 	def testTermExpressionType_withAddition_int() {
-		assertFormulaType("5 + 6", ImlTypeProvider.Int);
+		assertFormulaType("5 + 6", "Int", ImlTypeProvider.Int);
 	}
 	
 	@Test
 	def testTermExpressionType_withAddition_real() {
-		assertFormulaType("5 * 6.5", ImlTypeProvider.Real);
+		assertFormulaType("5 * 6.5", "Real", ImlTypeProvider.Real);
 	}
 	
 	@Test
 	def testTermExpressionType_withAddition_realDiv() {
-		assertFormulaType("5 / 6", ImlTypeProvider.Real);
+		assertFormulaType("5 / 6", "Real",ImlTypeProvider.Real);
 	}
 	
 	@Test
 	def testTermExpressionType_withAddition_boolean() {
-		assertFormulaType("5 = 6", ImlTypeProvider.Bool);
+		assertFormulaType("5 = 6", "Bool", ImlTypeProvider.Bool);
 	}
 	
 	@Test
 	def testTermExpressionType_withAnd_boolean() {
-		assertFormulaType("True && False", ImlTypeProvider.Bool);
+		assertFormulaType("True && False", "Bool", ImlTypeProvider.Bool);
 	}
 	
-	def assertFormulaType(String formula, HigherOrderType type) {
+	def assertFormulaType(String formula, String declaredType, HigherOrderType type) {
 		val model = '''
 			package p;
 			type Int;
 			type Real;
+			type Bool;
 			type t1 {
-				var1 : Int := «formula»;
+				var1 : «declaredType» := «formula»;
 			}
 			
 		'''.parse
@@ -86,7 +87,7 @@ class ImlTypeProviderTest {
 			type Int;
 			type Real;
 			type t1 {
-				var1 : Int := var2;
+				var1 : t2 := var2;
 				var2 : t2;
 			}
 			
@@ -193,7 +194,7 @@ class ImlTypeProviderTest {
 			type Int;
 			type Real;
 			type t1 {
-				var1 : Int := var2;
+				var1 : (Int, Real)~>Int := var2;
 				var2 : (p1 : Int, p2 : Real) ~> Int;
 			}			
 		'''.parse
@@ -216,7 +217,7 @@ class ImlTypeProviderTest {
 			type Int;
 			type Real;
 			type t1 {
-				var1 : Int := var2->varx;
+				var1 : (Int)~>Real := var2->varx;
 				var2 : t2<Int, Real>;
 			}
 			
@@ -249,7 +250,7 @@ class ImlTypeProviderTest {
 			type List <type T>;
 			
 			type t1 {
-				var1 : Int := var2->varx;
+				var1 : List<Int> := var2->varx;
 				var2 : t2<List<Int> >;
 			}
 			
@@ -279,7 +280,7 @@ class ImlTypeProviderTest {
 			type List <type T>;
 			
 			type t1 {
-				var1 : Int := var2->varx;
+				var1 : List<(Int)~>Real> := var2->varx;
 				var2 : t2<List<(p: Int)~>Real> >;
 			}
 			
@@ -313,7 +314,7 @@ class ImlTypeProviderTest {
 			type List <type T>;
 			
 			type t1 {
-				var1 : Int := var3->var2->varx;
+				var1 : List<Int> := var3->var2->varx;
 				var3 : t3<Int>;
 			}
 			
@@ -343,8 +344,9 @@ class ImlTypeProviderTest {
 		val model = '''
 			package p;
 			type Int;
+			type Bool;
 			type t1 {
-				varx : Int := lambda (p1: Int) {True;};
+				varx : (Int)~>Bool := lambda (p1: Int) {True;};
 			}
 		'''.parse
 		
@@ -363,7 +365,7 @@ class ImlTypeProviderTest {
 			package p;
 			type Int;
 			type t1 {
-				varx : Int := lambda (p1: Int) {True;3*5;};
+				varx : (Int)~>Int := lambda (p1: Int) {True;3*5;};
 			}
 		'''.parse
 		
@@ -383,7 +385,7 @@ class ImlTypeProviderTest {
 			type Int;
 			type Real;
 			type t1 {
-				varx : Int := var1;
+				varx : Real[] := var1;
 				var1 : Real[10];
 			}
 		'''.parse
@@ -403,7 +405,7 @@ class ImlTypeProviderTest {
 			type Int;
 			type Real;
 			type t1 {
-				varx : Int := var1[1];
+				varx : Real := var1[1];
 				var1 : Real[10];
 			}
 		'''.parse
@@ -423,7 +425,7 @@ class ImlTypeProviderTest {
 			type Int;
 			type Real;
 			type t1 {
-				varx : Int := var1[1];
+				varx : Real[][] := var1[1];
 				var1 : Real[10][20][30];
 			}
 		'''.parse
@@ -443,7 +445,7 @@ class ImlTypeProviderTest {
 			type Int;
 			type Real;
 			type t1 {
-				varx : Int := var1[1];
+				varx : Real := var1[1];
 				var1 : (e1: Int, e2:Real);
 			}
 		'''.parse
@@ -463,7 +465,7 @@ class ImlTypeProviderTest {
 			type Int;
 			type Real;
 			type t1 {
-				varx : Int := var1[e2];
+				varx : Real := var1[e2];
 				var1 : (e1: Int, e2:Real);
 			}
 		'''.parse
@@ -482,8 +484,9 @@ class ImlTypeProviderTest {
 			package p;
 			type Int;
 			type Bool;
+			type Real;
 			type t1 {
-				varx : Int := (2, False, 2.5);
+				varx : (Int, Bool, Real) := (2, False, 2.5);
 			}
 		'''.parse
 		
@@ -545,7 +548,7 @@ class ImlTypeProviderTest {
 			type Bool;
 			type Real;
 			type t1 {
-				varx : Int := t2.e2;
+				varx : t2 := t2.e2;
 			}
 			type t2 finite |e1, e2|;
 		'''.parse
@@ -567,7 +570,7 @@ class ImlTypeProviderTest {
 			type Bool;
 			type Real;
 			type t1 {
-				varx : Int := t2.e2;
+				varx : t2 := t2.e2;
 			}
 			type t2 finite |e1, e2|;
 		'''.parse
