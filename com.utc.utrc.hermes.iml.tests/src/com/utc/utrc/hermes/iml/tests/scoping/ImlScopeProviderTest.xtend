@@ -142,7 +142,7 @@ class ImlScopeProviderTest {
 			type Real;
 			type t1 {
 				var1 : (e1: Int, e2:Real);
-				varx : Int := var1[e2];
+				varx : Real := var1[e2];
 			}
 		'''.parse
 		model.assertNoErrors;
@@ -163,7 +163,7 @@ class ImlScopeProviderTest {
 			type Real;
 			type t1 {
 				var1 : (Int, (e1: Int, e2:Real));
-				varx : Int := var1[1][e2];
+				varx : Real := var1[1][e2];
 			}
 		'''.parse
 		model.assertNoErrors;
@@ -189,8 +189,8 @@ class ImlScopeProviderTest {
 			
 			type t1 {
 				var1 : t2<(Int, (e1: Int, e2:Real))>;
-				// varx : Int := var1->vT[1][e2]; // We won't support named access
-				varx : Int := var1->vT[1][1];
+				// varx : Real := var1->vT[1][e2]; // We won't support named access
+				varx : Real := var1->vT[1][1];
 			}
 		'''.parse
 		model.assertNoErrors;
