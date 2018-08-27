@@ -341,5 +341,18 @@ class TypingServicesTest {
 	}
 	
 	
+	@Test
+	def testTypeProviderForArrayOfTuple() {
+		val model = '''
+			package p;
+			type Int;
+			type T1 {
+				var1 : (a: Int, b: Int)[10];
+				var2 : (Int, Int)[] := var1;
+			}
+		'''.parse
+		
+		model.assertNoErrors
+	}
 	
 }

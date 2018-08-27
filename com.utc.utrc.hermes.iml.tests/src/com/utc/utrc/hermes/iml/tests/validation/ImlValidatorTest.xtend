@@ -470,6 +470,6 @@ class ImlValidatorTest {
 		'''.parse
 		model.assertError(ImlPackage.eINSTANCE.symbolDeclaration, INVALID_SYMBOL_DECLARATION)
 	 }
-	 
+	  
 	 
 }
