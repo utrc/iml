@@ -60,13 +60,13 @@ PropertyList:
 ConstrainedType:
 	(doc=Doc)?
 	(meta?='meta')? 'type' (propertylist=PropertyList)? name=ID
-	((finite?='finite' '|'(cardinality=INT |  literals+=SymbolDeclaration (',' literals+=SymbolDeclaration)* )'|' )?
+	((finite?='finite' cardinality=INT) |  (^enum?='enum' '{' literals+=SymbolDeclaration (',' literals+=SymbolDeclaration)* '}') )?
 	/*Optional template parameters for generic types */
 	(template?='<' typeParameter+=ConstrainedType (',' typeParameter+=ConstrainedType)* '>')?
 	/* An optional list of type being extended by this type*/
 	( relations+=RelationInstance)*
 	/* A list of elements defined by this type*/
-	('{' (symbols+=SymbolDeclaration ';')* '}')?);
+	('{' (symbols+=SymbolDeclaration ';')* '}')?;
 
 SymbolDeclaration:
 	 name=ID primitiveProperty=PrimitiveProperty? (propertylist=PropertyList)? (':' type=HigherOrderType)? (':=' definition=FolFormula)? 

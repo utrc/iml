@@ -434,7 +434,7 @@ class ImlValidatorTest {
 	 	val model = '''
 			package p;
 			type Int;
-			type X finite |a : Int|;
+			type X enum {a : Int};
 		'''.parse
 		model.assertError(ImlPackage.eINSTANCE.symbolDeclaration, INVALID_SYMBOL_DECLARATION)
 	 }
@@ -444,7 +444,7 @@ class ImlValidatorTest {
 	 	val model = '''
 			package p;
 			type Int;
-			type X finite |a := 1|;
+			type X enum {a := 1};
 		'''.parse
 		model.assertError(ImlPackage.eINSTANCE.symbolDeclaration, INVALID_SYMBOL_DECLARATION)
 	 }
@@ -454,7 +454,7 @@ class ImlValidatorTest {
 	 	val model = '''
 			package p;
 			type Int;
-			type X finite |a|;
+			type X enum {a, b};
 		'''.parse
 		model.assertNoErrors
 	 }

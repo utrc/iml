@@ -548,9 +548,9 @@ class ImlTypeProviderTest {
 			type Bool;
 			type Real;
 			type t1 {
-				varx : t2 := t2.e2;
+				varx : t2 := t2[0];
 			}
-			type t2 finite |e1, e2|;
+			type t2 finite 2;
 		'''.parse
 		
 		model.assertNoErrors
@@ -572,7 +572,7 @@ class ImlTypeProviderTest {
 			type t1 {
 				varx : t2 := t2.e2;
 			}
-			type t2 finite |e1, e2|;
+			type t2 enum {e1, e2};
 		'''.parse
 		
 		model.assertNoErrors
