@@ -156,7 +156,7 @@ class ImlValidatorTest {
 	def testCheckNoDuplicateElement_templateDeclaration() {
 		val model = '''
 			package p;
-			type T1 <type T, type T>;
+			type T1 <T, T>;
 		'''.parse
 		model.assertError(ImlPackage.eINSTANCE.constrainedType, DUPLICATE_ELEMENT)
 	}
@@ -169,30 +169,10 @@ class ImlValidatorTest {
 	def testCheckTemplateType_valid() {
 		val model = '''
 			package p;
-			type x<type T, type P>;
+			type x<T, P>;
 			
 		'''.parse
 		model.assertNoErrors
-	}
-	
-	@Test
-	def testCheckTemplateType_Invalid() {
-		testInvalidTemplateType("meta type T")
-		testInvalidTemplateType("type T <<v : Int>>")
-		testInvalidTemplateType("type T <<>>")
-		testInvalidTemplateType("type finite |10| T")
-		testInvalidTemplateType("type T <type T2>")
-		testInvalidTemplateType("type T extends Int")
-		testInvalidTemplateType("type T {var1 : Int;}")
-	}
-	
-	def testInvalidTemplateType(String templates) {
-		var model = '''
-			package p;
-			type Int;
-			type x<«templates»>;
-		'''.parse
-		model.assertError(ImlPackage.eINSTANCE.constrainedType, INVALID_TYPE_PARAMETER);
 	}
 	
 	/**************************

@@ -221,7 +221,7 @@ class ImlTypeProviderTest {
 				var2 : t2<Int, Real>;
 			}
 			
-			type t2 <type T, type P> {
+			type t2 <T, P> {
 				varx : (p : T) ~> P;
 			}		
 		'''.parse
@@ -247,14 +247,14 @@ class ImlTypeProviderTest {
 			package p;
 			type Int;
 			type Real;
-			type List <type T>;
+			type List <T>;
 			
 			type t1 {
 				var1 : List<Int> := var2->varx;
 				var2 : t2<List<Int> >;
 			}
 			
-			type t2 <type T> {
+			type t2 <T> {
 				varx : T;
 			}		
 		'''.parse
@@ -277,14 +277,14 @@ class ImlTypeProviderTest {
 			package p;
 			type Int;
 			type Real;
-			type List <type T>;
+			type List <T>;
 			
 			type t1 {
 				var1 : List<(Int)~>Real> := var2->varx;
 				var2 : t2<List<(p: Int)~>Real> >;
 			}
 			
-			type t2 <type T> {
+			type t2 <T> {
 				varx : T;
 			}		
 		'''.parse
@@ -311,18 +311,18 @@ class ImlTypeProviderTest {
 			package p;
 			type Int;
 			type Real;
-			type List <type T>;
+			type List <T>;
 			
 			type t1 {
 				var1 : List<Int> := var3->var2->varx;
 				var3 : t3<Int>;
 			}
 			
-			type t2 <type T> {
+			type t2 <T> {
 				varx : T;
 			}
 			
-			type t3 <type T> {
+			type t3 <T> {
 				var2 : t2<List<T> >;
 			}
 		'''.parse

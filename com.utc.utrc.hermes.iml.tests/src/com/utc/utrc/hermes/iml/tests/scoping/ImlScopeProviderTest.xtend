@@ -183,7 +183,7 @@ class ImlScopeProviderTest {
 			type Int;
 			type Real;
 			
-			type t2 <type T> {
+			type t2 <T> {
 				vT : T;
 			}
 			
@@ -210,11 +210,11 @@ class ImlScopeProviderTest {
 			type Int;
 			type Real;
 			
-			type t3 <type P>{
+			type t3 <P>{
 				vP : P;
 			}
 			
-			type t2 <type T> {
+			type t2 <T> {
 				vT : t3<(Int, (e1: Int, e2: T))>;
 			}
 			
@@ -330,7 +330,7 @@ class ImlScopeProviderTest {
 			type Real;
 			type Bool;
 			
-			type T1 <type T> {
+			type T1 <T> {
 				var1 : Int;
 				var2 : T;
 			}

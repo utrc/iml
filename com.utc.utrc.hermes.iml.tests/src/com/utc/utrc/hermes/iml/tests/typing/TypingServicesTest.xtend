@@ -56,7 +56,7 @@ class TypingServicesTest {
 	def testIsEqual_HigherOrderType_WithTemplate() {
 		val model = '''
 			package p;
-			type TemType<type T, type P>;
+			type TemType<T, P>;
 			type Int;
 			type Float;
 			type t1 {
@@ -76,7 +76,7 @@ class TypingServicesTest {
 	def testIsEqual_HigherOrderType_WithTemplate_DifferentTypes() {
 		val model = '''
 			package p;
-			type TemType<type T, type P>;
+			type TemType<T, P>;
 			type Int;
 			type Float;
 			type t1 {
