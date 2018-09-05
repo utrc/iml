@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.xtext.naming.IQualifiedNameProvider;
 import org.eclipse.xtext.resource.IResourceServiceProvider;
 import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.serializer.ISerializer;
@@ -74,36 +75,42 @@ public class ImlUtils {
 	 * @param hot
 	 * @return
 	 */
-	public static String getTypeName(HigherOrderType hot) {
-		String typeAsString = getElementAsString(hot);
-		if (!typeAsString.isEmpty()) {
-			return typeAsString;
-		} else {
-			return getTypeNameManually(hot);
-		}
+	public static String getTypeName(HigherOrderType hot, IQualifiedNameProvider qnp) {
+//		String typeAsString = getElementAsString(hot);
+//		if (!typeAsString.isEmpty()) {
+//			return typeAsString;
+//		} else {
+//			
+//		}
+		return getTypeNameManually(hot, qnp);
 	}
 	
-	public static String getTypeNameManually(HigherOrderType hot) {
+	public static String getTypeNameManually(HigherOrderType hot, IQualifiedNameProvider qnp) {
 		if (hot instanceof SimpleTypeReference) {
-			String name = ((SimpleTypeReference) hot).getType().getName();
+			String name = "";
+			if (qnp != null) {
+				name = qnp.getFullyQualifiedName(((SimpleTypeReference) hot).getType()).toString();
+			} else {
+				name = ((SimpleTypeReference) hot).getType().getName();
+			}
 			if (((SimpleTypeReference) hot).getTypeBinding().isEmpty()) {
 				return name;
 			} else {
 				return name + "<" + ((SimpleTypeReference) hot).getTypeBinding().stream()
-						.map(binding -> getTypeName(binding))
+						.map(binding -> getTypeName(binding, qnp))
 						.reduce((acc, current) -> acc + ", " + current).get() + ">";
 			}
 		} else if (hot instanceof ArrayType) {
-			String name =  getTypeName(((ArrayType) hot).getType());
+			String name =  getTypeName(((ArrayType) hot).getType(), qnp);
 			return name + ((ArrayType) hot).getDimensions().stream()
 					.map(dim -> "[]")
 					.reduce((accum, current) -> accum + current).get();
 		} else if (hot instanceof TupleType) {
 			return "(" + ((TupleType) hot).getSymbols().stream()
-				.map(symbol -> getTypeName(symbol.getType()))
+				.map(symbol -> getTypeName(symbol.getType(), qnp))
 				.reduce((accum, current) -> accum + ", " + current).get() + ")";
 		} else {
-			return getTypeName(hot.getDomain()) + "~>" + getTypeName(hot.getRange());
+			return getTypeName(hot.getDomain(), qnp) + "~>" + getTypeName(hot.getRange(), qnp);
 		}
 	}
 

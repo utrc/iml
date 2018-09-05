@@ -3,14 +3,16 @@ package com.utc.utrc.hermes.iml.encoding;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.naming.IQualifiedNameProvider;
 import org.eclipse.xtext.naming.QualifiedName;
-import org.eclipse.xtext.resource.XtextResource;
 
-import com.utc.utrc.hermes.iml.iml.ArrayType;
 import com.utc.utrc.hermes.iml.iml.ConstrainedType;
 import com.utc.utrc.hermes.iml.iml.HigherOrderType;
 import com.utc.utrc.hermes.iml.iml.SimpleTypeReference;
 import com.utc.utrc.hermes.iml.iml.Symbol;
-
+import com.utc.utrc.hermes.iml.util.ImlUtils;
+/**
+ * Encodes IML types in a way that guarantee that each unique type has unique ID
+ *
+ */
 public class EncodedId {
 	
 	private QualifiedName container;
@@ -31,7 +33,7 @@ public class EncodedId {
 				container = DEFAULT_CONTAINER;
 //				container = qnp.getFullyQualifiedName(((SimpleTypeReference) imlEObject).getType().eContainer());					
 				// Use the name exactly as declared 					
-				name = hot2StringId((HigherOrderType) imlEObject);
+				name = ImlUtils.getTypeNameManually((HigherOrderType) imlEObject, qnp);
 			}
 		}
 	}
@@ -75,24 +77,6 @@ public class EncodedId {
 
 	public void setName(String name) {
 		this.name = name;
-	}
-	
-	private String hot2StringId(HigherOrderType imlEObject) {
-		if (imlEObject instanceof SimpleTypeReference) {
-			return ((SimpleTypeReference) imlEObject).getType().getName();
-		}
-		if (imlEObject != null && imlEObject.eResource() instanceof XtextResource
-				&& imlEObject.eResource().getURI() != null) {
-    		
-    		return ((XtextResource) imlEObject.eResource()).getSerializer().serialize(imlEObject).trim();
-    	} else {
-    		// TODO get it manually?
-    		if(imlEObject instanceof ArrayType) {
-    			ArrayType arrType = (ArrayType) imlEObject;
-    			return hot2StringId(arrType.getType()) + arrType.getDimensions().size();
-    		}
-    		return "";
-    	}
 	}
 	
 	public String stringId() {

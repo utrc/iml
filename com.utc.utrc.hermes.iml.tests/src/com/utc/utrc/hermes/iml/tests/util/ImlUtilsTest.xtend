@@ -45,6 +45,6 @@ class ImlUtilsTest {
 		model.assertNoErrors
 		
 		val v1 = model.findSymbol("v1") as SymbolDeclaration
-		assertEquals(typeGenerated, ImlUtils.getTypeNameManually(v1.type))
+		assertEquals(typeGenerated, ImlUtils.getTypeNameManually(v1.type, null))
 	}
 }
