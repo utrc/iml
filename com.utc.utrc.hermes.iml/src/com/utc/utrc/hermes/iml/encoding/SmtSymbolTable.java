@@ -37,6 +37,11 @@ public class SmtSymbolTable<SortT, DeclFunT> {
 	public String getEncodedId(EObject type) {
 		return encodedIdFactory.createEncodedId(type).stringId();
 	}
+	
+	public SortT getSort(EObject type) {
+		EncodedId id = encodedIdFactory.createEncodedId(type);
+		return sorts.get(id);
+	}
 
 	public List<SortT> getSorts() {
 		return new ArrayList<SortT>(sorts.values());

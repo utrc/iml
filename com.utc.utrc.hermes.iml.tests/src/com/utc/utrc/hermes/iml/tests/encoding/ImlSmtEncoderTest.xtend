@@ -11,6 +11,7 @@ import org.eclipse.xtext.testing.validation.ValidationTestHelper
 import com.utc.utrc.hermes.iml.tests.TestHelper
 import org.junit.Test
 import com.utc.utrc.hermes.iml.encoding.ImlSmtEncoder
+import com.utc.utrc.hermes.iml.encoding.simplesmt.SimpleSort
 
 @RunWith(XtextRunner)
 @InjectWith(ImlInjectorProvider)
@@ -22,7 +23,7 @@ class ImlSmtEncoderTest {
 	
 	@Inject extension TestHelper
 	
-	@Inject ImlSmtEncoder<String, String> encoder
+	@Inject ImlSmtEncoder<SimpleSort, String> encoder
 	
 	@Test
 	def void testSimpleTypeEncoder() {
@@ -79,6 +80,27 @@ class ImlSmtEncoderTest {
 		model.assertNoErrors
 		
 		encoder.encode(model.findSymbol("T1"))
+		println(encoder.toString)
+	}
+	
+	@Test
+	def void testTypeWithTemplates() {
+		val model = 
+		'''
+			package p;
+			
+			type Int;
+			type T1<T> {
+				a : T;
+			}
+			
+			type T2 {
+				b : T1<Int>;
+			}
+		'''.parse
+		model.assertNoErrors
+		
+		encoder.encode(model.findSymbol("T2"))
 		println(encoder.toString)
 	}
 	

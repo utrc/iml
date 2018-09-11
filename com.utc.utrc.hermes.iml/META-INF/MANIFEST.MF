@@ -20,6 +20,7 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Export-Package: com.utc.utrc.hermes.iml,
  com.utc.utrc.hermes.iml.custom,
  com.utc.utrc.hermes.iml.encoding,
+ com.utc.utrc.hermes.iml.encoding.simplesmt,
  com.utc.utrc.hermes.iml.generator,
  com.utc.utrc.hermes.iml.generator.infra,
  com.utc.utrc.hermes.iml.generator.strategies,

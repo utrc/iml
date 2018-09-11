@@ -1,5 +1,6 @@
 package com.utc.utrc.hermes.iml.encoding;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.emf.ecore.EObject;
@@ -51,6 +52,7 @@ public class ImlSmtEncoder<SortT, DeclFunT> implements ImlEncoder {
 			defineTypes(type.getDomain());
 			defineTypes(type.getRange());
 			// TODO add new Function?
+			addTypeSort(type);
 		} else if (type instanceof ArrayType) {
 			ArrayType arrType = (ArrayType) type;
 			for (int dim = 0; dim < arrType.getDimensions().size() ; dim++) {
@@ -59,11 +61,15 @@ public class ImlSmtEncoder<SortT, DeclFunT> implements ImlEncoder {
 			}
 			defineTypes(arrType.getType());
 		} else if (type instanceof TupleType) {
-			TupleType tupleType = (TupleType) type;
-			for (SymbolDeclaration symbol : tupleType.getSymbols()) {
-				defineTypes(symbol.getType());
+			if (((TupleType) type).getSymbols().size() == 1) { // Tuple with one element TODO provide general solution
+				defineTypes(((TupleType) type).getSymbols().get(0).getType());
+			} else {
+				TupleType tupleType = (TupleType) type;
+				for (SymbolDeclaration symbol : tupleType.getSymbols()) {
+					defineTypes(symbol.getType());
+				}
+				addTypeSort(tupleType);
 			}
-			addTypeSort(tupleType);
 		} else if (type instanceof SimpleTypeReference) {
 			addTypeSort(type);
 			for (HigherOrderType binding : ((SimpleTypeReference) type).getTypeBinding()) {
@@ -76,9 +82,27 @@ public class ImlSmtEncoder<SortT, DeclFunT> implements ImlEncoder {
 
 	private SortT addTypeSort(EObject type) {
 		String sortName = getUniqueSortName(type);
-		SortT sort = smtModelProvider.createSort(sortName);
-		symbolTable.addSort(type, sort);
+		SortT sort = null;
+		if (type instanceof HigherOrderType && ((HigherOrderType) type).getRange() != null) {
+			HigherOrderType hot = (HigherOrderType) type;
+			sort = smtModelProvider.createHotSort(sortName, symbolTable.getSort(hot.getDomain()), symbolTable.getSort(hot.getRange()));
+		} else if (type instanceof TupleType){
+			sort = smtModelProvider.createTupleSort(sortName, getTupleSorts((TupleType) type));
+		} else {
+			sort = smtModelProvider.createSort(sortName);
+		}
+		if (sort != null) {
+			symbolTable.addSort(type, sort);
+		}
 		return sort;
+	}
+
+	private List<SortT> getTupleSorts(TupleType type) {
+		List<SortT> sorts = new ArrayList<>();
+		for (SymbolDeclaration symbol : type.getSymbols()) {
+			sorts.add(symbolTable.getSort(symbol.getType()));
+		}
+		return sorts;
 	}
 
 	private String getUniqueSortName(EObject type) {

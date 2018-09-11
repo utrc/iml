@@ -7,8 +7,9 @@ import com.google.inject.Binder
 import org.eclipse.xtext.scoping.impl.AbstractDeclarativeScopeProvider
 import com.utc.utrc.hermes.iml.scoping.ImlImportedNamespaceAwareLocalScopeProvider
 import com.utc.utrc.hermes.iml.encoding.SmtModelProvider
-import com.utc.utrc.hermes.iml.encoding.StringModelProvider
 import com.google.inject.TypeLiteral
+import com.utc.utrc.hermes.iml.encoding.SimpleSmtModelProvider
+import com.utc.utrc.hermes.iml.encoding.simplesmt.SimpleSort
 
 /**
  * Use this class to register components to be used at runtime / without the Equinox extension registry.
@@ -22,7 +23,7 @@ class ImlRuntimeModule extends AbstractImlRuntimeModule {
 								.named(AbstractDeclarativeScopeProvider.NAMED_DELEGATE))
 				.to(ImlImportedNamespaceAwareLocalScopeProvider);
 		
-		binder.bind(new TypeLiteral<SmtModelProvider<String>>() {}).to(StringModelProvider)
+		binder.bind(new TypeLiteral<SmtModelProvider<SimpleSort>>() {}).to(SimpleSmtModelProvider)
 	}
 	
 }
