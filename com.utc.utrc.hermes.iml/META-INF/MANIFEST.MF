@@ -34,6 +34,7 @@ Export-Package: com.utc.utrc.hermes.iml,
  com.utc.utrc.hermes.iml.sexpr,
  com.utc.utrc.hermes.iml.typing,
  com.utc.utrc.hermes.iml.util,
- com.utc.utrc.hermes.iml.validation
+ com.utc.utrc.hermes.iml.validation,
+ com.utc.utrc.hermes.iml.formatting2
 Import-Package: org.apache.log4j
 Bundle-ClassPath: .,libs/jgrapht-core-1.1.0.jar
