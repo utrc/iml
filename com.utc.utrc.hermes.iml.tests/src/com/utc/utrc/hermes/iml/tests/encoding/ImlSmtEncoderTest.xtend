@@ -12,6 +12,7 @@ import com.utc.utrc.hermes.iml.tests.TestHelper
 import org.junit.Test
 import com.utc.utrc.hermes.iml.encoding.ImlSmtEncoder
 import com.utc.utrc.hermes.iml.encoding.simplesmt.SimpleSort
+import com.utc.utrc.hermes.iml.encoding.simplesmt.SimpleFunDeclaration
 
 @RunWith(XtextRunner)
 @InjectWith(ImlInjectorProvider)
@@ -23,7 +24,7 @@ class ImlSmtEncoderTest {
 	
 	@Inject extension TestHelper
 	
-	@Inject ImlSmtEncoder<SimpleSort, String> encoder
+	@Inject ImlSmtEncoder<SimpleSort, SimpleFunDeclaration> encoder
 	
 	@Test
 	def void testSimpleTypeEncoder() {
@@ -67,7 +68,7 @@ class ImlSmtEncoderTest {
 			
 			type Int;
 			type Real;
-			type T1 {
+			type T1 extends T2 {
 				a : Int;
 				b : Int ~> T2;
 				c : (Int, Real);
@@ -75,6 +76,39 @@ class ImlSmtEncoderTest {
 				e : (Int~>Real)[][];
 			}
 			
+			type T2 {
+				x: Int;	
+				y: Float;
+			};
+			
+			type Float sameas Real;
+		'''.parse
+		model.assertNoErrors
+		
+		encoder.encode(model.findSymbol("T1"))
+		println(encoder.toString)
+	}
+	
+	@Test
+	def void testExtendsEncoding() {
+		val model = 
+		'''
+			package p;
+			type T1 extends T2;
+			type T2;
+		'''.parse
+		model.assertNoErrors
+		
+		encoder.encode(model.findSymbol("T1"))
+		println(encoder.toString)
+	}
+	
+	@Test
+	def void testAliasEncoding() {
+		val model = 
+		'''
+			package p;
+			type T1 sameas T2;
 			type T2;
 		'''.parse
 		model.assertNoErrors
@@ -90,7 +124,7 @@ class ImlSmtEncoderTest {
 			package p;
 			
 			type Int;
-			type T1<T> {
+			type T1<type T> {
 				a : T;
 			}
 			

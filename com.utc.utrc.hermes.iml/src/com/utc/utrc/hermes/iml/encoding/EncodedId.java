@@ -4,10 +4,14 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.naming.IQualifiedNameProvider;
 import org.eclipse.xtext.naming.QualifiedName;
 
+import com.utc.utrc.hermes.iml.iml.Alias;
 import com.utc.utrc.hermes.iml.iml.ConstrainedType;
+import com.utc.utrc.hermes.iml.iml.Extension;
 import com.utc.utrc.hermes.iml.iml.HigherOrderType;
+import com.utc.utrc.hermes.iml.iml.RelationInstance;
 import com.utc.utrc.hermes.iml.iml.SimpleTypeReference;
 import com.utc.utrc.hermes.iml.iml.Symbol;
+import com.utc.utrc.hermes.iml.iml.SymbolDeclaration;
 import com.utc.utrc.hermes.iml.util.ImlUtils;
 /**
  * Encodes IML types in a way that guarantee that each unique type has unique ID
@@ -17,10 +21,13 @@ public class EncodedId {
 	
 	private QualifiedName container;
 	private String name;
+	
+	EObject imlObject;
 
 	public static QualifiedName DEFAULT_CONTAINER = QualifiedName.create("__unnamed__");
 	
 	public EncodedId(EObject imlEObject, IQualifiedNameProvider qnp) {
+		this.imlObject = imlEObject;
 		if (imlEObject instanceof ConstrainedType) {
 			container = qnp.getFullyQualifiedName(imlEObject.eContainer());
 			name = ((Symbol) imlEObject).getName();
@@ -35,9 +42,27 @@ public class EncodedId {
 				// Use the name exactly as declared 					
 				name = ImlUtils.getTypeNameManually((HigherOrderType) imlEObject, qnp);
 			}
+		} else if (imlEObject instanceof RelationInstance) {
+			container = qnp.getFullyQualifiedName(imlEObject.eContainer());
+			if (imlEObject instanceof Alias) {
+				name = "alias_" + qnp.getFullyQualifiedName(((SimpleTypeReference)((Alias)imlEObject).getTarget()).getType());
+			} else if (imlEObject instanceof Extension) {
+				name = "extends_" + qnp.getFullyQualifiedName(((SimpleTypeReference)((Extension)imlEObject).getTarget()).getType());
+			}
+		} else if (imlEObject instanceof SymbolDeclaration) {
+			container = qnp.getFullyQualifiedName(imlEObject.eContainer());
+			name = ((SymbolDeclaration) imlEObject).getName();
 		}
 	}
 	
+	public EObject getImlObject() {
+		return imlObject;
+	}
+
+	public void setImlObject(EObject imlObject) {
+		this.imlObject = imlObject;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;

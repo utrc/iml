@@ -82,6 +82,6 @@ public class SimpleSort {
 	}
 
 	public String getQuotedName() {
-		return "|" + name + "|";
+		return SimpleSmtUtil.getQuotedName(name);
 	}
 }
