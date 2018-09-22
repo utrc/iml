@@ -98,4 +98,14 @@ public class SmtSymbolTable<SortT, FunDeclT> {
 		}
 		return null;
 	}
+	
+	public FunDeclT getFunDecl(EObject imlObject) {
+		EncodedId imlId = encodedIdFactory.createEncodedId(imlObject);
+		for (Map<EncodedId, FunDeclT> funs : funDecls.values()) {
+			if (funs.containsKey(imlId)) {
+				return funs.get(imlId);
+			}
+		}
+		return null;
+	}
 }

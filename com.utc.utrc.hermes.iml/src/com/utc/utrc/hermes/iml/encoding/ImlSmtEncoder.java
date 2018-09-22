@@ -19,6 +19,7 @@ import com.utc.utrc.hermes.iml.iml.SimpleTypeReference;
 import com.utc.utrc.hermes.iml.iml.Symbol;
 import com.utc.utrc.hermes.iml.iml.SymbolDeclaration;
 import com.utc.utrc.hermes.iml.iml.TupleType;
+import com.utc.utrc.hermes.iml.typing.ImlTypeProvider;
 import com.utc.utrc.hermes.iml.typing.TypingServices;
 import com.utc.utrc.hermes.iml.util.ImlUtils;
 
@@ -28,6 +29,9 @@ public class ImlSmtEncoder<SortT, FuncDeclT> implements ImlEncoder {
 	@Inject SmtModelProvider<SortT, FuncDeclT> smtModelProvider;
 	@Inject IQualifiedNameProvider qnp ;
 	
+	public static final String ARRAY_SELECT_FUNC_NAME = ".__array_select";
+	public static final String ALIAS_FUNC_NAME = ".__alias_value";
+	public static final String EXTENSION_BASE_FUNC_NAME = ".__base_";
 	
 	@Override
 	public void encode(ConstrainedType type) {
@@ -36,25 +40,34 @@ public class ImlSmtEncoder<SortT, FuncDeclT> implements ImlEncoder {
 		
 		// Stage 2: declare functions
 		declareFuncs();
-		
 	}
-
+	
 	private void defineTypes(ConstrainedType type) {
-		
-		if (symbolTable.contains(type)) return;
-		
-		// Encode relations no matter if it is a template or not
-		for (RelationInstance relation : type.getRelations()) {
-			defineTypes(relation.getTarget());
+		defineTypes(type, null);
+	}
+	
+	private void defineTypes(ConstrainedType type, SimpleTypeReference context) {
+		if (context == null) {
+			if (symbolTable.contains(type)) return;
+			
+			// Encode relations no matter if it is a template or not
+			for (RelationInstance relation : type.getRelations()) {
+				defineTypes(relation.getTarget());
+			}
+
+			if (type.isTemplate()) return;
+			addTypeSort(type);
+			
+		} else {
+			if (symbolTable.contains(context)) return;
 		}
 		
-		if (type.isTemplate()) return;
-
-		// types[T] <- newSort(T)
-		addTypeSort(type);
-		
 		for (SymbolDeclaration symbol : type.getSymbols()) {
-			defineTypes(symbol.getType());
+			if (context == null) {
+				defineTypes(symbol.getType());
+			} else {
+				defineTypes(ImlTypeProvider.getType(symbol, context));
+			}
 		}
 	}
 	
@@ -63,31 +76,33 @@ public class ImlSmtEncoder<SortT, FuncDeclT> implements ImlEncoder {
 		for (EncodedId container : types) {
 			EObject type = container.getImlObject();
 			if (type instanceof ConstrainedType) {
-				ConstrainedType ct = (ConstrainedType) type;
-				declareFuncs(ct);
+				declareFuncs((ConstrainedType) type);
 			} else if (type instanceof ArrayType) {
 				declareFuncs((ArrayType) type);
+			} else if (type instanceof SimpleTypeReference) {
+				declareFuncs((SimpleTypeReference) type);
 			}
 		}
 		
 	}
 
-	private void declareFuncs(ArrayType type) {
-		String funName = getUniqueName(type) + ".__array_select";
-		FuncDeclT arraySelectFunc = smtModelProvider.createFuncDecl(funName, Arrays.asList(symbolTable.getSort(type), symbolTable.getPrimitiveSort("Int")), symbolTable.getSort(type.getType()));
-		symbolTable.addFunDecl(type, type, arraySelectFunc);
+	private void declareFuncs(SimpleTypeReference type) {
+		if (!type.getTypeBinding().isEmpty()) {
+			declareFuncs(type.getType(), type);
+		}
 	}
 
-	private void declareFuncs(ConstrainedType container) {
-		// encode relations
+	private void declareFuncs(ConstrainedType container, SimpleTypeReference context) {
+		
+		// encode relations TODO consider context
 		for (RelationInstance relation : container.getRelations()) {
 			if (relation instanceof Alias) {
-				String funName = getUniqueName(container) + ".__alias_value";
+				String funName = getUniqueName(container) + ALIAS_FUNC_NAME;
 				FuncDeclT aliasFunc = smtModelProvider.createFuncDecl(funName, Arrays.asList(symbolTable.getSort(container)), symbolTable.getSort(((Alias)relation).getTarget()));
 				symbolTable.addFunDecl(container, relation, aliasFunc);
 			} else if (relation instanceof Extension) {
 				// TODO should we consider using FQN for base? in case extending multiple types with the same name in different packages
-				String funName = getUniqueName(container) + ".__base_" + ((SimpleTypeReference) ((Extension) relation).getTarget()).getType().getName();
+				String funName = getUniqueName(container) + EXTENSION_BASE_FUNC_NAME + getUniqueName(((SimpleTypeReference) ((Extension) relation).getTarget()).getType());
 				
 				FuncDeclT extensionFunc = smtModelProvider.createFuncDecl(funName, Arrays.asList(symbolTable.getSort(container)), symbolTable.getSort(((Extension)relation).getTarget()));
 				symbolTable.addFunDecl(container, relation, extensionFunc);
@@ -96,18 +111,41 @@ public class ImlSmtEncoder<SortT, FuncDeclT> implements ImlEncoder {
 		
 		// encode type symbols
 		for (SymbolDeclaration symbol : container.getSymbols()) {
-			String funName = getUniqueName(symbol);
-			HigherOrderType symbolType = symbol.getType();
-			SortT containerSort = symbolTable.getSort(container);
+			String funName;
+			HigherOrderType symbolType;
+			SortT containerSort;
+			if (context == null) {
+				funName = getUniqueName(symbol);
+				symbolType = symbol.getType();
+				containerSort = symbolTable.getSort(container);
+			} else {
+				funName = getUniqueName(context) + "." + symbol.getName();
+				symbolType = ImlTypeProvider.getType(symbol, context);
+				containerSort = symbolTable.getSort(context);
+			}
 			SortT symbolTypeSort = symbolTable.getSort(symbolType);
 			
 			FuncDeclT symbolFunDecl = smtModelProvider.createFuncDecl(funName, Arrays.asList(containerSort), symbolTypeSort);
-			
-			symbolTable.addFunDecl(container, symbol, symbolFunDecl);
+			if (context == null) {
+				symbolTable.addFunDecl(container, symbol, symbolFunDecl);
+			} else {
+				symbolTable.addFunDecl(context, symbol, symbolFunDecl);
+			}
 		}
-		
 	}
 
+	private void declareFuncs(ArrayType type) {
+		String funName = getUniqueName(type) + ARRAY_SELECT_FUNC_NAME;
+		FuncDeclT arraySelectFunc = smtModelProvider.createFuncDecl(
+				funName, Arrays.asList(symbolTable.getSort(type), symbolTable.getPrimitiveSort("Int")), 
+				symbolTable.getSort(TypingServices.accessArray(type, 1)));
+		symbolTable.addFunDecl(type, type, arraySelectFunc);
+	}
+
+	private void declareFuncs(ConstrainedType container) {
+		declareFuncs(container, null);
+	}
+	
 	private void defineTypes(HigherOrderType type) {
 		if (symbolTable.contains(type)) return;
 		
@@ -136,11 +174,13 @@ public class ImlSmtEncoder<SortT, FuncDeclT> implements ImlEncoder {
 		} else if (type instanceof SimpleTypeReference) {
 			SimpleTypeReference simpleRef = (SimpleTypeReference) type;
 			defineTypes(simpleRef.getType());
-			if (!simpleRef.getTypeBinding().isEmpty()) {
-				addTypeSort(simpleRef);
+			if (!simpleRef.getTypeBinding().isEmpty()) { // Template
 				for (HigherOrderType binding : simpleRef.getTypeBinding()) {
 					defineTypes(binding);
 				}
+				// Encode the new type content
+				defineTypes(simpleRef.getType(), simpleRef);
+				addTypeSort(simpleRef);
 			}
 		} else {
 			throw new IllegalArgumentException("Unsupported type: " + type.getClass().getName());
@@ -171,7 +211,7 @@ public class ImlSmtEncoder<SortT, FuncDeclT> implements ImlEncoder {
 
 	private List<SortT> getTupleSorts(TupleType type) {
 		List<SortT> sorts = new ArrayList<>();
-		for (SymbolDeclaration symbol : type.getSymbols()) {
+		for (SymbolDeclaration  symbol : type.getSymbols()) {
 			sorts.add(symbolTable.getSort(symbol.getType()));
 		}
 		return sorts;
@@ -181,12 +221,8 @@ public class ImlSmtEncoder<SortT, FuncDeclT> implements ImlEncoder {
 		FuncDeclT funDecl = symbolTable.getFunDecl(symbolDecl.eContainer(), symbolDecl);
 		if (funDecl == null) {
 			if (symbolDecl.eContainer() instanceof Model) {
-				HigherOrderType symbolType = symbolDecl.getType();
-				defineTypes(symbolType);
-				SortT symbolSort = symbolTable.getSort(symbolType);
-				String symbolId = getUniqueName(symbolDecl);
-				funDecl = smtModelProvider.createConst(symbolId, symbolSort);
-				symbolTable.addFunDecl(symbolDecl.eContainer(), symbolDecl, funDecl);
+				encode(symbolDecl);
+				funDecl = getFuncDeclaration(symbolDecl);
 			} else {
 				throw new IllegalArgumentException("Couldn't find encoding for the symbol declaration: " + symbolDecl.getName() + " of type: " + ImlUtils.getTypeNameManually(symbolDecl.getType(), qnp));
 			}
@@ -197,7 +233,7 @@ public class ImlSmtEncoder<SortT, FuncDeclT> implements ImlEncoder {
 	private String getUniqueName(EObject type) {
 		return symbolTable.getUniqueId(type);
 	}
-
+	
 	@Override
 	public void encode(HigherOrderType hot) {
 		// TODO Auto-generated method stub
@@ -205,9 +241,13 @@ public class ImlSmtEncoder<SortT, FuncDeclT> implements ImlEncoder {
 	}
 
 	@Override
-	public void encode(SymbolDeclaration symbol) {
-		// TODO Auto-generated method stub
-
+	public void encode(SymbolDeclaration symbolDecl) {
+		HigherOrderType symbolType = symbolDecl.getType();
+		defineTypes(symbolType);
+		SortT symbolSort = symbolTable.getSort(symbolType);
+		String symbolId = getUniqueName(symbolDecl);
+		FuncDeclT funDecl = smtModelProvider.createConst(symbolId, symbolSort);
+		symbolTable.addFunDecl(symbolDecl.eContainer(), symbolDecl, funDecl);
 	}
 
 	@Override
@@ -229,7 +269,6 @@ public class ImlSmtEncoder<SortT, FuncDeclT> implements ImlEncoder {
 			sb.append(funDecl + "\n");
 		}
 		
-		
 		return sb.toString();
 	}
 
@@ -240,6 +279,26 @@ public class ImlSmtEncoder<SortT, FuncDeclT> implements ImlEncoder {
 		} else {
 			encode((SymbolDeclaration) symbol);
 		}
+	}
+
+	public List<SortT> getSorts() {
+		return symbolTable.getSorts();
+	}
+
+	public List<FuncDeclT> getFuncDeclarations() {
+		return symbolTable.getFunDecls();
+	}
+
+	public SortT getSort(EObject type) {
+		return symbolTable.getSort(type);
+	}
+
+	public FuncDeclT getFuncDeclaration(EObject container, EObject imlObject) {
+		return symbolTable.getFunDecl(container, imlObject);
+	}
+	
+	public FuncDeclT getFuncDeclaration(EObject imlObject) {
+		return symbolTable.getFunDecl(imlObject);
 	}
 
 }

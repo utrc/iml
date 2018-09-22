@@ -322,7 +322,7 @@ public class ImlTypeProvider {
 			}
 			SimpleTypeReference:{
 				if (map.containsKey(t.type)) {
-					return map.get(t.type)					
+					return clone(map.get(t.type))					
 				}
 				var retval = ImlFactory.eINSTANCE.createSimpleTypeReference ;
 				retval.type = t.type
