@@ -5,7 +5,11 @@ import com.utc.utrc.hermes.iml.iml.HigherOrderType;
 import com.utc.utrc.hermes.iml.iml.Model;
 import com.utc.utrc.hermes.iml.iml.Symbol;
 import com.utc.utrc.hermes.iml.iml.SymbolDeclaration;
-
+/**
+ * This is an interface to abstract the encoding of any IML object
+ * @author elkfraaf
+ *
+ */
 public interface ImlEncoder {
 	public void encode(ConstrainedType type);
 	

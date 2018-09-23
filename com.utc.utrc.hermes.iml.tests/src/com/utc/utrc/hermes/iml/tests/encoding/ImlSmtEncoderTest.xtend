@@ -233,13 +233,7 @@ class ImlSmtEncoderTest {
 			model.findSymbol("T1").findSymbol("vart"),
 			#[t1IntInt], intToIntSort
 		)
-		val vartIntRealFun2 = assertAndGetFuncDecl(model.getSymbolType("T2", "var3"), 
-			model.findSymbol("T1").findSymbol("vart"),
-			#[t1IntReal2], intToRealSort
-		)
-		
 		assertNotSame(vartIntRealFun, vartIntIntFun)
-		assertSame(vartIntRealFun, vartIntRealFun2)
 	}
 	
 	
@@ -276,7 +270,7 @@ class ImlSmtEncoderTest {
 	}
 	
 	def assertSorts(EObject ... types) {
-		assertContainTheSameElements(types.map[encoder.getSort(it)], encoder.sorts)
+		assertContainTheSameElements(types.map[encoder.getSort(it)], encoder.allSorts)
 	}
 	
 	def assertContainTheSameElements(List list1, List list2) {
@@ -303,10 +297,10 @@ class ImlSmtEncoderTest {
 		model.assertNoErrors
 		encoder.encode(model.findSymbol(ctName))
 		// TODO make sure names are unique
-		val distinctSorts = encoder.sorts.map[it.name].stream.distinct.collect(Collectors.toList)
-		assertEquals(distinctSorts.size, encoder.sorts.size)
-		val distinctFuncDecls = encoder.funcDeclarations.map[it.name].stream.distinct.collect(Collectors.toList)
-		assertEquals(distinctFuncDecls.size, encoder.funcDeclarations.size)
+		val distinctSorts = encoder.allSorts.map[it.name].stream.distinct.collect(Collectors.toList)
+		assertEquals(distinctSorts.size, encoder.allSorts.size)
+		val distinctFuncDecls = encoder.allFuncDeclarations.map[it.name].stream.distinct.collect(Collectors.toList)
+		assertEquals(distinctFuncDecls.size, encoder.allFuncDeclarations.size)
 		return model
 	}
 	

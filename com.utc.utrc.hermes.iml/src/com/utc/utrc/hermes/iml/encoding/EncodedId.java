@@ -14,7 +14,8 @@ import com.utc.utrc.hermes.iml.iml.Symbol;
 import com.utc.utrc.hermes.iml.iml.SymbolDeclaration;
 import com.utc.utrc.hermes.iml.util.ImlUtils;
 /**
- * Encodes IML types in a way that guarantee that each unique type has unique ID
+ * Encodes IML types in a way that guarantee that each unique type has a unique ID
+ * This should hide the way it generates the unique id for each IML object
  *
  */
 public class EncodedId {
@@ -26,6 +27,14 @@ public class EncodedId {
 
 	public static QualifiedName DEFAULT_CONTAINER = QualifiedName.create("__unnamed__");
 	
+	/**
+	 * Create a unique EncoderId for each unique IML Object. The same IML type should return same EncoderID
+	 * for example: {@code Int ~> Real}type declared in different symbols should return the same EncoderId (eId1.equals(eId2) is true)
+	 * Current implementation uses the string of the actual type to generate unique id, for example the tyoe {@code Int ~> Real}
+	 * will generate string id with "Int~>Real"
+	 * @param imlEObject
+	 * @param qnp
+	 */
 	public EncodedId(EObject imlEObject, IQualifiedNameProvider qnp) {
 		this.imlObject = imlEObject;
 		if (imlEObject instanceof ConstrainedType) {
