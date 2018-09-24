@@ -17,6 +17,8 @@ import com.utc.utrc.hermes.iml.util.ImlUtils;
  * Encodes IML types in a way that guarantee that each unique type has a unique ID
  * This should hide the way it generates the unique id for each IML object
  *
+ * @author Ayman Elkfrawy (elkfraaf@utrc.utc.com)
+ * @author Gerald Wang (wangg@utrc.utc.com)
  */
 public class EncodedId {
 	
@@ -30,7 +32,7 @@ public class EncodedId {
 	/**
 	 * Create a unique EncoderId for each unique IML Object. The same IML type should return same EncoderID
 	 * for example: {@code Int ~> Real}type declared in different symbols should return the same EncoderId (eId1.equals(eId2) is true)
-	 * Current implementation uses the string of the actual type to generate unique id, for example the tyoe {@code Int ~> Real}
+	 * Current implementation uses the string of the actual type to generate unique id, for example the type {@code Int ~> Real}
 	 * will generate string id with "Int~>Real"
 	 * @param imlEObject
 	 * @param qnp
@@ -43,8 +45,9 @@ public class EncodedId {
 		} else if (imlEObject instanceof HigherOrderType) {
 			// use the serialization as name 
 			if (imlEObject instanceof SimpleTypeReference && ((SimpleTypeReference) imlEObject).getTypeBinding().size() == 0) {
-				container = qnp.getFullyQualifiedName(((SimpleTypeReference) imlEObject).getType().eContainer());
-				name = ((SimpleTypeReference) imlEObject).getType().getName();
+				ConstrainedType type = ((SimpleTypeReference) imlEObject).getType();
+				container = qnp.getFullyQualifiedName(type.eContainer());
+				name = type.getName();
 			} else {
 				container = DEFAULT_CONTAINER;
 //				container = qnp.getFullyQualifiedName(((SimpleTypeReference) imlEObject).getType().eContainer());					

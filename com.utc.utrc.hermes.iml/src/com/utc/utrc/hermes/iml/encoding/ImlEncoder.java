@@ -6,9 +6,10 @@ import com.utc.utrc.hermes.iml.iml.Model;
 import com.utc.utrc.hermes.iml.iml.Symbol;
 import com.utc.utrc.hermes.iml.iml.SymbolDeclaration;
 /**
- * This is an interface to abstract the encoding of any IML object
- * @author elkfraaf
+ * This is an interface to abstract the encoding of any IML objects
  *
+ * @author Ayman Elkfrawy (elkfraaf@utrc.utc.com)
+ * @author Gerald Wang (wangg@utrc.utc.com) 
  */
 public interface ImlEncoder {
 	public void encode(ConstrainedType type);

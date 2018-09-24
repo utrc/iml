@@ -9,8 +9,8 @@ import com.google.inject.Inject;
 /**
  * A factory responsible for creating EncodedId for any IML object
  * 
- * @author elkfraaf
- *
+ * @author Ayman Elkfrawy (elkfraaf@utrc.utc.com)
+ * @author Gerald Wang (wangg@utrc.utc.com)
  */
 public class EncodedIdFactory {
 

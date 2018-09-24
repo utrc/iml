@@ -11,7 +11,15 @@ import com.google.inject.Inject;
 import com.utc.utrc.hermes.iml.iml.ConstrainedType;
 import com.utc.utrc.hermes.iml.iml.SymbolDeclaration;
 import com.utc.utrc.hermes.iml.iml.TupleType;
-
+/**
+ * This class responsible for storing SMT model and provide access to the symbols or elements inside it
+ *
+ * @author Ayman Elkfrawy (elkfraaf@utrc.utc.com)
+ * @author Gerald Wang (wangg@utrc.utc.com)
+ *
+ * @param <SortT>
+ * @param <FunDeclT>
+ */
 public class SmtSymbolTable<SortT, FunDeclT> {
 
 	@Inject EncodedIdFactory encodedIdFactory;

@@ -2,6 +2,15 @@ package com.utc.utrc.hermes.iml.encoding;
 
 import java.util.List;
 
+/**
+ * This interface abstract the creation of an SMT model
+ *
+ * @author Ayman Elkfrawy (elkfraaf@utrc.utc.com)
+ * @author Gerald Wang (wangg@utrc.utc.com)
+ *
+ * @param <SortT> the model class for SMT sort declaration
+ * @param <FuncDeclT> the model class for SMT function declaration
+ */
 public interface SmtModelProvider <SortT, FuncDeclT> {
 	
 	public SortT createSort(String sortName);

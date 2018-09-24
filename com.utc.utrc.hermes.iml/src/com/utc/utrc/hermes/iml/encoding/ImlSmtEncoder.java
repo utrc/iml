@@ -26,8 +26,9 @@ import com.utc.utrc.hermes.iml.util.ImlUtils;
 /**
  * SMT implementation for {@link ImlEncoder}. The encoder is build for SMT v2.5
  * The encoder abstract the underlaying SMT model by using {@link SmtModelProvider}
- * 
- * @author elkfraaf
+  *
+  * @author Ayman Elkfrawy (elkfraaf@utrc.utc.com)
+  * @author Gerald Wang (wangg@utrc.utc.com)
  *
  * @param <SortT> the model class for SMT sort declaration
  * @param <FuncDeclT> the model class for SMT function declaration
@@ -160,7 +161,7 @@ public class ImlSmtEncoder<SortT, FuncDeclT> implements ImlEncoder {
 					defineTypes(binding);
 				}
 				// Encode the new type content, this is necessary in case that type contains symbols with 
-				// new HigherOrderTypes that need to b created
+				// new Higher Order Types that need to be created
 				defineTypes(simpleRef.getType(), simpleRef);
 				
 				addTypeSort(simpleRef);
@@ -170,6 +171,11 @@ public class ImlSmtEncoder<SortT, FuncDeclT> implements ImlEncoder {
 		}
 	}
 
+	/**
+	 * This method is responsible for creating and adding a new sort for the given IML type
+	 * @param type it can be ConstrainedType or HigherOrderType
+	 * @return the created sort
+	 */
 	private SortT addTypeSort(EObject type) {
 		String sortName = getUniqueName(type);
 		SortT sort = null;
@@ -221,7 +227,8 @@ public class ImlSmtEncoder<SortT, FuncDeclT> implements ImlEncoder {
 	}
 
 	/***
-	 * Having {@link SimpleTypeReference} as a type means it includes bindings which means we need to take in consideration the bindings
+	 * Having {@link SimpleTypeReference} as a type in symbol table means it includes bindings 
+	 * which means we need to take in consideration the bindings
 	 * @param type
 	 */
 	private void declareFuncs(SimpleTypeReference type) {
@@ -301,6 +308,12 @@ public class ImlSmtEncoder<SortT, FuncDeclT> implements ImlEncoder {
 		return sorts;
 	}
 	
+	/**
+	 * This method tries to get function declaration that access the given symbol. It will also create that function
+	 * in case the symbol was a global variable and wasn't encoded
+	 * @param symbolDecl
+	 * @return
+	 */
 	private FuncDeclT getSymbolDeclFun(SymbolDeclaration symbolDecl) {
 		FuncDeclT funDecl = symbolTable.getFunDecl(symbolDecl.eContainer(), symbolDecl);
 		if (funDecl == null) {

@@ -5,6 +5,12 @@ import java.util.List;
 import com.utc.utrc.hermes.iml.encoding.simplesmt.SimpleFunDeclaration;
 import com.utc.utrc.hermes.iml.encoding.simplesmt.SimpleSort;
 
+/**
+ * This is a simple implementation of SmtModelProvider using simple SMT model
+ *
+ * @author Ayman Elkfrawy (elkfraaf@utrc.utc.com)
+ * @author Gerald Wang (wangg@utrc.utc.com)
+ */
 public class SimpleSmtModelProvider implements SmtModelProvider<SimpleSort, SimpleFunDeclaration> {
 
 	@Override
