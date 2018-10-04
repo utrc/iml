@@ -9,7 +9,7 @@ import "http://www.eclipse.org/emf/2002/Ecore" as ecore
 Model:
 	'package' name=QualifiedName ';'
 	(imports+=Import ';')*
-	(symbols+=Symbol (';')?)*
+	(symbols+=Symbol (';'))*
 ;
 
 /*A qualified name is a sequence of names separated by dots*/
@@ -50,30 +50,41 @@ Alias returns RelationInstance:
 ;
 
 MetaRelation returns RelationInstance:
-	{MetaRelaion} propertylist=PropertyList  target=HigherOrderType
+	{MetaRelaion} 'relation' propertylist=PropertyList  target=HigherOrderType 
 ;
 
 PropertyList:
- '<<' properties+=SymbolDeclaration (',' properties+=SymbolDeclaration)* '>>'
+ '[' properties+=TupleSymbol (',' properties+=TupleSymbol)* ']'
 ;
 
+
+
 ConstrainedType:
-	(doc=Doc)?
-	(meta?='meta')? 'type' (propertylist=PropertyList)? name=ID
-	((finite?='finite' cardinality=INT) |  (^enum?='enum' '{' literals+=SymbolDeclaration (',' literals+=SymbolDeclaration)* '}') )?
+	//(doc=Doc)?
+	(meta?='meta')? 'type'  (propertylist=PropertyList)? name=ID (template?='<' typeParameter+=TypeParameter (',' typeParameter+=TypeParameter)* '>')? 
+	((finite?='finite' cardinality=INT) |  (^enum?='enum' '{' literals+=NonParametricUntypedSymbolDeclaration (',' literals+=NonParametricUntypedSymbolDeclaration)* '}') )?
 	/*Optional template parameters for generic types */
-	(template?='<' typeParameter+=TypeParameter (',' typeParameter+=TypeParameter)* '>')?
 	/* An optional list of type being extended by this type*/
 	( relations+=RelationInstance)*
 	/* A list of elements defined by this type*/
-	('{' (symbols+=SymbolDeclaration ';')* '}')?;
+	('{' (symbols+=SymbolDeclaration ';')* '}')? ;
 
 TypeParameter returns ConstrainedType:
 	name=ID
 ;
 
 SymbolDeclaration:
-	 name=ID primitiveProperty=PrimitiveProperty? (propertylist=PropertyList)? (':' type=HigherOrderType)? (':=' definition=FolFormula)? 
+	(propertylist=PropertyList)?
+	 (template?='<' typeParameter+=TypeParameter (',' typeParameter+=TypeParameter)* '>')? name=ID  primitiveProperty=PrimitiveProperty?  (':' type=HigherOrderType )?  (':=' definition=FolFormula)? 
+;
+
+NonParametricUntypedSymbolDeclaration returns SymbolDeclaration :
+	name=ID  
+;
+
+
+NonParametricTypedSymbolDeclaration returns SymbolDeclaration :
+	name=ID  ':' type=HigherOrderType 
 ;
 
 PrimitiveProperty:
@@ -83,20 +94,25 @@ PrimitiveProperty:
 ;
 
 HigherOrderType:
-	ArrayType ({HigherOrderType.domain=current} '~>' range=ArrayType)?  
+	ArrayType ({HigherOrderType.domain=current} '->' range=ArrayType)?  
 ;
 
 ArrayType returns HigherOrderType:
-	(SimpleTypeReference|TupleType) ({ArrayType.type=current} (('['dimensions+=OptionalTermExpr']'))+)?
+	(SimpleTypeReference|TupleOrExpressionType) ({ArrayType.type=current} (('['dimensions+=OptionalTermExpr']'))+)?
 ;
 
+
+TupleOrExpressionType returns HigherOrderType :
+	{TupleOrExpressionType} (tuple?='Tuple')? '(' ( symbols+=TupleSymbol  (tuple?=',' symbols+=TupleSymbol)* )? ')'
+;
+	
 OptionalTermExpr:
 	{OptionalTermExpr} term=TermExpression?
 ;
 
-TupleType returns HigherOrderType:
-	{TupleType} '(' ( symbols+=TupleSymbol (',' symbols+=TupleSymbol)*  )? ')'
-;
+//TupleType returns HigherOrderType:
+//	{TupleType} '(' ( symbols+=TupleSymbol (',' symbols+=TupleSymbol)*  )? ')'
+//;
 
 TupleSymbol returns SymbolDeclaration:
 	(name=ID ':')? type=HigherOrderType
@@ -105,7 +121,7 @@ TupleSymbol returns SymbolDeclaration:
 SimpleTypeReference returns HigherOrderType:
 	{SimpleTypeReference} type=[ConstrainedType|QualifiedName]
 	/*Optional type parameters for generic types */
-	('<' typeBinding+=HigherOrderType (',' typeBinding+=HigherOrderType)* '>')?
+	('<' typeBinding+=HigherOrderType (',' typeBinding+=HigherOrderType)* '>')? ('with' '{' subtypeClause=FolFormula '}')?
 ;
 
 /*Entry point for a first order logic formula.*/
@@ -120,7 +136,7 @@ Formula returns FolFormula:
  * a list of bound variables and a body defined over those variables.
  */
 QuantifiedFormula returns FolFormula:
-	op=('forall' | 'exists') scope+=SymbolDeclaration (',' scope+=SymbolDeclaration)* '{' left=FolFormula '}';
+	op=('forall' | 'exists')(template?='<' typeParameter+=TypeParameter (',' typeParameter+=TypeParameter)* '>')? '(' scope+=NonParametricTypedSymbolDeclaration (',' scope+=NonParametricTypedSymbolDeclaration)* ')' '{' left=FolFormula '}';
 
 /*Disjunction of two formulas */
 OrExpression returns FolFormula:
@@ -135,7 +151,7 @@ SignedAtomicFormula returns FolFormula:
 	{SignedAtomicFormula} (neg?='!')? left=AtomicExpression;
  
 AtomicExpression returns FolFormula:
-	TermExpression ({AtomicExpression.left=current} rel=RelationKind right=TermExpression)* ;
+	TermExpression (=>( {AtomicExpression.left=current} rel=RelationKind ) right=TermExpression)? ;
 
 TruthValue returns TermExpression:
 	{TruthValue} (TRUE?='True' | FALSE?='False');
@@ -154,10 +170,13 @@ TermExpression:
 Addition returns TermExpression:
 	Multiplication ({Addition.left=current} sign=('+' | '-') right=Multiplication)*;
 
+
 /*Multiplication, division, reminder and modulo of two terms */
 Multiplication returns TermExpression:
 	TermSelectionExpression ({Multiplication.left=current} sign=('*' | '/' | '%' | 'mod')
 	right=TermSelectionExpression)*;
+
+
 
 /*Selection of a term is a recursive definition. It is a terminal term followed
  * by the scoping operator :: and by a member terms. The member term is a 
@@ -165,40 +184,47 @@ Multiplication returns TermExpression:
  * possibly followed by parameters (for functions)
  */
 TermSelectionExpression returns TermExpression:
-	TerminalTerm ({TermMemberSelection.receiver=current} '->' member=SymbolReferenceTerm)*
+	TerminalTerm ({TermMemberSelection.receiver=current} '.' member=SymbolReferenceTerm)*
 	;
 
 /*A terminal term can be a number, a reference to symbol defined in the scope
  * of the term, a reference to a constant of a finite type, an if-then-else term
  * expression, the keyword this, or a parenthesized term.
  */
+
+
 TerminalTerm returns TermExpression:
 	{NumberLiteral} neg?=('-')? value=INT |
 	{FloatNumberLiteral} neg?=('-')? value = FLOAT |
-	TupleConstructor | 
-	SymbolReferenceTerm |
+	SymbolReferenceTerm|
+	TupleOrFormulaConstructor | 
+	TruthValue |
 	TypeConstructor |
 	IteTermExpression |
 	{This} 'this' |
-	TruthValue |
 	'{' Program '}' |
-	{LambdaExpression}'lambda' signature=TupleType '{'definition=Program'}' ;
+	{LambdaExpression}'fun' signature=TupleOrExpressionType '{'definition=Program'}' ;
+	
 
 TypeConstructor returns TermExpression:
-	{TypeConstructor} 'new' ref=SimpleTypeReference '{'init=Program'}'
+	{TypeConstructor} 'some' '(' name=ID ':' ref=SimpleTypeReference ')' '{' init=Program '}'
 ;
 
-TupleConstructor returns TermExpression:
-	{TupleConstructor} '(' elements+=FolFormula (',' elements+=FolFormula)* ')'
+TupleOrFormulaConstructor returns TermExpression:
+	{TupleOrFormulaConstructor} (tuple?='tuple')? '(' elements+=FolFormula (tuple?=',' elements+=FolFormula)* ')'
 ;
+
 
 SymbolReferenceTerm returns TermExpression:
-	{SymbolReferenceTerm}symbol=[Symbol|QualifiedName] (tails+=SymbolReferenceTail)*
+//	{SymbolReferenceTerm}symbol=[ConstrainedType|QualifiedName] (tails+=SymbolReferenceTail)*
+{SymbolReferenceTerm}  ('<' typeBinding+=HigherOrderType (',' typeBinding+=HigherOrderType)* '>')? symbol=[Symbol]  (tails+=SymbolReferenceTail)*
 ;
 
+
+
 SymbolReferenceTail:
-	TupleConstructor |
-	{ArrayAccess} '['index=FolFormula']'
+	TupleOrFormulaConstructor |
+	{ArrayAccess}  '['index=FolFormula']'
 ;
 
 IteTermExpression returns TermExpression:
