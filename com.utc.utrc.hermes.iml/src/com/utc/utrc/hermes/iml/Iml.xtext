@@ -28,7 +28,8 @@ QualifiedNameWithWildcard:
 
 Symbol :
 	SymbolDeclaration|
-	ConstrainedType 
+	ConstrainedType |
+	Assertion
 ;
 
 Doc :
@@ -54,7 +55,7 @@ MetaRelation returns RelationInstance:
 ;
 
 PropertyList:
- '[' properties+=TupleSymbol (',' properties+=TupleSymbol)* ']'
+ '[' properties+=SimpleTypeReference (',' properties+=SimpleTypeReference)* ']'
 ;
 
 
@@ -67,7 +68,7 @@ ConstrainedType:
 	/* An optional list of type being extended by this type*/
 	( relations+=RelationInstance)*
 	/* A list of elements defined by this type*/
-	('{' (symbols+=SymbolDeclaration ';')* '}')? ;
+	('{' (symbols+=(SymbolDeclaration|Assertion) ';')* '}')? ;
 
 TypeParameter returns ConstrainedType:
 	name=ID
@@ -75,7 +76,11 @@ TypeParameter returns ConstrainedType:
 
 SymbolDeclaration:
 	(propertylist=PropertyList)?
-	 (template?='<' typeParameter+=TypeParameter (',' typeParameter+=TypeParameter)* '>')? name=ID  primitiveProperty=PrimitiveProperty?  (':' type=HigherOrderType )?  (':=' definition=FolFormula)? 
+	 (template?='<' typeParameter+=TypeParameter (',' typeParameter+=TypeParameter)* '>')? name=ID   (':' type=HigherOrderType )?  (':=' definition=FolFormula)? 
+;
+
+Assertion returns SymbolDeclaration :
+	{Assertion} 'assert' name=ID ':=' definition=FolFormula
 ;
 
 NonParametricUntypedSymbolDeclaration returns SymbolDeclaration :
@@ -87,11 +92,11 @@ NonParametricTypedSymbolDeclaration returns SymbolDeclaration :
 	name=ID  ':' type=HigherOrderType 
 ;
 
-PrimitiveProperty:
-	{Assertion} 'assertion' |
-	{Assumption} 'assumption' |
-	{Guarantee} 'guarantee'
-;
+//PrimitiveProperty:
+//	{Assertion} 'assertion' |
+//	{Assumption} 'assumption' |
+//	{Guarantee} 'guarantee'
+//;
 
 HigherOrderType:
 	ArrayType ({HigherOrderType.domain=current} '->' range=ArrayType)?  
@@ -102,9 +107,27 @@ ArrayType returns HigherOrderType:
 ;
 
 
+//TupleOrExpressionType returns HigherOrderType :
+//	{TupleOrExpressionType} (tuple?='Tuple')? '(' ( symbols+=TupleSymbol  (tuple?=',' symbols+=TupleSymbol)* )? ')'
+//;
+
 TupleOrExpressionType returns HigherOrderType :
-	{TupleOrExpressionType} (tuple?='Tuple')? '(' ( symbols+=TupleSymbol  (tuple?=',' symbols+=TupleSymbol)* )? ')'
+	ExplicitTupleType |
+	ParenthesizedExpression	
+	
 ;
+
+ExplicitTupleType returns HigherOrderType :
+	{TupleType} 'Tuple(' symbols+=TupleSymbol ')'  
+;
+	
+
+ParenthesizedExpression returns HigherOrderType :
+	(=>('(' TupleSymbol {ExpressionType.symbols+=current}')') |
+	 ('(' TupleSymbol {TupleType.symbols+=current} (',' symbols+=TupleSymbol)+  ')') )
+;
+	
+	
 	
 OptionalTermExpr:
 	{OptionalTermExpr} term=TermExpression?
