@@ -233,7 +233,7 @@ public class TypingServices {
 		}
 		
 		for (i:0 ..< left.properties.size) {
-			if (! isEqual(left.properties.get(i).type, right.properties.get(i).type)) {
+			if (! isEqual(left.properties.get(i), right.properties.get(i))) {
 				return false
 			}
 		}

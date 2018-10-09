@@ -113,18 +113,18 @@ ArrayType returns HigherOrderType:
 
 TupleOrExpressionType returns HigherOrderType :
 	ExplicitTupleType |
-	ParenthesizedExpression	
+	ParenthesizedTypeExpression	
 	
 ;
 
 ExplicitTupleType returns HigherOrderType :
-	{TupleType} 'Tuple(' symbols+=TupleSymbol ')'  
+	{TupleType} 'Tuple(' symbols+=TupleSymbol (',' symbols+=TupleSymbol)* ')'  
 ;
 	
 
-ParenthesizedExpression returns HigherOrderType :
-	(=>('(' TupleSymbol {ExpressionType.symbols+=current}')') |
-	 ('(' TupleSymbol {TupleType.symbols+=current} (',' symbols+=TupleSymbol)+  ')') )
+ParenthesizedTypeExpression returns HigherOrderType :
+	(=>('(' expression=HigherOrderType')') |
+	 {TupleType}('(' symbols+=TupleSymbol (',' symbols+=TupleSymbol)+  ')') )
 ;
 	
 	
@@ -234,8 +234,20 @@ TypeConstructor returns TermExpression:
 ;
 
 TupleOrFormulaConstructor returns TermExpression:
-	{TupleOrFormulaConstructor} (tuple?='tuple')? '(' elements+=FolFormula (tuple?=',' elements+=FolFormula)* ')'
+	ExplicitTupleConstructor |
+	ParenthesizedTerm
 ;
+
+ExplicitTupleConstructor returns TermExpression:
+	{TupleConstructor} 'tuple(' elements+=FolFormula (',' elements+=FolFormula)* ')' 
+;
+
+ParenthesizedTerm returns TermExpression :
+	(=>('(' sub=FolFormula ')') |
+	 {TupleConstructor} ('(' elements+=FolFormula  (',' elements+=FolFormula)+  ')') )
+;
+	
+
 
 
 SymbolReferenceTerm returns TermExpression:

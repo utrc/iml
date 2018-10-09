@@ -48,8 +48,8 @@ public class ImlUtils {
 
 	public static boolean hasProperty(Symbol symbol, String property) {
 		if (symbol.getPropertylist() == null) return false;
-		for (SymbolDeclaration actualProperty: symbol.getPropertylist().getProperties()) {
-			if (((SimpleTypeReference)actualProperty.getType()).getType().getName().equals(property)) {
+		for (HigherOrderType actualProperty: symbol.getPropertylist().getProperties()) {
+			if (((SimpleTypeReference)actualProperty).getType().getName().equals(property)) {
 				return true;
 			}
 		}

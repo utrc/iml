@@ -30,6 +30,8 @@ import com.utc.utrc.hermes.iml.iml.SymbolReferenceTail
 import com.utc.utrc.hermes.iml.iml.ArrayAccess
 import org.eclipse.xtext.EcoreUtil2
 import com.utc.utrc.hermes.iml.iml.TypeConstructor
+import com.utc.utrc.hermes.iml.iml.TupleConstructor
+import com.utc.utrc.hermes.iml.iml.TupleType
 
 public class ImlTypeProvider {
 
