@@ -3,6 +3,7 @@ package com.utc.utrc.hermes.iml.encoding;
 import java.util.List;
 
 import com.utc.utrc.hermes.iml.encoding.simplesmt.SimpleFunDeclaration;
+import com.utc.utrc.hermes.iml.encoding.simplesmt.SimpleSmtFormula;
 import com.utc.utrc.hermes.iml.encoding.simplesmt.SimpleSort;
 
 /**
@@ -11,7 +12,7 @@ import com.utc.utrc.hermes.iml.encoding.simplesmt.SimpleSort;
  * @author Ayman Elkfrawy (elkfraaf@utrc.utc.com)
  * @author Gerald Wang (wangg@utrc.utc.com)
  */
-public class SimpleSmtModelProvider implements SmtModelProvider<SimpleSort, SimpleFunDeclaration> {
+public class SimpleSmtModelProvider implements SmtModelProvider<SimpleSort, SimpleFunDeclaration, SimpleSmtFormula> {
 
 	@Override
 	public SimpleSort createSort(String sortName) {
@@ -36,6 +37,16 @@ public class SimpleSmtModelProvider implements SmtModelProvider<SimpleSort, Simp
 	@Override
 	public SimpleFunDeclaration createConst(String funName, SimpleSort outputSort) {
 		return new SimpleFunDeclaration(funName, null, outputSort);
+	}
+
+	@Override
+	public SimpleSmtFormula createFormula(OperatorType op, List<SimpleSmtFormula> params) {
+		return new SimpleSmtFormula(op, params);
+	}
+
+	@Override
+	public SimpleSmtFormula createFormula(Object value) {
+		return new SimpleSmtFormula(value);
 	}
 
 

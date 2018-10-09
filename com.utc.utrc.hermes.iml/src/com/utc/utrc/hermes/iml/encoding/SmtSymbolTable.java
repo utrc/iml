@@ -20,12 +20,13 @@ import com.utc.utrc.hermes.iml.iml.TupleType;
  * @param <SortT>
  * @param <FunDeclT>
  */
-public class SmtSymbolTable<SortT, FunDeclT> {
+public class SmtSymbolTable<SortT, FunDeclT, FormulaT> {
 
 	@Inject EncodedIdFactory encodedIdFactory;
 	
 	private Map<EncodedId, SortT> sorts;
 	private Map<EncodedId, Map<EncodedId, FunDeclT>> funDecls;
+	
 	
 	public SmtSymbolTable() {
 		sorts = new HashMap<>();

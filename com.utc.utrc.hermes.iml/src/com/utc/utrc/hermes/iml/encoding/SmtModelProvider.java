@@ -11,7 +11,7 @@ import java.util.List;
  * @param <SortT> the model class for SMT sort declaration
  * @param <FuncDeclT> the model class for SMT function declaration
  */
-public interface SmtModelProvider <SortT, FuncDeclT> {
+public interface SmtModelProvider <SortT, FuncDeclT, FormulaT> {
 	
 	public SortT createSort(String sortName);
 	
@@ -23,4 +23,7 @@ public interface SmtModelProvider <SortT, FuncDeclT> {
 
 	public FuncDeclT createConst(String symbolId, SortT symbolSort);
 
+	public FormulaT createFormula(OperatorType op, List<FormulaT> params);
+
+	public FormulaT createFormula(Object value);
 }

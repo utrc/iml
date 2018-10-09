@@ -24,6 +24,7 @@ import com.utc.utrc.hermes.iml.iml.ArrayType
 import com.utc.utrc.hermes.iml.typing.TypingServices
 import com.utc.utrc.hermes.iml.iml.HigherOrderType
 import com.utc.utrc.hermes.iml.iml.SimpleTypeReference
+import com.utc.utrc.hermes.iml.encoding.simplesmt.SimpleSmtFormula
 
 @RunWith(XtextRunner)
 @InjectWith(ImlInjectorProvider)
@@ -35,7 +36,7 @@ class ImlSmtEncoderTest {
 	
 	@Inject extension TestHelper
 	
-	@Inject ImlSmtEncoder<SimpleSort, SimpleFunDeclaration> encoder
+	@Inject ImlSmtEncoder<SimpleSort, SimpleFunDeclaration, SimpleSmtFormula> encoder
 	
 	@Test
 	def void testSimpleConstrainedTypeEncoder() {
@@ -159,6 +160,37 @@ class ImlSmtEncoderTest {
 			TypingServices.accessArray(var1.type as ArrayType, 1),
 			#[int1Sort, intSort], intSort
 		)
+		
+		print(encoder.toString)
+	}
+	
+	@Test
+	def void testArrayOfHotEncoder() {
+		val model = 
+		encode('''
+			package p1;
+			type T1 {
+				var1: (Int~>Int)[10][];
+			}
+			type Int;
+		''', "T1")
+		
+//		val t1Sort = assertAndGetSort(model.findSymbol("T1"))
+//		val intSort =  assertAndGetSort(model.findSymbol("Int"))
+//		val var1 = model.findSymbol("T1").findSymbol("var1") as SymbolDeclaration;
+//		val int2Sort = assertAndGetSort(var1.type)
+//		val int1Sort = assertAndGetSort(TypingServices.accessArray(var1.type as ArrayType, 1))
+//		
+//		val int2Access = assertAndGetFuncDecl(
+//			var1.type, #[int2Sort, intSort], int1Sort
+//		)
+//		
+//		val int1Access = assertAndGetFuncDecl(
+//			TypingServices.accessArray(var1.type as ArrayType, 1),
+//			#[int1Sort, intSort], intSort
+//		)
+		
+		print(encoder.toString)
 	}
 	
 	@Test

@@ -3,22 +3,41 @@ package com.utc.utrc.hermes.iml.encoding;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.naming.IQualifiedNameProvider;
 
 import com.google.inject.Inject;
+import com.utc.utrc.hermes.iml.iml.Addition;
 import com.utc.utrc.hermes.iml.iml.Alias;
+import com.utc.utrc.hermes.iml.iml.ArrayAccess;
 import com.utc.utrc.hermes.iml.iml.ArrayType;
+import com.utc.utrc.hermes.iml.iml.AtomicExpression;
 import com.utc.utrc.hermes.iml.iml.ConstrainedType;
 import com.utc.utrc.hermes.iml.iml.Extension;
+import com.utc.utrc.hermes.iml.iml.FloatNumberLiteral;
+import com.utc.utrc.hermes.iml.iml.FolFormula;
 import com.utc.utrc.hermes.iml.iml.HigherOrderType;
+import com.utc.utrc.hermes.iml.iml.IteTermExpression;
+import com.utc.utrc.hermes.iml.iml.LambdaExpression;
 import com.utc.utrc.hermes.iml.iml.Model;
+import com.utc.utrc.hermes.iml.iml.Multiplication;
+import com.utc.utrc.hermes.iml.iml.NumberLiteral;
+import com.utc.utrc.hermes.iml.iml.Program;
 import com.utc.utrc.hermes.iml.iml.RelationInstance;
+import com.utc.utrc.hermes.iml.iml.SignedAtomicFormula;
 import com.utc.utrc.hermes.iml.iml.SimpleTypeReference;
 import com.utc.utrc.hermes.iml.iml.Symbol;
 import com.utc.utrc.hermes.iml.iml.SymbolDeclaration;
+import com.utc.utrc.hermes.iml.iml.SymbolReferenceTail;
+import com.utc.utrc.hermes.iml.iml.SymbolReferenceTerm;
+import com.utc.utrc.hermes.iml.iml.TermMemberSelection;
+import com.utc.utrc.hermes.iml.iml.This;
+import com.utc.utrc.hermes.iml.iml.TruthValue;
+import com.utc.utrc.hermes.iml.iml.TupleConstructor;
 import com.utc.utrc.hermes.iml.iml.TupleType;
+import com.utc.utrc.hermes.iml.iml.TypeConstructor;
 import com.utc.utrc.hermes.iml.typing.ImlTypeProvider;
 import com.utc.utrc.hermes.iml.typing.TypingServices;
 import com.utc.utrc.hermes.iml.util.ImlUtils;
@@ -33,10 +52,10 @@ import com.utc.utrc.hermes.iml.util.ImlUtils;
  * @param <SortT> the model class for SMT sort declaration
  * @param <FuncDeclT> the model class for SMT function declaration
  */
-public class ImlSmtEncoder<SortT, FuncDeclT> implements ImlEncoder {
+public class ImlSmtEncoder<SortT, FuncDeclT, FormulaT> implements ImlEncoder {
 
-	@Inject SmtSymbolTable<SortT, FuncDeclT> symbolTable;
-	@Inject SmtModelProvider<SortT, FuncDeclT> smtModelProvider;
+	@Inject SmtSymbolTable<SortT, FuncDeclT, FormulaT> symbolTable;
+	@Inject SmtModelProvider<SortT, FuncDeclT, FormulaT> smtModelProvider;
 	@Inject IQualifiedNameProvider qnp ;
 	
 	public static final String ARRAY_SELECT_FUNC_NAME = ".__array_select";
@@ -92,8 +111,15 @@ public class ImlSmtEncoder<SortT, FuncDeclT> implements ImlEncoder {
 		
 		// Stage 2: declare functions
 		declareFuncs();
+		
+		// Stage 3: define formulas
+		defindFormulas();
 	}
 	
+	private void defindFormulas() {
+		
+	}
+
 	private void defineTypes(ConstrainedType type) {
 		defineTypes(type, null);
 	}
@@ -308,6 +334,98 @@ public class ImlSmtEncoder<SortT, FuncDeclT> implements ImlEncoder {
 		return sorts;
 	}
 	
+	// ****** TODO refactor all OP
+	private FormulaT encodeFormula(FolFormula formula, SimpleTypeReference context) {
+		FormulaT leftFormula = null;
+		FormulaT rightFormula = null; 
+		if (formula.getLeft() != null) {
+			leftFormula = encodeFormula(formula.getLeft(), context);
+		}
+		if (formula.getRight() != null) {
+			rightFormula = encodeFormula(formula.getRight(), context);
+		}
+		
+		if (formula.getOp() != null && !formula.getOp().isEmpty()) {
+			OperatorType op = OperatorType.parseOp(formula.getOp());
+			
+			if (op == OperatorType.IMPL || op == OperatorType.EQUIV) { // TODO handle equivalence
+				return smtModelProvider.createFormula(op, Arrays.asList(leftFormula, rightFormula));
+			} else if (op == OperatorType.FOR_ALL) { // TODO handle exists
+				
+			} else if (op == OperatorType.AND || op == OperatorType.OR) {
+				return smtModelProvider.createFormula(op, Arrays.asList(leftFormula, rightFormula));
+			}
+		} else if (formula instanceof SignedAtomicFormula) {
+			if (((SignedAtomicFormula) formula).isNeg()) {
+				return smtModelProvider.createFormula(OperatorType.NOT, Arrays.asList(leftFormula));
+			} else {
+				return leftFormula;
+			}
+		} else if (formula instanceof AtomicExpression) {
+			OperatorType op = OperatorType.parseOp(((AtomicExpression) formula).getRel().getLiteral());
+			// TODO why AtmoicExpression has * instead of ?
+			return smtModelProvider.createFormula(op, Arrays.asList(leftFormula, rightFormula));
+		} else if (formula instanceof Addition) {
+			return smtModelProvider.createFormula(OperatorType.parseOp(((Addition) formula).getSign()), Arrays.asList(leftFormula, rightFormula));
+		} else if (formula instanceof Multiplication) {
+			return smtModelProvider.createFormula(OperatorType.parseOp(((Multiplication) formula).getSign()), Arrays.asList(leftFormula, rightFormula));
+		} else if (formula instanceof TermMemberSelection) {
+			// TODO 
+		} else if (formula instanceof NumberLiteral) {
+			if (((NumberLiteral) formula).isNeg()) {
+				FormulaT valueFormula = smtModelProvider.createFormula(((NumberLiteral) formula).getValue());
+				return smtModelProvider.createFormula(OperatorType.NEGATIVE, Arrays.asList(valueFormula));
+			} else {
+				return smtModelProvider.createFormula(((NumberLiteral) formula).getValue());
+			}
+		} else if (formula instanceof FloatNumberLiteral) {
+			if (((FloatNumberLiteral) formula).isNeg()) {
+				FormulaT valueFormula = smtModelProvider.createFormula(((FloatNumberLiteral) formula).getValue());
+				return smtModelProvider.createFormula(OperatorType.NEGATIVE, Arrays.asList(valueFormula));
+			} else {
+				return smtModelProvider.createFormula(((FloatNumberLiteral) formula).getValue());
+			}
+		} else if (formula instanceof TupleConstructor) {
+			
+		} else if (formula instanceof SymbolReferenceTerm) {
+			SymbolReferenceTerm symbolRef = (SymbolReferenceTerm) formula;
+			// 1. Get FunctionDeclaration for the symbol
+			FormulaT symbolRefFormula = getSymbolAccessFormula(symbolRef, context);
+			
+			// 2. Handle Tails from left to right
+			for (SymbolReferenceTail tail : symbolRef.getTails()) {
+				if (tail instanceof ArrayAccess) {
+					
+				} else { // TupleConstructor
+					List<FormulaT> tupleFormulas = encodeTupleElements((TupleConstructor) tail, context);
+				}
+			}
+		} else if (formula instanceof TypeConstructor) {
+			
+		} else if (formula instanceof IteTermExpression) {
+			
+		} else if (formula instanceof This) {
+			
+		} else if (formula instanceof TruthValue) {
+			return smtModelProvider.createFormula(((TruthValue) formula).isTRUE());
+		} else if (formula instanceof Program) {
+			
+		} else if (formula instanceof LambdaExpression) {
+			
+		}
+		
+		return null;
+	}
+	
+	private List<FormulaT> encodeTupleElements(TupleConstructor tail, SimpleTypeReference context) {
+		return tail.getElements().stream().map(it -> encodeFormula(it, context)).collect(Collectors.toList());
+	}
+
+	private FormulaT getSymbolAccessFormula(SymbolReferenceTerm formula, SimpleTypeReference context) {
+		// Handle super types
+		return null;
+	}
+
 	/**
 	 * This method tries to get function declaration that access the given symbol. It will also create that function
 	 * in case the symbol was a global variable and wasn't encoded
@@ -345,7 +463,7 @@ public class ImlSmtEncoder<SortT, FuncDeclT> implements ImlEncoder {
 	}
 
 	public FuncDeclT getFuncDeclaration(EObject container, EObject imlObject) {
-		return symbolTable.getFunDecl(container, imlObject);
+		return symbolTable.getFunDecl(container,  imlObject);
 	}
 	
 	public FuncDeclT getFuncDeclaration(EObject imlObject) {
@@ -366,5 +484,6 @@ public class ImlSmtEncoder<SortT, FuncDeclT> implements ImlEncoder {
 		
 		return sb.toString();
 	}
+	
 }
  

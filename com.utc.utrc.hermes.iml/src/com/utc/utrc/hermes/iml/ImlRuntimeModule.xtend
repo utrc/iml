@@ -11,6 +11,7 @@ import com.google.inject.TypeLiteral
 import com.utc.utrc.hermes.iml.encoding.SimpleSmtModelProvider
 import com.utc.utrc.hermes.iml.encoding.simplesmt.SimpleSort
 import com.utc.utrc.hermes.iml.encoding.simplesmt.SimpleFunDeclaration
+import com.utc.utrc.hermes.iml.encoding.simplesmt.SimpleSmtFormula
 
 /**
  * Use this class to register components to be used at runtime / without the Equinox extension registry.
@@ -24,7 +25,7 @@ class ImlRuntimeModule extends AbstractImlRuntimeModule {
 								.named(AbstractDeclarativeScopeProvider.NAMED_DELEGATE))
 				.to(ImlImportedNamespaceAwareLocalScopeProvider);
 		
-		binder.bind(new TypeLiteral<SmtModelProvider<SimpleSort, SimpleFunDeclaration>>() {}).to(SimpleSmtModelProvider)
+		binder.bind(new TypeLiteral<SmtModelProvider<SimpleSort, SimpleFunDeclaration, SimpleSmtFormula>>() {}).to(SimpleSmtModelProvider)
 	}
 	
 }
