@@ -33,7 +33,7 @@ public class TypingServices {
 		];
 		return ret
 	}
-	
+
 	def static SimpleTypeReference createSimpleTypeRef(ConstrainedType t) {
 		ImlFactory::eINSTANCE.createSimpleTypeReference => [
 			type = t
@@ -41,104 +41,102 @@ public class TypingServices {
 	}
 
 	def static clone(PropertyList pl) {
-		var ret = ImlFactory::eINSTANCE.createPropertyList ;
-		for(p : pl.properties) {
+		var ret = ImlFactory::eINSTANCE.createPropertyList;
+		for (p : pl.properties) {
 			ret.properties.add(clone(p))
 		}
 	}
-	
-	//TODO Are we going to have cloning functions for everything?
-	//What do we actually need to clone? What can instead just
-	//be copied as reference?
+
+	// TODO Are we going to have cloning functions for everything?
+	// What do we actually need to clone? What can instead just
+	// be copied as reference?
 	def static clone(SymbolDeclaration v) {
-		var ret = ImlFactory::eINSTANCE.createSymbolDeclaration ;
+		var ret = ImlFactory::eINSTANCE.createSymbolDeclaration;
 		// Following added By Ayman for 4-higher-order-types-only
 		ret.name = v.name
 		// TODO Do we need to copy the property list?
 		ret.type = clone(v.type)
 		// TODO What to do with the definition?
-		
 		return ret
 	}
-	
+
 	def static HigherOrderType clone(HigherOrderType other) {
 		if (other !== null) {
 			if (other instanceof SimpleTypeReference) {
 				return clone(other as SimpleTypeReference)
 			}
-			
+
 			if (other instanceof ArrayType) {
 				return clone(other as ArrayType)
 			}
-			
+
 			if (other instanceof TupleType) {
 				return clone(other as TupleType)
 			}
-			
+
 			// Not a leaf node
-			var ret = ImlFactory::eINSTANCE.createHigherOrderType() ;
-			//TODO We are not cloning the property list here
+			var ret = ImlFactory::eINSTANCE.createHigherOrderType();
+			// TODO We are not cloning the property list here
 			ret.domain = clone(other.domain);
 			if (other.range !== null) {
-				ret.range= clone(other.range);
+				ret.range = clone(other.range);
 			}
 			return ret
-			
+
 		} else {
 			return null
 		}
-		
+
 	}
-	
-	def static clone(SimpleTypeReference tr){
+
+	def static clone(SimpleTypeReference tr) {
 		var ret = ImlFactory::eINSTANCE.createSimpleTypeReference();
 		ret.type = tr.type;
-		for(t : tr.typeBinding) {
+		for (t : tr.typeBinding) {
 			ret.typeBinding.add(clone(t))
 		}
 		return ret;
 	}
-	
-	def static clone(TupleType tt){
+
+	def static clone(TupleType tt) {
 		var ret = ImlFactory::eINSTANCE.createTupleType();
-		
+
 		for (s : tt.symbols) {
 			ret.symbols.add(clone(s))
 		}
 		return ret
 	}
-	
+
 	def static clone(ArrayType at) {
-		var ret = ImlFactory::eINSTANCE.createArrayType() ;
+		var ret = ImlFactory::eINSTANCE.createArrayType();
 		ret.type = clone(at.type)
-		for(d : at.dimensions) {
-			//TODO : Should we clone the term expressions?
+		for (d : at.dimensions) {
+			// TODO : Should we clone the term expressions?
 			ret.dimensions.add(ImlFactory::eINSTANCE.createOptionalTermExpr => [
-						term=ImlFactory::eINSTANCE.createNumberLiteral => [value=0]
-					;])
+				term = ImlFactory::eINSTANCE.createNumberLiteral => [value = 0];
+			])
 		}
 		return ret
 	}
-		
+
 	def static HigherOrderType accessArray(ArrayType type, int dim) {
 		if (dim == type.dimensions.size) {
 			return type.type
 		} else {
-			var ret = ImlFactory::eINSTANCE.createArrayType() ;
-			//TODO We are not cloning the property list here
+			var ret = ImlFactory::eINSTANCE.createArrayType();
+			// TODO We are not cloning the property list here
 			ret.type = clone(type.type);
-	
-			for( i : 0..<(type.dimensions.size()- dim)) {
-				//TODO : Should we clone the term expressions?
+
+			for (i : 0 ..< (type.dimensions.size() - dim)) {
+				// TODO : Should we clone the term expressions?
 				ret.dimensions.add(ImlFactory::eINSTANCE.createOptionalTermExpr => [
-						term=ImlFactory::eINSTANCE.createNumberLiteral => [value=0]
-					;])
+					term = ImlFactory::eINSTANCE.createNumberLiteral => [value = 0];
+				])
 			}
 			return ret
 		}
 	}
 
-	
 	/* Check whether two type references are the same */
 	def static boolean isEqual(HigherOrderType left, HigherOrderType right) {
 		if (left === null && right === null) {
@@ -146,54 +144,52 @@ public class TypingServices {
 		} else if (left === null || right === null) {
 			return false
 		}
-		
+
 		if (left.class != right.class) {
 			return false
 		}
-		
+
 		if (left instanceof SimpleTypeReference) {
 			if (!isEqual(left as SimpleTypeReference, right as SimpleTypeReference)) {
 				return false
 			}
 		}
-		
+
 		if (left instanceof ArrayType) {
 			if (!isEqual(left as ArrayType, right as ArrayType)) {
 				return false
 			}
 		}
-		
+
 		if (left instanceof TupleType) {
 			if (!isEqual(left as TupleType, right as TupleType)) {
 				return false
 			}
 		}
-		
+
 		if (!isEqual(left.domain, right.domain)) {
 			return false
 		}
-		
+
 		if (!isEqual(left.range, right.range)) {
 			return false
 		}
-		
+
 		return true
 	}
-	
+
 	def static boolean isEqual(HigherOrderType left, HigherOrderType right, boolean checkProperties) {
 		if (!isEqual(left, right)) {
 			return false;
 		}
-		
+
 //		if (checkProperties) {
 //			if (!isEqual(left.propertylist, right.propertylist)) {
 //				return false
 //			}
 //		}
-		
 		return true;
 	}
-
 
 	/* Check whether two type references are the same */
 	def static boolean isEqual(ArrayType left, ArrayType right) {
@@ -202,23 +198,23 @@ public class TypingServices {
 		} else if (left === null || right === null) {
 			return false
 		}
-		
+
 		if (!isEqual(left.type, right.type)) {
 			return false
 		}
-		
+
 		if (left.dimensions.size != right.dimensions.size) {
 			return false
 		}
-		
+
 		return true
 	}
-	
+
 	def static boolean isEqual(TupleType left, TupleType right) {
 		if (left.symbols.length != right.symbols.length) {
 			return false
 		} else {
-			for (i: 0 ..< left.symbols.length) {
+			for (i : 0 ..< left.symbols.length) {
 				if (!isEqual(left.symbols.get(i).type, right.symbols.get(i).type)) {
 					return false
 				}
@@ -226,18 +222,18 @@ public class TypingServices {
 		}
 		return true
 	}
-	
+
 	def static boolean isEqual(PropertyList left, PropertyList right) {
 		if (left.properties.size != right.properties.size) {
 			return false;
 		}
-		
-		for (i:0 ..< left.properties.size) {
+
+		for (i : 0 ..< left.properties.size) {
 			if (! isEqual(left.properties.get(i), right.properties.get(i))) {
 				return false
 			}
 		}
-		
+
 		return true
 	}
 
@@ -269,8 +265,8 @@ public class TypingServices {
 			return true;
 		return false;
 	}
-	
-	//TODO 
+
+	// TODO 
 	def static getAllDeclarations(HigherOrderType ctx) {
 		var List<SymbolDeclaration> tlist = <SymbolDeclaration>newArrayList()
 		var List<List<SimpleTypeReference>> hierarchy = ctx.allSuperTypes;
@@ -287,13 +283,10 @@ public class TypingServices {
 		return tlist;
 	}
 
-	
-
 	/* Compute all super types of a ContrainedType  */
 	def static getAllSuperTypes(ConstrainedType ct) {
 		getSuperTypes(createSimpleTypeRef(ct)).map[it.map[it.type]]
 	}
-
 
 	/* Compute all super type references of a TypeReference */
 	def static getAllSuperTypes(HigherOrderType hot) {
@@ -303,7 +296,6 @@ public class TypingServices {
 			return new ArrayList<List<SimpleTypeReference>>()
 		}
 	}
-	
 
 	def static getSuperTypes(SimpleTypeReference tf) {
 		val closed = <ConstrainedType>newArrayList()
@@ -315,15 +307,18 @@ public class TypingServices {
 			val toAdd = <SimpleTypeReference>newArrayList();
 			for (current : retVal.get(index)) {
 				val ctype = current.type
-				for(rel : ctype.relations) {
-					if (rel instanceof com.utc.utrc.hermes.iml.iml.Extension) {
-						if (rel.target instanceof SimpleTypeReference) {
-							if ( ! closed.contains((rel.target as SimpleTypeReference).type)) {
-								toAdd.add(rel.target as SimpleTypeReference)
+
+				if (ctype.relations != null) {
+					for (rel : ctype.relations.extensions) {
+							if (rel.type instanceof SimpleTypeReference) {
+								if (! closed.contains((rel.type as SimpleTypeReference).type)) {
+									toAdd.add(rel.type as SimpleTypeReference)
+								}
 							}
-						}
+						
 					}
 				}
+
 				closed.add(current.type)
 			}
 			if (toAdd.size() > 0) {
@@ -335,56 +330,54 @@ public class TypingServices {
 		}
 		return retVal
 	}
-	
-	
 
 	/* Check whether actual paramemter's type is compatible with formal/signature parameter's type.
 	 * If the flag checkStereotypes is true, then also compare stereotypes. 
 	 * */
 	def static boolean isCompatible(HigherOrderType actual, HigherOrderType sig) {
 		/* 
-		if (actual.array || sig.array) {
-			if (actual.dimension.size != sig.dimension.size) {
-				return false;
-			}
+		 * if (actual.array || sig.array) {
+		 * 	if (actual.dimension.size != sig.dimension.size) {
+		 * 		return false;
+		 * 	}
 
-		}
-		if (sig.type.name == 'Any')
-			return true
-		if (sig.numeric && actual.numeric) {
-			if ((sig.type.name == 'Real') || (sig.type.name == 'Int' && actual.type.name != 'Real'))
-				return true
-			else
-				return false
-		}
-		if (sig.isEqual(actual))
-			return true
-		// if (checkStereotypes && ! actual.stereotypes.containsAll(sig.stereotypes))
-		// return false
-		if (! sig.type.isSuperType(actual.type))
-			return false;
+		 * }
+		 * if (sig.type.name == 'Any')
+		 * 	return true
+		 * if (sig.numeric && actual.numeric) {
+		 * 	if ((sig.type.name == 'Real') || (sig.type.name == 'Int' && actual.type.name != 'Real'))
+		 * 		return true
+		 * 	else
+		 * 		return false
+		 * }
+		 * if (sig.isEqual(actual))
+		 * 	return true
+		 * // if (checkStereotypes && ! actual.stereotypes.containsAll(sig.stereotypes))
+		 * // return false
+		 * if (! sig.type.isSuperType(actual.type))
+		 * 	return false;
 
-		var str = sig.allSuperTypesReferences;
-		for (level : str) {
-			for (tr : level) {
-				if (tr.type == actual.type) {
-					var TypeReference bounded = tr.bindTypeRefWith(sig)
-					if (bounded.typeBinding.size != actual.typeBinding.size) {
-						return false;
-					}
-					for (i : 0 ..< bounded.typeBinding.size) {
-						if (! bounded.typeBinding.get(i).isEqual(actual.typeBinding.get(i))) {
-							return false;
-						}
-					}
-				}
-			}
-		}
-		*/
-		return isEqual(actual,sig);
+		 * var str = sig.allSuperTypesReferences;
+		 * for (level : str) {
+		 * 	for (tr : level) {
+		 * 		if (tr.type == actual.type) {
+		 * 			var TypeReference bounded = tr.bindTypeRefWith(sig)
+		 * 			if (bounded.typeBinding.size != actual.typeBinding.size) {
+		 * 				return false;
+		 * 			}
+		 * 			for (i : 0 ..< bounded.typeBinding.size) {
+		 * 				if (! bounded.typeBinding.get(i).isEqual(actual.typeBinding.get(i))) {
+		 * 					return false;
+		 * 				}
+		 * 			}
+		 * 		}
+		 * 	}
+		 * }
+		 */
+		return isEqual(actual, sig);
 	}
 
-	//TODO
+	// TODO
 	def static boolean isSuperType(HigherOrderType t, HigherOrderType sub, boolean checkStereotypes) {
 		var str = sub.allSuperTypes;
 		for (level : str) {
@@ -452,9 +445,7 @@ public class TypingServices {
 		return false;
 	}
 
-	
-
-	//TODO
+	// TODO
 	def static boolean isTemplateParameter(HigherOrderType t) {
 //		if (t.type.eContainer === null) {
 //			return false
@@ -471,11 +462,9 @@ public class TypingServices {
 	}
 
 	/* compute what type t is used to bind a term which is declared in parametric constrainedtype container and is being used in instantiated constrainedtype c */
-	
 	// TODO This cloning function should be revisited
 	def static TermExpression cloneTermExpression(TermExpression te) {
 		switch (te) {
-		
 			default:
 				null
 		}
@@ -540,17 +529,16 @@ public class TypingServices {
 		}
 		return false;
 	}
-	
+
 	def static isSimpleTR(HigherOrderType hot) {
 		return hot instanceof SimpleTypeReference
 	}
-	
+
 	def static asSimpleTR(HigherOrderType hot) {
 		if (isSimpleTR(hot)) {
 			return hot as SimpleTypeReference
 		}
 		return null;
 	}
-
 
 }

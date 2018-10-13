@@ -31,7 +31,7 @@ import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
 import com.utc.utrc.hermes.iml.typing.ImlTypeProvider
 import com.utc.utrc.hermes.iml.typing.TypingServices
 import com.utc.utrc.hermes.iml.iml.PropertyList
-import com.utc.utrc.hermes.iml.iml.Program
+import com.utc.utrc.hermes.iml.iml.SequenceTerm
 import com.utc.utrc.hermes.iml.iml.TupleType
 
 /**
@@ -430,12 +430,12 @@ class ImlValidator extends AbstractImlValidator {
 			switch (container) {
 				ConstrainedType: {
 					if (container.symbols.contains(symbol)) { // Symbols must have a type if there is no primitive properties
-						if (symbol.type === null && symbol.primitiveProperty === null) {
-							error('''Symobl declaration  "«symbol.name»" must have a type''',
-							ImlPackage.eINSTANCE.symbolDeclaration_Type,
-							INVALID_SYMBOL_DECLARATION
-						)
-						}
+//						if (symbol.type === null && symbol.primitiveProperty === null) {
+//							error('''Symobl declaration  "«symbol.name»" must have a type''',
+//							ImlPackage.eINSTANCE.symbolDeclaration_Type,
+//							INVALID_SYMBOL_DECLARATION
+//						)
+//						}
 					} else if (container.literals.contains(symbol)) { // Symbols must not have type nor definition
 						if (symbol.type !== null || symbol.definition !== null) {
 							error('''Type literal "«symbol.name»" shoud not have a type nor a definition''',
@@ -447,12 +447,12 @@ class ImlValidator extends AbstractImlValidator {
 				}
 				
 				Program: { // Must have a type if there is no primitive properties
-					if (symbol.type === null && symbol.primitiveProperty === null) {
-						error('''Symobl declaration  "«symbol.name»" must have a type''',
-							ImlPackage.eINSTANCE.symbolDeclaration_Type,
-							INVALID_SYMBOL_DECLARATION
-						)
-					}
+//					if (symbol.type === null && symbol.primitiveProperty === null) {
+//						error('''Symobl declaration  "«symbol.name»" must have a type''',
+//							ImlPackage.eINSTANCE.symbolDeclaration_Type,
+//							INVALID_SYMBOL_DECLARATION
+//						)
+//					}
 				}
 
 				PropertyList: { // Must have a type

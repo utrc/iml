@@ -24,7 +24,7 @@ import java.util.HashMap
 import com.utc.utrc.hermes.iml.iml.ImlFactory
 import com.utc.utrc.hermes.iml.iml.AtomicExpression
 import com.utc.utrc.hermes.iml.iml.LambdaExpression
-import com.utc.utrc.hermes.iml.iml.Program
+import com.utc.utrc.hermes.iml.iml.SequenceTerm
 import com.utc.utrc.hermes.iml.iml.SymbolReferenceTerm
 import com.utc.utrc.hermes.iml.iml.SymbolReferenceTail
 import com.utc.utrc.hermes.iml.iml.ArrayAccess
@@ -45,6 +45,8 @@ public class ImlTypeProvider {
 
 	public static val Bool = createBasicType('Bool')
 	
+	public static val String = createBasicType('String')
+	
 	
 	def static HigherOrderType termExpressionType(FolFormula t) {
 		termExpressionType(t, createSimpleTypeRef(t.getContainerOfType(ConstrainedType)))
@@ -64,9 +66,7 @@ public class ImlTypeProvider {
 	def static HigherOrderType termExpressionType(FolFormula t, SimpleTypeReference context) {
 		if (t instanceof TermExpression) {
 			return termExpressionType((t as TermExpression), context)
-		} if (t instanceof SignedAtomicFormula) {
-			
-		}
+		} 
 		
 		if (t instanceof AtomicExpression) {
 			return Bool

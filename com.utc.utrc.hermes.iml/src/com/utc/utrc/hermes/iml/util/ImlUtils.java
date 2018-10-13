@@ -12,7 +12,6 @@ import org.eclipse.xtext.serializer.ISerializer;
 
 import com.utc.utrc.hermes.iml.iml.ArrayType;
 import com.utc.utrc.hermes.iml.iml.ConstrainedType;
-import com.utc.utrc.hermes.iml.iml.Extension;
 import com.utc.utrc.hermes.iml.iml.HigherOrderType;
 import com.utc.utrc.hermes.iml.iml.Model;
 import com.utc.utrc.hermes.iml.iml.SimpleTypeReference;
@@ -39,11 +38,9 @@ public class ImlUtils {
 
 	public static List<ConstrainedType> getDirectParents(ConstrainedType type) {
 		if (type.getRelations() == null) return new ArrayList<>(); // Precondition
-		
-		return type.getRelations().stream()
-			.filter(it -> it instanceof Extension)
-			.map(it -> ((SimpleTypeReference) it.getTarget()).getType())
-			.collect(Collectors.toList());
+		return type.getRelations().getExtensions().stream()
+				.map(it -> ((SimpleTypeReference) it.getType()).getType())
+				.collect(Collectors.toList());
 	}
 
 	public static boolean hasProperty(Symbol symbol, String property) {
