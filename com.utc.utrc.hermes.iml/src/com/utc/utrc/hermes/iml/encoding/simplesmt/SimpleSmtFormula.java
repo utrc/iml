@@ -56,6 +56,21 @@ public class SimpleSmtFormula {
 		this.value = value;
 	}
 	
-	
+	@Override
+	public String toString() {
+		String paramsString = "";
+		if (params != null && !params.isEmpty()) {
+			paramsString = params.stream().map(it -> it.toString()).reduce((acc, current) -> acc + " " + current).get();
+		}
+		if (op != null) {
+			return "(" + op.getSmtOp() + " " + paramsString + ")";
+		} else if (funDecl != null) {
+			return "(" + funDecl.name + " " + paramsString + ")";
+		} else if (!paramsString.isEmpty()) {
+			return "(" + paramsString + ")";
+		} else {
+			return value.toString();
+		}
+	}
 
 }

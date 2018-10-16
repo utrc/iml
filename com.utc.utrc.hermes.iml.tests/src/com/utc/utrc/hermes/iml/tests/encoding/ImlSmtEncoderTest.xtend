@@ -132,6 +132,8 @@ class ImlSmtEncoderTest {
 		val var1Fun = assertAndGetFuncDecl(
 			var1, #[t1Sort], hotSort 
 		)
+		
+		print(encoder.toString)
 	}
 	
 	
@@ -163,36 +165,7 @@ class ImlSmtEncoderTest {
 		
 		print(encoder.toString)
 	}
-	
-	@Test
-	def void testArrayOfHotEncoder() {
-		val model = 
-		encode('''
-			package p1;
-			type T1 {
-				var1: (Int~>Int)[10][];
-			}
-			type Int;
-		''', "T1")
-		
-//		val t1Sort = assertAndGetSort(model.findSymbol("T1"))
-//		val intSort =  assertAndGetSort(model.findSymbol("Int"))
-//		val var1 = model.findSymbol("T1").findSymbol("var1") as SymbolDeclaration;
-//		val int2Sort = assertAndGetSort(var1.type)
-//		val int1Sort = assertAndGetSort(TypingServices.accessArray(var1.type as ArrayType, 1))
-//		
-//		val int2Access = assertAndGetFuncDecl(
-//			var1.type, #[int2Sort, intSort], int1Sort
-//		)
-//		
-//		val int1Access = assertAndGetFuncDecl(
-//			TypingServices.accessArray(var1.type as ArrayType, 1),
-//			#[int1Sort, intSort], intSort
-//		)
-		
-		print(encoder.toString)
-	}
-	
+
 	@Test
 	def void testTupleTypeEncoder() {
 		val model = encode('''
@@ -434,6 +407,124 @@ class ImlSmtEncoderTest {
 		println(encoder.toString)
 	}
 	
+	@Test
+	def void testFormulaEncoding() {
+		val model =
+		encode('''
+			package p;
+			type Int;
+			type T1 {
+				var2: Int;
+				var1 : Int := var2 * 5;
+			}
+			varT : T1;
+		''', "T1");
+		
+		
+		val varT = (model.findSymbol("varT") as SymbolDeclaration).type as SimpleTypeReference
+		val definition = (model.findSymbol("T1").findSymbol("var1") as SymbolDeclaration).definition
+		
+		val formulaEncoding = encoder.encodeFormula(definition, varT, new SimpleSmtFormula("inst"), null);
+		
+		print(formulaEncoding);
+	}
 	
+	@Test
+	def void testFormulaEncodingTermMemberSelection() {
+		val model =
+		encode('''
+			package p;
+			type Int;
+			type T1 {
+				var1 : Int;
+			}
+			type T2 {
+				var2: T1;
+				var3: Int := var2->var1;
+			}
+			varT : T2;
+		''', "T2");
+		
+		
+		val varT = (model.findSymbol("varT") as SymbolDeclaration).type as SimpleTypeReference
+		val definition = (model.findSymbol("T2").findSymbol("var3") as SymbolDeclaration).definition
+		
+		val formulaEncoding = encoder.encodeFormula(definition, varT, new SimpleSmtFormula("inst"), null);
+		
+		print(formulaEncoding);
+	}
+	
+	@Test
+	def void testFormulaEncodingSymbolRefWithExtension() {
+		val model =
+		encode('''
+			package p;
+			type Int;
+			type T1 {
+				var1 : Int;
+			}
+			type T2 extends T1 {
+				var2: Int := var1;
+			}
+			varT : T2;
+		''', "T2");
+		
+		
+		val varT = (model.findSymbol("varT") as SymbolDeclaration).type as SimpleTypeReference
+		val definition = (model.findSymbol("T2").findSymbol("var2") as SymbolDeclaration).definition
+		
+		val formulaEncoding = encoder.encodeFormula(definition, varT, new SimpleSmtFormula("inst"), null);
+		
+		print(formulaEncoding);
+	}
+	
+	@Test
+	def void testFormulaEncodingIte() {
+		val model =
+		encode('''
+			package p;
+			type Int;
+			type T1 {
+				var1 assertion : Int := if (True && False) {5};
+			}
+			varT : T1;
+		''', "T1");
+		
+		
+		val varT = (model.findSymbol("varT") as SymbolDeclaration).type as SimpleTypeReference
+		val definition = (model.findSymbol("T1").findSymbol("var1") as SymbolDeclaration).definition
+		
+		val formulaEncoding = encoder.encodeFormula(definition, varT, new SimpleSmtFormula("inst"), null);
+		
+		print(formulaEncoding);
+	}
+	
+	@Test
+	def void testFormulaEncodingQuantifiers() {
+		val model =
+		encode('''
+			package p;
+			type Bool;
+			type Int;
+			type T1 {
+				var1 : Bool := forall a : Int {a > 5};
+				var2 : Bool := exists a : Int {a = 0};
+			}
+			varT : T1;
+		''', "T1");
+		
+		
+		val varT = (model.findSymbol("varT") as SymbolDeclaration).type as SimpleTypeReference
+		val definitionForAll = (model.findSymbol("T1").findSymbol("var1") as SymbolDeclaration).definition
+		val definitionExists = (model.findSymbol("T1").findSymbol("var2") as SymbolDeclaration).definition
+		
+		
+		val formulaEncoding = encoder.encodeFormula(definitionForAll, varT, new SimpleSmtFormula("inst"), null);
+		val formulaEncoding2 = encoder.encodeFormula(definitionExists, varT, new SimpleSmtFormula("inst"), null);
+		
+		print(formulaEncoding);
+		print(formulaEncoding2);
+	}
+		
 	
 }

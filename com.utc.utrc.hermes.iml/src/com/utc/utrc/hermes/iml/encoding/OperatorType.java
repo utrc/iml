@@ -2,8 +2,9 @@ package com.utc.utrc.hermes.iml.encoding;
 
 public enum OperatorType {
 	IMPL("=>", "=>"),
-	EQUIV("<=>", null), FOR_ALL("forall", "forall"), EXISTS("exists", null), 
-	AND("&&", "and"), OR("||", "or"), NOT("!", "not"), NEGATIVE("-", "-")
+	EQUIV("<=>", null), FOR_ALL("forall", "forall"), EXISTS("exists", "exists"), 
+	AND("&&", "and"), OR("||", "or"), NOT("!", "not"), NEGATIVE("-", "-"),
+	MULT("*", "*"), DIV("/", "/"), REM("%", "%"), ADD("+", "+"), MOF("mod", "%"), ITE("if", "ite") 
 	;
 	
 	private String imlOp;

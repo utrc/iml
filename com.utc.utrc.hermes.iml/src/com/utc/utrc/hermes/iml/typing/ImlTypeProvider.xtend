@@ -32,6 +32,9 @@ import com.utc.utrc.hermes.iml.iml.SymbolReferenceTail
 import com.utc.utrc.hermes.iml.iml.ArrayAccess
 import org.eclipse.xtext.EcoreUtil2
 import com.utc.utrc.hermes.iml.iml.TypeConstructor
+import com.utc.utrc.hermes.iml.iml.RelationInstance
+import com.utc.utrc.hermes.iml.iml.Alias
+import com.utc.utrc.hermes.iml.iml.Symbol
 
 public class ImlTypeProvider {
 
@@ -238,6 +241,14 @@ public class ImlTypeProvider {
 		return type
 	}
 	
+	def static accessSymbolTail(SymbolReferenceTerm symbolRef, SymbolReferenceTail tail, SimpleTypeReference ctx) {
+		val symbol = symbolRef.symbol;
+		if (symbol instanceof SymbolDeclaration) {
+//			val symbolType = getType(symbol.type, ctx)
+			
+		}
+	}
+	
 	def static HigherOrderType getType(SymbolDeclaration s, SimpleTypeReference ctx) {
 		if ( ctx.type.symbols.contains(s) || symbolInsideLambda(s) || 
 			symbolInsideProgram(s)
@@ -389,5 +400,26 @@ public class ImlTypeProvider {
 		return createBasicType(type)
 	}
 	
+	def static removeAlias(HigherOrderType type) {
+		if (type instanceof SimpleTypeReference) {
+			return removeAlias(type.type)
+		} 
+		return type;
+	}
+	
+	def static removeAlias(ConstrainedType type) {
+		for (RelationInstance relation : type.relations) {
+			if (relation instanceof Alias) {
+				return removeAlias(relation.target)
+			}
+		}
+		return type;
+	}
+	
+	def static removeAlias(Symbol symbol) {
+		if (symbol instanceof ConstrainedType) {
+			return removeAlias(symbol as ConstrainedType)
+		}
+	}
 
 }

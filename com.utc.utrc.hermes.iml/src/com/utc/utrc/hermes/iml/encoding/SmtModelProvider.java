@@ -25,5 +25,8 @@ public interface SmtModelProvider <SortT, FuncDeclT, FormulaT> {
 
 	public FormulaT createFormula(OperatorType op, List<FormulaT> params);
 
+	public FormulaT createFormula(FuncDeclT funcDeclar, List<FormulaT> params);
+
 	public FormulaT createFormula(Object value);
+
 }

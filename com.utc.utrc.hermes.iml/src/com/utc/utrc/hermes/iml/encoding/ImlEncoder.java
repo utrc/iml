@@ -1,6 +1,7 @@
 package com.utc.utrc.hermes.iml.encoding;
 
 import com.utc.utrc.hermes.iml.iml.ConstrainedType;
+import com.utc.utrc.hermes.iml.iml.FolFormula;
 import com.utc.utrc.hermes.iml.iml.HigherOrderType;
 import com.utc.utrc.hermes.iml.iml.Model;
 import com.utc.utrc.hermes.iml.iml.Symbol;
@@ -21,4 +22,5 @@ public interface ImlEncoder {
 	public void encode(SymbolDeclaration symbol);
 	
 	public void encode(Model model);
+	
 }
