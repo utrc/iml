@@ -17,6 +17,8 @@ import com.utc.utrc.hermes.iml.iml.Symbol
 import org.eclipse.emf.ecore.EObject
 import com.utc.utrc.hermes.iml.iml.Model
 import static extension com.utc.utrc.hermes.iml.typing.ImlTypeProvider.*
+import com.utc.utrc.hermes.iml.iml.Alias
+import com.utc.utrc.hermes.iml.iml.TraitExhibition
 
 public class TypingServices {
 
@@ -33,6 +35,7 @@ public class TypingServices {
 		];
 		return ret
 	}
+
 
 	def static SimpleTypeReference createSimpleTypeRef(ConstrainedType t) {
 		ImlFactory::eINSTANCE.createSimpleTypeReference => [
@@ -279,7 +282,7 @@ public class TypingServices {
 //				}
 			}
 		}
-		ImlFactory::eINSTANCE.createTypeConstructor
+		ImlFactory::eINSTANCE.createInstanceConstructor
 		return tlist;
 	}
 
@@ -307,13 +310,31 @@ public class TypingServices {
 			val toAdd = <SimpleTypeReference>newArrayList();
 			for (current : retVal.get(index)) {
 				val ctype = current.type
-
 				if (ctype.relations != null) {
-					for (rel : ctype.relations.extensions) {
-							if (rel.type instanceof SimpleTypeReference) {
-								if (! closed.contains((rel.type as SimpleTypeReference).type)) {
-									toAdd.add(rel.type as SimpleTypeReference)
+					for (rel : ctype.relations.filter(com.utc.utrc.hermes.iml.iml.Extension)) {
+							for(twp : rel.extensions){
+							if (twp.type instanceof SimpleTypeReference) {
+								if (! closed.contains((twp.type as SimpleTypeReference).type)) {
+									toAdd.add(twp.type as SimpleTypeReference)
 								}
+							}
+							}
+						
+					}
+					for (rel : ctype.relations.filter(Alias)) {
+							if (rel.type.type instanceof SimpleTypeReference) {
+								if (! closed.contains((rel.type.type as SimpleTypeReference).type)) {
+									toAdd.add(rel.type.type as SimpleTypeReference)
+								}
+							}
+					}
+					for (rel : ctype.relations.filter(TraitExhibition)) {
+							for(twp : rel.exhibitions){
+							if (twp.type instanceof SimpleTypeReference) {
+								if (! closed.contains((twp.type as SimpleTypeReference).type)) {
+									toAdd.add(twp.type as SimpleTypeReference)
+								}
+							}
 							}
 						
 					}

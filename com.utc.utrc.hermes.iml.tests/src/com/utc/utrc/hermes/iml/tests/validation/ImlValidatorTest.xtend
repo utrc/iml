@@ -221,7 +221,7 @@ class ImlValidatorTest {
 			type Child «extensions»;
 		'''.parse
 		
-		model.assertError(ImlPackage.eINSTANCE.relationInstance, INVALID_RELATION)
+		model.assertError(ImlPackage.eINSTANCE.relation, INVALID_RELATION)
 	}
 	
 	/************************

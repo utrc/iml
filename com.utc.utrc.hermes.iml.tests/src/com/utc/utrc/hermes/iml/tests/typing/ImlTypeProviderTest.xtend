@@ -19,6 +19,7 @@ import com.utc.utrc.hermes.iml.iml.SimpleTypeReference
 import com.utc.utrc.hermes.iml.iml.TupleType
 import com.utc.utrc.hermes.iml.iml.ArrayType
 import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
+import com.utc.utrc.hermes.iml.iml.ImplicitInstanceConstructor
 
 /**
  * Test related helper methods
@@ -631,6 +632,82 @@ class ImlTypeProviderTest {
 		
 		assertEquals(t2, (exprType as SimpleTypeReference).type)
 	}
+	
+	@Test
+	def typeOfImplicitConstructor(){
+		val model = '''
+		package iml.notes ;
+		type Int ;
+		type Date ;
+		type Employee {
+			level : Int;
+			supervisor : Employee;
+			salary : Date -> Int; 
+		};
+		sup : Employee ;
+		aEmployee : Employee := some(x:Employee) { x.level = 4 && x.supervisor = sup} ;
+		bEmployee : Employee := oneof Employee{level = 4 && supervisor = sup} ;
+		'''.parse
+		val bEmployee = model.symbols.last as SymbolDeclaration
+		val constr = bEmployee.definition.left as ImplicitInstanceConstructor
+		val type = ImlTypeProvider.termExpressionType(constr)
+		model.assertNoErrors
+		return 
+	}
+	
+	@Test
+	def typeForLambdas(){
+		val model = '''
+		package iml.notes ;
+		type Int ;
+		type A1 {
+			c : Int := 4 ;
+			d : Int ;
+			f : Int -> Int := fun ( x : Int ) { x + 1 } ;
+			assert : d > 0 ;
+		};
+		'''.parse
+		
+		val f = findSymbol(model.symbols.last as ConstrainedType,"f")
+		val fdef = f.definition.left
+		val type  = ImlTypeProvider.termExpressionType(fdef)
+		model.assertNoErrors
+		return
+		
+	}
+	
+	@Test
+	def typeForPolymorphicSymbols(){
+		val model = '''
+		package iml.notes.stackmodel ;
+		type Int ;
+		type Bool ;
+		type Stack<T> {
+		  top: T;
+		  rest : Stack<T>;
+		  isEmpty: Bool;
+		  pop : () -> Stack<T> := fun (x:()) {
+		     if (!isEmpty) { 
+		       oneof Stack<T> { top = rest.top && 
+		                 rest = rest.pop() &&
+		                 isEmpty = rest.isEmpty } 
+		    }
+		  } ;
+		  push : T -> Stack<T> := fun (x:T) {
+		    oneof Stack<T> { top = x && rest = self && isEmpty = false } 
+		  } ;
+		} ;
+		
+		<T>emptyStack : Stack<T> := oneof Stack<T> { isEmpty = true };
+		
+		e : Stack<Int> := <Int>emptyStack ;
+		'''.parse
+		
+		val e = model.symbols.last
+		
+		
+	}
+	
 	
 	def assertTypeMatches(SymbolDeclaration symbol) {
 		assertTrue(TypingServices.isEqual(symbol.type, ImlTypeProvider.termExpressionType(symbol.definition)))

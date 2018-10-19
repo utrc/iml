@@ -127,10 +127,11 @@ class ImlValidator extends AbstractImlValidator {
 	
 	@Check
 	def checkExtendsRelation(com.utc.utrc.hermes.iml.iml.Extension extendRelation) {
-		if (! (extendRelation.target instanceof SimpleTypeReference)) {
-			error("Types can extend only simple types", 
-				ImlPackage::eINSTANCE.relationInstance_Target, INVALID_RELATION)
-		}
+		
+//		if (! (extendRelation.target instanceof SimpleTypeReference)) {
+//			error("Types can extend only simple types", 
+//				ImlPackage::eINSTANCE.relationInstance_Target, INVALID_RELATION)
+//		}
 	}
 
 	// If allowing user to introduce stereotype, make sure to update stereoTypeMap
@@ -184,14 +185,17 @@ class ImlValidator extends AbstractImlValidator {
 			val toAdd = <ConstrainedType>newArrayList()
 			for (cur : superTypeHierarchy.get(index)) {
 				for (supType : getExtensions(cur)) {
-					if (!visited.contains(supType.target.asSimpleTR.type))
-						toAdd.add(supType.target.asSimpleTR.type)
+					for(tr : supType.extensions){
+					if (!visited.contains(tr.type.asSimpleTR.type))
+						toAdd.add(tr.type.asSimpleTR.type)
 					else {
 						error(
 							"Cycle in hierarchy of constrained type '" + cur.name + "'",
 							ImlPackage::eINSTANCE.constrainedType_Relations,
 							CYCLIC_CONSTRAINEDTYPE_HIERARCHY
 						)
+					}
+					
 					}
 				}
 				visited.add(cur)
@@ -436,7 +440,8 @@ class ImlValidator extends AbstractImlValidator {
 //							INVALID_SYMBOL_DECLARATION
 //						)
 //						}
-					} else if (container.literals.contains(symbol)) { // Symbols must not have type nor definition
+					} 
+					else if (symbol.isLiteralOf(container)) { // Symbols must not have type nor definition
 						if (symbol.type !== null || symbol.definition !== null) {
 							error('''Type literal "«symbol.name»" shoud not have a type nor a definition''',
 								ImlPackage.eINSTANCE.symbolDeclaration_Type,
@@ -446,7 +451,7 @@ class ImlValidator extends AbstractImlValidator {
 					}
 				}
 				
-				Program: { // Must have a type if there is no primitive properties
+				SequenceTerm: { // Must have a type if there is no primitive properties
 //					if (symbol.type === null && symbol.primitiveProperty === null) {
 //						error('''Symobl declaration  "«symbol.name»" must have a type''',
 //							ImlPackage.eINSTANCE.symbolDeclaration_Type,
@@ -465,14 +470,14 @@ class ImlValidator extends AbstractImlValidator {
 				}
 				
 				FolFormula: {
-					if (container.scope.contains(symbol)) { // Scope shoudn't include definition
-						if (symbol.definition !== null) {
-							error('''Formula scope "«symbol.name»" shoud not have a definition''',
-								ImlPackage.eINSTANCE.symbolDeclaration_Type,
-								INVALID_SYMBOL_DECLARATION
-							)
-						}
-					}
+//					if (container.scope.contains(symbol)) { // Scope shoudn't include definition
+//						if (symbol.definition !== null) {
+//							error('''Formula scope "«symbol.name»" shoud not have a definition''',
+//								ImlPackage.eINSTANCE.symbolDeclaration_Type,
+//								INVALID_SYMBOL_DECLARATION
+//							)
+//						}
+//					}
 				}
 				
 			}

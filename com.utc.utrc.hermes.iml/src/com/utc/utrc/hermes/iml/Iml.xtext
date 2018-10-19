@@ -42,13 +42,11 @@ TypeWithProperties :
 	(properties=PropertyList)? type=HigherOrderType
 ;
 
-Relations:
-	( extends?='extends' '(' extensions+=TypeWithProperties (',' extensions+=TypeWithProperties)*')'   )? &
-	( refines?='refines' '('refinements+=TypeWithProperties (',' refinements+=TypeWithProperties)* ')'  )? &
-	( alias?='sameas' '('aliases+=TypeWithProperties (',' aliases+=TypeWithProperties)*  ')' )? &
-	( features?='features' '('featuring+=TypeWithProperties (',' featuring+=TypeWithProperties)*  ')' )? 
+Relation:
+	{Extension}( extends?='extends' '(' extensions+=TypeWithProperties (',' extensions+=TypeWithProperties)*')'   ) |
+	{Alias}( alias?='is' type=TypeWithProperties  ) |
+	{TraitExhibition}( exhibits?='exhibits' '('exhibitions+=TypeWithProperties (',' exhibitions+=TypeWithProperties)*  ')' ) 
 ;
-
 
 ConstrainedType:
 	(
@@ -59,12 +57,12 @@ ConstrainedType:
 	(propertylist=PropertyList)? 
 	name=ID 
 	(template?='<' typeParameter+=TypeParameter (',' typeParameter+=TypeParameter)* '>')? 
-	( relations=Relations)
-	( restrictions+= TypeRestrictions)*
+	( relations += Relation)*
+	( restrictions += TypeRestriction)*
 	('{' (symbols+=(SymbolDeclaration|Assertion) ';')* '}')? 
 ;
 
-TypeRestrictions :
+TypeRestriction :
 	(
 		{CardinalityRestriction} (finite?='finite' cardinality=INT) |  
 		{EnumRestriction}
@@ -75,7 +73,7 @@ TypeRestrictions :
 ;
 
 TypeParameter returns ConstrainedType:
-	name=ID (relations=Relations)
+	name=ID (relations+=Relation)*
 ;
 
 SymbolDeclaration:
@@ -86,7 +84,7 @@ SymbolDeclaration:
 ;
 
 Assertion returns SymbolDeclaration :
-	{Assertion} 'assert' name=ID ':=' definition=FolFormula
+	{Assertion} 'assert' (comment=STRING)? (name=ID)? ':' definition=FolFormula
 ;
 
 NonParametricUntypedSymbolDeclaration returns SymbolDeclaration :
@@ -99,7 +97,7 @@ NonParametricTypedSymbolDeclaration returns SymbolDeclaration :
 ;
 
 HigherOrderType:
-	ArrayType ({HigherOrderType.domain=current} '->' range=ArrayType)?  
+	ArrayType ({HigherOrderType.domain=current} '->' range=ArrayType)*  
 ;
 
 ArrayType returns HigherOrderType:
@@ -120,8 +118,9 @@ ExplicitTupleType returns HigherOrderType :
 	
 
 ParenthesizedTypeExpression returns HigherOrderType :
-	(=>('(' HigherOrderType  ')') |
-	 {TupleType}('(' symbols+=TupleSymbol (',' symbols+=TupleSymbol)*  ')') )
+	=>({EmptyTupleType}'('')') |
+	=>({ParenthesizedType}'(' subexpression=HigherOrderType  ')') |
+	 {TupleType}('(' symbols+=TupleSymbol (',' symbols+=TupleSymbol)*  ')') 
 ;
 	
 	
@@ -136,10 +135,10 @@ TupleSymbol returns SymbolDeclaration:
 ;
 
 SimpleTypeReference returns HigherOrderType:
+	{SelfType} 'Self' |
 	{SimpleTypeReference} type=[ConstrainedType|QualifiedName]
 	/*Optional type parameters for generic types */
 	('<' typeBinding+=HigherOrderType (',' typeBinding+=HigherOrderType)* '>')? 
-	('with' '{' subtypeClause=FolFormula '}')?
 ;
 
 /*Entry point for a first order logic formula.*/
@@ -148,13 +147,14 @@ FolFormula:
 	 Formula ({FolFormula.left=current} op=('=>' | '<=>') right=Formula)?;
 
 Formula returns FolFormula:
-	QuantifiedFormula  | OrExpression;
+	//QuantifiedFormula  | 
+	OrExpression;
 
 /*A quantified formula (universally or existentially quantified) has
  * a list of bound variables and a body defined over those variables.
  */
-QuantifiedFormula returns FolFormula:
-	op=('forall' | 'exists')
+QuantifiedFormula returns TermExpression:
+	{QuantifiedFormula} op=('forall' | 'exists')
 	(template?='<' typeParameter+=TypeParameter 
 		          (',' typeParameter+=TypeParameter)* '>')? 
       '(' scope+=NonParametricTypedSymbolDeclaration 
@@ -177,13 +177,13 @@ AtomicExpression returns FolFormula:
 	TermExpression (=>( {AtomicExpression.left=current} rel=RelationKind ) right=TermExpression)? ;
 
 TruthValue returns TermExpression:
-	{TruthValue} (TRUE?='True' | FALSE?='False');
+	{TruthValue} (TRUE?='true' | FALSE?='false');
 
 /*Allowed relation kinds are the equality (which can be used over all 
  * objects types), or the ordering relations among numeric types.
  */
 enum RelationKind:
-	EQ='=' | LESS='<' | GREATER='>' | LEQ='<=' | GEQ='>=';
+	EQ='=' | NEQ='!=' | LESS='<' | GREATER='>' | LEQ='<=' | GEQ='>=';
 
 /*Generic term expression */
 TermExpression:
@@ -220,18 +220,21 @@ TerminalTerm returns TermExpression:
 	{NumberLiteral} neg?=('-')? value=INT |
 	{FloatNumberLiteral} neg?=('-')? value = FLOAT |
 	{String} value = STRING |
-	SymbolReferenceTerm|
+	SymbolReferenceTerm |
 	TupleOrFormulaConstructor | 
 	TruthValue |
-	TypeConstructor |
+	InstanceConstructor |
 	IteTermExpression |
-	{This} 'this' |
+	{SelfTerm} 'self' |
 	SequenceTerm |
-	{LambdaExpression}'fun' signature=TupleOrExpressionType definition=SequenceTerm ;
+	{LambdaExpression}'fun' signature=TupleOrExpressionType definition=SequenceTerm |
+	QuantifiedFormula
+	 ;
 	
 
-TypeConstructor returns TermExpression:
-	{TypeConstructor} 'some' '(' name=ID ':' ref=SimpleTypeReference ')' definition=SequenceTerm
+InstanceConstructor returns TermExpression:
+	{InstanceConstructor} 'some' '(' ref=TupleSymbol ')' definition=SequenceTerm |
+	{ImplicitInstanceConstructor}  'oneof' ref=SimpleTypeReference definition=SequenceTerm
 ;
 
 TupleOrFormulaConstructor returns TermExpression:
@@ -244,8 +247,13 @@ ExplicitTupleConstructor returns TermExpression:
 ;
 
 ParenthesizedTerm returns TermExpression :
-	(=>('(' sub=FolFormula ')') |
-	 {TupleConstructor} ('(' elements+=FolFormula  (',' elements+=FolFormula)*  ')') )
+	=>({ParenthesizedTerm}'(' sub=FolFormula ')') |
+	TupleConstructor
+;
+
+TupleConstructor returns TermExpression:
+	=>({EmptyTuple}'('')') |
+	 {TupleConstructor} ('(' elements+=FolFormula  (',' elements+=FolFormula)*  ')') 
 ;
 	
 
@@ -258,9 +266,8 @@ SymbolReferenceTerm returns TermExpression:
 ;
 
 
-
 SymbolReferenceTail:
-	TupleOrFormulaConstructor |
+	TupleConstructor |
 	{ArrayAccess}  '['index=FolFormula']'
 ;
 

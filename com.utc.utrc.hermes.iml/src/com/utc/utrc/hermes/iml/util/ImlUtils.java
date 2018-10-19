@@ -12,8 +12,10 @@ import org.eclipse.xtext.serializer.ISerializer;
 
 import com.utc.utrc.hermes.iml.iml.ArrayType;
 import com.utc.utrc.hermes.iml.iml.ConstrainedType;
+import com.utc.utrc.hermes.iml.iml.Extension;
 import com.utc.utrc.hermes.iml.iml.HigherOrderType;
 import com.utc.utrc.hermes.iml.iml.Model;
+import com.utc.utrc.hermes.iml.iml.Relation;
 import com.utc.utrc.hermes.iml.iml.SimpleTypeReference;
 import com.utc.utrc.hermes.iml.iml.Symbol;
 import com.utc.utrc.hermes.iml.iml.SymbolDeclaration;
@@ -21,10 +23,11 @@ import com.utc.utrc.hermes.iml.iml.TupleType;
 
 public class ImlUtils {
 
-	public static List<SymbolDeclaration> getSymbolsWithProperty(ConstrainedType type, String property, boolean considerParent) {
+	public static List<SymbolDeclaration> getSymbolsWithProperty(ConstrainedType type, String property,
+			boolean considerParent) {
 		List<SymbolDeclaration> symbolsWithTheProperty = new ArrayList<SymbolDeclaration>();
 		if (considerParent) {
-			for (ConstrainedType parent: getDirectParents(type)) {
+			for (ConstrainedType parent : getDirectParents(type)) {
 				symbolsWithTheProperty.addAll(getSymbolsWithProperty(parent, property, true));
 			}
 		}
@@ -37,16 +40,25 @@ public class ImlUtils {
 	}
 
 	public static List<ConstrainedType> getDirectParents(ConstrainedType type) {
-		if (type.getRelations() == null) return new ArrayList<>(); // Precondition
-		return type.getRelations().getExtensions().stream()
-				.map(it -> ((SimpleTypeReference) it.getType()).getType())
-				.collect(Collectors.toList());
+		List<ConstrainedType> retval = new ArrayList<>();
+		if (type.getRelations() != null) {
+			for(Relation rel : type.getRelations()) {
+				if(rel instanceof Extension) {
+					retval.addAll(
+							((Extension) rel).getExtensions().stream()
+							.map(it -> ((SimpleTypeReference) it.getType()).getType())
+							.collect(Collectors.toList())) ;
+				}
+			}
+		}
+		return retval;
 	}
 
 	public static boolean hasProperty(Symbol symbol, String property) {
-		if (symbol.getPropertylist() == null) return false;
-		for (HigherOrderType actualProperty: symbol.getPropertylist().getProperties()) {
-			if (((SimpleTypeReference)actualProperty).getType().getName().equals(property)) {
+		if (symbol.getPropertylist() == null)
+			return false;
+		for (HigherOrderType actualProperty : symbol.getPropertylist().getProperties()) {
+			if (((SimpleTypeReference) actualProperty).getType().getName().equals(property)) {
 				return true;
 			}
 		}
@@ -55,19 +67,17 @@ public class ImlUtils {
 
 	public static ConstrainedType getConstrainedTypeByName(Model model, String name) {
 		return (ConstrainedType) model.getSymbols().stream()
-			.filter(it -> it instanceof ConstrainedType && it.getName().equals(name))
-			.findFirst().orElse(null);
+				.filter(it -> it instanceof ConstrainedType && it.getName().equals(name)).findFirst().orElse(null);
 	}
 
 	public static List<ConstrainedType> getConstrainedTypes(Model model) {
-		return model.getSymbols().stream()
-			.filter(it -> it instanceof ConstrainedType)
-			.map(ConstrainedType.class::cast)
-			.collect(Collectors.toList());
+		return model.getSymbols().stream().filter(it -> it instanceof ConstrainedType).map(ConstrainedType.class::cast)
+				.collect(Collectors.toList());
 	}
-	
+
 	/**
 	 * Get the type declaration as a string
+	 * 
 	 * @param hot
 	 * @return
 	 */
@@ -79,7 +89,7 @@ public class ImlUtils {
 			return getTypeNameManually(hot);
 		}
 	}
-	
+
 	public static String getTypeNameManually(HigherOrderType hot) {
 		if (hot instanceof SimpleTypeReference) {
 			String name = ((SimpleTypeReference) hot).getType().getName();
@@ -87,18 +97,16 @@ public class ImlUtils {
 				return name;
 			} else {
 				return name + "<" + ((SimpleTypeReference) hot).getTypeBinding().stream()
-						.map(binding -> getTypeName(binding))
-						.reduce((acc, current) -> acc + ", " + current).get() + ">";
+						.map(binding -> getTypeName(binding)).reduce((acc, current) -> acc + ", " + current).get()
+						+ ">";
 			}
 		} else if (hot instanceof ArrayType) {
-			String name =  getTypeName(((ArrayType) hot).getType());
-			return name + ((ArrayType) hot).getDimensions().stream()
-					.map(dim -> "[]")
+			String name = getTypeName(((ArrayType) hot).getType());
+			return name + ((ArrayType) hot).getDimensions().stream().map(dim -> "[]")
 					.reduce((accum, current) -> accum + current).get();
 		} else if (hot instanceof TupleType) {
-			return "(" + ((TupleType) hot).getSymbols().stream()
-				.map(symbol -> getTypeName(symbol.getType()))
-				.reduce((accum, current) -> accum + ", " + current).get() + ")";
+			return "(" + ((TupleType) hot).getSymbols().stream().map(symbol -> getTypeName(symbol.getType()))
+					.reduce((accum, current) -> accum + ", " + current).get() + ")";
 		} else {
 			return getTypeName(hot.getDomain()) + "~>" + getTypeName(hot.getRange());
 		}
@@ -106,15 +114,15 @@ public class ImlUtils {
 
 	/**
 	 * Get the string representation of the object as it is in xtext file
-	 * @param element 
+	 * 
+	 * @param element
 	 * @return
 	 */
 	public static String getElementAsString(EObject element) {
-    	if (element != null && element.eResource() instanceof XtextResource
-				&& element.eResource().getURI() != null) {
-    		return ((XtextResource)element.eResource()).getSerializer().serialize(element);
-    	}
-    	return "";
+		if (element != null && element.eResource() instanceof XtextResource && element.eResource().getURI() != null) {
+			return ((XtextResource) element.eResource()).getSerializer().serialize(element);
+		}
+		return "";
 	}
 
 }
