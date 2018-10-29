@@ -20,6 +20,10 @@ import com.utc.utrc.hermes.iml.iml.TupleType
 import com.utc.utrc.hermes.iml.iml.ArrayType
 import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
 import com.utc.utrc.hermes.iml.iml.ImplicitInstanceConstructor
+import com.utc.utrc.hermes.iml.iml.LambdaExpression
+import com.utc.utrc.hermes.iml.iml.SequenceTerm
+import com.utc.utrc.hermes.iml.iml.IteTermExpression
+import com.utc.utrc.hermes.iml.iml.TermMemberSelection
 
 /**
  * Test related helper methods
@@ -677,6 +681,51 @@ class ImlTypeProviderTest {
 	}
 	
 	@Test
+	def typeForPolymorphicTypes(){
+		val model = '''
+		package iml.notes.stackmodel ;
+		type Int ;
+		type Bool ;
+		type Stack<T> {
+		  top: T;
+		  rest : Stack<T>;
+		  isEmpty: Bool;
+		  pop : () -> Stack<T> := fun (x:()) {
+		     if (!isEmpty) { 
+		       oneof Stack<T> { top = rest.top && 
+		                 rest = rest.pop() &&
+		                 isEmpty = rest.isEmpty } 
+		    }
+		  } ;
+		  push : T -> Stack<T> := fun (x:T) {
+		    oneof Stack<T> { top = x && rest = self && isEmpty = false } 
+		  } ;
+		} ;
+		
+		<T>emptyStack : Stack<T> := oneof Stack<T> { isEmpty = true };
+		
+		e : Stack<Int> := <Int>emptyStack ;
+		
+		s : Stack<Int> := e.push(1); //.push(2).push(3) ;
+		'''.parse
+		
+		val stackt = model.symbols.get(2) as ConstrainedType
+		val pop = stackt.symbols.get(3) as SymbolDeclaration
+		val popdefite = ((pop.definition.left as LambdaExpression).definition as SequenceTerm).^return.left as IteTermExpression
+		val rest_pop = ((popdefite.left as ImplicitInstanceConstructor).definition as SequenceTerm).^return.left.left.left.right as TermMemberSelection
+		val rest = rest_pop.receiver
+		val type = ImlTypeProvider.termExpressionType(rest);
+		val rest_decl = stackt.symbols.get(1) as SymbolDeclaration
+		assertTrue(TypingServices.isEqual(type,rest_decl.type))
+		
+		val s = model.symbols.last as SymbolDeclaration
+		val e_push = s.definition.left as TermMemberSelection
+		val e_push_type = ImlTypeProvider.termExpressionType(e_push)
+		assertTrue(TypingServices.isEqual(e_push_type,s.type))
+		
+	}
+	
+	@Test
 	def typeForPolymorphicSymbols(){
 		val model = '''
 		package iml.notes.stackmodel ;
@@ -703,9 +752,12 @@ class ImlTypeProviderTest {
 		e : Stack<Int> := <Int>emptyStack ;
 		'''.parse
 		
-		val e = model.symbols.last
-		
-		
+		val e = model.symbols.last as SymbolDeclaration
+		val d = e.definition.left
+		val t = ImlTypeProvider.termExpressionType(d)
+		val dom = t.domain
+		val equal = TypingServices.isEqual(e.type,dom)
+		assertTrue(equal)
 	}
 	
 	

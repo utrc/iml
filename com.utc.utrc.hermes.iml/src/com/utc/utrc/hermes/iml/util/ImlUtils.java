@@ -14,7 +14,9 @@ import com.utc.utrc.hermes.iml.iml.ArrayType;
 import com.utc.utrc.hermes.iml.iml.ConstrainedType;
 import com.utc.utrc.hermes.iml.iml.Extension;
 import com.utc.utrc.hermes.iml.iml.HigherOrderType;
+import com.utc.utrc.hermes.iml.iml.ImplicitInstanceConstructor;
 import com.utc.utrc.hermes.iml.iml.Model;
+import com.utc.utrc.hermes.iml.iml.Property;
 import com.utc.utrc.hermes.iml.iml.Relation;
 import com.utc.utrc.hermes.iml.iml.SimpleTypeReference;
 import com.utc.utrc.hermes.iml.iml.Symbol;
@@ -57,8 +59,8 @@ public class ImlUtils {
 	public static boolean hasProperty(Symbol symbol, String property) {
 		if (symbol.getPropertylist() == null)
 			return false;
-		for (HigherOrderType actualProperty : symbol.getPropertylist().getProperties()) {
-			if (((SimpleTypeReference) actualProperty).getType().getName().equals(property)) {
+		for (ImplicitInstanceConstructor actualProperty : symbol.getPropertylist().getProperties()) {
+			if (((SimpleTypeReference) actualProperty.getRef()).getType().getName().equals(property)) {
 				return true;
 			}
 		}

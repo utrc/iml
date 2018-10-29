@@ -19,6 +19,8 @@ import com.utc.utrc.hermes.iml.iml.Model
 import static extension com.utc.utrc.hermes.iml.typing.ImlTypeProvider.*
 import com.utc.utrc.hermes.iml.iml.Alias
 import com.utc.utrc.hermes.iml.iml.TraitExhibition
+import com.utc.utrc.hermes.iml.iml.ImplicitInstanceConstructor
+import org.eclipse.emf.ecore.util.EcoreUtil
 
 public class TypingServices {
 
@@ -48,6 +50,13 @@ public class TypingServices {
 		for (p : pl.properties) {
 			ret.properties.add(clone(p))
 		}
+	}
+
+	def static clone(ImplicitInstanceConstructor c){
+		var ret = ImlFactory::eINSTANCE.createProperty
+		ret.ref = clone(c.ref)
+		ret.definition = EcoreUtil.copy(c.definition)
+		return ret
 	}
 
 	// TODO Are we going to have cloning functions for everything?
@@ -147,7 +156,19 @@ public class TypingServices {
 		} else if (left === null || right === null) {
 			return false
 		}
-
+		
+		//remove aliases
+		if (left instanceof SimpleTypeReference){
+			if (left.isAlias){
+				return isEqual(left.getAlias,right) 
+			}
+		}
+		if (right instanceof SimpleTypeReference){
+			if (right.isAlias){
+				return isEqual(right.getAlias,right) 
+			}
+		}
+		
 		if (left.class != right.class) {
 			return false
 		}
@@ -226,13 +247,14 @@ public class TypingServices {
 		return true
 	}
 
+	//TODO Equal means that the definitions are also equal
 	def static boolean isEqual(PropertyList left, PropertyList right) {
 		if (left.properties.size != right.properties.size) {
 			return false;
 		}
 
 		for (i : 0 ..< left.properties.size) {
-			if (! isEqual(left.properties.get(i), right.properties.get(i))) {
+			if (! isEqual(left.properties.get(i).ref, right.properties.get(i).ref)) {
 				return false
 			}
 		}
@@ -464,6 +486,23 @@ public class TypingServices {
 			return true;
 		}
 		return false;
+	}
+	
+	def static boolean isAlias(ConstrainedType t) {
+		if (t.relations.filter(Alias).size > 0) {
+			return true
+		}
+		return false
+	}
+	def static boolean isAlias(SimpleTypeReference r){
+		return r.type.isAlias
+	}
+	def static HigherOrderType getAlias(SimpleTypeReference r){
+		if (r.isAlias){
+			var alias = r.type.relations.filter(Alias).get(0).type.type
+			return ImlTypeProvider.bind(alias,r)
+		}
+		return null
 	}
 
 	// TODO

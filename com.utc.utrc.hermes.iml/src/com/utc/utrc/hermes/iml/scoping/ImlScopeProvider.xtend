@@ -198,7 +198,7 @@ class ImlScopeProvider extends AbstractDeclarativeScopeProvider {
 			(term.eContainer as TermMemberSelection).member === term) {
 			val tms = term.eContainer as TermMemberSelection
 			val receiverType = termExpressionType(tms.receiver)
-			return getType(term.symbol as SymbolDeclaration, receiverType as SimpleTypeReference)
+			return getType(term, receiverType as SimpleTypeReference)
 		} else {
 			return (term.symbol as SymbolDeclaration).type
 		}

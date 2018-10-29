@@ -32,10 +32,12 @@ Doc :
   {Doc}('@' properties+=[ConstrainedType|QualifiedName] descriptions+=STRING)+
 ;
 	
-
+Property returns ImplicitInstanceConstructor:
+	{Property} ref=SimpleTypeReference (definition=SequenceTerm)?
+;
 
 PropertyList:
- '[' properties+=SimpleTypeReference (',' properties+=SimpleTypeReference)* ']'
+ '[' properties+=Property (',' properties+=Property)* ']'
 ;
 
 TypeWithProperties :

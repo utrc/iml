@@ -38,6 +38,9 @@ import com.utc.utrc.hermes.iml.iml.EnumRestriction
 import com.utc.utrc.hermes.iml.iml.Symbol
 import com.utc.utrc.hermes.iml.iml.ImplicitInstanceConstructor
 import com.utc.utrc.hermes.iml.iml.ParenthesizedType
+import org.eclipse.emf.ecore.util.EcoreUtil
+import com.utc.utrc.hermes.iml.iml.Assertion
+import com.utc.utrc.hermes.iml.iml.SelfType
 
 public class ImlTypeProvider {
 
@@ -58,13 +61,6 @@ public class ImlTypeProvider {
 	}
 
 	def static HigherOrderType termExpressionType(TermExpression t) {
-//		val typeConstructor = EcoreUtil2.getContainerOfType(t, InstanceConstructor)
-//		if (typeConstructor !== null) {
-//			val type = termExpressionType(t, typeConstructor.ref.type as SimpleTypeReference)
-//			if (type !== null) {
-//				return type
-//			}
-//		}
 		termExpressionType(t, createSimpleTypeRef(t.getContainerOfType(ConstrainedType)))
 	}
 	
@@ -72,11 +68,9 @@ public class ImlTypeProvider {
 		if (t instanceof TermExpression) {
 			return termExpressionType((t as TermExpression), context)
 		}
-
 		if (t instanceof AtomicExpression) {
 			return Bool
 		}
-
 		return t.left.termExpressionType(context);
 	}
 
@@ -211,7 +205,8 @@ public class ImlTypeProvider {
 	}
 
 	def static getSymbolReferenceType(SymbolReferenceTerm term, SimpleTypeReference context) {
-		var term_type = getType(term.symbol as SymbolDeclaration, context);
+		//Change this call to include type parameters
+		var term_type = getType(term, context);
 		for (tail : term.tails) {
 			term_type = accessTail(term_type, tail)
 		}
@@ -263,12 +258,26 @@ public class ImlTypeProvider {
 		return type
 	}
 
-	def static HigherOrderType getType(SymbolDeclaration s, SimpleTypeReference ctx) {
+	def static HigherOrderType getType(SymbolReferenceTerm s, SimpleTypeReference ctx) {
 		if (ctx.type === null){
-			return s.type;
+			if (! (s.symbol as SymbolDeclaration).isPolymorphic) {
+				return EcoreUtil.copy( (s.symbol as SymbolDeclaration).type)
+			}
+			//TODO take care of type binding here
+			var retval = EcoreUtil.copy((s.symbol as SymbolDeclaration).type)
+			//replace all type parameters with the new ones
+			var ctmap = new HashMap<ConstrainedType,HigherOrderType>()	
+			for(var i = 0; i < (s.symbol as SymbolDeclaration).typeParameter.size();i++){
+				ctmap.put((s.symbol as SymbolDeclaration).typeParameter.get(i),s.typeBinding.get(i))
+			}
+			return remap(retval,ctmap);
 		}
 		
-		if (ctx.type.symbols.contains(s) || symbolInsideLambda(s) || symbolInsideProgram(s)) {
+		if ((s.symbol as SymbolDeclaration).type instanceof SelfType){
+			return ctx;
+		}
+		
+		if (ctx.type.symbols.contains(s.symbol as SymbolDeclaration) || symbolInsideLambda(s.symbol as SymbolDeclaration) || symbolInsideProgram(s.symbol as SymbolDeclaration)) {
 			return bind(s, ctx)
 		}
 
@@ -321,15 +330,31 @@ public class ImlTypeProvider {
 //		}
 	}
 
-	def static bind(SymbolDeclaration s, SimpleTypeReference ctx) {
+	def static bind(SymbolReferenceTerm s, SimpleTypeReference ctx) {
 		if (ctx.type === null){
-			return s.type
+			return (s.symbol as SymbolDeclaration).type
 		}
-		return bind(s.type, ctx)
+		var partialbind = new HashMap<ConstrainedType, HigherOrderType>();
+		for(var i =0 ; i < s.typeBinding.size() ; i++){
+			partialbind.put(s.symbol.typeParameter.get(i),s.typeBinding.get(i))
+		}
+		return bind((s.symbol as SymbolDeclaration).type, partialbind,ctx)
 	}
 
 	def static bind(HigherOrderType t, SimpleTypeReference ctx) {
 		var ctxbinds = new HashMap<ConstrainedType, HigherOrderType>();
+		if (ctx.typeBinding.size == ctx.type.typeParameter.size) {
+			for (i : 0 ..< ctx.type.typeParameter.size) {
+				ctxbinds.put(ctx.type.typeParameter.get(i), ctx.typeBinding.get(i))
+			}
+		}
+
+		return remap(t, ctxbinds)
+	}
+	
+	def static bind(HigherOrderType t, Map<ConstrainedType, HigherOrderType> partialbind, SimpleTypeReference ctx) {
+		var ctxbinds = new HashMap<ConstrainedType, HigherOrderType>();
+		ctxbinds.putAll(partialbind)
 		if (ctx.typeBinding.size == ctx.type.typeParameter.size) {
 			for (i : 0 ..< ctx.type.typeParameter.size) {
 				ctxbinds.put(ctx.type.typeParameter.get(i), ctx.typeBinding.get(i))
@@ -354,7 +379,7 @@ public class ImlTypeProvider {
 			}
 			SimpleTypeReference: {
 				if (map.containsKey(t.type)) {
-					return map.get(t.type)
+					return EcoreUtil.copy(map.get(t.type))
 				}
 				var retval = ImlFactory.eINSTANCE.createSimpleTypeReference;
 				retval.type = t.type
@@ -393,6 +418,15 @@ public class ImlTypeProvider {
 				}
 				return retval;
 			}
+		}
+	}
+
+	def static boolean isPolymorphic(Symbol s){
+		switch(s){
+			ConstrainedType : { return s.typeParameter.size > 0 }
+			SymbolDeclaration : { return s.typeParameter.size > 0 }
+			default:
+				return false
 		}
 	}
 
