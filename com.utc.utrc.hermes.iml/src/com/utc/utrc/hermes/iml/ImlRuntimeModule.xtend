@@ -12,8 +12,6 @@ import com.utc.utrc.hermes.iml.encoding.SimpleSmtModelProvider
 import com.utc.utrc.hermes.iml.encoding.simplesmt.SimpleSort
 import com.utc.utrc.hermes.iml.encoding.simplesmt.SimpleFunDeclaration
 import com.utc.utrc.hermes.iml.encoding.simplesmt.SimpleSmtFormula
-import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
-import com.utc.utrc.hermes.iml.custom.SymbolDeclarationImpl2
 
 /**
  * Use this class to register components to be used at runtime / without the Equinox extension registry.

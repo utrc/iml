@@ -48,8 +48,8 @@ import com.utc.utrc.hermes.iml.typing.TypingServices;
 import com.utc.utrc.hermes.iml.util.ImlUtils;
 
 /**
- * SMT implementation for {@link ImlEncoder}. The encoder is build for SMT v2.5
- * The encoder abstract the underlaying SMT model by using {@link SmtModelProvider}
+ * SMT implementation for {@link ImlEncoder}. The encoder is build for SMT v2.5.
+ * This encoder abstracts the underlying SMT model by using {@link SmtModelProvider}
   *
   * @author Ayman Elkfrawy (elkfraaf@utrc.utc.com)
   * @author Gerald Wang (wangg@utrc.utc.com)
@@ -367,7 +367,7 @@ public class ImlSmtEncoder<SortT, FuncDeclT, FormulaT> implements ImlEncoder {
 			} else if (op == OperatorType.FOR_ALL || op == OperatorType.EXISTS) { 
 				List<FormulaT> scopeFormulas = formula.getScope().stream().map(symbol -> {
 					String typeName = getUniqueName(symbol.getType());
-					return smtModelProvider.createFormula((OperatorType) null, Arrays.asList(smtModelProvider.createFormula(symbol.getName()),
+					return smtModelProvider.createFormula(Arrays.asList(smtModelProvider.createFormula(symbol.getName()),
 								smtModelProvider.createFormula(typeName)));
 				}).collect(Collectors.toList());
 				
@@ -377,7 +377,7 @@ public class ImlSmtEncoder<SortT, FuncDeclT, FormulaT> implements ImlEncoder {
 				scope.addAll(formula.getScope());
 				leftFormula = encodeFormula(formula.getLeft(), context, inst, scope);
 				
-				return smtModelProvider.createFormula(op, Arrays.asList(smtModelProvider.createFormula((OperatorType) null, scopeFormulas), leftFormula));
+				return smtModelProvider.createFormula(op, Arrays.asList(smtModelProvider.createFormula(scopeFormulas), leftFormula));
 			} else if (op == OperatorType.AND || op == OperatorType.OR) {
 				return smtModelProvider.createFormula(op, Arrays.asList(leftFormula, rightFormula));
 			}

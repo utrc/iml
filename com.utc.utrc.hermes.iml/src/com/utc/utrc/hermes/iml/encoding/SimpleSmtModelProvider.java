@@ -54,5 +54,10 @@ public class SimpleSmtModelProvider implements SmtModelProvider<SimpleSort, Simp
 		return new SimpleSmtFormula(funcDeclar, null, params, null);
 	}
 
+	@Override
+	public SimpleSmtFormula createFormula(List<SimpleSmtFormula> params) {
+		return new SimpleSmtFormula(null, params);
+	}
+
 
 }
