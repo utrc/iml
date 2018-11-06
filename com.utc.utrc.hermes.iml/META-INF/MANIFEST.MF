@@ -10,20 +10,19 @@ Require-Bundle: org.eclipse.xtext,
  org.eclipse.equinox.common;bundle-version="3.5.0",
  org.eclipse.emf.ecore,
  org.eclipse.xtext.xbase.lib,
- org.antlr.runtime,
+ org.antlr.runtime;bundle-version="[3.2.0,3.2.1)",
  org.eclipse.xtext.util,
  org.eclipse.xtend.lib,
  org.eclipse.emf.common,
  org.eclipse.core.runtime;bundle-version="3.13.0",
- org.eclipse.xtext.testing
+ org.eclipse.xtext.testing,
+ org.eclipse.xtext.junit4
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Export-Package: com.utc.utrc.hermes.iml,
  com.utc.utrc.hermes.iml.custom,
  com.utc.utrc.hermes.iml.encoding,
  com.utc.utrc.hermes.iml.encoding.simplesmt,
  com.utc.utrc.hermes.iml.generator,
- com.utc.utrc.hermes.iml.generator.infra,
- com.utc.utrc.hermes.iml.generator.strategies,
  com.utc.utrc.hermes.iml.iml,
  com.utc.utrc.hermes.iml.iml.impl,
  com.utc.utrc.hermes.iml.iml.util,
@@ -36,7 +35,8 @@ Export-Package: com.utc.utrc.hermes.iml,
  com.utc.utrc.hermes.iml.sexpr,
  com.utc.utrc.hermes.iml.typing,
  com.utc.utrc.hermes.iml.util,
- com.utc.utrc.hermes.iml.validation
+ com.utc.utrc.hermes.iml.validation,
+ lang
 Import-Package: org.apache.log4j
 Bundle-ClassPath: .,
  libs/jgrapht-core-1.1.0.jar
