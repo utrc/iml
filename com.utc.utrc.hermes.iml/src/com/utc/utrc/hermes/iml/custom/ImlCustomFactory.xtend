@@ -42,6 +42,13 @@ class ImlCustomFactory extends ImlFactoryImpl {
 			it.op = "&&"; // FIXME is there an enum better to use?
 		]
 	}
+	def createOrExpression(FolFormula left, FolFormula right) {
+		createAndExpression => [
+			it.left = left;
+			it.right = right;
+			it.op = "||"; // FIXME is there an enum better to use?
+		]
+	}
 	
 	def createFolFormula(FolFormula left, String op, FolFormula right) {
 		createFolFormula => [
@@ -96,5 +103,6 @@ class ImlCustomFactory extends ImlFactoryImpl {
 			it.type = createSimpleTypeReference(t)
 		]
 	}
+	
 	
 }

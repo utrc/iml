@@ -41,6 +41,7 @@ import com.utc.utrc.hermes.iml.iml.ParenthesizedType
 import org.eclipse.emf.ecore.util.EcoreUtil
 import com.utc.utrc.hermes.iml.iml.Assertion
 import com.utc.utrc.hermes.iml.iml.SelfType
+import com.utc.utrc.hermes.iml.iml.ParenthesizedTerm
 
 public class ImlTypeProvider {
 
@@ -186,6 +187,9 @@ public class ImlTypeProvider {
 			}
 			SequenceTerm: {
 				return t.^return.termExpressionType(context)
+			}
+			ParenthesizedTerm : {
+				return t.sub.termExpressionType(context)
 			}
 			default: {
 				return Null
