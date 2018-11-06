@@ -36,6 +36,7 @@ import java.util.Arrays
 import com.utc.utrc.hermes.iml.iml.LambdaExpression
 import com.utc.utrc.hermes.iml.iml.QuantifiedFormula
 import com.utc.utrc.hermes.iml.iml.ImplicitInstanceConstructor
+import com.utc.utrc.hermes.iml.iml.ImlPackage
 
 /**
  * This class contains custom scoping description.
@@ -306,7 +307,7 @@ class ImlScopeProvider extends AbstractDeclarativeScopeProvider {
 			QuantifiedFormula:
 				return Scopes::scopeFor(o.scope, buildNestedScope(o.eContainer))
 			Model:
-				return Scopes::scopeFor(o.symbols, buildNestedScope(o.eContainer))
+				return Scopes::scopeFor(o.symbols, getGlobalScope(o,ImlPackage::eINSTANCE.model_Symbols))
 			default:
 				return buildNestedScope(o.eContainer)
 		}
@@ -320,7 +321,7 @@ class ImlScopeProvider extends AbstractDeclarativeScopeProvider {
 //	
 //
 //	def scope_TypeReference_type(TypeReference context, EReference r) {
-//		val global = getGlobalScope(context, r)
+//		val global = Scope(context, r)
 //		// val global = delegateGetScope(context, r)
 //		context.eContainer.computeScopeTypeRefType(context, global)
 //	}
