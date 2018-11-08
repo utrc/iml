@@ -363,6 +363,20 @@ class ImlSmtEncoderTest {
 	}
 	
 	@Test
+	def void testArrayOfParentheizedExpr() {
+		val model = '''
+			package p;
+			type Int;
+			type T1 {
+				a : (Int)[];
+			}
+		'''.parse
+		
+		encoder.encode(model.findSymbol("T1"))
+		println(encoder.toString)
+	}
+	
+	@Test
 	def void testExtendsEncoding() {
 		val model = 
 		'''

@@ -9,6 +9,7 @@ import org.eclipse.emf.ecore.EObject;
 
 import com.google.inject.Inject;
 import com.utc.utrc.hermes.iml.iml.ConstrainedType;
+import com.utc.utrc.hermes.iml.iml.ParenthesizedType;
 import com.utc.utrc.hermes.iml.iml.SymbolDeclaration;
 import com.utc.utrc.hermes.iml.iml.TupleType;
 /**
@@ -34,9 +35,13 @@ public class SmtSymbolTable<SortT, FunDeclT, FormulaT> {
 	}
 	
 	public void addSort(EObject type, SortT sort) {
-		EncodedId id = encodedIdFactory.createEncodedId(type);
-		if (sorts.containsKey(id)) return;
-		sorts.put(id, sort);
+		if (type instanceof ParenthesizedType) {
+			addSort(((ParenthesizedType) type).getSubexpression(), sort);
+		} else {
+			EncodedId id = encodedIdFactory.createEncodedId(type);
+			if (sorts.containsKey(id)) return;
+			sorts.put(id, sort);
+		}
 	}
 	
 	public boolean contains(EObject type) {
@@ -49,8 +54,8 @@ public class SmtSymbolTable<SortT, FunDeclT, FormulaT> {
 	}
 	
 	public SortT getSort(EObject type) {
-		if (type instanceof TupleType && ((TupleType) type).getSymbols().size() == 1) {
-			return getSort(((TupleType) type).getSymbols().get(0).getType());
+		if (type instanceof ParenthesizedType) {
+			return getSort(((ParenthesizedType) type).getSubexpression());
 		}
 		EncodedId id = encodedIdFactory.createEncodedId(type);
 		return sorts.get(id);

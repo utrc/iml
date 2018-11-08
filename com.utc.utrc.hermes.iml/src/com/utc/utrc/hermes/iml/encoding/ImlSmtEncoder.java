@@ -166,7 +166,9 @@ public class ImlSmtEncoder<SortT, FuncDeclT, FormulaT> implements ImlEncoder {
 		
 		// Encode types of all symbol declarations inside this type
 		for (SymbolDeclaration symbol : type.getSymbols()) {
-			defineTypes(getActualType(symbol, context));
+			if (!(symbol instanceof Assertion)) {
+				defineTypes(getActualType(symbol, context));
+			}
 		}
 	}
 	
@@ -223,7 +225,7 @@ public class ImlSmtEncoder<SortT, FuncDeclT, FormulaT> implements ImlEncoder {
 		} else if (type instanceof ParenthesizedType) {
 			defineTypes(((ParenthesizedType) type).getSubexpression());
 		} else if (type instanceof EmptyTuple) {
-			// TODO handle emtpy tuple
+			// TODO handle empty tuple
 		} else {
 			throw new IllegalArgumentException("Unsupported type: " + type.getClass().getName());
 		}
