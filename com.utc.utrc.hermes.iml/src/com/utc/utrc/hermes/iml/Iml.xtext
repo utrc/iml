@@ -8,7 +8,7 @@ import "http://www.eclipse.org/emf/2002/Ecore" as ecore
 Model:
 	'package' name=QualifiedName ';'
 	(imports+=Import ';')*
-	(symbols+=Symbol (';'))*
+	(symbols+=Symbol)*
 ;
 
 QualifiedName:
@@ -23,9 +23,9 @@ QualifiedNameWithWildcard:
 	QualifiedName '.*'?;
 
 Symbol :
-	SymbolDeclaration|
+	SymbolDeclaration ";"|
 	ConstrainedType |
-	Assertion
+	Assertion ";"
 ;
 
 Doc :
@@ -61,7 +61,7 @@ ConstrainedType:
 	(template?='<' typeParameter+=TypeParameter (',' typeParameter+=TypeParameter)* '>')? 
 	( relations += Relation)*
 	( restrictions += TypeRestriction)*
-	('{' (symbols+=(SymbolDeclaration|Assertion) ';')* '}')? 
+	(';' | ('{' (symbols+=(SymbolDeclaration|Assertion) ';')* '}' ";"?)) 
 ;
 
 TypeRestriction :

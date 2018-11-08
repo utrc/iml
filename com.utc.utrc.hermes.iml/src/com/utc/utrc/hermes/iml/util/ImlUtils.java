@@ -13,10 +13,12 @@ import org.eclipse.xtext.serializer.ISerializer;
 
 import com.utc.utrc.hermes.iml.iml.ArrayType;
 import com.utc.utrc.hermes.iml.iml.ConstrainedType;
+import com.utc.utrc.hermes.iml.iml.EmptyTuple;
 import com.utc.utrc.hermes.iml.iml.Extension;
 import com.utc.utrc.hermes.iml.iml.HigherOrderType;
 import com.utc.utrc.hermes.iml.iml.ImplicitInstanceConstructor;
 import com.utc.utrc.hermes.iml.iml.Model;
+import com.utc.utrc.hermes.iml.iml.ParenthesizedType;
 import com.utc.utrc.hermes.iml.iml.Property;
 import com.utc.utrc.hermes.iml.iml.Relation;
 import com.utc.utrc.hermes.iml.iml.SimpleTypeReference;
@@ -118,8 +120,12 @@ public class ImlUtils {
 			return "(" + ((TupleType) hot).getSymbols().stream()
 				.map(symbol -> getTypeName(symbol.getType(), qnp))
 				.reduce((accum, current) -> accum + ", " + current).get() + ")";
+		} else if (hot instanceof ParenthesizedType) {
+			return "(" +  getTypeName(((ParenthesizedType) hot).getSubexpression(), qnp) + ")";
+		} else if (hot instanceof EmptyTuple) {
+			return "()";
 		} else {
-			return getTypeName(hot.getDomain(), qnp) + "~>" + getTypeName(hot.getRange(), qnp);
+			return getTypeName(hot.getDomain(), qnp) + "->" + getTypeName(hot.getRange(), qnp);
 		}
 	}
 

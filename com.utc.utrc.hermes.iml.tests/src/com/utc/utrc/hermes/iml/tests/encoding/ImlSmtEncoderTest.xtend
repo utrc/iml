@@ -25,6 +25,9 @@ import com.utc.utrc.hermes.iml.typing.TypingServices
 import com.utc.utrc.hermes.iml.iml.HigherOrderType
 import com.utc.utrc.hermes.iml.iml.SimpleTypeReference
 import com.utc.utrc.hermes.iml.encoding.simplesmt.SimpleSmtFormula
+import com.utc.utrc.hermes.iml.encoding.AtomicRelation
+import com.utc.utrc.hermes.iml.iml.Extension
+import com.utc.utrc.hermes.iml.iml.Alias
 
 @RunWith(XtextRunner)
 @InjectWith(ImlInjectorProvider)
@@ -77,15 +80,16 @@ class ImlSmtEncoderTest {
 		val model = 
 		encode('''
 			package p1;
-			type T1 extends T2;
+			type T1 extends (T2);
 			type T2;
 		''', "T1")
 		
 		val t1Sort = assertAndGetSort(model.findSymbol("T1"))
 		val t2Sort =  assertAndGetSort(model.findSymbol("T2"))
 		
+		val extensionRelation = (model.findSymbol("T1") as ConstrainedType).relations.get(0) as Extension;
 		val extensionFun = assertAndGetFuncDecl(
-			(model.findSymbol("T1") as ConstrainedType).relations.get(0),
+			new AtomicRelation(extensionRelation, extensionRelation.extensions.get(0).type),
 			#[t1Sort], t2Sort
 		)
 	}
@@ -95,15 +99,15 @@ class ImlSmtEncoderTest {
 		val model = 
 		encode('''
 			package p1;
-			type T1 sameas T2;
+			type T1 is T2;
 			type T2;
 		''', "T1")
 		
 		val t1Sort = assertAndGetSort(model.findSymbol("T1"))
 		val t2Sort =  assertAndGetSort(model.findSymbol("T2"))
-		
+		val aliasRelation = (model.findSymbol("T1") as ConstrainedType).relations.get(0) as Alias
 		val extensionFun = assertAndGetFuncDecl(
-			(model.findSymbol("T1") as ConstrainedType).relations.get(0),
+			new AtomicRelation(aliasRelation, aliasRelation.type.type),
 			#[t1Sort], t2Sort 
 		)
 	}
@@ -114,7 +118,7 @@ class ImlSmtEncoderTest {
 		encode('''
 			package p1;
 			type T1 {
-				var1: Int ~> Real;
+				var1: Int -> Real;
 			}
 			type Int;
 			type Real;
@@ -190,8 +194,8 @@ class ImlSmtEncoderTest {
 			package p1;
 			type Int;
 			type Real;
-			type T1<type T, type P> {
-				vart: T ~> P;
+			type T1<T, P> {
+				vart: T -> P;
 			}
 			
 			type T2 {
@@ -214,7 +218,7 @@ class ImlSmtEncoderTest {
 		assertNotSame(t1IntReal, t1IntInt) // Different sorts for different binding
 		assertSame(t1IntReal, t1IntReal2)  // Same sort for same binding
 		
-		// Make sure we create concurrent sorts for T ~> P
+		// Make sure we create concurrent sorts for T -> P
 		val intToRealType = ImlTypeProvider.getType(
 			model.findSymbol("T1").findSymbol("vart") as SymbolDeclaration,
 			model.getSymbolType("T2", "var1") as SimpleTypeReference
@@ -337,12 +341,12 @@ class ImlSmtEncoderTest {
 			
 			type Int;
 			type Real;
-			type T1 extends T2 {
+			type T1 extends (T2) {
 				a : Int;
-				b : Int ~> T2;
+				b : Int -> T2;
 				c : (Int, Real);
 				d : Int[10][];
-				e : (Int~>Real)[][];
+				e : (Int->Real)[][];
 			}
 			
 			type T2 {
@@ -350,7 +354,7 @@ class ImlSmtEncoderTest {
 				y: Float;
 			};
 			
-			type Float sameas Real;
+			type Float is Real;
 		'''.parse
 		model.assertNoErrors
 		
@@ -363,7 +367,7 @@ class ImlSmtEncoderTest {
 		val model = 
 		'''
 			package p;
-			type T1 extends T2;
+			type T1 extends (T2);
 			type T2;
 		'''.parse
 		model.assertNoErrors
@@ -377,7 +381,7 @@ class ImlSmtEncoderTest {
 		val model = 
 		'''
 			package p;
-			type T1 sameas T2;
+			type T1 is T2;
 			type T2;
 		'''.parse
 		model.assertNoErrors
@@ -393,7 +397,7 @@ class ImlSmtEncoderTest {
 			package p;
 			
 			type Int;
-			type T1<type T> {
+			type T1<T> {
 				a : T;
 			}
 			
@@ -440,7 +444,7 @@ class ImlSmtEncoderTest {
 			}
 			type T2 {
 				var2: T1;
-				var3: Int := var2->var1;
+				var3: Int := var2.var1;
 			}
 			varT : T2;
 		''', "T2");
@@ -463,7 +467,7 @@ class ImlSmtEncoderTest {
 			type T1 {
 				var1 : Int;
 			}
-			type T2 extends T1 {
+			type T2 extends (T1) {
 				var2: Int := var1;
 			}
 			varT : T2;
@@ -485,7 +489,7 @@ class ImlSmtEncoderTest {
 			package p;
 			type Int;
 			type T1 {
-				var1 assertion : Int := if (True && False) {5};
+				assert var1 : if (true && false) {5};
 			}
 			varT : T1;
 		''', "T1");
@@ -507,8 +511,8 @@ class ImlSmtEncoderTest {
 			type Bool;
 			type Int;
 			type T1 {
-				var1 : Bool := forall a : Int {a > 5};
-				var2 : Bool := exists a : Int {a = 0};
+				var1 : Bool := forall (a : Int) {a > 5};
+				var2 : Bool := exists (a : Int) {a = 0};
 			}
 			varT : T1;
 		''', "T1");

@@ -42,6 +42,7 @@ import org.eclipse.emf.ecore.util.EcoreUtil
 import com.utc.utrc.hermes.iml.iml.Assertion
 import com.utc.utrc.hermes.iml.iml.SelfType
 import com.utc.utrc.hermes.iml.iml.ParenthesizedTerm
+import com.utc.utrc.hermes.iml.iml.QuantifiedFormula
 
 public class ImlTypeProvider {
 
@@ -166,7 +167,7 @@ public class ImlTypeProvider {
 					d = t.signature
 				}
 				var retval = ImlFactory.eINSTANCE.createHigherOrderType
-				retval.domain =  EcoreUtil.clone(d)
+				retval.domain =  clone(d);
 				retval.range = (t.definition as SequenceTerm).^return.termExpressionType(context)
 				return retval
 			}
@@ -190,6 +191,9 @@ public class ImlTypeProvider {
 			}
 			ParenthesizedTerm : {
 				return t.sub.termExpressionType(context)
+			} 
+			QuantifiedFormula : {
+				return Bool
 			}
 			default: {
 				return Null
@@ -270,9 +274,40 @@ public class ImlTypeProvider {
 		}
 	}
 	
+	// FIXME this is a temp implementation as we ignore SymbolDeclaration templates
+	def static HigherOrderType getType(SymbolDeclaration s, SimpleTypeReference ctx) {
+		if (!s.isTemplate) {
+			if ( ctx.type.symbols.contains(s) || symbolInsideLambda(s) || 
+				symbolInsideProgram(s)
+			) {
+				return bind(s.type,ctx)
+			}
+			
+			for (rel : ctx.type.relations) {
+				switch (rel) {
+					com.utc.utrc.hermes.iml.iml.Extension: {
+						for (twp : rel.extensions) {
+							val target = twp.type
+							if (target instanceof SimpleTypeReference) {
+								var sup = bind(target, ctx) as SimpleTypeReference
+								var retval = getType(s, sup);
+								if (retval !== null) {
+									return retval;
+								}
+							}
+	
+						}
+					}
+				}
+			}
+			return null;
+		} else {
+			return s.type
+		}
+	}
 
 	def static HigherOrderType getType(SymbolReferenceTerm s, SimpleTypeReference ctx) {
-		if (ctx.type === null){
+		if (ctx.type === null) {
 			if (! (s.symbol as SymbolDeclaration).isPolymorphic) {
 				return EcoreUtil.copy( (s.symbol as SymbolDeclaration).type)
 			}
@@ -286,7 +321,7 @@ public class ImlTypeProvider {
 			return remap(retval,ctmap);
 		}
 		
-		if ((s.symbol as SymbolDeclaration).type instanceof SelfType){
+		if ((s.symbol as SymbolDeclaration).type instanceof SelfType) {
 			return ctx;
 		}
 		

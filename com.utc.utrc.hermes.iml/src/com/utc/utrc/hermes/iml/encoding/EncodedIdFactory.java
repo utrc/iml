@@ -4,6 +4,9 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.naming.IQualifiedNameProvider;
 
 import com.google.inject.Inject;
+import com.utc.utrc.hermes.iml.iml.Extension;
+import com.utc.utrc.hermes.iml.iml.HigherOrderType;
+import com.utc.utrc.hermes.iml.iml.Relation;
 
 
 /**

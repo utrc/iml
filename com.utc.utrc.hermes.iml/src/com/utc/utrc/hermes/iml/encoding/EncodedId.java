@@ -8,7 +8,6 @@ import com.utc.utrc.hermes.iml.iml.Alias;
 import com.utc.utrc.hermes.iml.iml.ConstrainedType;
 import com.utc.utrc.hermes.iml.iml.Extension;
 import com.utc.utrc.hermes.iml.iml.HigherOrderType;
-import com.utc.utrc.hermes.iml.iml.RelationInstance;
 import com.utc.utrc.hermes.iml.iml.SimpleTypeReference;
 import com.utc.utrc.hermes.iml.iml.Symbol;
 import com.utc.utrc.hermes.iml.iml.SymbolDeclaration;
@@ -54,12 +53,14 @@ public class EncodedId {
 				// Use the name exactly as declared 					
 				name = ImlUtils.getTypeNameManually((HigherOrderType) imlEObject, qnp);
 			}
-		} else if (imlEObject instanceof RelationInstance) {
-			container = qnp.getFullyQualifiedName(imlEObject.eContainer());
-			if (imlEObject instanceof Alias) {
-				name = "alias_" + qnp.getFullyQualifiedName(((SimpleTypeReference)((Alias)imlEObject).getTarget()).getType());
-			} else if (imlEObject instanceof Extension) {
-				name = "extends_" + qnp.getFullyQualifiedName(((SimpleTypeReference)((Extension)imlEObject).getTarget()).getType());
+		} else if (imlEObject instanceof AtomicRelation) {
+			container = qnp.getFullyQualifiedName(((AtomicRelation) imlEObject).getRelation().eContainer());
+			if (((AtomicRelation) imlEObject).getRelation() instanceof Alias) {
+				name = "alias_" + ImlUtils.getTypeNameManually(((AtomicRelation) imlEObject).getRelatedType(), qnp);
+			} else if (((AtomicRelation) imlEObject).getRelation() instanceof Extension) {
+				name = "extends_" + ImlUtils.getTypeNameManually(((AtomicRelation) imlEObject).getRelatedType(), qnp);
+			} else {
+				// TODO handle traits
 			}
 		} else if (imlEObject instanceof SymbolDeclaration) {
 			container = qnp.getFullyQualifiedName(imlEObject.eContainer());

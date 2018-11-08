@@ -73,31 +73,32 @@ public class TypingServices {
 	}
 
 	def static HigherOrderType clone(HigherOrderType other) {
-		if (other !== null) {
-			if (other instanceof SimpleTypeReference) {
-				return clone(other as SimpleTypeReference)
-			}
-
-			if (other instanceof ArrayType) {
-				return clone(other as ArrayType)
-			}
-
-			if (other instanceof TupleType) {
-				return clone(other as TupleType)
-			}
-
-			// Not a leaf node
-			var ret = ImlFactory::eINSTANCE.createHigherOrderType();
-			// TODO We are not cloning the property list here
-			ret.domain = clone(other.domain);
-			if (other.range !== null) {
-				ret.range = clone(other.range);
-			}
-			return ret
-
-		} else {
-			return null
-		}
+		return EcoreUtil.copy(other)
+//		if (other !== null) {
+//			if (other instanceof SimpleTypeReference) {
+//				return clone(other as SimpleTypeReference)
+//			}
+//
+//			if (other instanceof ArrayType) {
+//				return clone(other as ArrayType)
+//			}
+//
+//			if (other instanceof TupleType) {
+//				return clone(other as TupleType)
+//			}
+//
+//			// Not a leaf node
+//			var ret = ImlFactory::eINSTANCE.createHigherOrderType();
+//			// TODO We are not cloning the property list here
+//			ret.domain = clone(other.domain);
+//			if (other.range !== null) {
+//				ret.range = clone(other.range);
+//			}
+//			return ret
+//
+//		} else {
+//			return null
+//		}
 
 	}
 

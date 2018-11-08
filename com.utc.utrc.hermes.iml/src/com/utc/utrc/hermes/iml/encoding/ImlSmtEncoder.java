@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.naming.IQualifiedNameProvider;
@@ -19,17 +20,23 @@ import com.utc.utrc.hermes.iml.iml.ArrayType;
 import com.utc.utrc.hermes.iml.iml.Assertion;
 import com.utc.utrc.hermes.iml.iml.AtomicExpression;
 import com.utc.utrc.hermes.iml.iml.ConstrainedType;
+import com.utc.utrc.hermes.iml.iml.EmptyTuple;
 import com.utc.utrc.hermes.iml.iml.Extension;
 import com.utc.utrc.hermes.iml.iml.FloatNumberLiteral;
 import com.utc.utrc.hermes.iml.iml.FolFormula;
 import com.utc.utrc.hermes.iml.iml.HigherOrderType;
+import com.utc.utrc.hermes.iml.iml.InstanceConstructor;
 import com.utc.utrc.hermes.iml.iml.IteTermExpression;
 import com.utc.utrc.hermes.iml.iml.LambdaExpression;
 import com.utc.utrc.hermes.iml.iml.Model;
 import com.utc.utrc.hermes.iml.iml.Multiplication;
 import com.utc.utrc.hermes.iml.iml.NumberLiteral;
-import com.utc.utrc.hermes.iml.iml.Program;
-import com.utc.utrc.hermes.iml.iml.RelationInstance;
+import com.utc.utrc.hermes.iml.iml.ParenthesizedTerm;
+import com.utc.utrc.hermes.iml.iml.ParenthesizedType;
+import com.utc.utrc.hermes.iml.iml.QuantifiedFormula;
+import com.utc.utrc.hermes.iml.iml.Relation;
+import com.utc.utrc.hermes.iml.iml.SelfTerm;
+import com.utc.utrc.hermes.iml.iml.SequenceTerm;
 import com.utc.utrc.hermes.iml.iml.SignedAtomicFormula;
 import com.utc.utrc.hermes.iml.iml.SimpleTypeReference;
 import com.utc.utrc.hermes.iml.iml.Symbol;
@@ -38,11 +45,11 @@ import com.utc.utrc.hermes.iml.iml.SymbolReferenceTail;
 import com.utc.utrc.hermes.iml.iml.SymbolReferenceTerm;
 import com.utc.utrc.hermes.iml.iml.TermExpression;
 import com.utc.utrc.hermes.iml.iml.TermMemberSelection;
-import com.utc.utrc.hermes.iml.iml.This;
+import com.utc.utrc.hermes.iml.iml.TraitExhibition;
 import com.utc.utrc.hermes.iml.iml.TruthValue;
 import com.utc.utrc.hermes.iml.iml.TupleConstructor;
 import com.utc.utrc.hermes.iml.iml.TupleType;
-import com.utc.utrc.hermes.iml.iml.TypeConstructor;
+import com.utc.utrc.hermes.iml.iml.TypeWithProperties;
 import com.utc.utrc.hermes.iml.typing.ImlTypeProvider;
 import com.utc.utrc.hermes.iml.typing.TypingServices;
 import com.utc.utrc.hermes.iml.util.ImlUtils;
@@ -145,8 +152,8 @@ public class ImlSmtEncoder<SortT, FuncDeclT, FormulaT> implements ImlEncoder {
 			if (symbolTable.contains(type)) return;
 			
 			// Encode relations no matter if it is a template or not
-			for (RelationInstance relation : type.getRelations()) {
-				defineTypes(relation.getTarget());
+			for (TypeWithProperties relationType : getRelationTypes(type.getRelations())) {
+				defineTypes(relationType.getType());
 			}
 
 			if (type.isTemplate()) return; // We don't encode template types without bindings
@@ -163,6 +170,21 @@ public class ImlSmtEncoder<SortT, FuncDeclT, FormulaT> implements ImlEncoder {
 		}
 	}
 	
+	// TODO move to a helper class
+	private List<TypeWithProperties> getRelationTypes(EList<Relation> relations) {
+		List<TypeWithProperties> types = new ArrayList<>();
+		for (Relation relation : relations) {
+			if (relation instanceof Extension) {
+				types.addAll(((Extension) relation).getExtensions());
+			} else if (relation instanceof Alias) {
+				types.add(((Alias) relation).getType());
+			} else {
+				types.addAll(((TraitExhibition) relation).getExhibitions());
+			}
+		}
+		return types;
+	}
+
 	private void defineTypes(HigherOrderType type) {
 		if (symbolTable.contains(type)) return;
 		
@@ -180,15 +202,11 @@ public class ImlSmtEncoder<SortT, FuncDeclT, FormulaT> implements ImlEncoder {
 			}
 			defineTypes(arrType.getType());
 		} else if (type instanceof TupleType) {
-			if (((TupleType) type).getSymbols().size() == 1) { // Tuple with one element TODO provide general solution
-				defineTypes(((TupleType) type).getSymbols().get(0).getType());
-			} else {
-				TupleType tupleType = (TupleType) type;
-				for (SymbolDeclaration symbol : tupleType.getSymbols()) {
-					defineTypes(symbol.getType());
-				}
-				addTypeSort(tupleType);
+			TupleType tupleType = (TupleType) type;
+			for (SymbolDeclaration symbol : tupleType.getSymbols()) {
+				defineTypes(symbol.getType());
 			}
+			addTypeSort(tupleType);
 		} else if (type instanceof SimpleTypeReference) {
 			SimpleTypeReference simpleRef = (SimpleTypeReference) type;
 			defineTypes(simpleRef.getType());
@@ -202,6 +220,10 @@ public class ImlSmtEncoder<SortT, FuncDeclT, FormulaT> implements ImlEncoder {
 				
 				addTypeSort(simpleRef);
 			}
+		} else if (type instanceof ParenthesizedType) {
+			defineTypes(((ParenthesizedType) type).getSubexpression());
+		} else if (type instanceof EmptyTuple) {
+			// TODO handle emtpy tuple
 		} else {
 			throw new IllegalArgumentException("Unsupported type: " + type.getClass().getName());
 		}
@@ -235,6 +257,7 @@ public class ImlSmtEncoder<SortT, FuncDeclT, FormulaT> implements ImlEncoder {
 	 * @param context null or the type reference with the actual binding e.g Pair<Int,Real>
 	 * @return the same symbol type if context is null or the binding of the type with the context
 	 */
+	// TODO we need to pass SymbolReferenceTerm instead of SymbolDeclaration
 	private HigherOrderType getActualType(SymbolDeclaration symbol, SimpleTypeReference context) {
 		if (context == null) {
 			return symbol.getType();
@@ -288,20 +311,21 @@ public class ImlSmtEncoder<SortT, FuncDeclT, FormulaT> implements ImlEncoder {
 	 */
 	private void declareFuncs(ConstrainedType container, SimpleTypeReference context) {
 		// encode relations TODO consider context
-		for (RelationInstance relation : container.getRelations()) {
-			if (relation instanceof Alias) {
+		List<AtomicRelation> relations = relationsToAtomicRelations(container.getRelations());
+		for (AtomicRelation relation : relations) {
+			if (relation.getRelation() instanceof Alias) {
 				String funName = getUniqueName(container) + ALIAS_FUNC_NAME;
-				FuncDeclT aliasFunc = smtModelProvider.createFuncDecl(funName, Arrays.asList(symbolTable.getSort(container)), symbolTable.getSort(((Alias)relation).getTarget()));
+				HigherOrderType aliasType = ((Alias) relation.getRelation()).getType().getType();
+				FuncDeclT aliasFunc = smtModelProvider.createFuncDecl(funName, Arrays.asList(symbolTable.getSort(container)), symbolTable.getSort(aliasType));
 				symbolTable.addFunDecl(container, relation, aliasFunc);
-			} else if (relation instanceof Extension) {
-				// TODO should we consider using FQN for base? in case extending multiple types with the same name in different packages
-				String funName = getUniqueName(container) + EXTENSION_BASE_FUNC_NAME + getUniqueName(((SimpleTypeReference) ((Extension) relation).getTarget()).getType());
-				
-				FuncDeclT extensionFunc = smtModelProvider.createFuncDecl(funName, Arrays.asList(symbolTable.getSort(container)), symbolTable.getSort(((Extension)relation).getTarget()));
-				symbolTable.addFunDecl(container, relation, extensionFunc);
+			} else if (relation.getRelation() instanceof Extension) {
+				for (TypeWithProperties extendedType : ((Extension) relation.getRelation()).getExtensions()) {
+					String funName = getUniqueName(container) + EXTENSION_BASE_FUNC_NAME + getUniqueName(extendedType.getType());
+					FuncDeclT extensionFunc = smtModelProvider.createFuncDecl(funName, Arrays.asList(symbolTable.getSort(container)), symbolTable.getSort(extendedType.getType()));
+					symbolTable.addFunDecl(container, relation, extensionFunc);
+				}
 			}
 		}
-		
 		// encode type symbols
 		for (SymbolDeclaration symbol : container.getSymbols()) {
 			EObject actualContainer;
@@ -364,8 +388,9 @@ public class ImlSmtEncoder<SortT, FuncDeclT, FormulaT> implements ImlEncoder {
 				FormulaT l2r = smtModelProvider.createFormula(op, Arrays.asList(leftFormula, rightFormula));
 				FormulaT r2l = smtModelProvider.createFormula(op, Arrays.asList(rightFormula, leftFormula));
 				return smtModelProvider.createFormula(OperatorType.AND, Arrays.asList(l2r, r2l));
-			} else if (op == OperatorType.FOR_ALL || op == OperatorType.EXISTS) { 
-				List<FormulaT> scopeFormulas = formula.getScope().stream().map(symbol -> {
+			} else if (op == OperatorType.FOR_ALL || op == OperatorType.EXISTS) {
+				QuantifiedFormula quantFormula = (QuantifiedFormula) formula;
+				List<FormulaT> scopeFormulas = quantFormula.getScope().stream().map(symbol -> {
 					String typeName = getUniqueName(symbol.getType());
 					return smtModelProvider.createFormula(Arrays.asList(smtModelProvider.createFormula(symbol.getName()),
 								smtModelProvider.createFormula(typeName)));
@@ -374,7 +399,7 @@ public class ImlSmtEncoder<SortT, FuncDeclT, FormulaT> implements ImlEncoder {
 				if (scope == null) {
 					scope = new ArrayList<>();
 				}
-				scope.addAll(formula.getScope());
+				scope.addAll(quantFormula.getScope());
 				leftFormula = encodeFormula(formula.getLeft(), context, inst, scope);
 				
 				return smtModelProvider.createFormula(op, Arrays.asList(smtModelProvider.createFormula(scopeFormulas), leftFormula));
@@ -445,7 +470,7 @@ public class ImlSmtEncoder<SortT, FuncDeclT, FormulaT> implements ImlEncoder {
 				}
 			}
 			return symbolRefFormula;
-		} else if (formula instanceof TypeConstructor) {
+		} else if (formula instanceof InstanceConstructor) {
 			// TODO Assert the type constructor content
 		} else if (formula instanceof IteTermExpression) {
 			FolFormula condition = ((IteTermExpression) formula).getCondition();
@@ -460,11 +485,11 @@ public class ImlSmtEncoder<SortT, FuncDeclT, FormulaT> implements ImlEncoder {
 				}
 			}
 			
-		} else if (formula instanceof This) {
+		} else if (formula instanceof SelfTerm) {
 			// Not used for now
 		} else if (formula instanceof TruthValue) {
 			return smtModelProvider.createFormula(((TruthValue) formula).isTRUE());
-		} else if (formula instanceof Program) {
+		} else if (formula instanceof SequenceTerm) {
 			// TODO use let binder
 		} else if (formula instanceof LambdaExpression) {
 			// TODO
@@ -477,8 +502,7 @@ public class ImlSmtEncoder<SortT, FuncDeclT, FormulaT> implements ImlEncoder {
 	}
 	
 	private boolean isAssertion(FolFormula formula) {
-		SymbolDeclaration symbolDeclaration = EcoreUtil2.getContainerOfType(formula, SymbolDeclaration.class);
-		return (symbolDeclaration.getPrimitiveProperty() != null && symbolDeclaration.getPrimitiveProperty() instanceof Assertion);
+		return EcoreUtil2.getContainerOfType(formula, Assertion.class) != null;
 	}
 
 	private List<FormulaT> encodeTupleElements(TupleConstructor tail, SimpleTypeReference context) {
@@ -495,29 +519,41 @@ public class ImlSmtEncoder<SortT, FuncDeclT, FormulaT> implements ImlEncoder {
 		// Handle super types
 		FuncDeclT symbolAccess = getSymbolDeclFun((SymbolDeclaration) symbolRef.getSymbol(), context);
 		if (symbolAccess == null) {
-			for (RelationInstance relation : context.getType().getRelations()) {
-				SimpleTypeReference parent = null;
-				if (relation instanceof Extension) {
-					if (relation.getTarget() instanceof SimpleTypeReference) {
-						parent = (SimpleTypeReference) relation.getTarget();
-					}
-				} else if (relation instanceof Alias) {
-					if (relation.getTarget() instanceof SimpleTypeReference) {
-						parent = (SimpleTypeReference) relation.getTarget();
-					}
-				}
-				if (parent != null) {
+			for (AtomicRelation relation : relationsToAtomicRelations(context.getType().getRelations())) {
+				if (relation.getRelatedType() instanceof SimpleTypeReference) {
+					SimpleTypeReference parent = (SimpleTypeReference) relation.getRelatedType();
 					FuncDeclT relationFunction = getFuncDeclaration(context, relation); // Get the function declaration for current relation
 					FormulaT parentSymbolAccess = getSymbolAccessFormula(symbolRef, parent, smtModelProvider.createFormula(relationFunction, Arrays.asList(inst)), scope);
 					if (parentSymbolAccess != null) {
 						return parentSymbolAccess;
 					}
 				}
+				
 			}
 			return null; 
 		} else {
 			return smtModelProvider.createFormula(symbolAccess, Arrays.asList(inst));
 		}
+	}
+
+	private List<AtomicRelation> relationsToAtomicRelations(EList<Relation> relations) {
+		List<AtomicRelation> atomicRelations = new ArrayList<>();
+		for (Relation relation : relations) {
+			if (relation instanceof Alias) {
+				atomicRelations.add(new AtomicRelation(relation, ((Alias) relation).getType().getType()));
+			} else {
+				List<TypeWithProperties> types;
+				if (relation instanceof Extension) {
+					types = ((Extension) relation).getExtensions();
+				} else {
+					types = ((TraitExhibition) relation).getExhibitions();
+				}
+				for (TypeWithProperties type : types) {
+					atomicRelations.add(new AtomicRelation(relation, type.getType()));
+				}
+			}
+		}
+		return atomicRelations;
 	}
 
 	/**
