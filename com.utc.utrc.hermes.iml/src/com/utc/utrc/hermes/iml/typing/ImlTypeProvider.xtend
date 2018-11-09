@@ -43,6 +43,7 @@ import com.utc.utrc.hermes.iml.iml.Assertion
 import com.utc.utrc.hermes.iml.iml.SelfType
 import com.utc.utrc.hermes.iml.iml.ParenthesizedTerm
 import com.utc.utrc.hermes.iml.iml.QuantifiedFormula
+import com.utc.utrc.hermes.iml.iml.CaseTermExpression
 
 public class ImlTypeProvider {
 
@@ -156,6 +157,10 @@ public class ImlTypeProvider {
 			IteTermExpression: {
 				return termExpressionType(t.left, context)
 			}
+			CaseTermExpression: {
+				return termExpressionType(t.expressions.get(0), context)
+			}
+			
 			TruthValue: {
 				return Bool;
 			}
@@ -321,13 +326,16 @@ public class ImlTypeProvider {
 			return remap(retval,ctmap);
 		}
 		
-		if ((s.symbol as SymbolDeclaration).type instanceof SelfType) {
-			return ctx;
+		if (s.symbol instanceof SymbolDeclaration) {
+			if ((s.symbol as SymbolDeclaration).type instanceof SelfType){
+				return ctx;
+			}
+			
+			if (ctx.type.symbols.contains(s.symbol as SymbolDeclaration) || symbolInsideLambda(s.symbol as SymbolDeclaration) || symbolInsideProgram(s.symbol as SymbolDeclaration)) {
+				return bind(s, ctx)
+			}
 		}
 		
-		if (ctx.type.symbols.contains(s.symbol as SymbolDeclaration) || symbolInsideLambda(s.symbol as SymbolDeclaration) || symbolInsideProgram(s.symbol as SymbolDeclaration)) {
-			return bind(s, ctx)
-		}
 
 		for (rel : ctx.type.relations) {
 			switch (rel) {

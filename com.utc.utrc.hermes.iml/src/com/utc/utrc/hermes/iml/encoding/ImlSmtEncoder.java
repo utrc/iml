@@ -20,7 +20,6 @@ import com.utc.utrc.hermes.iml.iml.ArrayType;
 import com.utc.utrc.hermes.iml.iml.Assertion;
 import com.utc.utrc.hermes.iml.iml.AtomicExpression;
 import com.utc.utrc.hermes.iml.iml.ConstrainedType;
-import com.utc.utrc.hermes.iml.iml.EmptyTuple;
 import com.utc.utrc.hermes.iml.iml.Extension;
 import com.utc.utrc.hermes.iml.iml.FloatNumberLiteral;
 import com.utc.utrc.hermes.iml.iml.FolFormula;
@@ -206,6 +205,7 @@ public class ImlSmtEncoder<SortT, FuncDeclT, FormulaT> implements ImlEncoder {
 			}
 			defineTypes(arrType.getType());
 		} else if (type instanceof TupleType) {
+			// TODO handle empty tuple!
 			TupleType tupleType = (TupleType) type;
 			for (SymbolDeclaration symbol : tupleType.getSymbols()) {
 				defineTypes(symbol.getType());
@@ -226,8 +226,6 @@ public class ImlSmtEncoder<SortT, FuncDeclT, FormulaT> implements ImlEncoder {
 			}
 		} else if (type instanceof ParenthesizedType) {
 			defineTypes(((ParenthesizedType) type).getSubexpression());
-		} else if (type instanceof EmptyTuple) {
-			// TODO handle empty tuple
 		} else {
 			throw new IllegalArgumentException("Unsupported type: " + type.getClass().getName());
 		}

@@ -120,9 +120,9 @@ ExplicitTupleType returns HigherOrderType :
 	
 
 ParenthesizedTypeExpression returns HigherOrderType :
-	=>({EmptyTupleType}'('')') |
+	//=>({EmptyTupleType}'('')') |
 	=>({ParenthesizedType}'(' subexpression=HigherOrderType  ')') |
-	 {TupleType}('(' symbols+=TupleSymbol (',' symbols+=TupleSymbol)*  ')') 
+	 {TupleType}('(' (symbols+=TupleSymbol (',' symbols+=TupleSymbol)*)?  ')') 
 ;
 	
 	
@@ -227,6 +227,7 @@ TerminalTerm returns TermExpression:
 	TruthValue |
 	InstanceConstructor |
 	IteTermExpression |
+	CaseTermExpression |
 	{SelfTerm} 'self' |
 	SequenceTerm |
 	{LambdaExpression}'fun' signature=TupleOrExpressionType definition=SequenceTerm |
@@ -254,8 +255,8 @@ ParenthesizedTerm returns TermExpression :
 ;
 
 TupleConstructor returns TermExpression:
-	=>({EmptyTuple}'('')') |
-	 {TupleConstructor} ('(' elements+=FolFormula  (',' elements+=FolFormula)*  ')') 
+	//=>({EmptyTuple}'('')') |
+	 {TupleConstructor} ('(' (elements+=FolFormula  (',' elements+=FolFormula)*)?  ')') 
 ;
 	
 
@@ -276,6 +277,12 @@ SymbolReferenceTail:
 IteTermExpression returns TermExpression:
 	{IteTermExpression} 'if' '(' condition=FolFormula ')' '{' left=TermExpression '}' 
 	                                          (=> 'else'  '{' right=TermExpression '}')?;
+	                                          
+CaseTermExpression returns TermExpression:
+	{CaseTermExpression} 'case' '{'
+								(cases+=FolFormula ':' expressions+=TermExpression ';')+
+						  '}'
+								;	                                          
 
 SequenceTerm returns TermExpression:
 	{SequenceTerm} '{' ('var' defs+= SymbolDeclaration ';')* 
