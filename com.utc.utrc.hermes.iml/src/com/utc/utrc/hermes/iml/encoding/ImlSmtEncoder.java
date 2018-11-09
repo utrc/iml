@@ -189,12 +189,14 @@ public class ImlSmtEncoder<SortT, FuncDeclT, FormulaT> implements ImlEncoder {
 
 	private void defineTypes(HigherOrderType type) {
 		if (symbolTable.contains(type)) return;
+		// Check if acceptable type
+		if (!ImlUtils.isSimpleHot(type)) {
+			throw new IllegalArgumentException("the type '" + ImlUtils.getTypeName(type, qnp) + "' is not supported for SMT encoding.");
+		}
 		
 		if (type.getRange() != null) { // Actual Higher Order Type
 			defineTypes(type.getDomain());
 			defineTypes(type.getRange());
-			// TODO add new Function?
-			addTypeSort(type);
 		} else if (type instanceof ArrayType) {
 			ArrayType arrType = (ArrayType) type;
 			// Create new type for each dimension beside the main type
@@ -239,10 +241,7 @@ public class ImlSmtEncoder<SortT, FuncDeclT, FormulaT> implements ImlEncoder {
 	private SortT addTypeSort(EObject type) {
 		String sortName = getUniqueName(type);
 		SortT sort = null;
-		if (type instanceof HigherOrderType && ((HigherOrderType) type).getRange() != null) {
-			HigherOrderType hot = (HigherOrderType) type;
-			sort = smtModelProvider.createHotSort(sortName, symbolTable.getSort(hot.getDomain()), symbolTable.getSort(hot.getRange()));
-		} else if (type instanceof TupleType){
+		if (type instanceof TupleType){
 			sort = smtModelProvider.createTupleSort(sortName, getTupleSorts((TupleType) type));
 		} else {
 			sort = smtModelProvider.createSort(sortName);
@@ -330,6 +329,8 @@ public class ImlSmtEncoder<SortT, FuncDeclT, FormulaT> implements ImlEncoder {
 		}
 		// encode type symbols
 		for (SymbolDeclaration symbol : container.getSymbols()) {
+			if (symbol instanceof Assertion) return;
+			
 			EObject actualContainer;
 			String funName;
 			if (context == null) {
@@ -342,9 +343,18 @@ public class ImlSmtEncoder<SortT, FuncDeclT, FormulaT> implements ImlEncoder {
 			}
 			HigherOrderType symbolType = getActualType(symbol, context); // e.g if it was T~>P then maybe Int~>Real
 			SortT containerSort = symbolTable.getSort(actualContainer);
-			SortT symbolTypeSort = symbolTable.getSort(symbolType);
 			
-			FuncDeclT symbolFunDecl = smtModelProvider.createFuncDecl(funName, Arrays.asList(containerSort), symbolTypeSort);
+			SortT funOutoutSort = null;
+			List<SortT> funInputSorts = new ArrayList<>(Arrays.asList(containerSort));
+			
+			if (ImlUtils.isActualHot(symbolType)) { // Encode it as a function
+				funInputSorts.add(symbolTable.getSort(symbolType.getDomain()));
+				funOutoutSort = symbolTable.getSort(symbolType.getRange());
+			} else { // Symbol is not a function
+				funOutoutSort = symbolTable.getSort(symbolType);
+			}
+			
+			FuncDeclT symbolFunDecl = smtModelProvider.createFuncDecl(funName, funInputSorts, funOutoutSort);
 			symbolTable.addFunDecl(actualContainer, symbol, symbolFunDecl);
 		}
 	}
@@ -451,10 +461,11 @@ public class ImlSmtEncoder<SortT, FuncDeclT, FormulaT> implements ImlEncoder {
 			SymbolReferenceTerm symbolRef = (SymbolReferenceTerm) formula;
 			// 1. Get FunctionDeclaration for the symbol
 			FormulaT symbolRefFormula = getSymbolAccessFormula(symbolRef, context, inst, scope);
+			// TODO check if symbol of a function is used as a parameter or uses an assertion
 			
+			Symbol symbol = symbolRef.getSymbol();
 			// 2. Handle Tails from left to right
 			if (symbolRef.getTails() != null &&  !symbolRef.getTails().isEmpty()) {
-				Symbol symbol = symbolRef.getSymbol();
 				if (symbol instanceof SymbolDeclaration) {
 					HigherOrderType type = ImlTypeProvider.getType((SymbolDeclaration) symbol, context);
 					for (SymbolReferenceTail tail : symbolRef.getTails()) {
@@ -463,12 +474,20 @@ public class ImlSmtEncoder<SortT, FuncDeclT, FormulaT> implements ImlEncoder {
 							FuncDeclT arrayAccessFun = getFuncDeclaration(type);
 							symbolRefFormula = smtModelProvider.createFormula(arrayAccessFun, Arrays.asList(symbolRefFormula));
 						} else { // TupleConstructor
-							List<FormulaT> tupleFormulas = encodeTupleElements((TupleConstructor) tail, context);
-							// TODO function call here 
+							List<FormulaT> tupleFormulas = encodeTupleElements((TupleConstructor) tail, context, inst, scope);
+							// TODO Refactor?!
+							List<FormulaT> paramFormulas = new ArrayList<>(Arrays.asList(symbolRefFormula));
+							paramFormulas.addAll(tupleFormulas);
+							
+							symbolRefFormula = smtModelProvider.createFormula((OperatorType) null, paramFormulas);
 						}
 						
 						type = ImlTypeProvider.accessTail(type, tail); // TODO revisit the type provider
 					}
+				}
+			} else {
+				if (symbol instanceof SymbolDeclaration && ImlUtils.isActualHot(((SymbolDeclaration) symbol).getType())) {
+					throw new SMTEncodingException(symbol.getName() + " function can't be used as a variable");
 				}
 			}
 			return symbolRefFormula;
@@ -507,9 +526,12 @@ public class ImlSmtEncoder<SortT, FuncDeclT, FormulaT> implements ImlEncoder {
 		return EcoreUtil2.getContainerOfType(formula, Assertion.class) != null;
 	}
 
-	private List<FormulaT> encodeTupleElements(TupleConstructor tail, SimpleTypeReference context) {
-//		return tail.getElements().stream().map(it -> encodeFormula(it, context)).collect(Collectors.toList());
-		return null;
+	private List<FormulaT> encodeTupleElements(TupleConstructor tail, SimpleTypeReference context, FormulaT inst, List<SymbolDeclaration> scope) throws SMTEncodingException {
+		List<FormulaT> encodedFormulas = new ArrayList<>();
+		for (FolFormula formula : tail.getElements()) {
+			encodedFormulas.add(encodeFormula(formula, context, inst, scope));
+		}
+		return encodedFormulas;
 	}
 
 	private FormulaT getSymbolAccessFormula(SymbolReferenceTerm symbolRef, SimpleTypeReference context, FormulaT inst, List<SymbolDeclaration> scope) {

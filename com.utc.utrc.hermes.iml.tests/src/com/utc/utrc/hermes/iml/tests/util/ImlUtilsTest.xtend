@@ -47,4 +47,33 @@ class ImlUtilsTest {
 		val v1 = model.findSymbol("v1") as SymbolDeclaration
 		assertEquals(typeGenerated, ImlUtils.getTypeNameManually(v1.type, null))
 	}
+	
+	@Test
+	def void testIsSimpleHot() {
+		testIsSimpleHot("Int", true)
+		testIsSimpleHot("Int[]", true)
+		testIsSimpleHot("(Int)", true)
+		testIsSimpleHot("(Int, Real)", true)
+		testIsSimpleHot("Int[][][]", true)
+		testIsSimpleHot("Int->Real", true)
+		testIsSimpleHot("Int[]->Real", true)
+		testIsSimpleHot("(Int, Real) -> (Real, Int)", true)
+		testIsSimpleHot("(Int->Real)->Int", false)
+		testIsSimpleHot("Int->(Int->Real)", false)
+		testIsSimpleHot("(Int->Real)[]", false)
+		testIsSimpleHot("(Int->Real, Int)", false)
+	}
+	
+	def void testIsSimpleHot(String typeDeclaration, boolean isSimpleHot) {
+		val model = '''
+			package p;
+			type Int;
+			type Real;
+			v1 :«typeDeclaration»;
+		'''.parse
+		model.assertNoErrors
+		
+		val v1 = model.findSymbol("v1") as SymbolDeclaration
+		assertEquals(isSimpleHot, ImlUtils.isSimpleHot(v1.type))
+	}
 }

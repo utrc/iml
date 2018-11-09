@@ -28,6 +28,7 @@ import com.utc.utrc.hermes.iml.encoding.simplesmt.SimpleSmtFormula
 import com.utc.utrc.hermes.iml.encoding.AtomicRelation
 import com.utc.utrc.hermes.iml.iml.Extension
 import com.utc.utrc.hermes.iml.iml.Alias
+import com.utc.utrc.hermes.iml.encoding.SMTEncodingException
 
 @RunWith(XtextRunner)
 @InjectWith(ImlInjectorProvider)
@@ -124,6 +125,9 @@ class ImlSmtEncoderTest {
 			type Real;
 		''', "T1")
 		
+		print(encoder.toString)
+		
+		
 		val t1Sort = assertAndGetSort(model.findSymbol("T1"))
 		val intSort =  assertAndGetSort(model.findSymbol("Int"))
 		val realSort =  assertAndGetSort(model.findSymbol("Real"))
@@ -136,8 +140,6 @@ class ImlSmtEncoderTest {
 		val var1Fun = assertAndGetFuncDecl(
 			var1, #[t1Sort], hotSort 
 		)
-		
-		print(encoder.toString)
 	}
 	
 	
@@ -346,7 +348,6 @@ class ImlSmtEncoderTest {
 				b : Int -> T2;
 				c : (Int, Real);
 				d : Int[10][];
-				e : (Int->Real)[][];
 			}
 			
 			type T2 {
@@ -540,9 +541,54 @@ class ImlSmtEncoderTest {
 		val formulaEncoding = encoder.encodeFormula(definitionForAll, varT, new SimpleSmtFormula("inst"), null);
 		val formulaEncoding2 = encoder.encodeFormula(definitionExists, varT, new SimpleSmtFormula("inst"), null);
 		
-		print(formulaEncoding);
-		print(formulaEncoding2);
+		println(formulaEncoding);
+		println(formulaEncoding2);
 	}
 		
+	@Test
+	def void testFormulaEncodingFunctionCall() {
+		val model =
+		encode('''
+			package p;
+			type Int;
+			type T1 {
+				var1 : Int -> Int;
+				var2 : Int := var1(5);
+			}
+			varT : T1;
+		''', "T1");
+		
+		
+		val varT = (model.findSymbol("varT") as SymbolDeclaration).type as SimpleTypeReference
+		val definition = (model.findSymbol("T1").findSymbol("var2") as SymbolDeclaration).definition
+		
+		val formulaEncoding = encoder.encodeFormula(definition, varT, new SimpleSmtFormula("inst"), null);
+		
+		println(encoder.toString)
+		println(formulaEncoding);
+	}
+	
+	@Test
+	def void testFormulaEncodingFunctionUsedAsAVariable() {
+		try {
+			val model = encode('''
+				package p;
+				type Int;
+				type T1 {
+					var1 : Int -> Int;
+					var2 : Int -> Int := var1;
+				}
+				varT : T1;
+			''', "T1");
+			val varT = (model.findSymbol("varT") as SymbolDeclaration).type as SimpleTypeReference
+			
+			val definition = (model.findSymbol("T1").findSymbol("var2") as SymbolDeclaration).definition
+			val formulaEncoding = encoder.encodeFormula(definition, varT, new SimpleSmtFormula("inst"), null);
+			
+			assertTrue(false);
+		} catch (SMTEncodingException e) {
+		}
+	}
+	
 	
 }
