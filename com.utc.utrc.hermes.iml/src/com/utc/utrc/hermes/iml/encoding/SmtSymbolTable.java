@@ -68,14 +68,14 @@ public class SmtSymbolTable<SortT, FunDeclT, FormulaT> {
 	public void addFunDecl(EObject container, EObject symbol, FunDeclT funDecl) {
 		EncodedId containerId = encodedIdFactory.createEncodedId(container);
 		EncodedId symbolId = encodedIdFactory.createEncodedId(symbol);
-		Map<EncodedId, FunDeclT> containerFunDecl = funDecls.get(containerId);
-		if (containerFunDecl == null) {
-			containerFunDecl = new HashMap<>();
-			funDecls.put(containerId, containerFunDecl);
+		Map<EncodedId, FunDeclT> containerFunDecls = funDecls.get(containerId);
+		if (containerFunDecls == null) {
+			containerFunDecls = new HashMap<>();
+			funDecls.put(containerId, containerFunDecls);
 		}
-		if (containerFunDecl.containsKey(symbolId)) return;
+		if (containerFunDecls.containsKey(symbolId)) return;
 		
-		containerFunDecl.put(symbolId, funDecl);
+		containerFunDecls.put(symbolId, funDecl);
 	}
 
 	public List<EncodedId> getEncodedIds() {

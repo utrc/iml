@@ -94,12 +94,22 @@ public class ImlSmtEncoder<SortT, FuncDeclT, FormulaT> implements ImlEncoder {
 	
 	@Override
 	public void encode(SymbolDeclaration symbolDecl) {
+		// TODO Refactor this to work with global or type symbols and combine it with declareFunc(ConstrainedType), this is only for global symbols now
+		
 		HigherOrderType symbolType = symbolDecl.getType();
 		encode(symbolType);
 		// Create function declaration to access this symbol
-		SortT symbolSort = symbolTable.getSort(symbolType);
+		List<SortT> inputSort = new ArrayList<>();
+		SortT outputSort = null;
+		if (ImlUtils.isActualHot(symbolType)) {
+			inputSort.add(symbolTable.getSort(symbolType.getDomain()));
+			outputSort = symbolTable.getSort(symbolType.getRange());
+		} else {
+			outputSort = symbolTable.getSort(symbolType);
+		}
+		
 		String symbolId = getUniqueName(symbolDecl);
-		FuncDeclT funDecl = smtModelProvider.createConst(symbolId, symbolSort);
+		FuncDeclT funDecl = smtModelProvider.createFuncDecl(symbolId, inputSort, outputSort);
 		symbolTable.addFunDecl(symbolDecl.eContainer(), symbolDecl, funDecl);
 	}
 
@@ -346,7 +356,7 @@ public class ImlSmtEncoder<SortT, FuncDeclT, FormulaT> implements ImlEncoder {
 			List<SortT> funInputSorts = new ArrayList<>(Arrays.asList(containerSort));
 			
 			if (ImlUtils.isActualHot(symbolType)) { // Encode it as a function
-				funInputSorts.add(symbolTable.getSort(symbolType.getDomain()));
+				funInputSorts.add(symbolTable.getSort(symbolType.getDomain())); // TODO what if domain is a tuple?
 				funOutoutSort = symbolTable.getSort(symbolType.getRange());
 			} else { // Symbol is not a function
 				funOutoutSort = symbolTable.getSort(symbolType);

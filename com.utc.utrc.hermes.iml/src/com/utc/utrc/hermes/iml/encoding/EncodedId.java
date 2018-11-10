@@ -8,6 +8,7 @@ import com.utc.utrc.hermes.iml.iml.Alias;
 import com.utc.utrc.hermes.iml.iml.ConstrainedType;
 import com.utc.utrc.hermes.iml.iml.Extension;
 import com.utc.utrc.hermes.iml.iml.HigherOrderType;
+import com.utc.utrc.hermes.iml.iml.Model;
 import com.utc.utrc.hermes.iml.iml.SimpleTypeReference;
 import com.utc.utrc.hermes.iml.iml.Symbol;
 import com.utc.utrc.hermes.iml.iml.SymbolDeclaration;
@@ -38,6 +39,10 @@ public class EncodedId {
 	 */
 	public EncodedId(EObject imlEObject, IQualifiedNameProvider qnp) {
 		this.imlObject = imlEObject;
+		if (imlEObject instanceof Model) {
+			container = null;
+			name = ((Model) imlEObject).getName();
+		}
 		if (imlEObject instanceof ConstrainedType) {
 			container = qnp.getFullyQualifiedName(imlEObject.eContainer());
 			name = ((Symbol) imlEObject).getName();
@@ -93,7 +98,11 @@ public class EncodedId {
 			return false;
 		if (!(obj instanceof EncodedId))
 			return false;
-		if (!container.equals(((EncodedId) obj).getContainer()))
+		if ((container == null && ((EncodedId) obj).getContainer() != null) ||
+			(container != null && ((EncodedId) obj).getContainer() == null)) {
+			return false;
+		}
+		if (container != null && !container.equals(((EncodedId) obj).getContainer()))
 			return false;
 		if (!name.equals(((EncodedId) obj).getName()))
 			return false;
@@ -118,7 +127,11 @@ public class EncodedId {
 	}
 	
 	public String stringId() {
-		return (container.toString() + "." + name);
+		if (container == null) {
+			return name;
+		} else {
+			return (container.toString() + "." + name);
+		}
 	}
 	
 }
