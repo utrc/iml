@@ -16,6 +16,8 @@ import com.utc.utrc.hermes.iml.iml.ConstrainedType
 import java.util.Arrays
 import java.util.List
 import java.util.ArrayList
+import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
+import com.utc.utrc.hermes.iml.typing.ImlTypeProvider
 
 /**
  * @author Ayman Elkfrawy
@@ -352,6 +354,27 @@ class TypingServicesTest {
 			}
 		'''.parse
 		
+		model.assertNoErrors
+	}
+	
+	@Test
+	def testAliasWithTypeParameters() {
+		val model = '''
+			package p;
+			type Int;
+			type Connector<T> is (T,T);
+			type S {
+				p1 : Int ;
+				p2 : Int ;
+				c : Connector<Int> := (p1,p2) ;
+			};
+		'''.parse
+		
+		val c = (model.symbols.last as ConstrainedType).symbols.last as SymbolDeclaration
+		val decltype = c.type
+		val deftype = ImlTypeProvider.termExpressionType(c.definition)
+		val eq = TypingServices.isCompatible(decltype,deftype)
+		assertTrue(eq)
 		model.assertNoErrors
 	}
 	

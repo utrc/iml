@@ -5,6 +5,7 @@ import org.eclipse.xtext.scoping.impl.ImportedNamespaceAwareLocalScopeProvider
 import org.eclipse.emf.ecore.EObject
 import java.util.List
 import com.utc.utrc.hermes.iml.iml.Model
+import org.eclipse.xtext.naming.QualifiedName
 
 class ImlImportedNamespaceAwareLocalScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 
@@ -19,5 +20,9 @@ class ImlImportedNamespaceAwareLocalScopeProvider extends ImportedNamespaceAware
 		}
 		return super.internalGetImportedNamespaceResolvers(context, ignoreCase);
 	}
-
+	
+	override getImplicitImports(boolean ignoreCase){
+		newArrayList(new ImportNormalizer(QualifiedName.create("iml","lang"),true,ignoreCase))
+	}
+	
 }
