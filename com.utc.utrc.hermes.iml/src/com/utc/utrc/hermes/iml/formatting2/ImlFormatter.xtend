@@ -31,7 +31,6 @@ class ImlFormatter extends AbstractFormatter2 {
 	def dispatch void format(ConstrainedType constrainedType, extension IFormattableDocument document) {
 		constrainedType.regionFor.keyword("{").append[newLine]
 		constrainedType.regionFor.keyword("}").prepend[newLine].append[newLine]
-		constrainedType.doc.append[newLine]
 		interior(
 			constrainedType.regionFor.keyword(("{")), 
 			constrainedType.regionFor.keyword(("}"))

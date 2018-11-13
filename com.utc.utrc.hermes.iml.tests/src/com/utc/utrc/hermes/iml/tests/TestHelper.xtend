@@ -8,11 +8,11 @@ import com.utc.utrc.hermes.iml.iml.ConstrainedType
  */
 class TestHelper {
 	
-	def dispatch findSymbol(Model model, String name) {
+	def findSymbol(Model model, String name) {
 		model.symbols.findFirst[it.name.equals(name)]	
 	}
 	
-	def dispatch findSymbol(ConstrainedType type, String name) {
+	def findSymbol(ConstrainedType type, String name) {
 		type.symbols.findFirst[it.name.equals(name)]	
 	}
 	
