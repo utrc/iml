@@ -12,6 +12,10 @@ import org.junit.Assert
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.eclipse.xtext.testing.validation.ValidationTestHelper
+import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
+import com.utc.utrc.hermes.iml.iml.ConstrainedType
+import com.utc.utrc.hermes.iml.iml.SimpleTypeReference
+import static extension org.junit.Assert.*
 
 @RunWith(XtextRunner)
 @InjectWith(ImlInjectorProvider)
@@ -19,6 +23,9 @@ class ImlParsingTest {
 	@Inject extension ParseHelper<Model> 
 	
 	@Inject extension ValidationTestHelper
+	
+	@Inject extension TestHelper
+	
 	
 	@Test
 	def void loadModel() {
@@ -107,5 +114,23 @@ class ImlParsingTest {
 		'''.parse
 		
 		model.assertNoErrors
+	}
+	
+	@Test
+	def void testParsingSameAsActualType() {
+		val model = '''
+			package p;
+			type Int;
+			type Integer sameas Int;
+			
+			var1 : Integer;
+		'''.parse
+		
+		model.assertNoErrors
+		val var1 = model.findSymbol("var1") as SymbolDeclaration;
+		val intType = model.findSymbol("Int") as ConstrainedType
+		val integerType = model.findSymbol("Integer") as ConstrainedType
+		
+		assertEquals(intType, (var1.type as SimpleTypeReference).type)
 	}
 }

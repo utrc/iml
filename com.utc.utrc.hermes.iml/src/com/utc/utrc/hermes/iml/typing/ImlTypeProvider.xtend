@@ -14,7 +14,7 @@ import com.utc.utrc.hermes.iml.iml.SimpleTypeReference
 import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
 import com.utc.utrc.hermes.iml.iml.TermExpression
 import com.utc.utrc.hermes.iml.iml.TermMemberSelection
-import com.utc.utrc.hermes.iml.iml.This
+import com.utc.utrc.hermes.iml.iml.SelfTerm
 import com.utc.utrc.hermes.iml.iml.TruthValue
 import java.util.Map
 
@@ -22,16 +22,28 @@ import static extension com.utc.utrc.hermes.iml.typing.TypingServices.*
 import static extension org.eclipse.xtext.EcoreUtil2.*
 import java.util.HashMap
 import com.utc.utrc.hermes.iml.iml.ImlFactory
-import com.utc.utrc.hermes.iml.iml.TupleType
 import com.utc.utrc.hermes.iml.iml.AtomicExpression
-import com.utc.utrc.hermes.iml.iml.TupleConstructor
 import com.utc.utrc.hermes.iml.iml.LambdaExpression
-import com.utc.utrc.hermes.iml.iml.Program
+import com.utc.utrc.hermes.iml.iml.SequenceTerm
 import com.utc.utrc.hermes.iml.iml.SymbolReferenceTerm
 import com.utc.utrc.hermes.iml.iml.SymbolReferenceTail
 import com.utc.utrc.hermes.iml.iml.ArrayAccess
 import org.eclipse.xtext.EcoreUtil2
-import com.utc.utrc.hermes.iml.iml.TypeConstructor
+import com.utc.utrc.hermes.iml.iml.InstanceConstructor
+import com.utc.utrc.hermes.iml.iml.TupleConstructor
+import com.utc.utrc.hermes.iml.iml.TupleType
+import com.utc.utrc.hermes.iml.iml.TypeRestriction
+import java.util.Enumeration
+import com.utc.utrc.hermes.iml.iml.EnumRestriction
+import com.utc.utrc.hermes.iml.iml.Symbol
+import com.utc.utrc.hermes.iml.iml.ImplicitInstanceConstructor
+import com.utc.utrc.hermes.iml.iml.ParenthesizedType
+import org.eclipse.emf.ecore.util.EcoreUtil
+import com.utc.utrc.hermes.iml.iml.Assertion
+import com.utc.utrc.hermes.iml.iml.SelfType
+import com.utc.utrc.hermes.iml.iml.ParenthesizedTerm
+import com.utc.utrc.hermes.iml.iml.QuantifiedFormula
+import com.utc.utrc.hermes.iml.iml.CaseTermExpression
 
 public class ImlTypeProvider {
 
@@ -44,34 +56,24 @@ public class ImlTypeProvider {
 	public static val Real = createBasicType('Real')
 
 	public static val Bool = createBasicType('Bool')
-	
-	
+
+	public static val String = createBasicType('String')
+
 	def static HigherOrderType termExpressionType(FolFormula t) {
 		termExpressionType(t, createSimpleTypeRef(t.getContainerOfType(ConstrainedType)))
 	}
 
 	def static HigherOrderType termExpressionType(TermExpression t) {
-		val typeConstructor = EcoreUtil2.getContainerOfType(t, TypeConstructor)
-		if (typeConstructor !== null) {
-			val type = termExpressionType(t, typeConstructor.ref as SimpleTypeReference)
-			if(type !== null) {
-				return type
-			}
-		}
 		termExpressionType(t, createSimpleTypeRef(t.getContainerOfType(ConstrainedType)))
 	}
-
+	
 	def static HigherOrderType termExpressionType(FolFormula t, SimpleTypeReference context) {
 		if (t instanceof TermExpression) {
 			return termExpressionType((t as TermExpression), context)
-		} if (t instanceof SignedAtomicFormula) {
-			
 		}
-		
 		if (t instanceof AtomicExpression) {
 			return Bool
 		}
-		
 		return t.left.termExpressionType(context);
 	}
 
@@ -84,12 +86,12 @@ public class ImlTypeProvider {
 	def static HigherOrderType termExpressionType(TermExpression t, SimpleTypeReference context) {
 
 		switch (t) {
-			// If the expression is "this", then its type is the 
+			// If the expression is "self", then its type is 
 			// type of the container type.
-			This: {
-				if (context.eContainer instanceof TypeConstructor) {
-					return context // This here refers to the container type constructor
-				}
+			SelfTerm: {
+//				if (context.eContainer instanceof InstanceConstructor) {
+//					return context // This here refers to the container type constructor
+//				}
 				return bind(createBasicType(t.getContainerOfType(ConstrainedType)), context)
 			}
 			// Additions are among numeric types and the result is a numeric 
@@ -100,7 +102,7 @@ public class ImlTypeProvider {
 				if (t.left.termExpressionType(context).isEqual(Real) ||
 					t.right.termExpressionType(context).isEqual(Real)) {
 					return Real
-				} 
+				}
 				return Int
 			}
 			// For reminder and modulo, the result is integer
@@ -117,25 +119,25 @@ public class ImlTypeProvider {
 				if (t.left.termExpressionType(context).isEqual(Real) ||
 					t.right.termExpressionType(context).isEqual(Real) || t.sign == '/') {
 					return Real
-				} 
+				}
 				return Int;
 			}
 			// Compute the actual type reference which 
 			// depends on the types of the change of member selections
 			TermMemberSelection: {
-				val receiverType = termExpressionType(t.receiver,context)
+				val receiverType = termExpressionType(t.receiver, context)
 				if (receiverType instanceof SimpleTypeReference) {
 					return termExpressionType(t.member, receiverType)
-				} else return null // TODO Should we raise an exception better?
-				
+				} else
+					return null // TODO Should we raise an exception better?
 			}
 			SymbolReferenceTerm: {
 				if (t.symbol instanceof ConstrainedType) {
 					// Reference to a literal
 					return createBasicType(t.symbol as ConstrainedType)
-				} else if (t.symbol.eContainer instanceof ConstrainedType && 
-					(t.symbol.eContainer as ConstrainedType).literals.contains(t.symbol)
-				) { // Accessing specific literal
+				} else if (t.symbol.eContainer instanceof ConstrainedType &&
+					t.symbol.isLiteralOf(t.symbol.eContainer as ConstrainedType)) {
+					// Accessing specific literal
 					return createBasicType(t.symbol.eContainer as ConstrainedType)
 				} else {
 					// Reference to a symbol
@@ -155,44 +157,75 @@ public class ImlTypeProvider {
 			IteTermExpression: {
 				return termExpressionType(t.left, context)
 			}
+			CaseTermExpression: {
+				return termExpressionType(t.expressions.get(0), context)
+			}
+			
 			TruthValue: {
 				return Bool;
 			}
 			LambdaExpression: {
-				return ImlFactory.eINSTANCE.createHigherOrderType => [
-					domain = EcoreUtil2.clone(t.signature)
-					range = t.definition.termExpressionType(context)
-				]
+				var HigherOrderType d = null
+				if (t.signature instanceof TupleType && (t.signature as TupleType).symbols.size === 1){
+					d = (t.signature as TupleType).symbols.get(0).type
+				} else {
+					d = t.signature
+				}
+				var retval = ImlFactory.eINSTANCE.createHigherOrderType
+				retval.domain =  clone(d);
+				retval.range = (t.definition as SequenceTerm).^return.termExpressionType(context)
+				return retval
 			}
-			TypeConstructor: {
-				return t.ref
+			InstanceConstructor: {
+				return t.ref.type
+			}
+			ImplicitInstanceConstructor : {
+				return t.ref ;
 			}
 			TupleConstructor: {
 				return ImlFactory.eINSTANCE.createTupleType => [
-					symbols.addAll(t.elements.map[
-						val ts = ImlFactory.eINSTANCE.createSymbolDeclaration;  
+					symbols.addAll(t.elements.map [
+						val ts = ImlFactory.eINSTANCE.createSymbolDeclaration;
 						ts.type = it.termExpressionType(context)
 						ts
 					]);
 				]
 			}
-			Program: {
-				return t.relations.last.termExpressionType(context)
+			SequenceTerm: {
+				return t.^return.termExpressionType(context)
+			}
+			ParenthesizedTerm : {
+				return t.sub.termExpressionType(context)
+			} 
+			QuantifiedFormula : {
+				return Bool
 			}
 			default: {
 				return Null
 			}
 		}
 	}
-	
+
+	def static isLiteralOf(Symbol s, ConstrainedType t) {
+		for (TypeRestriction r : t.restrictions) {
+			if (r instanceof EnumRestriction) {
+				if (r.literals.contains(s)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
 	def static getSymbolReferenceType(SymbolReferenceTerm term, SimpleTypeReference context) {
-		var term_type = getType(term.symbol as SymbolDeclaration, context);		
+		//Change this call to include type parameters
+		var term_type = getType(term, context);
 		for (tail : term.tails) {
 			term_type = accessTail(term_type, tail)
 		}
 		return term_type
 	}
-	
+
 	def static accessTail(HigherOrderType type, SymbolReferenceTail tail) {
 		if (tail instanceof ArrayAccess) {
 			if (type instanceof ArrayType) {
@@ -200,15 +233,15 @@ public class ImlTypeProvider {
 			} else if (type instanceof TupleType) {
 				return accessTuple(type as TupleType, tail as ArrayAccess)
 			}
-			
+
 		} else { // Method invocation using Tuple
-		    if (type.range !== null) {
-		    	return type.range
-		    }
+			if (type.range !== null) {
+				return type.range
+			}
 		}
 		return type
 	}
-	
+
 	def static accessArray(ArrayType type, ArrayAccess arrayAccessTail) {
 		type.dimensions.remove(type.dimensions.size - 1)
 		if (type.dimensions.isEmpty) {
@@ -217,7 +250,7 @@ public class ImlTypeProvider {
 			return type
 		}
 	}
-	
+
 	def static accessTuple(TupleType type, ArrayAccess arrayAccessTail) {
 		val index = arrayAccessTail.index // It should be integer or symbol a[0] or a[symbolName]
 		if (index.left !== null) {
@@ -229,7 +262,7 @@ public class ImlTypeProvider {
 					}
 				}
 			} else if (indexAtomic instanceof NumberLiteral) { // Specific index
-				val indexValue = indexAtomic.value * (if (indexAtomic.neg) -1 else 1)
+				val indexValue = indexAtomic.value * (if(indexAtomic.neg) -1 else 1)
 				if (indexValue >= 0 && indexValue < type.symbols.size) {
 					return type.symbols.get(indexValue).type
 				}
@@ -238,51 +271,112 @@ public class ImlTypeProvider {
 		return type
 	}
 	
+	def static accessSymbolTail(SymbolReferenceTerm symbolRef, SymbolReferenceTail tail, SimpleTypeReference ctx) {
+		val symbol = symbolRef.symbol;
+		if (symbol instanceof SymbolDeclaration) {
+//			val symbolType = getType(symbol.type, ctx)
+			
+		}
+	}
+	
+	// FIXME this is a temp implementation as we ignore SymbolDeclaration templates
 	def static HigherOrderType getType(SymbolDeclaration s, SimpleTypeReference ctx) {
-		if ( ctx.type.symbols.contains(s) || symbolInsideLambda(s) || 
-			symbolInsideProgram(s)
-		) {
-			return bind(s,ctx)
+		if (!s.isTemplate) {
+			if ( ctx.type.symbols.contains(s) || symbolInsideLambda(s) || 
+				symbolInsideProgram(s)
+			) {
+				return bind(s.type,ctx)
+			}
+			
+			for (rel : ctx.type.relations) {
+				switch (rel) {
+					com.utc.utrc.hermes.iml.iml.Extension: {
+						for (twp : rel.extensions) {
+							val target = twp.type
+							if (target instanceof SimpleTypeReference) {
+								var sup = bind(target, ctx) as SimpleTypeReference
+								var retval = getType(s, sup);
+								if (retval !== null) {
+									return retval;
+								}
+							}
+	
+						}
+					}
+				}
+			}
+			return null;
+		} else {
+			return s.type
+		}
+	}
+
+	def static HigherOrderType getType(SymbolReferenceTerm s, SimpleTypeReference ctx) {
+		if (ctx.type === null) {
+			if (! (s.symbol as SymbolDeclaration).isPolymorphic) {
+				return EcoreUtil.copy( (s.symbol as SymbolDeclaration).type)
+			}
+			//TODO take care of type binding here
+			var retval = EcoreUtil.copy((s.symbol as SymbolDeclaration).type)
+			//replace all type parameters with the new ones
+			var ctmap = new HashMap<ConstrainedType,HigherOrderType>()	
+			for(var i = 0; i < (s.symbol as SymbolDeclaration).typeParameter.size();i++){
+				ctmap.put((s.symbol as SymbolDeclaration).typeParameter.get(i),s.typeBinding.get(i))
+			}
+			return remap(retval,ctmap);
 		}
 		
-		for(rel : ctx.type.relations) {
-			switch(rel){
-				com.utc.utrc.hermes.iml.iml.Extension :{
-					val target = rel.target
-					if (target instanceof SimpleTypeReference) {
-						var sup = bind(target,ctx) as SimpleTypeReference
-						var retval = getType(s,sup);
-						if (retval !== null) {
-							return retval;
+		if (s.symbol instanceof SymbolDeclaration) {
+			if ((s.symbol as SymbolDeclaration).type instanceof SelfType){
+				return ctx;
+			}
+			
+			if (ctx.type.symbols.contains(s.symbol as SymbolDeclaration) || symbolInsideLambda(s.symbol as SymbolDeclaration) || symbolInsideProgram(s.symbol as SymbolDeclaration)) {
+				return bind(s, ctx)
+			}
+		}
+		
+
+		for (rel : ctx.type.relations) {
+			switch (rel) {
+				com.utc.utrc.hermes.iml.iml.Extension: {
+					for (twp : rel.extensions) {
+						val target = twp.type
+						if (target instanceof SimpleTypeReference) {
+							var sup = bind(target, ctx) as SimpleTypeReference
+							var retval = getType(s, sup);
+							if (retval !== null) {
+								return retval;
+							}
 						}
+
 					}
 				}
 			}
 		}
 		return null;
 	}
-	
+
 	/**
 	 * Check if symbol declaration is defined inside a program
 	 */
 	def static symbolInsideProgram(SymbolDeclaration symbol) {
-		return symbol.eContainer instanceof Program
+		return symbol.eContainer instanceof SequenceTerm
 	}
-	
+
 	/**
 	 * Check if symbol declaration is defined inside a lambda signature
 	 */
 	def static symbolInsideLambda(SymbolDeclaration symbol) {
-		return symbol.eContainer instanceof TupleType && 
-			symbol.eContainer.eContainer instanceof LambdaExpression &&
+		return symbol.eContainer instanceof TupleType && symbol.eContainer.eContainer instanceof LambdaExpression &&
 			(symbol.eContainer.eContainer as LambdaExpression).signature == symbol.eContainer
 	}
-	
+
 	def static getTypeConstructorType(TermExpression term) {
-		val typeConstructor = EcoreUtil2.getContainerOfType(term, TypeConstructor)
+		val typeConstructor = EcoreUtil2.getContainerOfType(term, InstanceConstructor)
 		if (typeConstructor !== null) {
 			return (typeConstructor.ref as SimpleTypeReference).type
-		}		
+		}
 //		val tupleParent = EcoreUtil2.getContainerOfType(term, TupleConstructor)
 //		if (tupleParent !== null) {
 //			val srt = EcoreUtil2.getContainerOfType(tupleParent, SymbolReferenceTerm)
@@ -291,43 +385,62 @@ public class ImlTypeProvider {
 //			}
 //		}
 	}
-	
-	def static bind(SymbolDeclaration s, SimpleTypeReference ctx) {
-		return bind(s.type,ctx)
+
+	def static bind(SymbolReferenceTerm s, SimpleTypeReference ctx) {
+		if (ctx.type === null){
+			return (s.symbol as SymbolDeclaration).type
+		}
+		var partialbind = new HashMap<ConstrainedType, HigherOrderType>();
+		for(var i =0 ; i < s.typeBinding.size() ; i++){
+			partialbind.put(s.symbol.typeParameter.get(i),s.typeBinding.get(i))
+		}
+		return bind((s.symbol as SymbolDeclaration).type, partialbind,ctx)
 	}
-	
-	def static bind(HigherOrderType t, SimpleTypeReference ctx){
+
+	def static bind(HigherOrderType t, SimpleTypeReference ctx) {
 		var ctxbinds = new HashMap<ConstrainedType, HigherOrderType>();
 		if (ctx.typeBinding.size == ctx.type.typeParameter.size) {
-			for(i : 0 ..< ctx.type.typeParameter.size) {
-				ctxbinds.put(ctx.type.typeParameter.get(i),ctx.typeBinding.get(i))
+			for (i : 0 ..< ctx.type.typeParameter.size) {
+				ctxbinds.put(ctx.type.typeParameter.get(i), ctx.typeBinding.get(i))
 			}
 		}
-		
-		return remap(t,ctxbinds)	
+
+		return remap(t, ctxbinds)
 	}
 	
-	def static HigherOrderType remap(HigherOrderType t, Map<ConstrainedType,HigherOrderType> map){
-		switch(t){
-			ArrayType:{
-				var retval = ImlFactory.eINSTANCE.createArrayType ;
-				retval.type = remap(t.type,map)	
-				for(d : t.dimensions) {
-					//TODO : Should we clone the term expressions?
-					retval.dimensions.add(ImlFactory::eINSTANCE.createOptionalTermExpr => [
-						term=ImlFactory::eINSTANCE.createNumberLiteral => [value=0]
-					;])
-				}
-				return retval				
+	def static bind(HigherOrderType t, Map<ConstrainedType, HigherOrderType> partialbind, SimpleTypeReference ctx) {
+		var ctxbinds = new HashMap<ConstrainedType, HigherOrderType>();
+		ctxbinds.putAll(partialbind)
+		if (ctx.typeBinding.size == ctx.type.typeParameter.size) {
+			for (i : 0 ..< ctx.type.typeParameter.size) {
+				ctxbinds.put(ctx.type.typeParameter.get(i), ctx.typeBinding.get(i))
 			}
-			SimpleTypeReference:{
-				if (map.containsKey(t.type)) {
-					return map.get(t.type)					
+		}
+
+		return remap(t, ctxbinds)
+	}
+
+	def static HigherOrderType remap(HigherOrderType t, Map<ConstrainedType, HigherOrderType> map) {
+		switch (t) {
+			ArrayType: {
+				var retval = ImlFactory.eINSTANCE.createArrayType;
+				retval.type = remap(t.type, map)
+				for (d : t.dimensions) {
+					// TODO : Should we clone the term expressions?
+					retval.dimensions.add(ImlFactory::eINSTANCE.createOptionalTermExpr => [
+						term = ImlFactory::eINSTANCE.createNumberLiteral => [value = 0];
+					])
 				}
-				var retval = ImlFactory.eINSTANCE.createSimpleTypeReference ;
+				return retval
+			}
+			SimpleTypeReference: {
+				if (map.containsKey(t.type)) {
+					return clone(map.get(t.type))					
+				}
+				var retval = ImlFactory.eINSTANCE.createSimpleTypeReference;
 				retval.type = t.type
-				for( h : t.typeBinding) {
-					if(h instanceof SimpleTypeReference){
+				for (h : t.typeBinding) {
+					if (h instanceof SimpleTypeReference) {
 						if ((h as SimpleTypeReference).typeBinding.size === 0) {
 							if (map.containsKey(h.type)) {
 								retval.typeBinding.add(clone(map.get(h.type)))
@@ -335,32 +448,41 @@ public class ImlTypeProvider {
 								retval.typeBinding.add(clone(h))
 							}
 						} else {
-							retval.typeBinding.add(remap(h,map))
+							retval.typeBinding.add(remap(h, map))
 						}
 					} else {
-						retval.typeBinding.add(remap(h,map))
-					} 
+						retval.typeBinding.add(remap(h, map))
+					}
 				}
 				return retval;
 			}
-			TupleType:{
-				var retval = ImlFactory.eINSTANCE.createTupleType ;
-				for(s : t.symbols) {
+			TupleType: {
+				var retval = ImlFactory.eINSTANCE.createTupleType;
+				for (s : t.symbols) {
 					val ss = ImlFactory.eINSTANCE.createSymbolDeclaration
 					ss.name = s.name
 					ss.type = remap(s.type, map)
 					retval.symbols.add(ss)
 				}
-				return retval; 
+				return retval;
 			}
-			default:{
-				var retval = ImlFactory.eINSTANCE.createHigherOrderType ;
-				retval.domain = remap(t.domain,map)
+			default: {
+				var retval = ImlFactory.eINSTANCE.createHigherOrderType;
+				retval.domain = remap(t.domain, map)
 				if (t.range !== null) {
-					retval.range = remap(t.range,map)
+					retval.range = remap(t.range, map)
 				}
-				return retval ;
+				return retval;
 			}
+		}
+	}
+
+	def static boolean isPolymorphic(Symbol s){
+		switch(s){
+			ConstrainedType : { return s.typeParameter.size > 0 }
+			SymbolDeclaration : { return s.typeParameter.size > 0 }
+			default:
+				return false
 		}
 	}
 
@@ -368,7 +490,7 @@ public class ImlTypeProvider {
 	def static boolean isPrimitive(HigherOrderType t) {
 		return ( t == Null || t == Int || t == Real || t == Bool || t == Any)
 	}
-	
+
 	/* Check whether t is numeric type reference */
 	def static boolean isNumeric(HigherOrderType t) {
 		if (t == Int || t == Real) {
@@ -376,7 +498,7 @@ public class ImlTypeProvider {
 		}
 		return false;
 	}
-	
+
 	/* Check whether t is numeric type reference */
 	def static boolean isNumeric(ConstrainedType t) {
 		if (t == Int.type || t == Real.type) {
@@ -384,10 +506,31 @@ public class ImlTypeProvider {
 		}
 		return false;
 	}
-	
+
 	def static HigherOrderType ct2hot(ConstrainedType type) {
 		return createBasicType(type)
 	}
 	
+//	def static removeAlias(HigherOrderType type) {
+//		if (type instanceof SimpleTypeReference) {
+//			return removeAlias(type.type)
+//		} 
+//		return type;
+//	}
+//	
+//	def static removeAlias(ConstrainedType type) {
+//		for (RelationInstance relation : type.relations) {
+//			if (relation instanceof Alias) {
+//				return removeAlias(relation.target)
+//			}
+//		}
+//		return type;
+//	}
+//	
+//	def static removeAlias(Symbol symbol) {
+//		if (symbol instanceof ConstrainedType) {
+//			return removeAlias(symbol as ConstrainedType)
+//		}
+//	}
 
 }

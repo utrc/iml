@@ -296,8 +296,10 @@ public class Iml2Symbolic {
 		} else {
 			MetaRelaion rm = (MetaRelaion) r;
 			retval.setType(encode(rm.getTarget()));
-			for (SymbolDeclaration sd : rm.getPropertylist().getProperties()) {
-				retval.getProperties().add(encode(sd));
+			for (HigherOrderType sd : rm.getPropertylist().getProperties()) {
+				SrlObjectSymbol toadd = factory.createObjectSymbol();
+				toadd.setType(encode(sd));
+				retval.getProperties().add(toadd);
 			}
 		}
 		return retval;
@@ -356,8 +358,10 @@ public class Iml2Symbolic {
 
 	public void addProperties(SrlNamedTypeSymbol s, ConstrainedType t) throws SrlSymbolException {
 		if (t.getPropertylist() == null ) return;
-		for (SymbolDeclaration sd : t.getPropertylist().getProperties()) {
-			s.getProperties().add(encode(sd));
+		for (HigherOrderType sd : t.getPropertylist().getProperties()) {
+			SrlObjectSymbol toadd = factory.createObjectSymbol();
+			toadd.setType(encode(sd));
+			s.getProperties().add(toadd);
 		}
 	}
 
@@ -404,8 +408,10 @@ public class Iml2Symbolic {
 	
 	public void addProperties(SrlObjectSymbol s, SymbolDeclaration sd) throws SrlSymbolException {
 		if (sd.getPropertylist() == null) return;
-		for (SymbolDeclaration ssd : sd.getPropertylist().getProperties()) {
-			s.getProperties().add(encode(ssd));
+		for (HigherOrderType ssd : sd.getPropertylist().getProperties()) {
+			SrlObjectSymbol toadd = factory.createObjectSymbol();
+			toadd.setType(encode(ssd));
+			s.getProperties().add(toadd);
 		}
 	}
 	
