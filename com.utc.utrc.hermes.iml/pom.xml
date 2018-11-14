@@ -140,7 +140,7 @@
 		</pluginManagement>
 	</build>
   <parent>
-  	<groupId>com.utc.utrc.hermes</groupId>
+	<groupId>com.utc.utrc.hermes.iml</groupId>
   	<artifactId>com.utc.utrc.hermes.iml.parent</artifactId>
   	<version>1.0.0-SNAPSHOT</version>
   	<relativePath>../releng/com.utc.utrc.hermes.iml.parent</relativePath>

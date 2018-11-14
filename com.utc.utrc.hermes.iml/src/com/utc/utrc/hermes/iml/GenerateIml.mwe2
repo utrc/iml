@@ -40,6 +40,10 @@ Workflow {
 				// composedCheck = "org.eclipse.xtext.validation.NamesAreUniqueValidator"
 			}
 			
+			formatter = {
+				generateStub = true
+			}
+			
 			parserGenerator = {
 				debugGrammar = true
 			}
