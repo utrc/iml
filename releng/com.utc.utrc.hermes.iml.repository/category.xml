@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <feature url="features/com.utc.utrc.hermes.iml.feature_1.0.0.qualifier.jar" id="com.utc.utrc.hermes.iml.feature" version="1.0.0.qualifier">
+      <category name="com.utc.utrc.hermes.iml"/>
+   </feature>
+   <category-def name="com.utc.utrc.hermes.iml" label="IML"/>
+</site>
