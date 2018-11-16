@@ -27,11 +27,12 @@ public class SmtSymbolTable<SortT, FunDeclT, FormulaT> {
 	
 	private Map<EncodedId, SortT> sorts;
 	private Map<EncodedId, Map<EncodedId, FunDeclT>> funDecls;
-	
+	private Map<EncodedId, Map<EncodedId, FormulaT>> assertions;
 	
 	public SmtSymbolTable() {
 		sorts = new HashMap<>();
 		funDecls = new HashMap<>();
+		assertions = new HashMap<>();
 	}
 	
 	public void addSort(EObject type, SortT sort) {
@@ -122,4 +123,36 @@ public class SmtSymbolTable<SortT, FunDeclT, FormulaT> {
 		}
 		return null;
 	}
+
+	public void addFormula(EObject container, SymbolDeclaration symbol, FormulaT assertion) {
+		EncodedId containerId = encodedIdFactory.createEncodedId(container);
+		EncodedId symbolId = encodedIdFactory.createEncodedId(symbol);
+		Map<EncodedId, FormulaT> containerAssertions = assertions.get(containerId);
+		if (containerAssertions == null) {
+			containerAssertions = new HashMap<>();
+			assertions.put(containerId, containerAssertions);
+		}
+		if (containerAssertions.containsKey(symbolId)) return;
+		
+		containerAssertions.put(symbolId, assertion);
+	}
+	
+	public List<FormulaT> getAllFormulas() {
+		List<FormulaT> result = new ArrayList<>();
+		for (Map<EncodedId, FormulaT> asserts : assertions.values()) {
+			if (asserts != null) {
+				result.addAll(asserts.values());
+			}
+		}
+		return result;
+	}
+	
+	public Map<EncodedId, Map<EncodedId, FormulaT>> getAssertions() {
+		return assertions;
+	}
+
+	public void setAssertions(Map<EncodedId, Map<EncodedId, FormulaT>> assertions) {
+		this.assertions = assertions;
+	}
+
 }
