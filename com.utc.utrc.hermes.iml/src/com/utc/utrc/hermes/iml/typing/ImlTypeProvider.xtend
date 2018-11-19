@@ -313,17 +313,19 @@ public class ImlTypeProvider {
 
 	def static HigherOrderType getType(SymbolReferenceTerm s, SimpleTypeReference ctx) {
 		if (ctx.type === null) {
-			if (! (s.symbol as SymbolDeclaration).isPolymorphic) {
-				return EcoreUtil.copy( (s.symbol as SymbolDeclaration).type)
+			if ( s.symbol instanceof SymbolDeclaration) {
+				if (! (s.symbol as SymbolDeclaration).isPolymorphic) {
+					return EcoreUtil.copy( (s.symbol as SymbolDeclaration).type)
+				}
+				//TODO take care of type binding here
+				var retval = EcoreUtil.copy((s.symbol as SymbolDeclaration).type)
+				//replace all type parameters with the new ones
+				var ctmap = new HashMap<ConstrainedType,HigherOrderType>()	
+				for(var i = 0; i < (s.symbol as SymbolDeclaration).typeParameter.size();i++){
+					ctmap.put((s.symbol as SymbolDeclaration).typeParameter.get(i),s.typeBinding.get(i))
+				}
+				return remap(retval,ctmap);
 			}
-			//TODO take care of type binding here
-			var retval = EcoreUtil.copy((s.symbol as SymbolDeclaration).type)
-			//replace all type parameters with the new ones
-			var ctmap = new HashMap<ConstrainedType,HigherOrderType>()	
-			for(var i = 0; i < (s.symbol as SymbolDeclaration).typeParameter.size();i++){
-				ctmap.put((s.symbol as SymbolDeclaration).typeParameter.get(i),s.typeBinding.get(i))
-			}
-			return remap(retval,ctmap);
 		}
 		
 		if (s.symbol instanceof SymbolDeclaration) {
@@ -354,7 +356,7 @@ public class ImlTypeProvider {
 				}
 			}
 		}
-		return null;
+		return bind(s, ctx);
 	}
 
 	/**
@@ -394,7 +396,11 @@ public class ImlTypeProvider {
 		for(var i =0 ; i < s.typeBinding.size() ; i++){
 			partialbind.put(s.symbol.typeParameter.get(i),s.typeBinding.get(i))
 		}
-		return bind((s.symbol as SymbolDeclaration).type, partialbind,ctx)
+		if (s.symbol instanceof SymbolDeclaration) {
+			return bind((s.symbol as SymbolDeclaration).type, partialbind,ctx)
+		} 
+		System.out.println(s.symbol.name + " is just a symbol ") ;
+		ctx
 	}
 
 	def static bind(HigherOrderType t, SimpleTypeReference ctx) {
