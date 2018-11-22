@@ -166,7 +166,7 @@ public class TypingServices {
 		}
 		if (right instanceof SimpleTypeReference){
 			if (right.isAlias){
-				return isEqual(right.getAlias,right) 
+				return isEqual(left,right.getAlias) 
 			}
 		}
 		

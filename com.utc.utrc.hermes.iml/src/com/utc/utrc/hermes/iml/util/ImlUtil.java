@@ -12,6 +12,7 @@ import org.eclipse.xtext.resource.IResourceServiceProvider;
 import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.serializer.ISerializer;
 
+import com.utc.utrc.hermes.iml.iml.Alias;
 import com.utc.utrc.hermes.iml.iml.ArrayType;
 import com.utc.utrc.hermes.iml.iml.ConstrainedType;
 import com.utc.utrc.hermes.iml.iml.Extension;
@@ -24,7 +25,9 @@ import com.utc.utrc.hermes.iml.iml.Relation;
 import com.utc.utrc.hermes.iml.iml.SimpleTypeReference;
 import com.utc.utrc.hermes.iml.iml.Symbol;
 import com.utc.utrc.hermes.iml.iml.SymbolDeclaration;
+import com.utc.utrc.hermes.iml.iml.TraitExhibition;
 import com.utc.utrc.hermes.iml.iml.TupleType;
+import com.utc.utrc.hermes.iml.iml.TypeWithProperties;
 
 public class ImlUtil {
 
@@ -126,6 +129,20 @@ public class ImlUtil {
 			return getTypeName(hot.getDomain(), qnp) + "->" + getTypeName(hot.getRange(), qnp);
 		}
 	}
+	
+	public static List<TypeWithProperties> getRelationTypes(EList<Relation> relations) {
+		List<TypeWithProperties> types = new ArrayList<>();
+		for (Relation relation : relations) {
+			if (relation instanceof Extension) {
+				types.addAll(((Extension) relation).getExtensions());
+			} else if (relation instanceof Alias) {
+				types.add(((Alias) relation).getType());
+			} else {
+				types.addAll(((TraitExhibition) relation).getExhibitions());
+			}
+		}
+		return types;
+	}
 
 	/**
 	 * Get the string representation of the object as it is in xtext file
@@ -142,6 +159,10 @@ public class ImlUtil {
 
 	public static boolean isNullOrEmpty(List list) {
 		return list == null || list.isEmpty();
+	}
+	
+	public static boolean isGlobalSymbol(Symbol symbol) {
+		return symbol.eContainer() instanceof Model;
 	}
 	
 	

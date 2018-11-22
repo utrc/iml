@@ -32,9 +32,9 @@ class ModelSmtEncodingTest {
 	@Inject ImlSmtEncoder<SimpleSort, SimpleFunDeclaration, SimpleSmtFormula> encoder
 	
 	@Test
-	def void testSimpleConstrainedTypeEncoder() {
+	def void testTest1GeneratedModelEncoder() {
 		
-		val files = FileUtil.readAllFilesUnderDir("./res/generated_model");
+		val files = FileUtil.readAllFilesUnderDir("./res/test1");
 		var ResourceSet rs;
 		for (file : files) {
 			if (rs !== null) {
@@ -43,16 +43,22 @@ class ModelSmtEncodingTest {
 				rs = file.parse.eResource.resourceSet
 			}
 		}
+		var Model swModel = null;
 		for (resource : rs.resources) {
-			if (resource.contents != null && resource.contents.size > 0) {
+			if (resource.contents !== null && resource.contents.size > 0) {
 				val model = resource.contents.get(0);
-				if (model instanceof Model && (model as Model).name.equals("SW")) {
+				if (model instanceof Model) {
 					model.assertNoErrors
-					encoder.encode(model as Model)
-					println(encoder.toString)
+					if ((model as Model).name.equals("SWIMLAnnex")) {
+						swModel = model;
+					}
 				}
 				
 			}
+		}
+		if (swModel !== null) {
+			encoder.encode(swModel as Model)
+			println(encoder.toString)
 		}
 		
 	}
@@ -60,7 +66,11 @@ class ModelSmtEncodingTest {
 	def encode(String modelString, String ctName) {
 		val model = modelString.parse;
 		model.assertNoErrors
-		encoder.encode(model.findSymbol(ctName))
+		if (ctName !== null) {
+			encoder.encode(model.findSymbol(ctName))
+		} else {
+			encoder.encode(model)
+		}
 		// TODO make sure names are unique
 		val distinctSorts = encoder.allSorts.map[it.name].stream.distinct.collect(Collectors.toList)
 		assertEquals(distinctSorts.size, encoder.allSorts.size)
@@ -68,5 +78,20 @@ class ModelSmtEncodingTest {
 		assertEquals(distinctFuncDecls.size, encoder.allFuncDeclarations.size)
 		return model
 	}
+	
+	@Test
+	def void testLoopProblem() {
+		encode('''
+			package p;
+			type Int;
+			type T1 {
+				var1 : Int := globalVar(5);
+			}
+			
+			globalVar : Int -> Int;
+		''', null)
+			println(encoder.toString)
+	}
+	
 	
 }

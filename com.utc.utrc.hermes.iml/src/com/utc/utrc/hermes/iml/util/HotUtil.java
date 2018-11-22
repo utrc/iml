@@ -54,10 +54,7 @@ public class HotUtil {
 	}
 	
 	public static boolean isActualHot(HigherOrderType type) {
-		if (type instanceof ParenthesizedType) {
-			return isActualHot(((ParenthesizedType) type).getSubexpression());
-		}
-		if (type.getRange() != null) {
+		if (removeParenthesis(type).getRange() != null) {
 			return true;
 		}
 		return false;

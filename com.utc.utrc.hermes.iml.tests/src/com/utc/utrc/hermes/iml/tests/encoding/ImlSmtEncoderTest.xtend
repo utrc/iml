@@ -658,5 +658,4 @@ class ImlSmtEncoderTest {
 			println(encoder.toString)
 	}
 	
-	
 }

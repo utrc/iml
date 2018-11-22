@@ -1,6 +1,7 @@
 package com.utc.utrc.hermes.iml.encoding;
 
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.naming.IQualifiedNameProvider;
 import org.eclipse.xtext.naming.QualifiedName;
 
@@ -9,6 +10,7 @@ import com.utc.utrc.hermes.iml.iml.Assertion;
 import com.utc.utrc.hermes.iml.iml.ConstrainedType;
 import com.utc.utrc.hermes.iml.iml.Extension;
 import com.utc.utrc.hermes.iml.iml.HigherOrderType;
+import com.utc.utrc.hermes.iml.iml.ImplicitInstanceConstructor;
 import com.utc.utrc.hermes.iml.iml.Model;
 import com.utc.utrc.hermes.iml.iml.SimpleTypeReference;
 import com.utc.utrc.hermes.iml.iml.Symbol;
@@ -87,7 +89,11 @@ public class EncodedId {
 			} else {
 				name = ((SymbolDeclaration) imlEObject).getName();
 			}
-		}
+		} 
+//		else if (imlEObject instanceof ImplicitInstanceConstructor) {
+//			container = qnp.getFullyQualifiedName(EcoreUtil2.getContainerOfType(imlEObject, SymbolDeclaration.class));
+//			name = "__oneof_" + ImlUtil.getTypeName((SimpleTypeReference) ((ImplicitInstanceConstructor) imlObject).getRef(), qnp);
+//		}
 	}
 	
 	public EObject getImlObject() {
@@ -144,7 +150,7 @@ public class EncodedId {
 	}
 	
 	public String stringId() {
-		if (container == null) {
+		if (container == null || container.isEmpty()) {
 			return name;
 		} else {
 			return (container.toString() + "." + name);
