@@ -37,6 +37,7 @@ import com.utc.utrc.hermes.iml.iml.LambdaExpression
 import com.utc.utrc.hermes.iml.iml.QuantifiedFormula
 import com.utc.utrc.hermes.iml.iml.ImplicitInstanceConstructor
 import com.utc.utrc.hermes.iml.iml.ImlPackage
+import com.utc.utrc.hermes.iml.iml.SequenceTerm
 
 /**
  * This class contains custom scoping description.
@@ -306,6 +307,8 @@ class ImlScopeProvider extends AbstractDeclarativeScopeProvider {
 					return buildNestedScope(o.eContainer)
 			QuantifiedFormula:
 				return Scopes::scopeFor(o.scope, buildNestedScope(o.eContainer))
+			SequenceTerm:
+				return Scopes::scopeFor(o.defs, buildNestedScope(o.eContainer))
 			Model:
 				return Scopes::scopeFor(o.symbols, getGlobalScope(o,ImlPackage::eINSTANCE.model_Symbols))
 			default:

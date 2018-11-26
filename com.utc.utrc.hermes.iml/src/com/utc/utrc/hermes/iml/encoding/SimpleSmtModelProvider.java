@@ -1,5 +1,6 @@
 package com.utc.utrc.hermes.iml.encoding;
 
+import java.util.Arrays;
 import java.util.List;
 
 import com.utc.utrc.hermes.iml.encoding.simplesmt.SimpleFunDeclaration;
@@ -57,6 +58,11 @@ public class SimpleSmtModelProvider implements SmtModelProvider<SimpleSort, Simp
 	@Override
 	public SimpleSmtFormula createFormula(List<SimpleSmtFormula> params) {
 		return new SimpleSmtFormula(null, params);
+	}
+
+	@Override
+	public SimpleSmtFormula createFormula(String name, SimpleSort sort) {
+		return new SimpleSmtFormula(null, Arrays.asList(createFormula(name), createFormula(sort.getQuotedName())));
 	}
 
 

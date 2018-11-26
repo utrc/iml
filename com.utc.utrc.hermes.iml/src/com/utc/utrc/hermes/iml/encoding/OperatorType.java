@@ -4,7 +4,9 @@ public enum OperatorType {
 	IMPL("=>", "=>"),
 	EQUIV("<=>", null), FOR_ALL("forall", "forall"), EXISTS("exists", "exists"),
 	AND("&&", "and"), OR("||", "or"), NOT("!", "not"), NEGATIVE("-", "-"),
-	MULT("*", "*"), DIV("/", "/"), REM("%", "%"), ADD("+", "+"), MOF("mod", "%"), ITE("if", "ite") 
+	GT(">",">"), GTE(">=", ">="), LT("<", "<"), LTE("<=", "<="), EQ("=","="), NEQ("!=", "!="),
+	MULT("*", "*"), DIV("/", "/"), REM("%", "%"), ADD("+", "+"), MOF("mod", "%"), ITE("if", "ite") ,
+	ASSERT("assert", "assert"), LET("", "let");
 	;
 	
 	private String imlOp;

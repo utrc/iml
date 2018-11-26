@@ -1,17 +1,21 @@
 package com.utc.utrc.hermes.iml.encoding;
 
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.naming.IQualifiedNameProvider;
 import org.eclipse.xtext.naming.QualifiedName;
 
 import com.utc.utrc.hermes.iml.iml.Alias;
+import com.utc.utrc.hermes.iml.iml.Assertion;
 import com.utc.utrc.hermes.iml.iml.ConstrainedType;
 import com.utc.utrc.hermes.iml.iml.Extension;
 import com.utc.utrc.hermes.iml.iml.HigherOrderType;
+import com.utc.utrc.hermes.iml.iml.ImplicitInstanceConstructor;
+import com.utc.utrc.hermes.iml.iml.Model;
 import com.utc.utrc.hermes.iml.iml.SimpleTypeReference;
 import com.utc.utrc.hermes.iml.iml.Symbol;
 import com.utc.utrc.hermes.iml.iml.SymbolDeclaration;
-import com.utc.utrc.hermes.iml.util.ImlUtils;
+import com.utc.utrc.hermes.iml.util.ImlUtil;
 /**
  * Encodes IML types in a way that guarantee that each unique type has a unique ID
  * This should hide the way it generates the unique id for each IML object
@@ -27,6 +31,7 @@ public class EncodedId {
 	EObject imlObject;
 
 	public static QualifiedName DEFAULT_CONTAINER = QualifiedName.create("__unnamed__");
+	public static String ASSERTION_DEFAULT_NAME="__assertion_";
 	
 	/**
 	 * Create a unique EncoderId for each unique IML Object. The same IML type should return same EncoderID
@@ -38,6 +43,10 @@ public class EncodedId {
 	 */
 	public EncodedId(EObject imlEObject, IQualifiedNameProvider qnp) {
 		this.imlObject = imlEObject;
+		if (imlEObject instanceof Model) {
+			container = null;
+			name = ((Model) imlEObject).getName();
+		}
 		if (imlEObject instanceof ConstrainedType) {
 			container = qnp.getFullyQualifiedName(imlEObject.eContainer());
 			name = ((Symbol) imlEObject).getName();
@@ -51,21 +60,40 @@ public class EncodedId {
 				container = DEFAULT_CONTAINER;
 //				container = qnp.getFullyQualifiedName(((SimpleTypeReference) imlEObject).getType().eContainer());					
 				// Use the name exactly as declared 					
-				name = ImlUtils.getTypeNameManually((HigherOrderType) imlEObject, qnp);
+				name = ImlUtil.getTypeNameManually((HigherOrderType) imlEObject, qnp);
 			}
 		} else if (imlEObject instanceof AtomicRelation) {
 			container = qnp.getFullyQualifiedName(((AtomicRelation) imlEObject).getRelation().eContainer());
 			if (((AtomicRelation) imlEObject).getRelation() instanceof Alias) {
-				name = "alias_" + ImlUtils.getTypeNameManually(((AtomicRelation) imlEObject).getRelatedType(), qnp);
+				name = "alias_" + ImlUtil.getTypeNameManually(((AtomicRelation) imlEObject).getRelatedType(), qnp);
 			} else if (((AtomicRelation) imlEObject).getRelation() instanceof Extension) {
-				name = "extends_" + ImlUtils.getTypeNameManually(((AtomicRelation) imlEObject).getRelatedType(), qnp);
+				name = "extends_" + ImlUtil.getTypeNameManually(((AtomicRelation) imlEObject).getRelatedType(), qnp);
 			} else {
 				// TODO handle traits
 			}
 		} else if (imlEObject instanceof SymbolDeclaration) {
 			container = qnp.getFullyQualifiedName(imlEObject.eContainer());
-			name = ((SymbolDeclaration) imlEObject).getName();
-		}
+			if (imlEObject instanceof Assertion) {
+				if (((SymbolDeclaration) imlEObject).getName() != null && !((SymbolDeclaration) imlEObject).getName().isEmpty()) {
+					name = ((SymbolDeclaration) imlEObject).getName();
+				} else {
+					EObject eContainer = imlEObject.eContainer();
+					int index = 0;
+					if (eContainer instanceof Model) {
+						index = ((Model) eContainer).getSymbols().indexOf(imlEObject);
+					} else { // Should be ConstrainedType
+						index = ((ConstrainedType) eContainer).getSymbols().indexOf(imlEObject);
+					}
+					name = ASSERTION_DEFAULT_NAME + index;
+				}
+			} else {
+				name = ((SymbolDeclaration) imlEObject).getName();
+			}
+		} 
+//		else if (imlEObject instanceof ImplicitInstanceConstructor) {
+//			container = qnp.getFullyQualifiedName(EcoreUtil2.getContainerOfType(imlEObject, SymbolDeclaration.class));
+//			name = "__oneof_" + ImlUtil.getTypeName((SimpleTypeReference) ((ImplicitInstanceConstructor) imlObject).getRef(), qnp);
+//		}
 	}
 	
 	public EObject getImlObject() {
@@ -93,7 +121,11 @@ public class EncodedId {
 			return false;
 		if (!(obj instanceof EncodedId))
 			return false;
-		if (!container.equals(((EncodedId) obj).getContainer()))
+		if ((container == null && ((EncodedId) obj).getContainer() != null) ||
+			(container != null && ((EncodedId) obj).getContainer() == null)) {
+			return false;
+		}
+		if (container != null && !container.equals(((EncodedId) obj).getContainer()))
 			return false;
 		if (!name.equals(((EncodedId) obj).getName()))
 			return false;
@@ -118,7 +150,11 @@ public class EncodedId {
 	}
 	
 	public String stringId() {
-		return (container.toString() + "." + name);
+		if (container == null || container.isEmpty()) {
+			return name;
+		} else {
+			return (container.toString() + "." + name);
+		}
 	}
 	
 }

@@ -286,7 +286,7 @@ CaseTermExpression returns TermExpression:
 
 SequenceTerm returns TermExpression:
 	{SequenceTerm} '{' ('var' defs+= SymbolDeclaration ';')* 
-	         	   	   return=FolFormula '}' 
+	         	   	   return=FolFormula ";"? '}' 
 ;
 
 terminal EXT_INT: INT ('e'|'E')('-'|'+') INT;

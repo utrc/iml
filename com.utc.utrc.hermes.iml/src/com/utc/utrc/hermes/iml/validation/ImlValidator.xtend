@@ -16,7 +16,6 @@ import org.eclipse.xtext.validation.Check
 
 import static extension com.utc.utrc.hermes.iml.typing.ImlTypeProvider.*
 import static extension com.utc.utrc.hermes.iml.typing.TypingServices.*
-import static extension com.utc.utrc.hermes.iml.util.ImlUtils.*
 import com.utc.utrc.hermes.iml.iml.Addition
 import com.google.inject.Inject
 import org.eclipse.xtext.validation.EValidatorRegistrar
@@ -33,6 +32,7 @@ import com.utc.utrc.hermes.iml.typing.TypingServices
 import com.utc.utrc.hermes.iml.iml.PropertyList
 import com.utc.utrc.hermes.iml.iml.SequenceTerm
 import com.utc.utrc.hermes.iml.iml.TupleType
+import static extension com.utc.utrc.hermes.iml.util.ImlUtil.*
 
 /**
  * This class contains custom validation rules. 

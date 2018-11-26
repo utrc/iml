@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.naming.IQualifiedNameProvider;
@@ -11,6 +12,7 @@ import org.eclipse.xtext.resource.IResourceServiceProvider;
 import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.serializer.ISerializer;
 
+import com.utc.utrc.hermes.iml.iml.Alias;
 import com.utc.utrc.hermes.iml.iml.ArrayType;
 import com.utc.utrc.hermes.iml.iml.ConstrainedType;
 import com.utc.utrc.hermes.iml.iml.Extension;
@@ -23,9 +25,11 @@ import com.utc.utrc.hermes.iml.iml.Relation;
 import com.utc.utrc.hermes.iml.iml.SimpleTypeReference;
 import com.utc.utrc.hermes.iml.iml.Symbol;
 import com.utc.utrc.hermes.iml.iml.SymbolDeclaration;
+import com.utc.utrc.hermes.iml.iml.TraitExhibition;
 import com.utc.utrc.hermes.iml.iml.TupleType;
+import com.utc.utrc.hermes.iml.iml.TypeWithProperties;
 
-public class ImlUtils {
+public class ImlUtil {
 
 	public static List<SymbolDeclaration> getSymbolsWithProperty(ConstrainedType type, String property,
 			boolean considerParent) {
@@ -125,6 +129,20 @@ public class ImlUtils {
 			return getTypeName(hot.getDomain(), qnp) + "->" + getTypeName(hot.getRange(), qnp);
 		}
 	}
+	
+	public static List<TypeWithProperties> getRelationTypes(EList<Relation> relations) {
+		List<TypeWithProperties> types = new ArrayList<>();
+		for (Relation relation : relations) {
+			if (relation instanceof Extension) {
+				types.addAll(((Extension) relation).getExtensions());
+			} else if (relation instanceof Alias) {
+				types.add(((Alias) relation).getType());
+			} else {
+				types.addAll(((TraitExhibition) relation).getExhibitions());
+			}
+		}
+		return types;
+	}
 
 	/**
 	 * Get the string representation of the object as it is in xtext file
@@ -138,60 +156,14 @@ public class ImlUtils {
 		}
 		return "";
 	}
-	
-	public static HigherOrderType removeParenthesis(HigherOrderType type) {
-		if (type instanceof ParenthesizedType) {
-			return removeParenthesis(((ParenthesizedType) type).getSubexpression());
-		} else {
-			return type;
-		}
+
+	public static boolean isNullOrEmpty(List list) {
+		return list == null || list.isEmpty();
 	}
 	
-	public static boolean isSimpleHot(HigherOrderType type) {
-		type = ImlUtils.removeParenthesis(type);
-
-		if (isActualHot(type)) {
-			if (containsHot(type.getDomain())) {
-				return false;
-			}
-			if (containsHot(type.getRange())) {
-				return false;
-			}
-			return true;
-		}
-		return !containsHot(type);
-	}
-
-	public static boolean containsHot(HigherOrderType type) {
-		if (isActualHot(type)) {
-			return true;
-		}
-		
-		if (type instanceof TupleType) {
-			for (SymbolDeclaration tupleElement : ((TupleType) type).getSymbols()) {
-				if (containsHot(tupleElement.getType())) {
-					return true;
-				}
-			}
-		}
-		
-		if (type instanceof ArrayType) {
-			if (containsHot(((ArrayType) type).getType())) {
-				return true;
-			}
-		}
-		
-		return false;
+	public static boolean isGlobalSymbol(Symbol symbol) {
+		return symbol.eContainer() instanceof Model;
 	}
 	
-	public static boolean isActualHot(HigherOrderType type) {
-		if (type instanceof ParenthesizedType) {
-			return isActualHot(((ParenthesizedType) type).getSubexpression());
-		}
-		if (type.getRange() != null) {
-			return true;
-		}
-		return false;
-	}
-
+	
 }

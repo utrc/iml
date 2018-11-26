@@ -27,11 +27,12 @@ public class SmtSymbolTable<SortT, FunDeclT, FormulaT> {
 	
 	private Map<EncodedId, SortT> sorts;
 	private Map<EncodedId, Map<EncodedId, FunDeclT>> funDecls;
-	
+	private Map<EncodedId, Map<EncodedId, FormulaT>> assertions;
 	
 	public SmtSymbolTable() {
 		sorts = new HashMap<>();
 		funDecls = new HashMap<>();
+		assertions = new HashMap<>();
 	}
 	
 	public void addSort(EObject type, SortT sort) {
@@ -68,14 +69,14 @@ public class SmtSymbolTable<SortT, FunDeclT, FormulaT> {
 	public void addFunDecl(EObject container, EObject symbol, FunDeclT funDecl) {
 		EncodedId containerId = encodedIdFactory.createEncodedId(container);
 		EncodedId symbolId = encodedIdFactory.createEncodedId(symbol);
-		Map<EncodedId, FunDeclT> containerFunDecl = funDecls.get(containerId);
-		if (containerFunDecl == null) {
-			containerFunDecl = new HashMap<>();
-			funDecls.put(containerId, containerFunDecl);
+		Map<EncodedId, FunDeclT> containerFunDecls = funDecls.get(containerId);
+		if (containerFunDecls == null) {
+			containerFunDecls = new HashMap<>();
+			funDecls.put(containerId, containerFunDecls);
 		}
-		if (containerFunDecl.containsKey(symbolId)) return;
+		if (containerFunDecls.containsKey(symbolId)) return;
 		
-		containerFunDecl.put(symbolId, funDecl);
+		containerFunDecls.put(symbolId, funDecl);
 	}
 
 	public List<EncodedId> getEncodedIds() {
@@ -122,4 +123,36 @@ public class SmtSymbolTable<SortT, FunDeclT, FormulaT> {
 		}
 		return null;
 	}
+
+	public void addFormula(EObject container, SymbolDeclaration symbol, FormulaT assertion) {
+		EncodedId containerId = encodedIdFactory.createEncodedId(container);
+		EncodedId symbolId = encodedIdFactory.createEncodedId(symbol);
+		Map<EncodedId, FormulaT> containerAssertions = assertions.get(containerId);
+		if (containerAssertions == null) {
+			containerAssertions = new HashMap<>();
+			assertions.put(containerId, containerAssertions);
+		}
+		if (containerAssertions.containsKey(symbolId)) return;
+		
+		containerAssertions.put(symbolId, assertion);
+	}
+	
+	public List<FormulaT> getAllFormulas() {
+		List<FormulaT> result = new ArrayList<>();
+		for (Map<EncodedId, FormulaT> asserts : assertions.values()) {
+			if (asserts != null) {
+				result.addAll(asserts.values());
+			}
+		}
+		return result;
+	}
+	
+	public Map<EncodedId, Map<EncodedId, FormulaT>> getAssertions() {
+		return assertions;
+	}
+
+	public void setAssertions(Map<EncodedId, Map<EncodedId, FormulaT>> assertions) {
+		this.assertions = assertions;
+	}
+
 }
