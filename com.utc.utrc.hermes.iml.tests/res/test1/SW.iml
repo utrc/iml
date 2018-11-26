@@ -74,7 +74,7 @@ type [ Thread ] WaypointManager {
 
 
 			[ Assumption ] a1 : Bool := good_mission(flight_plan.data);
-			[ Guarantee ] g1 : Bool :=  good_mission_window(waypoint);
+			[ Guarantee ] g1 : Bool :=  good_mission_window(waypoint.data);
 		
 }
 type [ Thread ] UARTDriver {
