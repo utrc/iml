@@ -29,4 +29,9 @@ public class FormulaHelper {
 		}
 		return null;
 	}
+	
+	public static FolFormula toCNF(FolFormula source) {
+		return null ;
+	}
+	
 }

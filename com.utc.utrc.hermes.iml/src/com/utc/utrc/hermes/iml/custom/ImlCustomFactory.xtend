@@ -7,6 +7,9 @@ import com.utc.utrc.hermes.iml.iml.FolFormula
 import com.utc.utrc.hermes.iml.iml.TermExpression
 import com.utc.utrc.hermes.iml.iml.ConstrainedType
 import com.utc.utrc.hermes.iml.iml.RelationKind
+import com.utc.utrc.hermes.iml.iml.SimpleTypeReference
+import com.utc.utrc.hermes.iml.iml.Symbol
+import java.util.List
 
 class ImlCustomFactory extends ImlFactoryImpl {
 	
@@ -102,6 +105,20 @@ class ImlCustomFactory extends ImlFactoryImpl {
 		createTypeWithProperties() => [
 			it.type = createSimpleTypeReference(t)
 		]
+	}
+	
+	def createSymbolReferenceTerm(SimpleTypeReference bind, Symbol s, List<TermExpression> args ){
+		var retval = createSymbolReferenceTerm;
+		retval.symbol = s
+		retval.typeBinding.add(bind)
+		var tail = createTupleConstructor;
+		for(te : args){
+			var f = createSignedAtomicFormula
+			f.left = te
+			tail.elements.add(f)
+		}
+		retval.tails.add(tail)
+		retval
 	}
 	
 	
