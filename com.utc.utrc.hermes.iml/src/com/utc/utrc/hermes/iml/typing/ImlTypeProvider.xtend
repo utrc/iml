@@ -44,6 +44,7 @@ import com.utc.utrc.hermes.iml.iml.SelfType
 import com.utc.utrc.hermes.iml.iml.ParenthesizedTerm
 import com.utc.utrc.hermes.iml.iml.QuantifiedFormula
 import com.utc.utrc.hermes.iml.iml.CaseTermExpression
+import com.utc.utrc.hermes.iml.util.ImlUtil
 
 public class ImlTypeProvider {
 
@@ -281,6 +282,9 @@ public class ImlTypeProvider {
 	
 	// FIXME this is a temp implementation as we ignore SymbolDeclaration templates
 	def static HigherOrderType getType(SymbolDeclaration s, SimpleTypeReference ctx) {
+		if (ImlUtil.isGlobalSymbol(s)) {
+			return s.type // Global symbols doesn't need binding with context
+		}
 		if (!s.isTemplate) {
 			if ( ctx.type.symbols.contains(s) || symbolInsideLambda(s) || 
 				symbolInsideProgram(s)

@@ -590,5 +590,72 @@ class ImlSmtEncoderTest {
 		}
 	}
 	
+	@Test
+	def void testEncodingWithAssertions() {
+		val model = encode('''
+				package p;
+				type Int;
+				type T1 {
+					var1 : Int;
+					assert : var1 > 0;
+				}
+			''', "T1");
+			
+			println(encoder.toString)
+	}
+	
+	@Test
+	def void testEncodingWithDefinition() {
+		val model = encode('''
+				package p;
+				type Int;
+				type T1 {
+					var1 : Int := 5;
+				}
+			''', "T1");
+			
+			println(encoder.toString)
+	}
+	
+	@Test
+	def void testEncodingWithFunction() {
+		val model = encode('''
+				package p;
+				type Int;
+				type T1 {
+					var1 : Int -> Int := fun(p:Int) { p * 5};
+				}
+			''', "T1");
+			
+			println(encoder.toString)
+	}
+	
+	@Test
+	def void testEncodingWithFunctionHavingVars() {
+		val model = encode('''
+				package p;
+				type Int;
+				type T1 {
+					var1 : Int -> Int := fun(p:Int) { var x : Int := 5; var y : Int := x * 2; x + y + p * 5};
+				}
+			''', "T1");
+			
+			println(encoder.toString)
+	}
+	
+	
+	@Test
+	def void testEncodingWithFunctionMultipleParams() {
+		val model = encode('''
+				package p;
+				type Int;
+				type Real;
+				type T1 {
+					var1 : (Int, Real) -> Int := fun(p:Int, p2:Real) { p * 5};
+				}
+			''', "T1");
+			
+			println(encoder.toString)
+	}
 	
 }

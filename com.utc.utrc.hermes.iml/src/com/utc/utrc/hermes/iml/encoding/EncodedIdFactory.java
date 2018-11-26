@@ -1,5 +1,8 @@
 package com.utc.utrc.hermes.iml.encoding;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.naming.IQualifiedNameProvider;
 
@@ -18,12 +21,24 @@ import com.utc.utrc.hermes.iml.iml.Relation;
 public class EncodedIdFactory {
 
 	@Inject IQualifiedNameProvider qnp ;
+	int lastId = 0;
 	
-	public EncodedId createEncodedId(EObject type) {
-		return new EncodedId(type, qnp);
+	Map<EObject, EncodedId> specialIdList = new HashMap<>();
+	
+	public EncodedId createEncodedId(EObject imlObject) {
+		EncodedId id = new EncodedId(imlObject, qnp);
+		if (id.getName() == null || id.getName().isEmpty()) {
+			if (specialIdList.containsKey(imlObject)) {
+				return specialIdList.get(imlObject);
+			} else {
+				id.setName("__id_" + lastId++);
+				specialIdList.put(imlObject, id);
+			}
+		}
+		return id;
 	}
 	
-	public String getStringId(EObject type) {
-		return createEncodedId(type).stringId();
+	public String getStringId(EObject imlObject) {
+		return createEncodedId(imlObject).stringId();
 	}
 }

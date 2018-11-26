@@ -2,8 +2,6 @@ package com.utc.utrc.hermes.iml.encoding;
 
 import java.util.List;
 
-import com.utc.utrc.hermes.iml.encoding.simplesmt.SimpleSmtFormula;
-
 /**
  * This interface abstract the creation of an SMT model
  *
@@ -26,10 +24,12 @@ public interface SmtModelProvider <SortT, FuncDeclT, FormulaT> {
 	public FuncDeclT createConst(String symbolId, SortT symbolSort);
 
 	public FormulaT createFormula(OperatorType op, List<FormulaT> params);
+	
+	public FormulaT createFormula(String name, SortT sort);
 
 	public FormulaT createFormula(FuncDeclT funcDeclar, List<FormulaT> params);
 	
-	public SimpleSmtFormula createFormula(List<SimpleSmtFormula> params);
+	public FormulaT createFormula(List<FormulaT> params);
 	
 	public FormulaT createFormula(Object value);
 

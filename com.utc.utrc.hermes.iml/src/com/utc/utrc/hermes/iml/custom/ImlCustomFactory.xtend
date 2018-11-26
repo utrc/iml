@@ -8,7 +8,7 @@ import com.utc.utrc.hermes.iml.iml.TermExpression
 import com.utc.utrc.hermes.iml.iml.ConstrainedType
 import com.utc.utrc.hermes.iml.iml.RelationKind
 
-class ImlCustomFactory extends ImlFactoryImpl {
+public class ImlCustomFactory extends ImlFactoryImpl {
 	
 	public static ImlCustomFactory INST = new ImlCustomFactory();
 	

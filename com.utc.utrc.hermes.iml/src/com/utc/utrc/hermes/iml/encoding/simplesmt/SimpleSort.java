@@ -2,8 +2,9 @@ package com.utc.utrc.hermes.iml.encoding.simplesmt;
 
 import java.util.List;
 
-public class SimpleSort {
-	String name;
+import com.utc.utrc.hermes.iml.encoding.AbstractSort;
+
+public class SimpleSort extends AbstractSort {
 	SimpleSort domain;
 	SimpleSort range;
 	
@@ -28,14 +29,6 @@ public class SimpleSort {
 		super();
 		this.name = name;
 		this.tupleElements = tupleElements;
-	}
-	
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
 	}
 	
 	public SimpleSort getDomain() {
@@ -67,9 +60,9 @@ public class SimpleSort {
 		if (domain != null) {
 			return "(define-sort " + getQuotedName() + " () (Array " + domain.getQuotedName() + " " + range.getQuotedName() + ")" ;
 		} else if (tupleElements != null && !tupleElements.isEmpty()) {
-			return String.format("(declare-datatypes () ((%s (|mk_%s| %s)))", getQuotedName(), getName(), getTupleListTypes());
+			return String.format("(declare-datatypes () ((%s (|mk_%s| %s))))", getQuotedName(), getName(), getTupleListTypes());
 		} else {
-			return "(declare-sort " + getQuotedName() + ")";
+			return "(declare-sort " + getQuotedName() + " 0)";
 		}
 	}
 	
@@ -82,6 +75,6 @@ public class SimpleSort {
 	}
 
 	public String getQuotedName() {
-		return SimpleSmtUtil.getQuotedName(name);
+		return SimpleSmtUtil.getQuotedName(getName());
 	}
 }

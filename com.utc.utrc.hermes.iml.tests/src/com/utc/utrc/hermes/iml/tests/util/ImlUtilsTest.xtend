@@ -15,7 +15,7 @@ import org.eclipse.xtext.testing.validation.ValidationTestHelper
 import com.utc.utrc.hermes.iml.tests.ImlInjectorProvider
 import com.utc.utrc.hermes.iml.tests.TestHelper
 import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
-import com.utc.utrc.hermes.iml.util.ImlUtils
+import com.utc.utrc.hermes.iml.util.ImlUtil
 
 @RunWith(XtextRunner)
 @InjectWith(ImlInjectorProvider)
@@ -45,7 +45,7 @@ class ImlUtilsTest {
 		model.assertNoErrors
 		
 		val v1 = model.findSymbol("v1") as SymbolDeclaration
-		assertEquals(typeGenerated, ImlUtils.getTypeNameManually(v1.type, null))
+		assertEquals(typeGenerated, ImlUtil.getTypeNameManually(v1.type, null))
 	}
 	
 	@Test
@@ -74,6 +74,6 @@ class ImlUtilsTest {
 		model.assertNoErrors
 		
 		val v1 = model.findSymbol("v1") as SymbolDeclaration
-		assertEquals(isSimpleHot, ImlUtils.isSimpleHot(v1.type))
+		assertEquals(isSimpleHot, ImlUtil.isSimpleHot(v1.type))
 	}
 }
