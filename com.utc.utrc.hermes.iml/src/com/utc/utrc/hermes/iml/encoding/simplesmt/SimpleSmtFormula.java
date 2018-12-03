@@ -3,6 +3,8 @@ package com.utc.utrc.hermes.iml.encoding.simplesmt;
 import java.util.List;
 
 import com.utc.utrc.hermes.iml.encoding.OperatorType;
+import com.utc.utrc.hermes.iml.encoding.SmtStandardLib;
+import com.utc.utrc.hermes.iml.util.ImlUtil;
 
 public class SimpleSmtFormula {
 	
@@ -65,11 +67,19 @@ public class SimpleSmtFormula {
 		if (op != null) {
 			return "(" + op.getSmtOp() + " " + paramsString + ")";
 		} else if (funDecl != null) {
-			return "(" + funDecl.name + " " + paramsString + ")";
+			if (!paramsString.isEmpty()) {
+				return "(|" + funDecl.name + "| " + paramsString + ")";
+			} else {
+				return "|" + funDecl.name + "|"; 
+			}
 		} else if (!paramsString.isEmpty()) {
 			return "(" + paramsString + ")";
 		} else {
-			return value.toString();
+			String valueString = value.toString();
+			if (SmtStandardLib.isNative(valueString)) {
+				valueString = ImlUtil.getUnqualifiedName(valueString);
+			}
+			return valueString;
 		}
 	}
 
