@@ -1,5 +1,7 @@
 package com.utc.utrc.hermes.iml.encoding;
 
+import com.utc.utrc.hermes.iml.util.ImlUtil;
+
 public class AbstractSort implements NamedEntity {
 
 	protected String name;
@@ -7,8 +9,7 @@ public class AbstractSort implements NamedEntity {
 	@Override
 	public String getName() {
 		if (SmtStandardLib.isNative(name)) {
-			String[] parts = name.split("\\.");
-			return parts[parts.length - 1];
+			return ImlUtil.getUnqualifiedName(name);
 		}
 		return name;
 	}

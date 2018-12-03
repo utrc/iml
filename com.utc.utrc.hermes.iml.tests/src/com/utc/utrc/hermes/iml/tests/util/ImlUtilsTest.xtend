@@ -16,6 +16,7 @@ import com.utc.utrc.hermes.iml.tests.ImlInjectorProvider
 import com.utc.utrc.hermes.iml.tests.TestHelper
 import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
 import com.utc.utrc.hermes.iml.util.ImlUtil
+import com.utc.utrc.hermes.iml.util.HotUtil
 
 @RunWith(XtextRunner)
 @InjectWith(ImlInjectorProvider)
@@ -74,6 +75,6 @@ class ImlUtilsTest {
 		model.assertNoErrors
 		
 		val v1 = model.findSymbol("v1") as SymbolDeclaration
-		assertEquals(isSimpleHot, ImlUtil.isSimpleHot(v1.type))
+		assertEquals(isSimpleHot, HotUtil.isSimpleHot(v1.type))
 	}
 }

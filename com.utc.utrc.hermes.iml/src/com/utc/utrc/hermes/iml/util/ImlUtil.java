@@ -164,6 +164,11 @@ public class ImlUtil {
 	public static boolean isGlobalSymbol(Symbol symbol) {
 		return symbol.eContainer() instanceof Model;
 	}
+
+	public static String getUnqualifiedName(String name) {
+		String[] parts = name.split("\\.");
+		return parts[parts.length - 1];
+	}
 	
 	
 }
