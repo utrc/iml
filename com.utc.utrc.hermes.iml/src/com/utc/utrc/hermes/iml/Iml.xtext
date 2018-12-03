@@ -62,6 +62,7 @@ ConstrainedType:
 	( relations += Relation)*
 	( restrictions += TypeRestriction)*
 	(';' | ('{' (symbols+=(SymbolDeclaration|Assertion) ';')* '}' ";"?)) 
+	
 ;
 
 TypeRestriction :
@@ -86,7 +87,7 @@ SymbolDeclaration:
 ;
 
 Assertion returns SymbolDeclaration :
-	{Assertion} 'assert' (comment=STRING)? (name=ID)? ':' definition=FolFormula
+	{Assertion}  'assert' (propertylist=PropertyList)? (comment=STRING)? (name=ID)? definition=SequenceTerm
 ;
 
 NonParametricUntypedSymbolDeclaration returns SymbolDeclaration :
@@ -161,7 +162,7 @@ QuantifiedFormula returns TermExpression:
 		          (',' typeParameter+=TypeParameter)* '>')? 
       '(' scope+=NonParametricTypedSymbolDeclaration 
          (',' scope+=NonParametricTypedSymbolDeclaration)* ')' 
-         '{' left=FolFormula '}';
+        left = SequenceTerm;
 
 /*Disjunction of two formulas */
 OrExpression returns FolFormula:
@@ -275,8 +276,8 @@ SymbolReferenceTail:
 ;
 
 IteTermExpression returns TermExpression:
-	{IteTermExpression} 'if' '(' condition=FolFormula ')' '{' left=TermExpression '}' 
-	                                          (=> 'else'  '{' right=TermExpression '}')?;
+	{IteTermExpression} 'if' '(' condition=FolFormula ')' left=SequenceTerm
+	                                          (=> 'else'  right=SequenceTerm)?;
 	                                          
 CaseTermExpression returns TermExpression:
 	{CaseTermExpression} 'case' '{'
