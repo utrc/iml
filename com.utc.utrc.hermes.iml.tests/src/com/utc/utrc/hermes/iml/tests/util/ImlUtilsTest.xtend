@@ -16,6 +16,14 @@ import com.utc.utrc.hermes.iml.tests.ImlInjectorProvider
 import com.utc.utrc.hermes.iml.tests.TestHelper
 import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
 import com.utc.utrc.hermes.iml.util.ImlUtil
+import com.utc.utrc.hermes.iml.iml.Assertion
+import com.utc.utrc.hermes.iml.iml.ConstrainedType
+import com.utc.utrc.hermes.iml.util.Phi
+import com.utc.utrc.hermes.iml.iml.SequenceTerm
+import com.utc.utrc.hermes.iml.custom.ImlCustomFactory
+import org.eclipse.xtext.resource.XtextResource
+import com.utc.utrc.hermes.iml.util.TermExtractor
+import com.utc.utrc.hermes.iml.util.HotUtil
 
 @RunWith(XtextRunner)
 @InjectWith(ImlInjectorProvider)
@@ -74,6 +82,90 @@ class ImlUtilsTest {
 		model.assertNoErrors
 		
 		val v1 = model.findSymbol("v1") as SymbolDeclaration
-		assertEquals(isSimpleHot, ImlUtil.isSimpleHot(v1.type))
+		assertEquals(isSimpleHot, HotUtil.isSimpleHot(v1.type))
 	}
+	
+	@Test
+	def void testToCNF() {
+		val model = '''
+		package p ;
+		type Bool ;
+		type Int ;
+		type A {
+			v1 : Bool ;
+			v2 : Bool ;
+			v3 : Bool ;
+			v4 : Bool ;
+			//assert a { (v1 || v2) && (v3 || v4) && (v1 || v4) };
+			assert a { ( v1 && v2 && (v1 => v3) ) || ! ( v4 => v1 ) };
+		}
+		'''.parse
+		model.assertNoErrors
+		val A = (model.findSymbol("A") as ConstrainedType)
+		val a = A.findSymbol("a") as Assertion;
+		val f = Phi.toCNF((a.definition as SequenceTerm).^return);
+		val st = ImlCustomFactory.INST.createSequenceTerm
+		val newa = ImlCustomFactory.INST.createAssertion
+		st.^return = f ;
+		newa.definition = st
+		newa.name = "acnf"
+		A.symbols.add(newa)
+		
+		System.out.println( ( model.eResource as XtextResource).getSerializer().serialize(model)) ;
+	}
+	
+	@Test
+	def void testToCNF1() {
+		val model = '''
+		package p ;
+		type Bool ;
+		type Int ;
+		type A {
+			v1 : Int-> Bool ;
+			v2 : Bool ;
+			v3 : Int-> Bool ;
+			v4 : Bool ;
+			//assert a { (v1(0) || v2) && (v3(2) || v4) && (v1(1) || v4) };
+			assert a { ( v1(0) && v2 && (v1 => v3(2)) ) || ! ( v4 => v1(1) ) };
+		}
+		'''.parse
+		model.assertNoErrors
+		val A = (model.findSymbol("A") as ConstrainedType)
+		val a = A.findSymbol("a") as Assertion;
+		val f = Phi.toCNF((a.definition as SequenceTerm).^return);
+		val st = ImlCustomFactory.INST.createSequenceTerm
+		val newa = ImlCustomFactory.INST.createAssertion
+		st.^return = f ;
+		newa.definition = st
+		newa.name = "acnf"
+		A.symbols.add(newa)
+		
+		System.out.println( ( model.eResource as XtextResource).getSerializer().serialize(model)) ;
+	}
+	
+	@Test
+	def void testTermExtractor() {
+		val model = '''
+		package p ;
+		type Bool ;
+		type Int ;
+		type A {
+			v1 : Int-> Bool ;
+			v2 : Bool ;
+			v3 : Int-> Bool ;
+			v4 : Bool ;
+			v5 : Int ;
+			//assert a { (v1(0) || v2) && (v3(2) || v4) && (v1(1) || v4) };
+			assert a { ( v1(v5) && v2 && (v1 => v3(2)) ) || ! ( v4 => v1(1) ) };
+		}
+		'''.parse
+		model.assertNoErrors
+		val A = (model.findSymbol("A") as ConstrainedType)
+		val a = A.findSymbol("a") as Assertion;
+		val tl = TermExtractor.extractFrom(a.definition);	
+		
+		System.out.println( ( model.eResource as XtextResource).getSerializer().serialize(model)) ;
+	}
+	
+	
 }

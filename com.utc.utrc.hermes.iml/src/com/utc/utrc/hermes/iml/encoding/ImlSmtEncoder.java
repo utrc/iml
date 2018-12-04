@@ -33,6 +33,7 @@ import com.utc.utrc.hermes.iml.iml.LambdaExpression;
 import com.utc.utrc.hermes.iml.iml.Model;
 import com.utc.utrc.hermes.iml.iml.Multiplication;
 import com.utc.utrc.hermes.iml.iml.NumberLiteral;
+import com.utc.utrc.hermes.iml.iml.ParenthesizedTerm;
 import com.utc.utrc.hermes.iml.iml.ParenthesizedType;
 import com.utc.utrc.hermes.iml.iml.QuantifiedFormula;
 import com.utc.utrc.hermes.iml.iml.Relation;
@@ -238,8 +239,8 @@ public class ImlSmtEncoder<SortT extends AbstractSort, FuncDeclT, FormulaT> impl
 		if (context == null) {
 			if (symbolTable.contains(type)) return;
 			
-			// Encode relations no matter if it is a template or not
-			for (TypeWithProperties relationType : getRelationTypes(type.getRelations())) {
+			// Encode relation types no matter if it is a template or not
+			for (TypeWithProperties relationType : getRelationTypes(type)) {
 				defineTypes(relationType.getType());
 			}
 
@@ -382,19 +383,26 @@ public class ImlSmtEncoder<SortT extends AbstractSort, FuncDeclT, FormulaT> impl
 	 * @param context null or actual binding e.g {@code var1 : Pair<Int, Real>}
 	 */
 	private void declareFuncs(ConstrainedType container, SimpleTypeReference context) {
+		EObject actualContainer;
+		if (context == null) {
+			actualContainer = container;
+		} else {
+			// The container is the context itself
+			actualContainer = context;
+		}
 		// encode relations TODO consider context
 		List<AtomicRelation> relations = relationsToAtomicRelations(container.getRelations());
 		for (AtomicRelation relation : relations) {
 			if (relation.getRelation() instanceof Alias) {
-				String funName = getUniqueName(container) + ALIAS_FUNC_NAME;
+				String funName = getUniqueName(actualContainer) + ALIAS_FUNC_NAME;
 				HigherOrderType aliasType = ((Alias) relation.getRelation()).getType().getType();
-				FuncDeclT aliasFunc = smtModelProvider.createFuncDecl(funName, Arrays.asList(symbolTable.getSort(container)), symbolTable.getSort(aliasType));
-				symbolTable.addFunDecl(container, relation, aliasFunc);
+				FuncDeclT aliasFunc = smtModelProvider.createFuncDecl(funName, Arrays.asList(symbolTable.getSort(actualContainer)), symbolTable.getSort(aliasType));
+				symbolTable.addFunDecl(actualContainer, relation, aliasFunc);
 			} else if (relation.getRelation() instanceof Extension) {
 				for (TypeWithProperties extendedType : ((Extension) relation.getRelation()).getExtensions()) {
-					String funName = getUniqueName(container) + EXTENSION_BASE_FUNC_NAME + getUniqueName(extendedType.getType());
-					FuncDeclT extensionFunc = smtModelProvider.createFuncDecl(funName, Arrays.asList(symbolTable.getSort(container)), symbolTable.getSort(extendedType.getType()));
-					symbolTable.addFunDecl(container, relation, extensionFunc);
+					String funName = getUniqueName(actualContainer) + EXTENSION_BASE_FUNC_NAME + getUniqueName(extendedType.getType());
+					FuncDeclT extensionFunc = smtModelProvider.createFuncDecl(funName, Arrays.asList(symbolTable.getSort(actualContainer)), symbolTable.getSort(extendedType.getType()));
+					symbolTable.addFunDecl(actualContainer, relation, extensionFunc);
 				}
 			}
 		}
@@ -402,15 +410,12 @@ public class ImlSmtEncoder<SortT extends AbstractSort, FuncDeclT, FormulaT> impl
 		for (SymbolDeclaration symbol : container.getSymbols()) {
 			if (symbol instanceof Assertion) continue; // We don't need function declaration for assertions
 			
-			EObject actualContainer;
 			String funName;
 			if (context == null) {
 				funName = getUniqueName(symbol);
-				actualContainer = container;
 			} else {
 				// The container is the context itself
 				funName = getUniqueName(context) + "." + symbol.getName(); 
-				actualContainer = context;
 			}
 			HigherOrderType symbolType = getActualType(symbol, context); // e.g if it was T~>P then maybe Int~>Real
 			SortT containerSort = symbolTable.getSort(actualContainer);
@@ -465,7 +470,9 @@ public class ImlSmtEncoder<SortT extends AbstractSort, FuncDeclT, FormulaT> impl
 			rightFormula = encodeFormula(formula.getRight(), context, inst, scope);
 		}
 		
-		if (formula.getOp() != null && !formula.getOp().isEmpty()) {
+		if (formula instanceof ParenthesizedTerm) {
+			return encodeFormula(((ParenthesizedTerm) formula).getSub(), context, inst, scope);
+		} else if (formula.getOp() != null && !formula.getOp().isEmpty()) {
 			OperatorType op = OperatorType.parseOp(formula.getOp());
 			
 			if (op == OperatorType.IMPL) { 
@@ -625,9 +632,10 @@ public class ImlSmtEncoder<SortT extends AbstractSort, FuncDeclT, FormulaT> impl
 		} else if (formula instanceof LambdaExpression) {
 			scope.addAll(((TupleType) ((LambdaExpression) formula).getSignature()).getSymbols());
 			return encodeFormula(((LambdaExpression) formula).getDefinition(), context, inst, scope);
+		} else {
+			throw new SMTEncodingException("Unsupported formula: " + formula);
 		}
-		
-		throw new SMTEncodingException("Unsupported formula: " + formula);
+		throw new SMTEncodingException("Couldn't encode the formula to SMT!");
 	}
 	
 	private boolean isAssertion(FolFormula formula) {
@@ -644,8 +652,8 @@ public class ImlSmtEncoder<SortT extends AbstractSort, FuncDeclT, FormulaT> impl
 
 	private FormulaT getSymbolAccessFormula(SymbolReferenceTerm symbolRef, SimpleTypeReference context, FormulaT inst, List<SymbolDeclaration> scope) {
 		// Check the scope first
-		if ((scope != null && scope.contains(symbolRef.getSymbol())) ||
-			isGlobalSymbol(symbolRef.getSymbol())) {
+		if ((scope != null && scope.contains(symbolRef.getSymbol())) /*||
+			isGlobalSymbol(symbolRef.getSymbol())*/) {
 			return smtModelProvider.createFormula(getUniqueName(symbolRef.getSymbol()));
 		}
 		
@@ -664,7 +672,11 @@ public class ImlSmtEncoder<SortT extends AbstractSort, FuncDeclT, FormulaT> impl
 			}
 			return null; 
 		} else {
-			return smtModelProvider.createFormula(symbolAccess, Arrays.asList(inst));
+			if (isGlobalSymbol(symbolRef.getSymbol())) {
+				return smtModelProvider.createFormula(symbolAccess, null);
+			} else {
+				return smtModelProvider.createFormula(symbolAccess, Arrays.asList(inst));
+			}
 		}
 	}
 
@@ -697,7 +709,7 @@ public class ImlSmtEncoder<SortT extends AbstractSort, FuncDeclT, FormulaT> impl
 	private FuncDeclT getSymbolDeclFun(SymbolDeclaration symbolDecl, SimpleTypeReference container) {
 		FuncDeclT funDecl = symbolTable.getFunDecl(container, symbolDecl);
 		if (funDecl == null) {
-			if (symbolDecl.eContainer() instanceof Model) {
+			if (isGlobalSymbol(symbolDecl)) {
 				encode(symbolDecl);
 				funDecl = getFuncDeclaration(symbolDecl);
 			}
@@ -749,6 +761,10 @@ public class ImlSmtEncoder<SortT extends AbstractSort, FuncDeclT, FormulaT> impl
 		}
 		
 		return sb.toString();
+	}
+
+	public FormulaT encodeFormula(FolFormula formula, SymbolDeclaration symbol) throws SMTEncodingException {
+		return encodeFormula(formula, (SimpleTypeReference) symbol.getType(),  smtModelProvider.createFormula(symbol.getName()), new ArrayList<>());
 	}
 	
 }

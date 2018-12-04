@@ -61,6 +61,20 @@ public class ImlStandaloneParseHelper {
 		return errors;
 	}
 	
+	public List<Issue> checkErrors(Model model) {
+		return checkErrors(model.eResource().getResourceSet());
+	}
+	
+	public void assertNoErrors(ResourceSet resourceSet) {
+		List<Issue> errors = checkErrors(resourceSet);
+		if (!errors.isEmpty()) {
+			for (Issue issue : errors) {
+				System.err.println(issue);
+			}
+			assert false;
+		}
+	}
+	
 	/**
 	 * Parse given list of texts together and return the resource set that includes all of them parsed
 	 * @param texts list of models text to be parsed
