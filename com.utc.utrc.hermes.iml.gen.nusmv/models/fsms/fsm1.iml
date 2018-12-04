@@ -1,0 +1,74 @@
+package UxASNodeLibEvents ;
+import iml.connectivity.*;
+import iml.fsm.*;
+import iml.ports.*;
+
+type RespondsState enum {s0, s1, s2} ;
+
+type [Fsm] responds_once{
+	[Input]  a : Bool ;
+	[Input]  b : Bool ;
+	// State variable
+	s : PrimedVar<RespondsState> ;
+	// Initialization of the state variable
+	[Init] init : Bool := { s.current = RespondsState.s0 && g = true} ;
+	// Transition relation
+	
+	[Transition] state_trans : Bool := { 
+			s.next =
+				case {
+					s.current = RespondsState.s0 && b && !a :  RespondsState.s1 ;
+					s.current = RespondsState.s0 && a :  RespondsState.s2 ;
+					s.current = RespondsState.s1 && a : RespondsState.s0 ;
+					true : s.current ;
+			}	  
+	} ;
+	// Definition of the output
+	[Output] g : Bool := ( s.current = RespondsState.s0 ||  s.current = RespondsState.s1 );
+}
+
+type [Fsm] one_request_at_a_time  {
+	[Input]  a : Bool ;
+	[Input]  b : Bool ;
+	s : PrimedVar<RespondsState> ;
+	[Init] init : Bool := {s = RespondsState.s0 } ;
+	[Transition] s_trans : Bool := { 
+		s.next = 
+			case {
+				s.current = RespondsState.s0 && b : RespondsState.s1 ;
+				s.current = RespondsState.s1 && b : RespondsState.s2 ;
+				s.current = RespondsState.s1 && a && ! b : RespondsState.s0 ;
+				true : s.current ;
+			}  	
+	} ;
+	[Output] g : Bool :=  ( s.current = RespondsState.s0 ||  s.current = RespondsState.s1 );
+}
+
+type [Fsm] delay {
+	[Input] input : Bool ;
+	[Input] output : Bool ;
+	[Input] n : Int ;
+	state : PrimedVar<RespondsState>  ;
+	i : PrimedVar<Int> ;
+	[Init] init : Bool := (i = 1) && (state = RespondsState.s0) ;
+	[Transition] s_trans : Bool := {
+		state.next = 
+			case {
+				state.current = RespondsState.s0 && output : RespondsState.s2;
+				state.current = RespondsState.s0 && input : RespondsState.s1 ;
+				state.current = RespondsState.s1 && output : RespondsState.s0 ;
+				state.current = RespondsState.s1 && i >= n : RespondsState.s2 ;
+				true : state.current ;
+			}
+	};
+	[Transition] i_trans : Bool := { 
+		i.next =
+		case {
+			state.current = RespondsState.s0 :  1 ;
+			state.current = RespondsState.s1 : i.current + 1 ;
+			true : i.current ;	
+		}
+	} ;
+	[Output] g : Bool := (state.current = RespondsState.s0 || state.current = RespondsState.s1) ;
+}
+

@@ -112,7 +112,7 @@ public class Phi {
 		return retval; 
 	}
 	
-	public static List<List<FolFormula> > toCNFList(FolFormula f, boolean neg){
+	public static List< List<FolFormula> > toCNFList(FolFormula f, boolean neg){
 		List<List<FolFormula>> retval = new ArrayList<>();
 		if (f instanceof AndExpression && ! neg) {
 			retval.addAll(toCNFList(f.getLeft(),false));
@@ -187,43 +187,7 @@ public class Phi {
 		return false;
 	}
 
-	public static List<TermExpression> getSupport(FolFormula f){
-		List<TermExpression> retval = new ArrayList<>();
-		List<List<FolFormula> > cnf = toCNFList(f, false);
-		for(List<FolFormula> clause : cnf) {
-			for(FolFormula lit : clause) {
-				if (lit instanceof AtomicExpression) {
-					
-				}else if (lit instanceof Addition) {
-					
-				}else if (lit instanceof Multiplication) {
-					
-				}else if (lit instanceof TermMemberSelection) {
-					
-				}else if (lit instanceof SymbolReferenceTerm) {
-					
-				}else if (lit instanceof ImplicitInstanceConstructor) {
-					
-				}else if (lit instanceof TupleConstructor) {
-					
-				}else if (lit instanceof ParenthesizedTerm) {
-					
-				}else if (lit instanceof IteTermExpression) {
-					
-				}else if (lit instanceof CaseTermExpression) {
-					
-				}else if (lit instanceof SequenceTerm) {
-					
-				}else if (lit instanceof QuantifiedFormula) {
-					
-				}else if (lit instanceof SignedAtomicFormula) {
-					
-				}
-			}
-		}
-		return retval;
-	}
-	
+		
 	
 	
 }
