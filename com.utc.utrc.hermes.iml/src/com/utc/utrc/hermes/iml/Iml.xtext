@@ -232,13 +232,17 @@ TerminalTerm returns TermExpression:
 	{SelfTerm} 'self' |
 	SequenceTerm |
 	{LambdaExpression}'fun' signature=TupleOrExpressionType definition=SequenceTerm |
-	QuantifiedFormula
+	QuantifiedFormula 
 	 ;
 	
+EqualityListTerm returns TermExpression :
+	{EqualityListTerm}'{' (features+=TermSelectionExpression '=' values+=TermExpression ) (';' (features+=TermSelectionExpression '=' values+=TermExpression ))* '}'
+;
+
 
 InstanceConstructor returns TermExpression:
 	{InstanceConstructor} 'some' '(' ref=TupleSymbol ')' definition=SequenceTerm |
-	{ImplicitInstanceConstructor}  'oneof' ref=SimpleTypeReference definition=SequenceTerm
+	{ImplicitInstanceConstructor}  'oneof' ref=SimpleTypeReference definition=EqualityListTerm
 ;
 
 TupleOrFormulaConstructor returns TermExpression:
