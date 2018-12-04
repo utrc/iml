@@ -239,8 +239,8 @@ public class ImlSmtEncoder<SortT extends AbstractSort, FuncDeclT, FormulaT> impl
 		if (context == null) {
 			if (symbolTable.contains(type)) return;
 			
-			// Encode relations no matter if it is a template or not
-			for (TypeWithProperties relationType : getRelationTypes(type.getRelations())) {
+			// Encode relation types no matter if it is a template or not
+			for (TypeWithProperties relationType : getRelationTypes(type)) {
 				defineTypes(relationType.getType());
 			}
 
@@ -383,19 +383,26 @@ public class ImlSmtEncoder<SortT extends AbstractSort, FuncDeclT, FormulaT> impl
 	 * @param context null or actual binding e.g {@code var1 : Pair<Int, Real>}
 	 */
 	private void declareFuncs(ConstrainedType container, SimpleTypeReference context) {
+		EObject actualContainer;
+		if (context == null) {
+			actualContainer = container;
+		} else {
+			// The container is the context itself
+			actualContainer = context;
+		}
 		// encode relations TODO consider context
 		List<AtomicRelation> relations = relationsToAtomicRelations(container.getRelations());
 		for (AtomicRelation relation : relations) {
 			if (relation.getRelation() instanceof Alias) {
-				String funName = getUniqueName(container) + ALIAS_FUNC_NAME;
+				String funName = getUniqueName(actualContainer) + ALIAS_FUNC_NAME;
 				HigherOrderType aliasType = ((Alias) relation.getRelation()).getType().getType();
-				FuncDeclT aliasFunc = smtModelProvider.createFuncDecl(funName, Arrays.asList(symbolTable.getSort(container)), symbolTable.getSort(aliasType));
-				symbolTable.addFunDecl(container, relation, aliasFunc);
+				FuncDeclT aliasFunc = smtModelProvider.createFuncDecl(funName, Arrays.asList(symbolTable.getSort(actualContainer)), symbolTable.getSort(aliasType));
+				symbolTable.addFunDecl(actualContainer, relation, aliasFunc);
 			} else if (relation.getRelation() instanceof Extension) {
 				for (TypeWithProperties extendedType : ((Extension) relation.getRelation()).getExtensions()) {
-					String funName = getUniqueName(container) + EXTENSION_BASE_FUNC_NAME + getUniqueName(extendedType.getType());
-					FuncDeclT extensionFunc = smtModelProvider.createFuncDecl(funName, Arrays.asList(symbolTable.getSort(container)), symbolTable.getSort(extendedType.getType()));
-					symbolTable.addFunDecl(container, relation, extensionFunc);
+					String funName = getUniqueName(actualContainer) + EXTENSION_BASE_FUNC_NAME + getUniqueName(extendedType.getType());
+					FuncDeclT extensionFunc = smtModelProvider.createFuncDecl(funName, Arrays.asList(symbolTable.getSort(actualContainer)), symbolTable.getSort(extendedType.getType()));
+					symbolTable.addFunDecl(actualContainer, relation, extensionFunc);
 				}
 			}
 		}
@@ -403,15 +410,12 @@ public class ImlSmtEncoder<SortT extends AbstractSort, FuncDeclT, FormulaT> impl
 		for (SymbolDeclaration symbol : container.getSymbols()) {
 			if (symbol instanceof Assertion) continue; // We don't need function declaration for assertions
 			
-			EObject actualContainer;
 			String funName;
 			if (context == null) {
 				funName = getUniqueName(symbol);
-				actualContainer = container;
 			} else {
 				// The container is the context itself
 				funName = getUniqueName(context) + "." + symbol.getName(); 
-				actualContainer = context;
 			}
 			HigherOrderType symbolType = getActualType(symbol, context); // e.g if it was T~>P then maybe Int~>Real
 			SortT containerSort = symbolTable.getSort(actualContainer);

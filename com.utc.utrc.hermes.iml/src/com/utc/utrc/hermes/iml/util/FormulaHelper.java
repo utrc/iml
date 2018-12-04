@@ -6,12 +6,18 @@ import com.utc.utrc.hermes.iml.iml.FolFormula;
 
 public class FormulaHelper {
 	public final static String IMPLIES = "=>";
+	public final static FolFormula TRUE = ImlCustomFactory.INST.createTruthValue(true);
+	public final static FolFormula FALSE = ImlCustomFactory.INST.createTruthValue(false);
 
 	public static FolFormula createBool(boolean value) {
 		return ImlCustomFactory.INST.createTruthValue(value);
 	}
 
 	public static FolFormula AND(FolFormula left, FolFormula right) {
+		return ImlCustomFactory.INST.createAndExpression(left, right);
+	}
+	
+	public static FolFormula OR(FolFormula left, FolFormula right) {
 		return ImlCustomFactory.INST.createAndExpression(left, right);
 	}
 
@@ -32,6 +38,17 @@ public class FormulaHelper {
 	
 	public static FolFormula toCNF(FolFormula source) {
 		return null ;
+	}
+
+	public static FolFormula orAll(List<FolFormula> formulas) {
+		if (!formulas.isEmpty()) {
+			FolFormula disjunction = formulas.get(0);
+			for (int i = 1; i < formulas.size(); i++) {
+				disjunction = OR(disjunction, formulas.get(i));
+			}
+			return disjunction;
+		}
+		return null;
 	}
 	
 }

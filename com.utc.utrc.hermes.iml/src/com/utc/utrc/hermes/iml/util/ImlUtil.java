@@ -130,8 +130,9 @@ public class ImlUtil {
 		}
 	}
 	
-	public static List<TypeWithProperties> getRelationTypes(EList<Relation> relations) {
+	public static List<TypeWithProperties> getRelationTypes(ConstrainedType type) {
 		List<TypeWithProperties> types = new ArrayList<>();
+		EList<Relation> relations = type.getRelations();
 		for (Relation relation : relations) {
 			if (relation instanceof Extension) {
 				types.addAll(((Extension) relation).getExtensions());
@@ -139,6 +140,22 @@ public class ImlUtil {
 				types.add(((Alias) relation).getType());
 			} else {
 				types.addAll(((TraitExhibition) relation).getExhibitions());
+			}
+		}
+		return types;
+	}
+	
+	public static List<TypeWithProperties> getRelationTypes(ConstrainedType type, Class<? extends Relation> relationType) {
+		List<TypeWithProperties> types = new ArrayList<>();
+		for (Relation relation : type.getRelations()) {
+			if (relationType.isInstance(relation)) {
+				if (relation instanceof Extension) {
+					types.addAll(((Extension) relation).getExtensions());
+				} else if (relation instanceof Alias) {
+					types.add(((Alias) relation).getType());
+				} else {
+					types.addAll(((TraitExhibition) relation).getExhibitions());
+				}
 			}
 		}
 		return types;
@@ -168,6 +185,19 @@ public class ImlUtil {
 	public static String getUnqualifiedName(String name) {
 		String[] parts = name.split("\\.");
 		return parts[parts.length - 1];
+	}
+
+	public static boolean isSubTypeOf(ConstrainedType type, String ParentTypeName) {
+		for (TypeWithProperties parent : getRelationTypes(type, Extension.class)) {
+			ConstrainedType parentCt = ((SimpleTypeReference)parent.getType()).getType();
+			if (parentCt.getName().equals(ParentTypeName)) {
+				return true;
+			}
+			if (isSubTypeOf(parentCt, ParentTypeName)) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	
