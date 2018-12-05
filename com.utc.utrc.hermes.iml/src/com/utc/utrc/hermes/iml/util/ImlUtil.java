@@ -7,6 +7,8 @@ import java.util.stream.Collectors;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.resource.Resource;
+import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.xtext.naming.IQualifiedNameProvider;
 import org.eclipse.xtext.resource.IResourceServiceProvider;
 import org.eclipse.xtext.resource.XtextResource;
@@ -198,6 +200,36 @@ public class ImlUtil {
 			}
 		}
 		return false;
+	}
+
+	public static Model getModelByName(ResourceSet rs, String modelName) {
+		for (Resource res : rs.getResources()) {
+			if (!res.getContents().isEmpty()) {
+				EObject model = res.getContents().get(0);
+				if (model instanceof Model && ((Model) model).getName().equals(modelName)) {
+					return (Model) model;
+				}
+			}
+		}
+		return null;
+	}
+	
+	public static Symbol findSymbol(Model model, String symbolName) {
+		for (Symbol symbol : model.getSymbols()) {
+			if (symbolName.equals(symbol.getName())) {
+				return symbol;
+			}
+		}
+		return null;
+	}
+	
+	public static SymbolDeclaration findSymbol(ConstrainedType type, String symbolName) {
+		for (SymbolDeclaration symbol : type.getSymbols()) {
+			if (symbolName.equals(symbol.getName())) {
+				return symbol;
+			}
+		}
+		return null;
 	}
 	
 	
