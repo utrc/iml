@@ -285,6 +285,9 @@ public class ImlTypeProvider {
 		if (ImlUtil.isGlobalSymbol(s)) {
 			return s.type // Global symbols doesn't need binding with context
 		}
+		if (ctx === null) {
+			return s.type
+		}
 		if (!s.isTemplate) {
 			if ( ctx.type.symbols.contains(s) || symbolInsideLambda(s) || 
 				symbolInsideProgram(s)

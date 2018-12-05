@@ -64,6 +64,21 @@ public class ImlUtil {
 		return retval;
 	}
 
+	public static List<SimpleTypeReference> getDirectParentTypeRefs(ConstrainedType type) {
+		List<SimpleTypeReference> retval = new ArrayList<>();
+		if (type.getRelations() != null) {
+			for(Relation rel : type.getRelations()) {
+				if(rel instanceof Extension) {
+					retval.addAll(
+							((Extension) rel).getExtensions().stream()
+							.map(it -> ((SimpleTypeReference) it.getType()))
+							.collect(Collectors.toList())) ;
+				}
+			}
+		}
+		return retval;
+	}	
+	
 	public static boolean hasProperty(Symbol symbol, String property) {
 		if (symbol.getPropertylist() == null)
 			return false;
