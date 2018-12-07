@@ -12,3 +12,5 @@ Require-Bundle: com.utc.utrc.hermes.iml;bundle-version="1.0.0",
  org.junit;bundle-version="4.12.0",
  org.eclipse.xtext.xbase.lib;bundle-version="2.15.0"
 Import-Package: com.google.inject
+Export-Package: com.utc.utrc.hermes.iml.gen.nusmv.generator,
+ com.utc.utrc.hermes.iml.gen.nusmv.model
