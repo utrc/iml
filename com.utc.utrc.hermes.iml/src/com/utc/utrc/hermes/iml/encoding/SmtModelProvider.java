@@ -33,4 +33,6 @@ public interface SmtModelProvider <SortT, FuncDeclT, FormulaT> {
 	
 	public FormulaT createFormula(Object value);
 
+	public SortT createEnum(String sortName, List<String> enumList);
+
 }

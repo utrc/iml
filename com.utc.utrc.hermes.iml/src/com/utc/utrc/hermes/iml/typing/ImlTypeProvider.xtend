@@ -319,6 +319,13 @@ public class ImlTypeProvider {
 	}
 
 	def static HigherOrderType getType(SymbolReferenceTerm s, SimpleTypeReference ctx) {
+		if (ctx === null) {
+			if (s.symbol instanceof SymbolDeclaration) {
+				return (s.symbol as SymbolDeclaration).getType()
+			} else if (s.symbol instanceof ConstrainedType) {
+				return createBasicType(s.symbol as ConstrainedType) 
+			}
+		}
 		if (ctx.type === null) {
 			if ( s.symbol instanceof SymbolDeclaration) {
 				if (! (s.symbol as SymbolDeclaration).isPolymorphic) {
