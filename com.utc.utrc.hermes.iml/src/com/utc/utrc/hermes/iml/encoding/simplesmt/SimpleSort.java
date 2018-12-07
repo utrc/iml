@@ -9,6 +9,7 @@ public class SimpleSort extends AbstractSort {
 	SimpleSort range;
 	
 	List<SimpleSort> tupleElements;
+	List<String> enumList;
 	
 	public SimpleSort() {
 	}
@@ -31,6 +32,12 @@ public class SimpleSort extends AbstractSort {
 		this.tupleElements = tupleElements;
 	}
 	
+	public SimpleSort(String sortName, List<String> enumList, SortType type) {
+		super();
+		this.name = sortName;
+		this.enumList = enumList;
+	}
+
 	public SimpleSort getDomain() {
 		return domain;
 	}
@@ -61,6 +68,8 @@ public class SimpleSort extends AbstractSort {
 			return "(define-sort " + getQuotedName() + " () (Array " + domain.getQuotedName() + " " + range.getQuotedName() + ")" ;
 		} else if (tupleElements != null && !tupleElements.isEmpty()) {
 			return String.format("(declare-datatypes () ((%s (|mk_%s| %s))))", getQuotedName(), getName(), getTupleListTypes());
+		} else if (enumList != null && !enumList.isEmpty()) {
+			return String.format("(declare-datatypes () (%s %s)", getQuotedName(), enumList.stream().reduce((curr, acc) -> "|" + acc + "| |" + curr+ "|")); 
 		} else {
 			return "(declare-sort " + getQuotedName() + " 0)";
 		}

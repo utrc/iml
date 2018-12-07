@@ -62,6 +62,7 @@ ConstrainedType:
 	( relations += Relation)*
 	( restrictions += TypeRestriction)*
 	(';' | ('{' (symbols+=(SymbolDeclaration|Assertion) ';')* '}' ";"?)) 
+	
 ;
 
 TypeRestriction :
@@ -86,7 +87,7 @@ SymbolDeclaration:
 ;
 
 Assertion returns SymbolDeclaration :
-	{Assertion} 'assert' (comment=STRING)? (name=ID)? ':' definition=FolFormula
+	{Assertion}  'assert' (propertylist=PropertyList)? (comment=STRING)? (name=ID)? definition=SequenceTerm
 ;
 
 NonParametricUntypedSymbolDeclaration returns SymbolDeclaration :
@@ -161,7 +162,7 @@ QuantifiedFormula returns TermExpression:
 		          (',' typeParameter+=TypeParameter)* '>')? 
       '(' scope+=NonParametricTypedSymbolDeclaration 
          (',' scope+=NonParametricTypedSymbolDeclaration)* ')' 
-         '{' left=FolFormula '}';
+        left = SequenceTerm;
 
 /*Disjunction of two formulas */
 OrExpression returns FolFormula:
@@ -231,13 +232,17 @@ TerminalTerm returns TermExpression:
 	{SelfTerm} 'self' |
 	SequenceTerm |
 	{LambdaExpression}'fun' signature=TupleOrExpressionType definition=SequenceTerm |
-	QuantifiedFormula
+	QuantifiedFormula 
 	 ;
 	
+EqualityListTerm returns TermExpression :
+	{EqualityListTerm}'{' (features+=TermSelectionExpression '=' values+=TermExpression ) (';' (features+=TermSelectionExpression '=' values+=TermExpression ))* '}'
+;
+
 
 InstanceConstructor returns TermExpression:
 	{InstanceConstructor} 'some' '(' ref=TupleSymbol ')' definition=SequenceTerm |
-	{ImplicitInstanceConstructor}  'oneof' ref=SimpleTypeReference definition=SequenceTerm
+	{ImplicitInstanceConstructor}  'oneof' ref=SimpleTypeReference definition=EqualityListTerm
 ;
 
 TupleOrFormulaConstructor returns TermExpression:
@@ -275,8 +280,8 @@ SymbolReferenceTail:
 ;
 
 IteTermExpression returns TermExpression:
-	{IteTermExpression} 'if' '(' condition=FolFormula ')' '{' left=TermExpression '}' 
-	                                          (=> 'else'  '{' right=TermExpression '}')?;
+	{IteTermExpression} 'if' '(' condition=FolFormula ')' left=SequenceTerm
+	                                          (=> 'else'  right=SequenceTerm)?;
 	                                          
 CaseTermExpression returns TermExpression:
 	{CaseTermExpression} 'case' '{'

@@ -22,6 +22,7 @@ import com.utc.utrc.hermes.iml.iml.ArrayType;
 import com.utc.utrc.hermes.iml.iml.Assertion;
 import com.utc.utrc.hermes.iml.iml.AtomicExpression;
 import com.utc.utrc.hermes.iml.iml.ConstrainedType;
+import com.utc.utrc.hermes.iml.iml.EnumRestriction;
 import com.utc.utrc.hermes.iml.iml.Extension;
 import com.utc.utrc.hermes.iml.iml.FloatNumberLiteral;
 import com.utc.utrc.hermes.iml.iml.FolFormula;
@@ -54,6 +55,8 @@ import com.utc.utrc.hermes.iml.iml.TupleType;
 import com.utc.utrc.hermes.iml.iml.TypeWithProperties;
 import com.utc.utrc.hermes.iml.typing.ImlTypeProvider;
 import com.utc.utrc.hermes.iml.typing.TypingServices;
+import com.utc.utrc.hermes.iml.util.ImlUtil;
+
 import static com.utc.utrc.hermes.iml.util.ImlUtil.*;
 import static com.utc.utrc.hermes.iml.util.HotUtil.*;
 /**
@@ -123,6 +126,30 @@ public class ImlSmtEncoder<SortT extends AbstractSort, FuncDeclT, FormulaT> impl
 		String symbolId = getUniqueName(symbolDecl);
 		FuncDeclT funDecl = smtModelProvider.createFuncDecl(symbolId, inputSort, outputSort);
 		symbolTable.addFunDecl(symbolDecl.eContainer(), symbolDecl, funDecl);
+		
+		// TODO Temp fix for Global symbol declaration definition
+		if (ImlUtil.isGlobalSymbol(symbolDecl) && symbolDecl.getDefinition() != null) {
+			FormulaT definitionEncoding = null;
+			try { // TODO don't handle it here
+				definitionEncoding = encodeFormula(symbolDecl.getDefinition(), null, null, new ArrayList<>());
+			} catch (SMTEncodingException e) {
+				e.printStackTrace();
+			}
+			List<FormulaT> forallScope = new ArrayList<>();
+						
+//			HigherOrderType symbolType = getActualType(symbol, context); // e.g if it was T~>P then maybe Int~>Real
+			if (!(symbolDecl instanceof Assertion))  {
+				List<FormulaT> functionParams = getFunctionParameterList(symbolDecl, true);
+				FormulaT symbolAccess = smtModelProvider.createFormula(funDecl,  functionParams);
+				
+				definitionEncoding = smtModelProvider.createFormula(OperatorType.EQ, Arrays.asList(symbolAccess, definitionEncoding));	
+				forallScope.addAll(getFunctionParameterList(symbolDecl, false));
+			} 
+			FormulaT forall = smtModelProvider.createFormula(OperatorType.FOR_ALL, 
+					Arrays.asList(smtModelProvider.createFormula(forallScope), definitionEncoding));
+			FormulaT assertion = smtModelProvider.createFormula(OperatorType.ASSERT, Arrays.asList(forall));
+			symbolTable.addFormula(symbolDecl.eContainer(), symbolDecl, assertion);
+		}
 	}
 
 	@Override
@@ -244,8 +271,8 @@ public class ImlSmtEncoder<SortT extends AbstractSort, FuncDeclT, FormulaT> impl
 		if (context == null) {
 			if (symbolTable.contains(type)) return;
 			
-			// Encode relations no matter if it is a template or not
-			for (TypeWithProperties relationType : getRelationTypes(type.getRelations())) {
+			// Encode relation types no matter if it is a template or not
+			for (TypeWithProperties relationType : getRelationTypes(type)) {
 				defineTypes(relationType.getType());
 			}
 
@@ -320,6 +347,8 @@ public class ImlSmtEncoder<SortT extends AbstractSort, FuncDeclT, FormulaT> impl
 		SortT sort = null;
 		if (type instanceof TupleType){
 			sort = smtModelProvider.createTupleSort(sortName, getTupleSorts((TupleType) type));
+//		} else if (isEnum(type)) { // TODO Should check for other Restricitions
+////			sort = smtModelProvider.createEnum(sortName, getEnumList((ConstrainedType) type));
 		} else {
 			sort = smtModelProvider.createSort(sortName);
 		}
@@ -327,6 +356,25 @@ public class ImlSmtEncoder<SortT extends AbstractSort, FuncDeclT, FormulaT> impl
 			symbolTable.addSort(type, sort);
 		}
 		return sort;
+	}
+
+	private Object getEnumList(ConstrainedType type) {
+		List<String> result = new ArrayList<String>();
+		for (SymbolDeclaration symbol: ((EnumRestriction) type.getRestrictions().get(0)).getLiterals()) {
+			result.add(getUniqueName(symbol));
+		}
+		return result;
+	}
+
+	private boolean isEnum(EObject type) {
+		
+		// Check if enum
+		if (type instanceof ConstrainedType && ((ConstrainedType)type).getRestrictions() != null 
+				&& !((ConstrainedType)type).getRestrictions().isEmpty()) {
+			// TODO why resitrictions is a list! we only handle 1
+			return ((ConstrainedType)type).getRestrictions().get(0) instanceof EnumRestriction;
+		}
+		return false;
 	}
 
 	/**
@@ -388,19 +436,26 @@ public class ImlSmtEncoder<SortT extends AbstractSort, FuncDeclT, FormulaT> impl
 	 * @param context null or actual binding e.g {@code var1 : Pair<Int, Real>}
 	 */
 	private void declareFuncs(ConstrainedType container, SimpleTypeReference context) {
+		EObject actualContainer;
+		if (context == null) {
+			actualContainer = container;
+		} else {
+			// The container is the context itself
+			actualContainer = context;
+		}
 		// encode relations TODO consider context
 		List<AtomicRelation> relations = relationsToAtomicRelations(container.getRelations());
 		for (AtomicRelation relation : relations) {
 			if (relation.getRelation() instanceof Alias) {
-				String funName = getUniqueName(container) + ALIAS_FUNC_NAME;
+				String funName = getUniqueName(actualContainer) + ALIAS_FUNC_NAME;
 				HigherOrderType aliasType = ((Alias) relation.getRelation()).getType().getType();
-				FuncDeclT aliasFunc = smtModelProvider.createFuncDecl(funName, Arrays.asList(symbolTable.getSort(container)), symbolTable.getSort(aliasType));
-				symbolTable.addFunDecl(container, relation, aliasFunc);
+				FuncDeclT aliasFunc = smtModelProvider.createFuncDecl(funName, Arrays.asList(symbolTable.getSort(actualContainer)), symbolTable.getSort(aliasType));
+				symbolTable.addFunDecl(actualContainer, relation, aliasFunc);
 			} else if (relation.getRelation() instanceof Extension) {
 				for (TypeWithProperties extendedType : ((Extension) relation.getRelation()).getExtensions()) {
-					String funName = getUniqueName(container) + EXTENSION_BASE_FUNC_NAME + getUniqueName(extendedType.getType());
-					FuncDeclT extensionFunc = smtModelProvider.createFuncDecl(funName, Arrays.asList(symbolTable.getSort(container)), symbolTable.getSort(extendedType.getType()));
-					symbolTable.addFunDecl(container, relation, extensionFunc);
+					String funName = getUniqueName(actualContainer) + EXTENSION_BASE_FUNC_NAME + getUniqueName(extendedType.getType());
+					FuncDeclT extensionFunc = smtModelProvider.createFuncDecl(funName, Arrays.asList(symbolTable.getSort(actualContainer)), symbolTable.getSort(extendedType.getType()));
+					symbolTable.addFunDecl(actualContainer, relation, extensionFunc);
 				}
 			}
 		}
@@ -408,15 +463,12 @@ public class ImlSmtEncoder<SortT extends AbstractSort, FuncDeclT, FormulaT> impl
 		for (SymbolDeclaration symbol : container.getSymbols()) {
 			if (symbol instanceof Assertion) continue; // We don't need function declaration for assertions
 			
-			EObject actualContainer;
 			String funName;
 			if (context == null) {
 				funName = getUniqueName(symbol);
-				actualContainer = container;
 			} else {
 				// The container is the context itself
 				funName = getUniqueName(context) + "." + symbol.getName(); 
-				actualContainer = context;
 			}
 			HigherOrderType symbolType = getActualType(symbol, context); // e.g if it was T~>P then maybe Int~>Real
 			SortT containerSort = symbolTable.getSort(actualContainer);
@@ -656,6 +708,10 @@ public class ImlSmtEncoder<SortT extends AbstractSort, FuncDeclT, FormulaT> impl
 		if ((scope != null && scope.contains(symbolRef.getSymbol())) /*||
 			isGlobalSymbol(symbolRef.getSymbol())*/) {
 			return smtModelProvider.createFormula(getUniqueName(symbolRef.getSymbol()));
+		}
+		
+		if (symbolRef.getSymbol() instanceof ConstrainedType) { // Check for ConstrainedType symbol
+			// We only support enum now
 		}
 		
 		FuncDeclT symbolAccess = getSymbolDeclFun((SymbolDeclaration) symbolRef.getSymbol(), context);

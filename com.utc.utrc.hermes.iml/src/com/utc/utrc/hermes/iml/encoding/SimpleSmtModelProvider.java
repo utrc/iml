@@ -65,5 +65,10 @@ public class SimpleSmtModelProvider implements SmtModelProvider<SimpleSort, Simp
 		return new SimpleSmtFormula(null, Arrays.asList(createFormula(name), createFormula(sort.getQuotedName())));
 	}
 
+	@Override
+	public SimpleSort createEnum(String sortName, List<String> enumList) {
+		return new SimpleSort(sortName, enumList, null);
+	}
+
 
 }
