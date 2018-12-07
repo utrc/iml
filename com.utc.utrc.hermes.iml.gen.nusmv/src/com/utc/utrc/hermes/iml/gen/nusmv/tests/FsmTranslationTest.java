@@ -6,6 +6,7 @@ import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.junit.Test;
 import com.utc.utrc.hermes.iml.ImlStandaloneSetup;
+import com.utc.utrc.hermes.iml.gen.nusmv.generator.Configuration;
 import com.utc.utrc.hermes.iml.gen.nusmv.generator.NuSmvGenerator;
 import com.utc.utrc.hermes.iml.gen.nusmv.generator.NuSmvGeneratorServices;
 import com.utc.utrc.hermes.iml.gen.nusmv.generator.StandardLibProvider;
@@ -31,16 +32,18 @@ public class FsmTranslationTest {
 		resourceSet.getResource(URI.createURI("models/iml-common/ports.iml"), true);
 		resourceSet.getResource(URI.createURI("models/iml-common/fsm.iml"), true);
 
-		resourceSet.getResource(URI.createURI("models/fromaadl/UxASNodeLibEvents.iml"), true);
-		resourceSet.getResource(URI.createURI("models/fromaadl/GenericService.iml"), true);
-		resourceSet.getResource(URI.createURI("models/fromaadl/GenericLastService.iml"), true);
+		//resourceSet.getResource(URI.createURI("models/fromaadl/UxASNodeLibEvents.iml"), true);
+		//resourceSet.getResource(URI.createURI("models/fromaadl/GenericService.iml"), true);
+		//resourceSet.getResource(URI.createURI("models/fromaadl/GenericLastService.iml"), true);
 		
 		
-		Resource translationunit = resourceSet.getResource(URI.createURI("models/fromaadl/UxASRespondsEvents.iml"), true);
+		Resource translationunit = resourceSet.getResource(URI.createURI("models/fromaadl/UxASRespondsEvents_pkg.iml"), true);
 
 		StandardLibProvider standard_libs = new StandardLibProvider(resourceSet);
-
-		NuSmvGenerator gen = new NuSmvGenerator(standard_libs);
+		Configuration conf = new Configuration.Builder().BypassDelay(false).build();
+		
+		
+		NuSmvGenerator gen = new NuSmvGenerator(standard_libs,conf);
 
 		Model m = (Model) translationunit.getContents().get(0);
 		NuSmvModel nm = new NuSmvModel();

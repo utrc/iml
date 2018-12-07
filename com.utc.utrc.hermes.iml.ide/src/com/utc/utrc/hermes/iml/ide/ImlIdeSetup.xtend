@@ -16,5 +16,5 @@ class ImlIdeSetup extends ImlStandaloneSetup {
 	override createInjector() {
 		Guice.createInjector(Modules2.mixin(new ImlRuntimeModule, new ImlIdeModule))
 	}
-	
+
 }

@@ -29,9 +29,13 @@ public class SExprTokens {
 	public static SExpr.Token<String> NODE = new SExpr.Token<String>("node") ;
 	public static SExpr.Token<String> EDGE = new SExpr.Token<String>("edge") ;
 	public static SExpr.Token<String> ENTAILMENT = new SExpr.Token<String>("entailment") ;
+	public static SExpr.Token<String> MODEL_CHECKING = new SExpr.Token<String>("model_checking") ;
+	public static SExpr.Token<String> DELAY_ANALYSIS = new SExpr.Token<String>("delay_analysis") ;
 	public static SExpr.Token<String> DONE = new SExpr.Token<String>("done") ;
 	public static SExpr.Token<String> DATA_TYPE = new SExpr.Token<String>(":type");
 	public static SExpr.Token<String> SMT_25 = new SExpr.Token<String>("smt25") ;
+	public static SExpr.Token<String> NUSMV = new SExpr.Token<String>("nusmv") ;
+	public static SExpr.Token<String> DELAY = new SExpr.Token<String>("delay") ;
 	public static SExpr.Token<String> BOOLX = new SExpr.Token<String>("boolX") ;
 	public static SExpr.Token<String> EVALUATE = new SExpr.Token<String>("evaluate") ;
 	public static SExpr.Token<String> LUSTRE = new SExpr.Token<String>("lustre") ;
