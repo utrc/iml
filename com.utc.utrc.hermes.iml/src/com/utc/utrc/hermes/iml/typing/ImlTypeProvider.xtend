@@ -285,6 +285,9 @@ public class ImlTypeProvider {
 		if (ImlUtil.isGlobalSymbol(s)) {
 			return s.type // Global symbols doesn't need binding with context
 		}
+		if (ctx === null) {
+			return s.type
+		}
 		if (!s.isTemplate) {
 			if ( ctx.type.symbols.contains(s) || symbolInsideLambda(s) || 
 				symbolInsideProgram(s)
@@ -316,6 +319,13 @@ public class ImlTypeProvider {
 	}
 
 	def static HigherOrderType getType(SymbolReferenceTerm s, SimpleTypeReference ctx) {
+		if (ctx === null) {
+			if (s.symbol instanceof SymbolDeclaration) {
+				return (s.symbol as SymbolDeclaration).getType()
+			} else if (s.symbol instanceof ConstrainedType) {
+				return createBasicType(s.symbol as ConstrainedType) 
+			}
+		}
 		if (ctx.type === null) {
 			if ( s.symbol instanceof SymbolDeclaration) {
 				if (! (s.symbol as SymbolDeclaration).isPolymorphic) {

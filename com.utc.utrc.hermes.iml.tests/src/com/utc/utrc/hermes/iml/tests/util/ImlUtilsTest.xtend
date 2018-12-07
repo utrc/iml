@@ -163,8 +163,31 @@ class ImlUtilsTest {
 		val A = (model.findSymbol("A") as ConstrainedType)
 		val a = A.findSymbol("a") as Assertion;
 		val tl = TermExtractor.extractFrom(a.definition);	
+		print(tl)
+//		System.out.println( ( model.eResource as XtextResource).getSerializer().serialize(model)) ;
+	}
+	
+	@Test
+	def void testTermExtractorWithTermMemberSelection() {
+		val model = '''
+		package p ;
+		type Bool ;
+		type Int ;
+		type A {
+			v1 : B ;
+			assert a { v1 = v1 && v1.vx;};
+		}
 		
-		System.out.println( ( model.eResource as XtextResource).getSerializer().serialize(model)) ;
+		type B {
+			vx: Bool;
+		}
+		'''.parse
+		model.assertNoErrors
+		val A = (model.findSymbol("A") as ConstrainedType)
+		val a = A.findSymbol("a") as Assertion;
+		val tl = TermExtractor.extractFrom(a.definition);	
+		print(tl)
+//		System.out.println( ( model.eResource as XtextResource).getSerializer().serialize(model)) ;
 	}
 	
 	
