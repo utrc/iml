@@ -9,6 +9,7 @@ import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
+import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.naming.IQualifiedNameProvider;
 import org.eclipse.xtext.resource.IResourceServiceProvider;
 import org.eclipse.xtext.resource.XtextResource;
@@ -18,15 +19,20 @@ import com.utc.utrc.hermes.iml.iml.Alias;
 import com.utc.utrc.hermes.iml.iml.ArrayType;
 import com.utc.utrc.hermes.iml.iml.ConstrainedType;
 import com.utc.utrc.hermes.iml.iml.Extension;
+import com.utc.utrc.hermes.iml.iml.FolFormula;
 import com.utc.utrc.hermes.iml.iml.HigherOrderType;
 import com.utc.utrc.hermes.iml.iml.ImplicitInstanceConstructor;
 import com.utc.utrc.hermes.iml.iml.Model;
+import com.utc.utrc.hermes.iml.iml.ParenthesizedTerm;
 import com.utc.utrc.hermes.iml.iml.ParenthesizedType;
 import com.utc.utrc.hermes.iml.iml.Property;
 import com.utc.utrc.hermes.iml.iml.Relation;
+import com.utc.utrc.hermes.iml.iml.SignedAtomicFormula;
 import com.utc.utrc.hermes.iml.iml.SimpleTypeReference;
 import com.utc.utrc.hermes.iml.iml.Symbol;
 import com.utc.utrc.hermes.iml.iml.SymbolDeclaration;
+import com.utc.utrc.hermes.iml.iml.SymbolReferenceTerm;
+import com.utc.utrc.hermes.iml.iml.TermExpression;
 import com.utc.utrc.hermes.iml.iml.TraitExhibition;
 import com.utc.utrc.hermes.iml.iml.TupleType;
 import com.utc.utrc.hermes.iml.iml.TypeWithProperties;
@@ -216,6 +222,16 @@ public class ImlUtil {
 		}
 		return false;
 	}
+	
+	public static FolFormula purifyFormula(FolFormula formula) {
+		if (formula instanceof SignedAtomicFormula && !((SignedAtomicFormula) formula).isNeg()) {
+			return purifyFormula(formula.getLeft());
+		} else if (formula instanceof ParenthesizedTerm) {
+			return purifyFormula(((ParenthesizedTerm) formula).getSub());
+		} else {
+			return formula;
+		}
+	}
 
 	public static Model getModelByName(ResourceSet rs, String modelName) {
 		for (Resource res : rs.getResources()) {
@@ -246,6 +262,21 @@ public class ImlUtil {
 		}
 		return null;
 	}
+
+	public static ConstrainedType getContainerCt(EObject eObject) {
+		return EcoreUtil2.getContainerOfType(eObject, ConstrainedType.class);
+	}
 	
+	public static <T extends EObject> T getContainerOfType(EObject eObject, Class<T> containerType) {
+		return EcoreUtil2.getContainerOfType(eObject, containerType);
+	}
+
+	public static ConstrainedType getSimpleSymbolType(FolFormula receiver) {
+		return ((SimpleTypeReference)((SymbolDeclaration)((SymbolReferenceTerm) receiver).getSymbol()).getType()).getType();
+	}
+
+	public static SymbolDeclaration getSymbolRefSymbol(TermExpression receiver) {
+		return (SymbolDeclaration)((SymbolReferenceTerm) receiver).getSymbol();
+	}
 	
 }

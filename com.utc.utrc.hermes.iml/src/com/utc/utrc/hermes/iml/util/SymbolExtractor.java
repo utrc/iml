@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.utc.utrc.hermes.iml.iml.FolFormula;
+import com.utc.utrc.hermes.iml.iml.Symbol;
 import com.utc.utrc.hermes.iml.iml.SymbolReferenceTerm;
 import com.utc.utrc.hermes.iml.iml.TermExpression;
 import com.utc.utrc.hermes.iml.iml.TermMemberSelection;
@@ -12,26 +13,21 @@ import com.utc.utrc.hermes.iml.iml.TermMemberSelection;
  * @author Alessandro Pinto (pintoa@utrc.utc.com)
  * 
  */
-public class TermExtractor {
+public class SymbolExtractor {
 	
 	static private class TermVisitor extends AbstractModelVisitor {
-		private List<TermExpression> terms ;
+		private List<Symbol> symbols ;
 		public TermVisitor() {
-			terms = new ArrayList<TermExpression>();
-		}
-		@Override
-		public void visit(TermMemberSelection e) {
-			terms.add(e);
-		}
-		@Override
-		public void visit(SymbolReferenceTerm e) {
-			if (! (e.eContainer() instanceof TermMemberSelection)) {
-				terms.add(e);
-			}
+			symbols = new ArrayList<>();
 		}
 		
-		public List<TermExpression> getTerms(){
-			return terms;
+		@Override
+		public void visit(SymbolReferenceTerm e) {
+			symbols.add(e.getSymbol());
+		}
+		
+		public List<Symbol> getSymbols(){
+			return symbols;
 		}
 		
 		
@@ -45,11 +41,11 @@ public class TermExtractor {
 	
 	
 	
-	public static List<TermExpression> extractFrom(FolFormula f) {
+	public static List<Symbol> extractFrom(FolFormula f) {
 		TermAcceptor acceptor = new TermAcceptor();
 		TermVisitor visitor = new TermVisitor() ;
 		acceptor.accept(f, visitor);
-		return visitor.getTerms();
+		return visitor.getSymbols();
 		
 	}
 	
