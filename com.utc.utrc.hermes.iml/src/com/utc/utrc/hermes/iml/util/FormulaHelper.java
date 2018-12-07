@@ -1,6 +1,9 @@
 package com.utc.utrc.hermes.iml.util;
 
 import java.util.List;
+
+import org.eclipse.emf.ecore.util.EcoreUtil;
+
 import com.utc.utrc.hermes.iml.custom.ImlCustomFactory;
 import com.utc.utrc.hermes.iml.iml.FolFormula;
 
@@ -33,7 +36,7 @@ public class FormulaHelper {
 			}
 			return conjunction;
 		}
-		return null;
+		return EcoreUtil.copy(TRUE);
 	}
 	
 	public static FolFormula toCNF(FolFormula source) {

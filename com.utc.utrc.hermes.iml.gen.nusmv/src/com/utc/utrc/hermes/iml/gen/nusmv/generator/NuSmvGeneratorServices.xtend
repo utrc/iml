@@ -245,7 +245,7 @@ class NuSmvGeneratorServices {
 			return "boolean"
 		}
 		if (m == NuSmvModel.Int) {
-			return "0..8";
+			return "0..256";
 		}
 		return '''"«m.name»"'''
 	}
