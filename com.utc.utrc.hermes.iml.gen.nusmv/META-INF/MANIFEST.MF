@@ -7,10 +7,10 @@ Bundle-Vendor: UTC
 Automatic-Module-Name: com.utc.utrc.hermes.iml.gen.nusmv
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Require-Bundle: com.utc.utrc.hermes.iml;bundle-version="1.0.0",
- org.eclipse.emf;bundle-version="2.8.0",
+ org.eclipse.emf,
  org.eclipse.emf.ecore,
- org.junit;bundle-version="4.12.0",
- org.eclipse.xtext.xbase.lib;bundle-version="2.15.0"
+ org.junit,
+ org.eclipse.xtext.xbase.lib
 Import-Package: com.google.inject
 Export-Package: com.utc.utrc.hermes.iml.gen.nusmv.generator,
  com.utc.utrc.hermes.iml.gen.nusmv.model
