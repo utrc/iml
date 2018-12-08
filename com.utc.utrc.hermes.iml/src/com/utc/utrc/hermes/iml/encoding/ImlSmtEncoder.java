@@ -221,12 +221,14 @@ public class ImlSmtEncoder<SortT extends AbstractSort, FuncDeclT, FormulaT> impl
 						
 //			HigherOrderType symbolType = getActualType(symbol, context); // e.g if it was T~>P then maybe Int~>Real
 			if (!(symbol instanceof Assertion))  {
-				List<FormulaT> functionParams = getFunctionParameterList(symbol, true);
-				functionParams.add(0, inst);
-				FormulaT symbolAccess = smtModelProvider.createFormula(getSymbolDeclFun(symbol, context),  functionParams);
-				
-				definitionEncoding = smtModelProvider.createFormula(OperatorType.EQ, Arrays.asList(symbolAccess, definitionEncoding));	
-				forallScope.addAll(getFunctionParameterList(symbol, false));
+				if (!isConnector(symbol)) {
+					List<FormulaT> functionParams = getFunctionParameterList(symbol, true);
+					functionParams.add(0, inst);
+					FormulaT symbolAccess = smtModelProvider.createFormula(getSymbolDeclFun(symbol, context),  functionParams);
+					
+					definitionEncoding = smtModelProvider.createFormula(OperatorType.EQ, Arrays.asList(symbolAccess, definitionEncoding));	
+					forallScope.addAll(getFunctionParameterList(symbol, false));
+				}
 			} 
 			FormulaT forall = smtModelProvider.createFormula(OperatorType.FOR_ALL, 
 					Arrays.asList(smtModelProvider.createFormula(forallScope), definitionEncoding));
@@ -234,6 +236,14 @@ public class ImlSmtEncoder<SortT extends AbstractSort, FuncDeclT, FormulaT> impl
 			symbolTable.addFormula(actualContainer, symbol, assertion);
 			
 		}
+	}
+
+	private boolean isConnector(SymbolDeclaration symbol) {
+		HigherOrderType type = symbol.getType();
+		if (type instanceof SimpleTypeReference) {
+			return ((SimpleTypeReference) type).getType().getName().equals("Connector"); // TODO do it the right way
+		}
+		return false;
 	}
 
 	private List<FormulaT> getFunctionParameterList(SymbolDeclaration symbol, boolean nameOnly) {
@@ -597,6 +607,17 @@ public class ImlSmtEncoder<SortT extends AbstractSort, FuncDeclT, FormulaT> impl
 			
 		} else if (formula instanceof SymbolReferenceTerm) {
 			SymbolReferenceTerm symbolRef = (SymbolReferenceTerm) formula;
+			
+			// Check if it is a connect 
+			if (isConnect(symbolRef.getSymbol())) {
+				FolFormula connectLeft = ((TupleConstructor) symbolRef.getTails().get(0)).getElements().get(0);
+				FolFormula connectRight  = ((TupleConstructor) symbolRef.getTails().get(0)).getElements().get(1);
+				FormulaT connectLeftFormula = encodeFormula(connectLeft, context, inst, scope);
+				FormulaT connectRightFormula = encodeFormula(connectRight, context, inst, scope);
+				
+				return smtModelProvider.createFormula(OperatorType.EQ, Arrays.asList(connectLeftFormula, connectRightFormula));
+			}
+			
 			// 1. Get FunctionDeclaration for the symbol
 			FormulaT symbolRefFormula = getSymbolAccessFormula(symbolRef, context, inst, scope);
 			// TODO check if symbol of a function is used as a parameter or uses an assertion
@@ -691,6 +712,10 @@ public class ImlSmtEncoder<SortT extends AbstractSort, FuncDeclT, FormulaT> impl
 		throw new SMTEncodingException("Couldn't encode the formula to SMT!");
 	}
 	
+	private boolean isConnect(Symbol symbol) {
+		return symbol instanceof SymbolDeclaration && ((SymbolDeclaration) symbol).getName().equals("connect"); //TODO FIXME do it right!
+	}
+
 	private boolean isAssertion(FolFormula formula) {
 		return EcoreUtil2.getContainerOfType(formula, Assertion.class) != null;
 	}

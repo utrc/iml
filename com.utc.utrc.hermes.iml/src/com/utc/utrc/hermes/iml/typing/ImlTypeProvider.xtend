@@ -347,9 +347,9 @@ public class ImlTypeProvider {
 				return ctx;
 			}
 			
-			if(ImlUtil.isGlobalSymbol(s.symbol)) {
-				return (s.symbol as SymbolDeclaration).type
-			}
+//			if(ImlUtil.isGlobalSymbol(s.symbol)) {
+//				return (s.symbol as SymbolDeclaration).type
+//			}
 			
 			if (ctx.type.symbols.contains(s.symbol as SymbolDeclaration) || symbolInsideLambda(s.symbol as SymbolDeclaration) || symbolInsideProgram(s.symbol as SymbolDeclaration)) {
 				return bind(s, ctx)
