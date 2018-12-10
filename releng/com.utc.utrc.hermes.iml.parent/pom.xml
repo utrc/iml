@@ -295,6 +295,6 @@
 		<module>../com.utc.utrc.hermes.iml.target</module>
 		<module>../com.utc.utrc.hermes.iml.feature</module>
 		<module>../com.utc.utrc.hermes.iml.repository</module>
-		<module>../com.utc.utrc.hermes.iml.product</module>
+		<!-- <module>../com.utc.utrc.hermes.iml.product</module> -->
 	</modules>
 </project>
