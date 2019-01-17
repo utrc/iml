@@ -21,6 +21,12 @@ public class ImlCustomFactory extends ImlFactoryImpl {
 		]
 	}
 	
+	def createConstrainedType(String name) {
+		createConstrainedType => [
+			it.name = name;
+		]
+	}
+	
 	def createTermMemberSelection(SymbolDeclaration receiver, SymbolDeclaration member) {
 		createTermMemberSelection(createSymbolReferenceTerm(receiver), member);
 	}
@@ -121,5 +127,105 @@ public class ImlCustomFactory extends ImlFactoryImpl {
 		retval
 	}
 	
+	def createProperty(ConstrainedType propertyType) {
+		createProperty => [
+			ref = createSimpleTypeReference(propertyType);
+		]
+	} 
 	
+	def createPropertyList(List<com.utc.utrc.hermes.iml.iml.Property> properties) {
+		createPropertyList => [
+			it.properties.addAll(properties);
+		]
+	}
+	
+	def createSymbolDeclaration(String name) {
+		createSymbolDeclaration => [
+			it.name = name;
+		]
+	}
+	
+	def createExtension(ConstrainedType  extendedType) {
+		createExtension => [
+			^extends = true;
+			extensions.add(createTypeWithProperties(extendedType))
+		]
+	}
+	
+	def createSignedAtomicFormula(boolean neg, FolFormula left) {
+		createSignedAtomicFormula => [
+			it.neg = neg
+			it.left = left;
+		]
+	}
+	
+	def createQuantifiedFormula(String op, List<SymbolDeclaration> scope, FolFormula left) {
+		createQuantifiedFormula => [
+			it.op = op;
+			it.scope += scope;
+			it.left = createSequenceTerm(left);
+		]
+	}
+	
+	def createSequenceTerm(FolFormula returnFormula) {
+		createSequenceTerm => [
+			^return = returnFormula
+		]
+	}
+	
+	def createAddition(TermExpression left, String sign, TermExpression right) {
+		createAddition => [
+			it.left = left
+			it.sign = sign
+			it.right = right
+		]
+	}
+	
+	def createMultiplication(TermExpression left, String sign, TermExpression right) {
+		createMultiplication => [
+			it.left = left
+			it.sign = sign
+			it.right = right
+		]
+	}
+	
+	def createNumberLiteral(boolean neg, int value) {
+		createNumberLiteral => [
+			it.neg = neg
+			it.value = value
+		]
+	}
+	
+	def createFloatNumberLiteral(boolean neg, float value) {
+		createFloatNumberLiteral => [
+			it.neg = neg
+			it.value = value
+		]
+	}
+	
+	def createTupleConstructor(List<FolFormula> elements) {
+		createTupleConstructor => [
+			it.elements += elements
+		]
+	}
+	
+	def createArrayAccess(FolFormula index) {
+		createArrayAccess => [
+			it.index = index
+		]
+	}
+	
+	def createParenthesizedTerm(FolFormula subFormula) {
+		createParenthesizedTerm => [
+			it.sub = subFormula
+		]
+	}
+	
+	def createIteTermExpression(FolFormula condition, FolFormula left, FolFormula right) {
+		createIteTermExpression => [
+			it.condition = condition
+			it.left = createSequenceTerm(left)
+			it.right = createSequenceTerm(right)
+		]
+	}
 }
