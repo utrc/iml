@@ -10,35 +10,20 @@ import org.eclipse.xtext.testing.util.ParseHelper;
 import org.eclipse.xtext.testing.validation.ValidationTestHelper;
 import org.eclipse.xtext.validation.Issue;
 
+import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.utc.utrc.hermes.iml.iml.Model;
+import com.utc.utrc.hermes.iml.util.FileUtil;
 
 /**
  * 
  * @author Ayman Elkfrawy (elkfraaf@utrc.utc.com)
  *
  */
-public class ImlStandaloneParseHelper {
+public class ImlParseHelper extends ParseHelper<Model> {
 	
-	private static ImlStandaloneParseHelper instance;
-
-	private ParseHelper<Model> parseHelper;
+	@Inject
 	private ValidationTestHelper validationTestHelper;
-	
-	private Injector injector;
-	
-	public static synchronized ImlStandaloneParseHelper getInstance() {
-		if (instance == null) {
-			instance = new ImlStandaloneParseHelper();
-		}
-		return instance;
-	}
-	
-	private ImlStandaloneParseHelper() {
-		injector = ImlStandaloneSetup.getInjector();
-		parseHelper = injector.getInstance(ParseHelper.class);
-		validationTestHelper = injector.getInstance(ValidationTestHelper.class);
-	}
 	
 	private List<Issue> getErrors(Model model) {
 		List<Issue> errors = new ArrayList<Issue>();
@@ -83,30 +68,24 @@ public class ImlStandaloneParseHelper {
 	public ResourceSet parse(List<String> texts) {
 		ResourceSet rs = null;
 		if (!texts.isEmpty()) {
-			rs = parse(texts.remove(0)).eResource().getResourceSet();
+			try {
+				rs = parse(texts.remove(0)).eResource().getResourceSet();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
 		for (String s : texts) {
-			parse(s, rs);
+			try {
+				parse(s, rs);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
 		return rs;
 	}
 	
-	public Model parse(String modelText, ResourceSet rs) {
-		try {
-			return parseHelper.parse(modelText, rs);
-		} catch (Exception e) {
-			e.printStackTrace();
-			return null;
-		}
-	}
-	
-	public Model parse(String modelText) {
-		try {
-			return parseHelper.parse(modelText);
-		} catch (Exception e) {
-			e.printStackTrace();
-			return null;
-		}
+	public ResourceSet parseDir(String dirUrl) {
+		return parse(FileUtil.readAllFilesUnderDir(dirUrl));
 	}
 	
 }
