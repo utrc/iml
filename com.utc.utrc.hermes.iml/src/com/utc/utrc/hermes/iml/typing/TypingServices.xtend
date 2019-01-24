@@ -21,6 +21,7 @@ import com.utc.utrc.hermes.iml.iml.Alias
 import com.utc.utrc.hermes.iml.iml.TraitExhibition
 import com.utc.utrc.hermes.iml.iml.ImplicitInstanceConstructor
 import org.eclipse.emf.ecore.util.EcoreUtil
+import com.utc.utrc.hermes.iml.custom.ImlCustomFactory
 
 public class TypingServices {
 
@@ -149,25 +150,22 @@ public class TypingServices {
 			return ret
 		}
 	}
+	
+	def static boolean isEqual(HigherOrderType left, HigherOrderType right) {
+		return isEqual(left, right, true);
+	}
 
 	/* Check whether two type references are the same */
-	def static boolean isEqual(HigherOrderType left, HigherOrderType right) {
+	def static boolean isEqual(HigherOrderType left, HigherOrderType right, boolean resolveAliases) {
 		if (left === null && right === null) {
 			return true
 		} else if (left === null || right === null) {
 			return false
 		}
 		
-		//remove aliases
-		if (left instanceof SimpleTypeReference){
-			if (left.isAlias){
-				return isEqual(left.getAlias,right) 
-			}
-		}
-		if (right instanceof SimpleTypeReference){
-			if (right.isAlias){
-				return isEqual(left,right.getAlias) 
-			}
+		if (resolveAliases) {
+			//remove aliases
+			return isEqual(resolveAliases(left), resolveAliases(right), false);
 		}
 		
 		if (left.class != right.class) {
@@ -175,56 +173,43 @@ public class TypingServices {
 		}
 
 		if (left instanceof SimpleTypeReference) {
-			if (!isEqual(left as SimpleTypeReference, right as SimpleTypeReference)) {
+			if (!isEqual(left as SimpleTypeReference, right as SimpleTypeReference, resolveAliases)) {
 				return false
 			}
 		}
 
 		if (left instanceof ArrayType) {
-			if (!isEqual(left as ArrayType, right as ArrayType)) {
+			if (!isEqual(left as ArrayType, right as ArrayType, resolveAliases)) {
 				return false
 			}
 		}
 
 		if (left instanceof TupleType) {
-			if (!isEqual(left as TupleType, right as TupleType)) {
+			if (!isEqual(left as TupleType, right as TupleType, resolveAliases)) {
 				return false
 			}
 		}
 
-		if (!isEqual(left.domain, right.domain)) {
+		if (!isEqual(left.domain, right.domain, resolveAliases)) {
 			return false
 		}
 
-		if (!isEqual(left.range, right.range)) {
+		if (!isEqual(left.range, right.range, resolveAliases)) {
 			return false
 		}
 
 		return true
 	}
 
-	def static boolean isEqual(HigherOrderType left, HigherOrderType right, boolean checkProperties) {
-		if (!isEqual(left, right)) {
-			return false;
-		}
-
-//		if (checkProperties) {
-//			if (!isEqual(left.propertylist, right.propertylist)) {
-//				return false
-//			}
-//		}
-		return true;
-	}
-
 	/* Check whether two type references are the same */
-	def static boolean isEqual(ArrayType left, ArrayType right) {
+	def static boolean isEqual(ArrayType left, ArrayType right, boolean resolveAliases) {
 		if (left === null && right === null) {
 			return true
 		} else if (left === null || right === null) {
 			return false
 		}
 
-		if (!isEqual(left.type, right.type)) {
+		if (!isEqual(left.type, right.type, resolveAliases)) {
 			return false
 		}
 
@@ -235,12 +220,12 @@ public class TypingServices {
 		return true
 	}
 
-	def static boolean isEqual(TupleType left, TupleType right) {
+	def static boolean isEqual(TupleType left, TupleType right, boolean resolveAliases) {
 		if (left.symbols.length != right.symbols.length) {
 			return false
 		} else {
 			for (i : 0 ..< left.symbols.length) {
-				if (!isEqual(left.symbols.get(i).type, right.symbols.get(i).type)) {
+				if (!isEqual(left.symbols.get(i).type, right.symbols.get(i).type, resolveAliases)) {
 					return false
 				}
 			}
@@ -249,13 +234,13 @@ public class TypingServices {
 	}
 
 	//TODO Equal means that the definitions are also equal
-	def static boolean isEqual(PropertyList left, PropertyList right) {
+	def static boolean isEqual(PropertyList left, PropertyList right, boolean resolveAliases) {
 		if (left.properties.size != right.properties.size) {
 			return false;
 		}
 
 		for (i : 0 ..< left.properties.size) {
-			if (! isEqual(left.properties.get(i).ref, right.properties.get(i).ref)) {
+			if (! isEqual(left.properties.get(i).ref, right.properties.get(i).ref, resolveAliases)) {
 				return false
 			}
 		}
@@ -264,7 +249,7 @@ public class TypingServices {
 	}
 
 	/* Check whether two type references are the same */
-	def static boolean isEqual(SimpleTypeReference left, SimpleTypeReference right) {
+	def static boolean isEqual(SimpleTypeReference left, SimpleTypeReference right, boolean resolveAliases) {
 		// Check pre condition for primitives
 		if (left.isPrimitive || right.isPrimitive) {
 			return left.type.name.equals(right.type.name)
@@ -277,7 +262,7 @@ public class TypingServices {
 			return false
 		} else {
 			for (i : 0 ..< left.typeBinding.size) {
-				if (! left.typeBinding.get(i).isEqual(right.typeBinding.get(i))) {
+				if (! left.typeBinding.get(i).isEqual(right.typeBinding.get(i), resolveAliases)) {
 					return false
 				}
 			}
@@ -418,7 +403,8 @@ public class TypingServices {
 		 * 	}
 		 * }
 		 */
-		return isEqual(actual, sig);
+		 
+		return isEqual(actual, sig, true);
 	}
 
 	// TODO
@@ -503,7 +489,33 @@ public class TypingServices {
 			var alias = r.type.relations.filter(Alias).get(0).type.type
 			return ImlTypeProvider.bind(alias,r)
 		}
-		return null
+		return r // if it is not alias return the original type
+	}
+	
+	def static HigherOrderType resolveAliases(HigherOrderType type) {
+		if (type instanceof SimpleTypeReference) {
+			if (type.isAlias) {
+				return com.utc.utrc.hermes.iml.typing.TypingServices.resolveAliases(getAlias(type))
+			} else {
+				return type
+			}
+		}
+		if (type instanceof TupleType) {
+			return ImlCustomFactory.INST.createTupleType(type.symbols.map[
+				ImlCustomFactory.INST.createSymbolDeclaration(it.name, clone(com.utc.utrc.hermes.iml.typing.TypingServices.resolveAliases(it.type)))	
+			])
+		}
+		if (type instanceof ArrayType) {
+			return ImlCustomFactory.INST.createArrayType => [
+				it.type = clone(resolveAliases(type.type))
+				it.dimensions.addAll(type.dimensions.map[ImlCustomFactory.INST.createOptionalTermExpr])
+			]
+		}
+		return ImlCustomFactory.INST.createHigherOrderType => [
+			domain = clone(resolveAliases(type.domain))
+			range = clone(resolveAliases(type.range))
+		]
+		
 	}
 
 	// TODO

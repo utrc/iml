@@ -10,6 +10,7 @@ import com.utc.utrc.hermes.iml.iml.RelationKind
 import com.utc.utrc.hermes.iml.iml.SimpleTypeReference
 import com.utc.utrc.hermes.iml.iml.Symbol
 import java.util.List
+import com.utc.utrc.hermes.iml.iml.HigherOrderType
 
 public class ImlCustomFactory extends ImlFactoryImpl {
 	
@@ -226,6 +227,19 @@ public class ImlCustomFactory extends ImlFactoryImpl {
 			it.condition = condition
 			it.left = createSequenceTerm(left)
 			it.right = createSequenceTerm(right)
+		]
+	}
+	
+	def createTupleType(List<SymbolDeclaration> symbols) {
+		createTupleType => [
+			it.symbols.addAll(symbols)
+		]
+	}
+	
+	def createSymbolDeclaration(String name, HigherOrderType type) {
+		createSymbolDeclaration => [
+			it.name = name
+			it.type = type
 		]
 	}
 }

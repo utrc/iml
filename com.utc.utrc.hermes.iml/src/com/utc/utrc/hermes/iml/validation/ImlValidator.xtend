@@ -3,36 +3,39 @@
  */
 package com.utc.utrc.hermes.iml.validation
 
+import com.google.inject.Inject
+import com.utc.utrc.hermes.iml.iml.Addition
+import com.utc.utrc.hermes.iml.iml.Assertion
 import com.utc.utrc.hermes.iml.iml.AtomicExpression
 import com.utc.utrc.hermes.iml.iml.ConstrainedType
+import com.utc.utrc.hermes.iml.iml.Extension
 import com.utc.utrc.hermes.iml.iml.FolFormula
-import com.utc.utrc.hermes.iml.iml.Model
+import com.utc.utrc.hermes.iml.iml.HigherOrderType
+import com.utc.utrc.hermes.iml.iml.ImlPackage
 import com.utc.utrc.hermes.iml.iml.Multiplication
+import com.utc.utrc.hermes.iml.iml.SequenceTerm
+import com.utc.utrc.hermes.iml.iml.SimpleTypeReference
 import com.utc.utrc.hermes.iml.iml.Symbol
+import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
+import com.utc.utrc.hermes.iml.iml.SymbolReferenceTerm
 import com.utc.utrc.hermes.iml.iml.TermMemberSelection
+import com.utc.utrc.hermes.iml.typing.ImlTypeProvider
+import com.utc.utrc.hermes.iml.typing.TypingServices
 import java.util.ArrayList
 import java.util.List
+import org.eclipse.core.runtime.Platform
+import org.eclipse.emf.ecore.EPackage
+import org.eclipse.xtext.validation.AbstractDeclarativeValidator
 import org.eclipse.xtext.validation.Check
+import org.eclipse.xtext.validation.EValidatorRegistrar
+
+import static com.utc.utrc.hermes.iml.util.ImlUtil.*
 
 import static extension com.utc.utrc.hermes.iml.typing.ImlTypeProvider.*
 import static extension com.utc.utrc.hermes.iml.typing.TypingServices.*
-import com.utc.utrc.hermes.iml.iml.Addition
-import com.google.inject.Inject
-import org.eclipse.xtext.validation.EValidatorRegistrar
-import org.eclipse.core.runtime.Platform
-import org.eclipse.xtext.validation.AbstractDeclarativeValidator
-import org.eclipse.emf.ecore.EPackage
-import com.utc.utrc.hermes.iml.iml.ImlPackage
-import com.utc.utrc.hermes.iml.iml.HigherOrderType
-import com.utc.utrc.hermes.iml.iml.SimpleTypeReference
-import com.utc.utrc.hermes.iml.iml.SymbolReferenceTerm
-import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
-import com.utc.utrc.hermes.iml.typing.ImlTypeProvider
-import com.utc.utrc.hermes.iml.typing.TypingServices
-import com.utc.utrc.hermes.iml.iml.PropertyList
-import com.utc.utrc.hermes.iml.iml.SequenceTerm
-import com.utc.utrc.hermes.iml.iml.TupleType
-import static extension com.utc.utrc.hermes.iml.util.ImlUtil.*
+import com.utc.utrc.hermes.iml.iml.Alias
+import com.utc.utrc.hermes.iml.services.ImlGrammarAccess.SimpleTypeReferenceElements
+import org.eclipse.xtext.EcoreUtil2
 
 /**
  * This class contains custom validation rules. 
@@ -94,25 +97,9 @@ class ImlValidator extends AbstractImlValidator {
 
 	}
 
-	// Check correct Template declaration
-//	@Check
-//	def checkTemplateType(ConstrainedType t) {
-//		if (t.template) {
-//			for (tp : t.typeParameter) {
-//				if (tp.finite || tp.meta || tp.template || !tp.symbols.isEmpty || tp.doc !== null || !tp.relations.isEmpty) {
-//					error('''Type parameters must be simple types''',
-//						ImlPackage::eINSTANCE.constrainedType_TypeParameter, t.typeParameter.indexOf(
-//							tp
-//						), INVALID_TYPE_PARAMETER)
-//					
-//				}
-//			}
-//		}
-//	}
-
 	@Check
 	def checkExtension(ConstrainedType t) {
-		val extensions = t.relations.filter[it instanceof com.utc.utrc.hermes.iml.iml.Extension].map[it as com.utc.utrc.hermes.iml.iml.Extension]
+		val extensions = t.relations.filter[it instanceof Extension].map[it as Extension]
 		if (t.numeric) {
 			if (extensions.size > 1) {
 				error('''If a type is extending a primitive numeric type, then it cannot extend any other type''',
@@ -126,50 +113,14 @@ class ImlValidator extends AbstractImlValidator {
 	}
 	
 	@Check
-	def checkExtendsRelation(com.utc.utrc.hermes.iml.iml.Extension extendRelation) {
-		
-//		if (! (extendRelation.target instanceof SimpleTypeReference)) {
-//			error("Types can extend only simple types", 
-//				ImlPackage::eINSTANCE.relationInstance_Target, INVALID_RELATION)
-//		}
+	def checkExtendsRelation(Extension extendRelation) {
+		extendRelation.extensions.forEach[
+			if (! (it.type instanceof SimpleTypeReference)) {
+				error("Types can extend only simple types", 
+					ImlPackage::eINSTANCE.extension_Extensions, INVALID_RELATION)
+			}
+		]
 	}
-
-	// If allowing user to introduce stereotype, make sure to update stereoTypeMap
-	// then map should never be null
-	@Check
-	def checkLegitimateStereoType(ConstrainedType t) {
-//		val s = t.properties
-//		if (t.static) {
-//			for (Element e : t.elements) {
-//				switch (e) {
-//					NamedFormula: {
-//					}
-//					ConstrainedType: {
-//						error('''Type declarations are not allowed in static types''',
-//							ImlPackage::eINSTANCE.constrainedType_Elements, t.elements.indexOf(
-//								e
-//							), ELEMENTS_IN_STATIC_TYPES)
-//					}
-//					//TypeProperty: {
-//					//	error('''Stereotype declarations are not allowed in static types''',
-//					//		ImlPackage::eINSTANCE.constrainedType_Elements, t.elements.indexOf(
-//					//			e
-//					//		), ELEMENTS_IN_STATIC_TYPES)
-//					//}
-//					VariableDeclaration: {
-//						error('''Variable declarations are not allowed in static types''',
-//							ImlPackage::eINSTANCE.constrainedType_Elements, t.elements.indexOf(
-//								e
-//							), ELEMENTS_IN_STATIC_TYPES)
-//					}
-//					default: {
-//					}
-//				}
-//			}
-//		}
-	}
-
-
 
 	@Check
 	def checkNoCycleInConstrainedTypeHierarchy(ConstrainedType ct) {
@@ -210,16 +161,7 @@ class ImlValidator extends AbstractImlValidator {
 	}
 	
 	def getExtensions(ConstrainedType type) {
-		type.relations.filter[it instanceof com.utc.utrc.hermes.iml.iml.Extension].map[it as com.utc.utrc.hermes.iml.iml.Extension]
-	}
-
-	@Check
-	def checkFormula(FolFormula f) {
-//		var context = createBasicType(f.getContainerOfType(ConstrainedType))
-//		var exprtr = f.termExpressionType(context)
-//		if (exprtr !== Bool) {
-//			error('''The formula should be Booelan,  got «exprtr.printType»''',f, INVALID_TYPE_PARAMETER)
-//		}
+		type.relations.filter[it instanceof Extension].map[it as Extension]
 	}
 
 	@Check
@@ -434,33 +376,16 @@ class ImlValidator extends AbstractImlValidator {
 			switch (container) {
 				ConstrainedType: {
 					if (container.symbols.contains(symbol)) { // Symbols must have a type if there is no primitive properties
-//						if (symbol.type === null && symbol.primitiveProperty === null) {
-//							error('''Symobl declaration  "«symbol.name»" must have a type''',
-//							ImlPackage.eINSTANCE.symbolDeclaration_Type,
-//							INVALID_SYMBOL_DECLARATION
-//						)
-//						}
-					} 
-					else if (symbol.isLiteralOf(container)) { // Symbols must not have type nor definition
-						if (symbol.type !== null || symbol.definition !== null) {
-							error('''Type literal "«symbol.name»" shoud not have a type nor a definition''',
-								ImlPackage.eINSTANCE.symbolDeclaration_Type,
-								INVALID_SYMBOL_DECLARATION
+						if (symbol.type === null && !(symbol instanceof Assertion)) {
+							error('''Symobl declaration  "«symbol.name»" must have a type''',
+							ImlPackage.eINSTANCE.symbolDeclaration_Type,
+							INVALID_SYMBOL_DECLARATION
 							)
 						}
-					}
+					} 
 				}
 				
-				SequenceTerm: { // Must have a type if there is no primitive properties
-//					if (symbol.type === null && symbol.primitiveProperty === null) {
-//						error('''Symobl declaration  "«symbol.name»" must have a type''',
-//							ImlPackage.eINSTANCE.symbolDeclaration_Type,
-//							INVALID_SYMBOL_DECLARATION
-//						)
-//					}
-				}
-
-				PropertyList: { // Must have a type
+				SequenceTerm: { // Must have a type
 					if (symbol.type === null) {
 						error('''Symobl declaration  "«symbol.name»" must have a type''',
 							ImlPackage.eINSTANCE.symbolDeclaration_Type,
@@ -469,17 +394,32 @@ class ImlValidator extends AbstractImlValidator {
 					}
 				}
 				
-				FolFormula: {
-//					if (container.scope.contains(symbol)) { // Scope shoudn't include definition
-//						if (symbol.definition !== null) {
-//							error('''Formula scope "«symbol.name»" shoud not have a definition''',
-//								ImlPackage.eINSTANCE.symbolDeclaration_Type,
-//								INVALID_SYMBOL_DECLARATION
-//							)
-//						}
-//					}
+			}
+		}
+		
+		@Check
+		def checkAliasDeclaration(Alias alias) {
+			val aliasType = TypingServices.resolveAliases(alias.type.type)
+			
+			if (!TypingServices.isEqual(aliasType, alias.type.type, false)) {
+				val mainType = EcoreUtil2.getContainerOfType(alias, ConstrainedType);
+				error('''Type «mainType.name» alias shouldn't include any further aliases''',
+					ImlPackage.eINSTANCE.alias_Type,
+					INVALID_TYPE_DECLARATION
+				)
+			}
+		}
+		
+		@Check
+		def checkConstrainedTypeDeclaration(ConstrainedType type) {
+			// Should have only one alias
+			if (type.relations !== null) {
+				if (type.relations.filter[it instanceof Alias].size > 1) {
+					error('''Type «type.name» can NOT have more that one alias''',
+						ImlPackage.eINSTANCE.constrainedType_Relations,
+						INVALID_TYPE_DECLARATION
+					)
 				}
-				
 			}
 		}
 
