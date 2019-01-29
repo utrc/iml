@@ -35,7 +35,6 @@ import com.utc.utrc.hermes.iml.iml.Model;
 import com.utc.utrc.hermes.iml.iml.Multiplication;
 import com.utc.utrc.hermes.iml.iml.NumberLiteral;
 import com.utc.utrc.hermes.iml.iml.ParenthesizedTerm;
-import com.utc.utrc.hermes.iml.iml.ParenthesizedType;
 import com.utc.utrc.hermes.iml.iml.QuantifiedFormula;
 import com.utc.utrc.hermes.iml.iml.Relation;
 import com.utc.utrc.hermes.iml.iml.SelfTerm;
@@ -340,8 +339,6 @@ public class ImlSmtEncoder<SortT extends AbstractSort, FuncDeclT, FormulaT> impl
 				
 				addTypeSort(simpleRef);
 			}
-		} else if (type instanceof ParenthesizedType) {
-			defineTypes(((ParenthesizedType) type).getSubexpression());
 		} else {
 			throw new IllegalArgumentException("Unsupported type: " + type.getClass().getName());
 		}

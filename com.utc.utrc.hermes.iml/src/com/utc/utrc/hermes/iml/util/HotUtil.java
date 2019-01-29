@@ -2,18 +2,18 @@ package com.utc.utrc.hermes.iml.util;
 
 import com.utc.utrc.hermes.iml.iml.ArrayType;
 import com.utc.utrc.hermes.iml.iml.HigherOrderType;
-import com.utc.utrc.hermes.iml.iml.ParenthesizedType;
+//import com.utc.utrc.hermes.iml.iml.ParenthesizedType;
 import com.utc.utrc.hermes.iml.iml.SymbolDeclaration;
 import com.utc.utrc.hermes.iml.iml.TupleType;
 
 public class HotUtil {
 	
 	public static HigherOrderType removeParenthesis(HigherOrderType type) {
-		if (type instanceof ParenthesizedType) {
-			return removeParenthesis(((ParenthesizedType) type).getSubexpression());
-		} else {
+//		if (type instanceof ParenthesizedType) {
+//			return removeParenthesis(((ParenthesizedType) type).getSubexpression());
+//		} else {
 			return type;
-		}
+//		}
 	}
 	
 	public static boolean isSimpleHot(HigherOrderType type) {

@@ -484,7 +484,10 @@ public class TypingServices {
 	def static boolean isAlias(SimpleTypeReference r){
 		return r.type.isAlias
 	}
-	def static HigherOrderType getAlias(SimpleTypeReference r){
+	def static getAliasType(ConstrainedType type) {
+		com.utc.utrc.hermes.iml.typing.TypingServices.getAliasType(ImlCustomFactory.INST.createSimpleTypeReference(type))
+	}
+	def static HigherOrderType getAliasType(SimpleTypeReference r){
 		if (r.isAlias){
 			var alias = r.type.relations.filter(Alias).get(0).type.type
 			return ImlTypeProvider.bind(alias,r)
@@ -495,7 +498,7 @@ public class TypingServices {
 	def static HigherOrderType resolveAliases(HigherOrderType type) {
 		if (type instanceof SimpleTypeReference) {
 			if (type.isAlias) {
-				return com.utc.utrc.hermes.iml.typing.TypingServices.resolveAliases(getAlias(type))
+				return com.utc.utrc.hermes.iml.typing.TypingServices.resolveAliases(com.utc.utrc.hermes.iml.typing.TypingServices.getAliasType(type))
 			} else {
 				return type
 			}
@@ -516,6 +519,10 @@ public class TypingServices {
 			range = clone(resolveAliases(type.range))
 		]
 		
+	}
+	
+	def static HigherOrderType trueType(HigherOrderType type) {
+		// Remove parenthesis and aliases!
 	}
 
 	// TODO

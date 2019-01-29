@@ -11,6 +11,7 @@ import com.utc.utrc.hermes.iml.iml.SimpleTypeReference
 import com.utc.utrc.hermes.iml.iml.Symbol
 import java.util.List
 import com.utc.utrc.hermes.iml.iml.HigherOrderType
+import com.utc.utrc.hermes.iml.iml.SymbolReferenceTerm
 
 public class ImlCustomFactory extends ImlFactoryImpl {
 	
@@ -33,9 +34,13 @@ public class ImlCustomFactory extends ImlFactoryImpl {
 	}
 
 	def createTermMemberSelection(TermExpression receiver, SymbolDeclaration member) {
+		createTermMemberSelection(receiver, createSymbolReferenceTerm(member))
+	}
+	
+	def createTermMemberSelection(TermExpression receiver, SymbolReferenceTerm member) {
 		createTermMemberSelection => [
 			it.receiver = receiver;
-			it.member = createSymbolReferenceTerm(member);
+			it.member = member;
 		]
 	}
 

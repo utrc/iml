@@ -37,7 +37,6 @@ import java.util.Enumeration
 import com.utc.utrc.hermes.iml.iml.EnumRestriction
 import com.utc.utrc.hermes.iml.iml.Symbol
 import com.utc.utrc.hermes.iml.iml.ImplicitInstanceConstructor
-import com.utc.utrc.hermes.iml.iml.ParenthesizedType
 import org.eclipse.emf.ecore.util.EcoreUtil
 import com.utc.utrc.hermes.iml.iml.Assertion
 import com.utc.utrc.hermes.iml.iml.SelfType
@@ -45,6 +44,7 @@ import com.utc.utrc.hermes.iml.iml.ParenthesizedTerm
 import com.utc.utrc.hermes.iml.iml.QuantifiedFormula
 import com.utc.utrc.hermes.iml.iml.CaseTermExpression
 import com.utc.utrc.hermes.iml.util.ImlUtil
+import com.utc.utrc.hermes.iml.custom.ImlCustomFactory
 
 public class ImlTypeProvider {
 
@@ -217,13 +217,25 @@ public class ImlTypeProvider {
 		}
 		return false;
 	}
+	
+	def static getSymbolRefSegmentType(SymbolReferenceTerm symbolRef) {
+		val symbolRefWithoutTail = ImlCustomFactory.INST.createSymbolReferenceTerm(symbolRef.symbol as SymbolDeclaration)
+		var TermExpression symbolRefTerm = symbolRefWithoutTail;
+		if (symbolRef.eContainer instanceof TermMemberSelection) {
+			symbolRefTerm = ImlCustomFactory.INST.createTermMemberSelection(
+				copy((symbolRef.eContainer as TermMemberSelection).receiver), symbolRefWithoutTail)
+		}
+		
+		return termExpressionType(symbolRefTerm, ImlCustomFactory.INST.createSimpleTypeReference(getContainerOfType(symbolRef, ConstrainedType)))
+	}
 
 	def static getSymbolReferenceType(SymbolReferenceTerm term, SimpleTypeReference context) {
 		//Change this call to include type parameters
 		var term_type = getType(term, context);
-		for (tail : term.tails) {
+	   	for (tail : term.tails) {
 			term_type = accessTail(term_type, tail)
 		}
+			
 		return term_type
 	}
 
@@ -517,10 +529,41 @@ public class ImlTypeProvider {
 
 	/* Check whether t is numeric type reference */
 	def static boolean isNumeric(HigherOrderType t) {
-		if (t == Int || t == Real) {
-			return true;
+		return t.isInt || t.isReal
+	}
+	
+	def static boolean isInt(HigherOrderType t) {
+		if (t instanceof SimpleTypeReference) {
+			return isInt(t.type)
 		}
-		return false;
+		return false
+	}
+	
+	def static boolean isInt(ConstrainedType t) {
+		// FIXME we need to find better way to do this
+		return Int.type.name == t.name
+	}
+	
+	def static boolean isReal(HigherOrderType t) {
+		if (t instanceof SimpleTypeReference) {
+			return isReal(t.type)
+		}
+		return false
+	}
+	
+	def static boolean isReal(ConstrainedType t) {
+		return Real.type.name == t.name
+	}
+	
+	def static boolean isBool(HigherOrderType t) {
+		if (t instanceof SimpleTypeReference) {
+			return isBool(t.type)
+		}
+		return false
+	}
+	
+	def static boolean isBool(ConstrainedType t) {
+		return Bool.type.name == t.name
 	}
 
 	/* Check whether t is numeric type reference */
@@ -530,7 +573,7 @@ public class ImlTypeProvider {
 		}
 		return false;
 	}
-
+	
 	def static HigherOrderType ct2hot(ConstrainedType type) {
 		return createBasicType(type)
 	}

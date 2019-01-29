@@ -194,8 +194,8 @@ class ImlScopeProviderTest {
 			
 			type t1 {
 				var1 : t2<(Int, (e1: Int, e2:Real))>;
-				// varx : Real := var1->vT[1][e2]; // We won't support named access
-				varx : Real := var1->vT[1][1];
+				// varx : Real := var1.vT[1][e2]; // We won't support named access
+				varx : Real := var1.vT[1][1];
 			}
 		'''.parse
 		model.assertNoErrors;
@@ -225,7 +225,7 @@ class ImlScopeProviderTest {
 			
 			type t1 {
 				var1 : t2<(e3: Real, e4: Int)>;
-				varx : Int := var1->vT->vP[1][1][1];
+				varx : Int := var1.vT.vP[1][1][1];
 			}
 		'''.parse
 		model.assertNoErrors;
@@ -271,7 +271,7 @@ class ImlScopeProviderTest {
 				fun : Int ~> Real;
 				formul : Bool := {
 					fun = lambda(x: T1) {
-						x->var1 = x->var1;
+						x.var1 = x.var1;
 					};
 				};
 			}
@@ -295,7 +295,7 @@ class ImlScopeProviderTest {
 				fun : Int ~> Real;
 				prog: Int := {
 					var t1 : T1;
-					t1->var1;	
+					t1.var1;	
 				};
 			}
 		'''.parse
@@ -316,7 +316,7 @@ class ImlScopeProviderTest {
 			}
 			
 			type T2 {
-				vv : T1 := new T1{var1 = vvv; var2->vsub=5;};
+				vv : T1 := new T1{var1 = vvv; var2.vsub=5;};
 				vvv: Int;
 			}
 			
@@ -341,7 +341,7 @@ class ImlScopeProviderTest {
 			}
 			
 			type T2 {
-				vv : T1<SubT> := new T1<SubT>{var1 = vvv; var2->vsub=5;};
+				vv : T1<SubT> := oneof T1<SubT> {var1 = vvv; var2.vsub = 5};
 				vvv: Int;
 			}
 			

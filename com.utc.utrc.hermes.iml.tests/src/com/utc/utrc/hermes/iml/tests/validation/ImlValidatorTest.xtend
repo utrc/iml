@@ -276,7 +276,7 @@ class ImlValidatorTest {
 			type Real;
 			type x {
 				var1 : (p1 : Int, p2 : Real) -> Int;
-				var2 : Int := var1(5,10);
+				var2 : Int := var1(5,10.5);
 			}
 		'''.parse
 		
@@ -292,9 +292,9 @@ class ImlValidatorTest {
 			type T1 extends (T2);
 			type T2;
 			type x {
-				var1: (p1 : T1, p2 : Real) -> Int;
-				varT : T2;
-				var2 : Int := var1(T2,10);
+				var1: (p1 : T2, p2 : Real) -> Int;
+				varT : T1;
+				var2 : Int := var1(varT,10.5);
 			}
 		'''.parse
 		
@@ -309,11 +309,199 @@ class ImlValidatorTest {
 			type Real;
 			type x {
 				var1 : (p1 : Int, p2 : Real) -> Int;
-				var2 : Int := var1(5,10);
+				var2 : Int := var1(5,10.0);
 			}
 		'''.parse
 		
 		model.assertNoErrors
+	}
+	
+	@Test
+	def testCheckParameterList_NotFunctionCall_STR() {
+		val model = '''
+			package p;
+			type Int;
+			type Real;
+			type x {
+				var1 : Int;
+				var2 : Int := var1(5);
+			}
+		'''.parse
+		
+		model.assertError(ImlPackage.eINSTANCE.symbolReferenceTerm, METHOD_INVOCATION_ON_VARIABLE)
+	}
+	
+	@Test
+	def testCheckParameterList_NotFunctionCall_Array() {
+		val model = '''
+			package p;
+			type Int;
+			type Real;
+			type x {
+				var1 : Int[][];
+				var2 : Int := var1(5);
+			}
+		'''.parse
+		
+		model.assertError(ImlPackage.eINSTANCE.symbolReferenceTerm, METHOD_INVOCATION_ON_ARRAY)
+	}
+	
+	@Test
+	def testCheckParameterList_NotFunctionCall_Tuple() {
+		val model = '''
+			package p;
+			type Int;
+			type Real;
+			type x {
+				var1 : (a: Int, b:Real);
+				var2 : Real := var1(1);
+			}
+		'''.parse
+		
+		model.assertError(ImlPackage.eINSTANCE.symbolReferenceTerm, METHOD_INVOCATION_ON_TUPLE)
+	}
+	
+	
+	@Test
+	def testCheckParameterList_TupleAccessWrongIndex() {
+		val model = '''
+			package p;
+			type Int;
+			type Real;
+			type x {
+				var1 : (a: Int, b:Real);
+				var2 : Real := var1[2];
+			}
+		'''.parse
+		
+		model.assertError(ImlPackage.eINSTANCE.symbolReferenceTerm, INVALID_INDEX_ACCESS)
+	}
+	
+	@Test
+	def testCheckParameterList_TupleAccessRight() {
+		val model = '''
+			package p;
+			type Int;
+			type Real;
+			type x {
+				var1 : (a: Int, b:Real);
+				var2 : Real := var1[1];
+			}
+		'''.parse
+		model.assertNoErrors
+	}
+	
+	@Test
+	def testCheckParameterList_ArrayOverHot() {
+		val model = '''
+			package p;
+			type Int;
+			type Real;
+			type x {
+				var1 : Int -> Real;
+				var2 : Real := var1[10];
+			}
+		'''.parse
+		model.assertError(ImlPackage.eINSTANCE.symbolReferenceTerm, ARRAY_ACCESS_ON_HOT)
+	}
+	
+	@Test
+	def testCheckParameterList_WrongListSizeHot_More() {
+		val model = '''
+			package p;
+			type Int;
+			type Real;
+			type x {
+				var1 : Int -> Real;
+				var2 : Real := var1(5, 6);
+			}
+		'''.parse
+		model.assertError(ImlPackage.eINSTANCE.symbolReferenceTerm, INVALID_PARAMETER_LIST)
+	}
+	
+	@Test
+	def testCheckParameterList_WrongListSizeHot_Less() {
+		val model = '''
+			package p;
+			type Int;
+			type Real;
+			type x {
+				var1 : (Int, Real) -> Real;
+				var2 : Real := var1(5);
+			}
+		'''.parse
+		model.assertError(ImlPackage.eINSTANCE.symbolReferenceTerm, INVALID_PARAMETER_LIST)
+	}
+	
+	@Test
+	def testCheckParameterList_TailOnCt() {
+		val model = '''
+			package p;
+			type Int;
+			type Real;
+			type x {
+				var1 : Real := Real[10];
+			}
+		'''.parse
+		model.assertError(ImlPackage.eINSTANCE.symbolReferenceTerm, METHOD_INVOCATION_ON_CONSTRAINEDTYPE)
+	}
+	
+	@Test
+	def testCheckParameterList_TailOnCt_Method() {
+		val model = '''
+			package p;
+			type Int;
+			type Real;
+			type x {
+				var1 : Real := Real(10);
+			}
+		'''.parse
+		model.assertError(ImlPackage.eINSTANCE.symbolReferenceTerm, METHOD_INVOCATION_ON_CONSTRAINEDTYPE)
+	}
+	
+	@Test
+	def testCheckParameterList_WithTemplate() {
+		val model = '''
+			package p;
+			type Int;
+			type Real;
+			type Tx<T> {
+				 varx : T;
+			}
+			type x {
+				var0 : Tx<Int->Int>;
+				var1 : Int := var0.varx(0);
+			}
+		'''.parse
+		model.assertNoErrors
+	}
+	
+	@Test
+	def testCheckParameterList_CompatibleTypes_Valid() {
+		val model = '''
+			package p;
+			type Int;
+			type Real;
+			type x {
+				f1 : (Real, Int) -> Int;
+				v1 : Int := f1(5.5, 10);
+			}
+		'''.parse
+		model.assertNoErrors
+	}
+	
+	@Test
+	def testCheckParameterList_CompatibleTypes_Invalid() {
+		val model = '''
+			package p;
+			type Int;
+			type Real;
+			type x {
+				f1 : (Real, Int) -> Int;
+				v1 : Int := f1(10, 5.5);
+			}
+		'''.parse
+		model.assertError(ImlPackage.eINSTANCE.symbolReferenceTerm, INVALID_PARAMETER_LIST)
 	}
 	
 	/**********************************************
@@ -473,6 +661,228 @@ class ImlValidatorTest {
 			type T3 is T1 is T2;
 		'''.parse
 		model.assertError(ImlPackage.eINSTANCE.constrainedType, INVALID_TYPE_DECLARATION)
+	 }
+	 
+	 /*********************
+	  * Check FolFormula
+	  *********************  */
+	 @Test
+	 def testFormula_QuantifiedFormula_Valid() {
+	 	val model = '''
+			package p;
+			
+			type Int;
+			type Bool;
+			type T1 {
+				var0 : Bool;
+				var1 : Bool := forall (a : Int) {a > 10 && var0};
+			}
+		'''.parse
+		
+		model.assertNoErrors
+	 }
+	 
+	 @Test
+	 def testFormula_QuantifiedFormula_Invalid() {
+	 	val model = '''
+			package p;
+			
+			type Int;
+			type Bool;
+			type T1 {
+				var1 : Bool := forall (a : Int) {10};
+			}
+		'''.parse
+		
+		model.assertError(ImlPackage.eINSTANCE.folFormula, INVALID_TYPE_PARAMETER)
+	 }	 
+	 
+	@Test
+	 def testFormula_Boolean_Valid() {
+	 	val model = '''
+			package p;
+			
+			type Int;
+			type Bool;
+			type T1 {
+				var1 : Bool := 5 > 2 && true;
+			}
+		'''.parse
+		
+		model.assertNoErrors
+	 }		
+	 
+	 @Test
+	 def testFormula_Boolean_Invalid() {
+	 	val model = '''
+			package p;
+			
+			type Int;
+			type Bool;
+			type T1 {
+				var1 : Bool := 5-2 && true;
+			}
+		'''.parse
+		
+		model.assertError(ImlPackage.eINSTANCE.folFormula, INVALID_TYPE_PARAMETER)
+	 }	
+	 
+	@Test
+	 def testFormula_SignedAtomicFormula_Valid() {
+	 	val model = '''
+			package p;
+			
+			type Int;
+			type Bool;
+			type T1 {
+				var1 : Bool := !true;
+			}
+		'''.parse
+		
+		model.assertNoErrors
+	 }		
+	 
+	 @Test
+	 def testFormula_SignedAtomicFormula_Invalid() {
+	 	val model = '''
+			package p;
+			
+			type Int;
+			type Bool;
+			type T1 {
+				var1 : Bool := 5-2 && true;
+			}
+		'''.parse
+		
+		model.assertError(ImlPackage.eINSTANCE.folFormula, INVALID_TYPE_PARAMETER)
+	 }
+	 
+	 @Test
+	 def testFormula_AtomicFormula_ValidEq() {
+	 	val model = '''
+			package p;
+			
+			type Int;
+			type Bool;
+			type T1 {
+				var0: Int;
+				var1 : Bool := 5 = var0;
+			}
+		'''.parse
+		
+		model.assertNoErrors
+	 }		
+	 
+	 @Test
+	 def testFormula_AtomicFormula_InvalidEq() {
+	 	val model = '''
+			package p;
+			
+			type Int;
+			type Bool;
+			type T1 {
+				var0 : Int;
+				var1 : Bool := var0 = 5.5;
+			}
+		'''.parse
+		
+		model.assertError(ImlPackage.eINSTANCE.folFormula, INVALID_TYPE_PARAMETER)
+	 }	
+	 
+	 @Test
+	 def testFormula_AtomicFormula_ValidRel() {
+	 	val model = '''
+			package p;
+			
+			type Int;
+			type Bool;
+			type T1 {
+				var0: Int;
+				var1 : Bool := 5.5 > var0;
+			}
+		'''.parse
+		
+		model.assertNoErrors
+	 }		
+	 
+	 @Test
+	 def testFormula_AtomicFormula_InvalidRel() {
+	 	val model = '''
+			package p;
+			
+			type Int;
+			type Bool;
+			type T1 {
+				var0 : Int;
+				var1 : Bool := var0 < true;
+			}
+		'''.parse
+		
+		model.assertError(ImlPackage.eINSTANCE.folFormula, INVALID_TYPE_PARAMETER)
+	 }
+	 
+	 @Test
+	 def testFormula_Mod_Valid() {
+	 	val model = '''
+			package p;
+			
+			type Int;
+			type Bool;
+			type T1 {
+				var1 : Int := 5 mod 3;
+			}
+		'''.parse
+		
+		model.assertNoErrors
+	 }		
+	 
+	 @Test
+	 def testFormula_Mod_Invalid() {
+	 	val model = '''
+			package p;
+			
+			type Int;
+			type Bool;
+			type T1 {
+				var1 : Int := 5.5 mod 2;
+			}
+		'''.parse
+		
+		model.assertError(ImlPackage.eINSTANCE.folFormula, TYPE_MISMATCH_IN_TERM_EXPRESSION)
+	 }
+	 
+	  @Test
+	 def testFormula_TypeParameters_Valid() {
+	 	val model = '''
+			package p;
+			
+			type Int;
+			type Bool;
+			type T1 <T, P>;
+			
+			type T2 {
+				var1 : T1<Int,Bool>;
+			}
+		'''.parse
+		
+		model.assertNoErrors
+	 }		
+	 
+	 @Test
+	 def testFormula_TypeParameters_Invalid() {
+	 	val model = '''
+			package p;
+						
+			type Int;
+			type Bool;
+			type T1 <T, P>;
+			
+			type T2 {
+				var1 : T1<Int>;
+			}
+		'''.parse
+		
+		model.assertError(ImlPackage.eINSTANCE.simpleTypeReference, INVALID_PARAMETER_LIST)
 	 }
 	 
 }

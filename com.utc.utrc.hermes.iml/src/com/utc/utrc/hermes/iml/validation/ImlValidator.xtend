@@ -29,13 +29,21 @@ import org.eclipse.xtext.validation.AbstractDeclarativeValidator
 import org.eclipse.xtext.validation.Check
 import org.eclipse.xtext.validation.EValidatorRegistrar
 
-import static com.utc.utrc.hermes.iml.util.ImlUtil.*
-
 import static extension com.utc.utrc.hermes.iml.typing.ImlTypeProvider.*
 import static extension com.utc.utrc.hermes.iml.typing.TypingServices.*
 import com.utc.utrc.hermes.iml.iml.Alias
-import com.utc.utrc.hermes.iml.services.ImlGrammarAccess.SimpleTypeReferenceElements
 import org.eclipse.xtext.EcoreUtil2
+import com.utc.utrc.hermes.iml.iml.ArrayType
+import com.utc.utrc.hermes.iml.iml.ArrayAccess
+import com.utc.utrc.hermes.iml.iml.TupleConstructor
+import com.utc.utrc.hermes.iml.iml.SymbolReferenceTail
+import com.utc.utrc.hermes.iml.iml.TupleType
+import com.utc.utrc.hermes.iml.iml.NumberLiteral
+import org.eclipse.xtext.naming.IQualifiedNameProvider
+import com.utc.utrc.hermes.iml.iml.QuantifiedFormula
+import com.utc.utrc.hermes.iml.util.ImlUtil
+import com.utc.utrc.hermes.iml.iml.SignedAtomicFormula
+import com.utc.utrc.hermes.iml.iml.RelationKind
 
 /**
  * This class contains custom validation rules. 
@@ -43,13 +51,18 @@ import org.eclipse.xtext.EcoreUtil2
  * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#validation
  */
 class ImlValidator extends AbstractImlValidator {
+	
+	@Inject IQualifiedNameProvider qnp ;
 
 	private static final String DOMAIN_EXTENSION_ID = 
       "com.utc.utrc.hermes.iml.validation.domaindefinition";
 
 	public static val INVALID_PARAMETER_LIST = 'com.utc.utrc.hermes.iml.validation.InvalidParameterList'
 	public static val METHOD_INVOCATION_ON_VARIABLE = 'com.utc.utrc.hermes.iml.validation.MethodInvocationOnVariable'
-	public static val METHOD_INVOCATION_ON_CONSTAINT = 'com.utc.utrc.hermes.iml.validation.MethodInvocationOnConstant'
+	public static val METHOD_INVOCATION_ON_ASSERTION= 'com.utc.utrc.hermes.iml.validation.MethodInvocationOnAssertion'
+	public static val METHOD_INVOCATION_ON_CONSTRAINEDTYPE= 'com.utc.utrc.hermes.iml.validation.MethodInvocationOnCt'
+	public static val METHOD_INVOCATION_ON_ARRAY = 'com.utc.utrc.hermes.iml.validation.MethodInvocationOnArray'
+	public static val METHOD_INVOCATION_ON_TUPLE = 'com.utc.utrc.hermes.iml.validation.MethodInvocationOnTuple'
 	public static val MISSING_METHOD_INVOCATION = 'com.utc.utrc.hermes.iml.validation.MissingMethodInvocation'
 	public static val TYPE_MISMATCH_IN_TERM_EXPRESSION = 'com.utc.utrc.hermes.iml.validation.TypeMismatchInTermExpression'
 	public static val TYPE_MISMATCH_IN_TERM_RELATION = 'com.utc.utrc.hermes.iml.validation.TypeMismatchInTermRelation'
@@ -63,6 +76,8 @@ class ImlValidator extends AbstractImlValidator {
 	public static val INVALID_ELEMENT = 'com.utc.utrc.hermes.iml.validation.InvalidElement';
 	public static val INVALID_RELATION = 'com.utc.utrc.hermes.iml.validation.InvalidRelation';
 	public static val INVALID_SYMBOL_DECLARATION = 'com.utc.utrc.hermes.iml.validation.InvalidSymbolDeclaration';
+	public static val INVALID_INDEX_ACCESS = 'com.utc.utrc.hermes.iml.validation.InvalidIndexAccess';
+	public static val ARRAY_ACCESS_ON_HOT = 'com.utc.utrc.hermes.iml.validation.ArrayAccessOnHot';
 	
 	@Inject
 	override void register(EValidatorRegistrar registrar) {
@@ -137,16 +152,15 @@ class ImlValidator extends AbstractImlValidator {
 			for (cur : superTypeHierarchy.get(index)) {
 				for (supType : getExtensions(cur)) {
 					for(tr : supType.extensions){
-					if (!visited.contains(tr.type.asSimpleTR.type))
-						toAdd.add(tr.type.asSimpleTR.type)
-					else {
-						error(
-							"Cycle in hierarchy of constrained type '" + cur.name + "'",
-							ImlPackage::eINSTANCE.constrainedType_Relations,
-							CYCLIC_CONSTRAINEDTYPE_HIERARCHY
-						)
-					}
-					
+						if (!visited.contains(tr.type.asSimpleTR.type))
+							toAdd.add(tr.type.asSimpleTR.type)
+						else {
+							error(
+								"Cycle in hierarchy of constrained type '" + cur.name + "'",
+								ImlPackage::eINSTANCE.constrainedType_Relations,
+								CYCLIC_CONSTRAINEDTYPE_HIERARCHY
+							)
+						}
 					}
 				}
 				visited.add(cur)
@@ -166,262 +180,275 @@ class ImlValidator extends AbstractImlValidator {
 
 	@Check
 	def checkQuantifiedFormula(FolFormula f) {
-//		if (f instanceof QuantifiedFormula) {
-//			var context = ct2tr(f.getContainerOfType(ConstrainedType))
-//			var exprtr = f.left.termExpressionType(context)
-//			if (exprtr !== boolTypeRef) {
-//				error('''The expression inside a named formula should be Booelan, got «exprtr.printTypeReference»  instead''',
-//					ImlPackage::eINSTANCE.folFormula_Left, INVALID_TYPE_PARAMETER)
-//			}
-//		}
+		if (f instanceof QuantifiedFormula) {
+			var exprtr = f.left.termExpressionType
+			if (!exprtr.isBool) {
+				error('''The expression inside a quantified formula should be Boolean, got «ImlUtil.getTypeName(exprtr, qnp)»  instead''',
+					ImlPackage::eINSTANCE.folFormula_Left, INVALID_TYPE_PARAMETER)
+			}
+		}
 	}
 
 	@Check
 	def checkFolFormula(FolFormula f) {
-//		if (f.symbol !== null) {
-//			var context = ct2tr(f.getContainerOfType(ConstrainedType))
-//			if (f.symbol.equals("=>") || f.symbol.equals("<=>") || f.symbol.equals("||") || f.symbol.equals("&&")) {
-//				var exprtr = f.left.termExpressionType(context)
-//				if (exprtr != boolTypeRef) {
-//					error('''The left hand side should be Boolean, got «exprtr.printTypeReference»  instead''',
-//						ImlPackage::eINSTANCE.folFormula_Left, INVALID_TYPE_PARAMETER)
-//				}
-//				exprtr = f.right.termExpressionType(context)
-//				if (exprtr != boolTypeRef) {
-//					error('''The right hand side should be Boolean, got «exprtr.printTypeReference»  instead''',
-//						ImlPackage::eINSTANCE.folFormula_Right, INVALID_TYPE_PARAMETER)
-//				}
-//			}
-//		} else if (f.neg) {
-//			var context = ct2tr(f.getContainerOfType(ConstrainedType))
-//			var exprtr = f.left.termExpressionType(context)
-//			if (exprtr != boolTypeRef) {
-//				error('''The ! operator can be only  applied to a Boolean expression, got «exprtr.printTypeReference»  instead''',
-//					ImlPackage::eINSTANCE.folFormula_Left, INVALID_TYPE_PARAMETER)
-//			}
-//		}
+		if (f.op !== null) {
+			if (f.op.equals("=>") || f.op.equals("<=>") || f.op.equals("||") || f.op.equals("&&")) {
+				var exprtr = f.left.termExpressionType
+				if (!exprtr.isBool) {
+					error('''The left hand side should be Boolean, got «ImlUtil.getTypeName(exprtr, qnp)»  instead''',
+						ImlPackage::eINSTANCE.folFormula_Left, INVALID_TYPE_PARAMETER)
+				}
+				exprtr = f.right.termExpressionType
+				if (!exprtr.isBool) {
+					error('''The right hand side should be Boolean, got «ImlUtil.getTypeName(exprtr, qnp)»  instead''',
+						ImlPackage::eINSTANCE.folFormula_Right, INVALID_TYPE_PARAMETER)
+				}
+			}
+		} else if (f instanceof SignedAtomicFormula && (f as SignedAtomicFormula).neg) {
+			var exprtr = f.left.termExpressionType
+			if (!exprtr.isBool) {
+				error('''The ! operator can be only  applied to a Boolean expression, got «ImlUtil.getTypeName(exprtr, qnp)»  instead''',
+					ImlPackage::eINSTANCE.folFormula_Left, INVALID_TYPE_PARAMETER)
+			}
+		}
 	}
 
 	@Check
 	def checkAtomicExpression(AtomicExpression e) {
-
-//		var context = ct2tr(e.getContainerOfType(ConstrainedType))
-//		switch (e.rel) {
-//			case EQ: {
-//				var rt = e.right.termExpressionType(context)
-//				var lt = e.left.termExpressionType(context)
-//				if (! rt.isCompatible(lt, true) || ! lt.isCompatible(rt, true)) {
-//					error('''Type «lt.printTypeReference» and «rt.printTypeReference» are not compatible''',
-//						ImlPackage::eINSTANCE.atomicExpression_Rel, INVALID_TYPE_PARAMETER)
-//				}
-//			}
-//			default: {
-//				var rt = e.right.termExpressionType(context)
-//				var lt = e.left.termExpressionType(context)
-//				if (! (rt.isNumeric && lt.isNumeric)) {
-//					error('''Both sides must be numeric''', ImlPackage::eINSTANCE.atomicExpression_Rel,
-//						INVALID_TYPE_PARAMETER)
-//				}
-//			}
-//		}
-
+		if (e.rel == RelationKind.EQ || e.rel == RelationKind.NEQ) {
+			var rt = e.right.termExpressionType
+			var lt = e.left.termExpressionType
+			if (! rt.isCompatible(lt) || ! lt.isCompatible(rt)) {
+				error('''Type «ImlUtil.getTypeName(lt, qnp)» and «ImlUtil.getTypeName(rt, qnp)» are not compatible''',
+					ImlPackage::eINSTANCE.atomicExpression_Rel, INVALID_TYPE_PARAMETER)
+			}
+		} else {
+			var rt = e.right.termExpressionType
+			var lt = e.left.termExpressionType
+			if (! (rt.isNumeric && lt.isNumeric)) {
+				error('''Both sides must be numeric but got left type of: «ImlUtil.getTypeName(lt, qnp)» 
+				and right type of: «ImlUtil.getTypeName(rt, qnp)»''', ImlPackage::eINSTANCE.atomicExpression_Rel,
+					INVALID_TYPE_PARAMETER)
+			}
+		}
 	}
 
 	@Check
-	def checkParameterList(SymbolReferenceTerm at) {
-		
-		
-//		val symbol = f.ref
-//		if (symbol !== null) {
-//			if (symbol instanceof VariableDeclaration && f.methodinvocation) {
-//				error('''Method invocation on a variable term''', ImlPackage::eINSTANCE.symbolRef_Methodinvocation,
-//					METHOD_INVOCATION_ON_VARIABLE)
-//			}
-//			if (symbol instanceof ConstantDeclaration && f.methodinvocation) {
-//				error('''Method invocation on a constant term''', ImlPackage::eINSTANCE.symbolRef_Methodinvocation,
-//					METHOD_INVOCATION_ON_CONSTAINT)
-//			}
-//			if (symbol instanceof FunctionDefinition) {
-//				val fdecl = (symbol as FunctionDefinition)
-//				if (fdecl.parameters.size > 0 && ! f.methodinvocation) {
-//					error('''Missing method invocation''', ImlPackage::eINSTANCE.symbolRef_Methodinvocation,
-//						MISSING_METHOD_INVOCATION)
-//				} else {
-//					// check parameter list
-//					if (fdecl.parameters.size != f.parameters.size) {
-//						error(
-//							'''Invalid number of arguments : expecting ''' + fdecl.parameters.size + " but only got " +
-//								f.parameters.size, ImlPackage::eINSTANCE.symbolRef_Methodinvocation,
-//							INVALID_PARAMETER_LIST)
-//						} else {
-//							for (i : 0 ..< fdecl.parameters.size) {
-//								var typeref = fdecl.parameters.get(i).type
-//								var context = ct2tr(f.getContainerOfType(ConstrainedType))
-//								val argType = f.parameters.get(i).termExpressionType(context)
-//								val expected = bindTypeRefWith(typeref, context)
-//
-//								if (! argType.isCompatible(expected, true))
-//									error(
-//										'''Invalid argument type: expecting ''' + expected.printTypeReference +
-//											''', got ''' + argType.printTypeReference,
-//										ImlPackage::eINSTANCE.symbolRef_Parameters, i, INVALID_PARAMETER_LIST)
-//
-//							}
-//						}
-//
-//					}
-//				}
-//			}
-		}
-
-		// validate function's parameters against its declaration's
-		@Check
-		def checkParameterList(TermMemberSelection f) {
-//			val member = f.member
-//			if (member !== null) {
-//				if (member instanceof VariableDeclaration && f.methodinvocation) {
-//					error('''Method invocation on a variable term''',
-//						ImlPackage::eINSTANCE.termMemberSelection_Methodinvocation, METHOD_INVOCATION_ON_VARIABLE)
-//				}
-//				if (member instanceof ConstantDeclaration && f.methodinvocation) {
-//					error('''Method invocation on a constant term''',
-//						ImlPackage::eINSTANCE.termMemberSelection_Methodinvocation, METHOD_INVOCATION_ON_CONSTAINT)
-//				}
-//				if (member instanceof FunctionDefinition) {
-//					val fdecl = (member as FunctionDefinition)
-//					if (fdecl.parameters.size > 0 && ! f.methodinvocation) {
-//						error('''Missing method invocation''',
-//							ImlPackage::eINSTANCE.termMemberSelection_Methodinvocation, MISSING_METHOD_INVOCATION)
-//					} else {
-//						// check parameter list
-//						if (fdecl.parameters.size != f.parameters.size) {
-//							error(
-//								'''Invalid number of arguments : expecting ''' + fdecl.parameters.size +
-//									" but only got " + f.parameters.size,
-//								ImlPackage::eINSTANCE.symbolRef_Methodinvocation, INVALID_PARAMETER_LIST)
-//						} else {
-//							var context = ct2tr(f.getContainerOfType(ConstrainedType))
-//							for (i : 0 ..< fdecl.parameters.size) {
-//								var expected = bindTypeRefWith(fdecl.parameters.get(i).type,
-//									f.receiver.termExpressionType(context))
-//								var argType = f.parameters.get(i).termExpressionType(context);
-//								if (! argType.isCompatible(expected, true))
-//									error(
-//										'''Invalid argument type: expecting ''' + expected.printTypeReference +
-//											''', got ''' + argType.printTypeReference,
-//										ImlPackage::eINSTANCE.termMemberSelection_Parameters, i, INVALID_PARAMETER_LIST)
-//							}
-//						}
-//					}
-//				}
-//			}
-		}
-
-		@Check
-		def checkMultiplication(Multiplication m) {
-		//	var context = ct2tr(m.getContainerOfType(ConstrainedType))
-//			if (m.sign == '%' || m.sign == 'mod') {
-//				if (m.left.termExpressionType(context).type.name != 'Int') {
-//					error(
-//					'''Only integers types are allowed for % and mod operations: left expression has type m.left.
-//						termExpressionType(context).type.name''', ImlPackage::eINSTANCE.folFormula_Left,
-//						TYPE_MISMATCH_IN_TERM_EXPRESSION);
-//				} else if ((m.right != null) && m.right.termExpressionType(context).type.name != 'Int') {
-//					error(
-//					'''Only integers types are allowed for % and mod operations: right expression has type m.right.
-//						termExpressionType(context).type.name''', ImlPackage::eINSTANCE.folFormula_Right,
-//						TYPE_MISMATCH_IN_TERM_EXPRESSION);
-//				}
-//			}
-		}
-
-		@Check
-		def checkMultiplication(Addition m) {
-			//var context = ct2tr(m.getContainerOfType(ConstrainedType))
-			
-		}
-
-		@Check
-		def checkParametersList(HigherOrderType tr) {
-//			val type = tr.type
-//			if (type !== null) {
-//				// check template parameter list
-//				val ct = (type as ConstrainedType)
-//				if (ct.template && ct.typeParameter.size != tr.typeBinding.size) {
-//					error(
-//						'''Invalid number of template type binding parameters''',
-//						ImlPackage::eINSTANCE.typeReference_TypeBinding,
-//						INVALID_PARAMETER_LIST
-//					)
-//				}
-//			}
-		}
-		
-		@Check
-		def checkCompatibleDeclarationAndDefinition(SymbolDeclaration symbol) {
-			if (symbol.type !== null && symbol.definition !== null) {
-				val defType = ImlTypeProvider.termExpressionType(symbol.definition)
-				if (!TypingServices.isCompatible(symbol.type, defType)) {
-					error('''Incompatible types, expected  «getTypeName(symbol.type, null)» but actual was «getTypeName(defType, null)»''',
-						ImlPackage.eINSTANCE.symbolDeclaration_Definition,
-						TYPE_MISMATCH_IN_TERM_EXPRESSION
-					)
-				}	
-			}	
-		}
-		
-		@Check
-		def checkCorrectSymbolDeclaration(SymbolDeclaration symbol) {
-			val container = symbol.eContainer
-			switch (container) {
-				ConstrainedType: {
-					if (container.symbols.contains(symbol)) { // Symbols must have a type if there is no primitive properties
-						if (symbol.type === null && !(symbol instanceof Assertion)) {
-							error('''Symobl declaration  "«symbol.name»" must have a type''',
-							ImlPackage.eINSTANCE.symbolDeclaration_Type,
-							INVALID_SYMBOL_DECLARATION
-							)
-						}
-					} 
-				}
-				
-				SequenceTerm: { // Must have a type
-					if (symbol.type === null) {
-						error('''Symobl declaration  "«symbol.name»" must have a type''',
-							ImlPackage.eINSTANCE.symbolDeclaration_Type,
-							INVALID_SYMBOL_DECLARATION
-						)
-					}
-				}
-				
+	def checkSymbolRefTail(SymbolReferenceTerm symbolRef) {
+		val symbol = symbolRef.symbol
+		if (symbol instanceof Assertion) { 
+			if (!symbolRef.tails.isNullOrEmpty) {
+				error('''Method invocatin and array access are not applicable on assertion '«symbol.name»' ''',
+				ImlPackage.eINSTANCE.symbolReferenceTerm_Tails,
+				METHOD_INVOCATION_ON_ASSERTION
+			)
+			}
+		} else if (symbol instanceof SymbolDeclaration) {
+			var symbolType = TypingServices.resolveAliases(ImlTypeProvider.getSymbolRefSegmentType(symbolRef))
+			checkTypeAgainstTails(symbolType, symbolRef.tails, symbol)
+		} else if (symbol instanceof ConstrainedType) {
+			if (!symbolRef.tails.nullOrEmpty) {
+				error('''Method invocatin and array access are not applicable on the simple type '«symbol.name»' ''',
+					ImlPackage.eINSTANCE.symbolReferenceTerm_Tails,
+					METHOD_INVOCATION_ON_CONSTRAINEDTYPE
+				)
 			}
 		}
+	}
+	
+	def checkTypeAgainstTails(HigherOrderType type, List<SymbolReferenceTail> tails, Symbol symbol) {
+		var tmpType = type
+		if (!tails.nullOrEmpty) {
+			for (var i=0, var stop=false ; i < tails.length ; i++) {
+				val tail = tails.get(i)
+				if (checkTypeAgainstTail(tmpType, tail, symbol)) {
+					tmpType = ImlTypeProvider.accessTail(tmpType, tail)
+				} else {
+					stop=true;
+				}
+			}
+		}	
+	}
 		
-		@Check
-		def checkAliasDeclaration(Alias alias) {
-			val aliasType = TypingServices.resolveAliases(alias.type.type)
-			
-			if (!TypingServices.isEqual(aliasType, alias.type.type, false)) {
-				val mainType = EcoreUtil2.getContainerOfType(alias, ConstrainedType);
-				error('''Type «mainType.name» alias shouldn't include any further aliases''',
-					ImlPackage.eINSTANCE.alias_Type,
-					INVALID_TYPE_DECLARATION
+	
+	def checkTypeAgainstTail(HigherOrderType type, SymbolReferenceTail tail, Symbol symbol) {
+		if (type instanceof SimpleTypeReference) {
+			error('''Method invocatin and array access are not applicable on the simple type '«symbol.name»' ''',
+				ImlPackage.eINSTANCE.symbolReferenceTerm_Tails,
+				METHOD_INVOCATION_ON_VARIABLE
+			)
+			return false				
+		} else if (type instanceof ArrayType) {
+			if (tail instanceof TupleConstructor) {
+				error('''Method invocation is not applicable over Array type '«symbol.name»' ''',
+					ImlPackage.eINSTANCE.symbolReferenceTerm_Tails,
+					METHOD_INVOCATION_ON_ARRAY
+				)
+				return false
+			}
+		} else if (type instanceof TupleType) {
+			if (tail instanceof TupleConstructor) {
+				error('''Method invocation is not applicable over tuple type '«symbol.name»' ''',
+					ImlPackage.eINSTANCE.symbolReferenceTerm_Tails,
+					METHOD_INVOCATION_ON_TUPLE
+				)
+				return false
+			} else if (tail instanceof ArrayAccess) { // ArrayAccess
+				val index = tail.index.left
+				if (index instanceof NumberLiteral) {
+					if (index.value >= type.symbols.size || index.neg) {
+						error('''Tuple access index must be within the declare tuple elements size of '«symbol.name»'. Expected <
+						«type.symbols.size» but got «if (index.neg) '-'»«index.value» ''',
+							ImlPackage.eINSTANCE.symbolReferenceTerm_Tails,
+							INVALID_INDEX_ACCESS
+						)
+					}
+				} else if (index instanceof SymbolReferenceTerm) {
+					// TODO Check if this symbol declared inside the tuple
+				}
+			}
+		} else { // Higher order type
+			if (tail instanceof ArrayAccess) {
+				error('''Array access is not applicatble over Higher Order Type of: '«symbol.name»' ''',
+							ImlPackage.eINSTANCE.symbolReferenceTerm_Tails,
+							ARRAY_ACCESS_ON_HOT
+						)
+				return false
+			} else if (tail instanceof TupleConstructor) {
+				return checkFunctionCallParameters(type.domain, tail as TupleConstructor, symbol)
+			}
+		}
+		return true
+	}
+	
+	def checkFunctionCallParameters(HigherOrderType domain, TupleConstructor tupleTail, Symbol symbol) {
+		var List<HigherOrderType> domainList = null;
+		if (domain instanceof TupleType) {
+			domainList = domain.symbols.map[it.type]
+		} else {
+			domainList = newArrayList(domain)
+		}
+		
+		if (domainList.size != tupleTail.elements.size) {
+			error('''Number of parameters provided don't match the declared parameters in: '«symbol.name»'. 
+			Expected «domainList.size» but got «tupleTail.elements.size» ''',
+					ImlPackage.eINSTANCE.symbolReferenceTerm_Tails,
+					INVALID_PARAMETER_LIST
+				)
+			return false;
+		}
+		// TODO check type matching of parameter provided v.s declared
+		for (i : 0 ..< domainList.size) {
+			val paramType = ImlTypeProvider.termExpressionType(tupleTail.elements.get(i))
+			if (!TypingServices.isCompatible(domainList.get(i), paramType)) {
+				error('''Invalid argument type Expecting: «ImlUtil.getTypeName(domainList.get(i), qnp)» but got 
+							«ImlUtil.getTypeName(paramType, qnp)»''',
+					ImlPackage.eINSTANCE.symbolReferenceTerm_Tails,
+					INVALID_PARAMETER_LIST
 				)
 			}
 		}
 		
-		@Check
-		def checkConstrainedTypeDeclaration(ConstrainedType type) {
-			// Should have only one alias
-			if (type.relations !== null) {
-				if (type.relations.filter[it instanceof Alias].size > 1) {
-					error('''Type «type.name» can NOT have more that one alias''',
-						ImlPackage.eINSTANCE.constrainedType_Relations,
-						INVALID_TYPE_DECLARATION
+		return true
+	}
+		
+	@Check
+	def checkMultiplication(Multiplication m) {
+		if (m.sign == '%' || m.sign == 'mod') {
+			if (!m.left.termExpressionType.isInt) {
+				error(
+				'''Only integers types are allowed for % and mod operations: left expression has type of: « ImlUtil.getTypeName(m.left.termExpressionType, qnp)» '''
+				, ImlPackage::eINSTANCE.folFormula_Left ,
+					TYPE_MISMATCH_IN_TERM_EXPRESSION);
+			} else if ((m.right !== null) && !m.right.termExpressionType.isInt) {
+				error(
+				'''Only integers types are allowed for % and mod operations: right expression has type of «ImlUtil.getTypeName(m.right.termExpressionType, qnp)»'''
+					, ImlPackage::eINSTANCE.folFormula_Right,
+					TYPE_MISMATCH_IN_TERM_EXPRESSION);
+			}
+		}
+	}
+
+	@Check
+	def checkParametersList(SimpleTypeReference tr) {
+		val type = tr.type
+		if (type !== null) {
+			// check template parameter list
+			if (type.template && type.typeParameter.size != tr.typeBinding.size) {
+				error(
+					'''Invalid number of template type binding parameters. Expected: «type.typeParameter.size», but got: «tr.typeBinding.size» ''',
+					ImlPackage::eINSTANCE.simpleTypeReference_TypeBinding,
+					INVALID_PARAMETER_LIST
+				)
+			}
+		}
+	}
+		
+	@Check
+	def checkCompatibleDeclarationAndDefinition(SymbolDeclaration symbol) {
+		if (symbol.type !== null && symbol.definition !== null) {
+			val defType = ImlTypeProvider.termExpressionType(symbol.definition)
+			if (!TypingServices.isCompatible(symbol.type, defType)) {
+				error('''Incompatible types, expected  «ImlUtil.getTypeName(symbol.type, qnp)» but actual was «ImlUtil.getTypeName(defType, qnp)»''',
+					ImlPackage.eINSTANCE.symbolDeclaration_Definition,
+					TYPE_MISMATCH_IN_TERM_EXPRESSION
+				)
+			}	
+		}	
+	}
+	
+	@Check
+	def checkCorrectSymbolDeclaration(SymbolDeclaration symbol) {
+		val container = symbol.eContainer
+		switch (container) {
+			ConstrainedType: {
+				if (container.symbols.contains(symbol)) { // Symbols must have a type if there is no primitive properties
+					if (symbol.type === null && !(symbol instanceof Assertion)) {
+						error('''Symobl declaration  "«symbol.name»" must have a type''',
+						ImlPackage.eINSTANCE.symbolDeclaration_Type,
+						INVALID_SYMBOL_DECLARATION
+						)
+					}
+				} 
+			}
+			
+			SequenceTerm: { // Must have a type
+				if (symbol.type === null) {
+					error('''Symobl declaration  "«symbol.name»" must have a type''',
+						ImlPackage.eINSTANCE.symbolDeclaration_Type,
+						INVALID_SYMBOL_DECLARATION
 					)
 				}
 			}
+			
 		}
+	}
+	
+	@Check
+	def checkAliasDeclaration(Alias alias) {
+		val aliasType = TypingServices.resolveAliases(alias.type.type)
+		
+		if (!TypingServices.isEqual(aliasType, alias.type.type, false)) {
+			val mainType = EcoreUtil2.getContainerOfType(alias, ConstrainedType);
+			error('''Type «mainType.name» alias shouldn't include any further aliases''',
+				ImlPackage.eINSTANCE.alias_Type,
+				INVALID_TYPE_DECLARATION
+			)
+		}
+	}
+	
+	@Check
+	def checkConstrainedTypeDeclaration(ConstrainedType type) {
+		// Should have only one alias
+		if (type.relations !== null) {
+			if (type.relations.filter[it instanceof Alias].size > 1) {
+				error('''Type «type.name» can NOT have more that one alias''',
+					ImlPackage.eINSTANCE.constrainedType_Relations,
+					INVALID_TYPE_DECLARATION
+				)
+			}
+		}
+	}
 
 }
 	

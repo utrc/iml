@@ -118,7 +118,7 @@ class ImlTypeProviderTest {
 			type Int;
 			type Real;
 			type t1 {
-				var1 : Int := var2->varx;
+				var1 : Int := var2.varx;
 				var2 : t2;
 			}
 			
@@ -146,11 +146,11 @@ class ImlTypeProviderTest {
 			type Int;
 			type Real;
 			type t1 {
-				var1 : Int := var2->varx;
+				var1 : Int := var2.varx;
 				var2 : t2;
 			}
 			
-			type t2 extends t3 {
+			type t2 extends (t3) {
 			};
 			
 			type t3 {
@@ -177,7 +177,7 @@ class ImlTypeProviderTest {
 			type Real;
 			type t1 {
 				var1 : Int := var2 (5, 6);
-				var2 : (p1 : Int, p2 : Real) ~> Int;
+				var2 : (p1 : Int, p2 : Real) -> Int;
 			}			
 		'''.parse
 		model.assertNoErrors
@@ -199,8 +199,8 @@ class ImlTypeProviderTest {
 			type Int;
 			type Real;
 			type t1 {
-				var1 : (Int, Real)~>Int := var2;
-				var2 : (p1 : Int, p2 : Real) ~> Int;
+				var1 : (Int, Real)->Int := var2;
+				var2 : (p1 : Int, p2 : Real) -> Int;
 			}			
 		'''.parse
 		model.assertNoErrors
@@ -222,12 +222,12 @@ class ImlTypeProviderTest {
 			type Int;
 			type Real;
 			type t1 {
-				var1 : (Int)~>Real := var2->varx;
+				var1 : (Int)->Real := var2.varx;
 				var2 : t2<Int, Real>;
 			}
 			
 			type t2 <T, P> {
-				varx : (p : T) ~> P;
+				varx : (p : T) -> P;
 			}		
 		'''.parse
 		model.assertNoErrors
@@ -255,7 +255,7 @@ class ImlTypeProviderTest {
 			type List <T>;
 			
 			type t1 {
-				var1 : List<Int> := var2->varx;
+				var1 : List<Int> := var2.varx;
 				var2 : t2<List<Int> >;
 			}
 			
@@ -285,8 +285,8 @@ class ImlTypeProviderTest {
 			type List <T>;
 			
 			type t1 {
-				var1 : List<(Int)~>Real> := var2->varx;
-				var2 : t2<List<(p: Int)~>Real> >;
+				var1 : List<Int->Real> := var2.varx;
+				var2 : t2<List<Int->Real> >;
 			}
 			
 			type t2 <T> {
@@ -305,8 +305,7 @@ class ImlTypeProviderTest {
 			
 		assertNotNull(exprType.domain)
 		assertNotNull(exprType.range)
-		val domain = exprType.domain as TupleType
-		assertEquals(Int, (domain.symbols.get(0).type as SimpleTypeReference).type)
+		assertEquals(Int, (exprType.domain as SimpleTypeReference).type)
 		assertEquals(Real, (exprType.range as SimpleTypeReference).type)
 	}
 	
@@ -319,7 +318,7 @@ class ImlTypeProviderTest {
 			type List <T>;
 			
 			type t1 {
-				var1 : List<Int> := var3->var2->varx;
+				var1 : List<Int> := var3.var2.varx;
 				var3 : t3<Int>;
 			}
 			
@@ -351,7 +350,7 @@ class ImlTypeProviderTest {
 			type Int;
 			type Bool;
 			type t1 {
-				varx : (Int)~>Bool := lambda (p1: Int) {True;};
+				varx : (Int)->Bool := lambda (p1: Int) {True;};
 			}
 		'''.parse
 		
@@ -370,7 +369,7 @@ class ImlTypeProviderTest {
 			package p;
 			type Int;
 			type t1 {
-				varx : (Int)~>Int := lambda (p1: Int) {True;3*5;};
+				varx : (Int)->Int := lambda (p1: Int) {True;3*5;};
 			}
 		'''.parse
 		
@@ -596,10 +595,10 @@ class ImlTypeProviderTest {
 		    type Int;
 		    type Real;
 		    type t1 {
-		    	vx: (Int, Real ~> (size: Int, matrix: Real[10][20]));
-		    	v1: (Int, Real ~> (Int, Real[10][20])) := vx;
+		    	vx: (Int, Real -> (size: Int, matrix: Real[10][20]));
+		    	v1: (Int, Real -> (Int, Real[10][20])) := vx;
 		    	v2: Int := vx[0];
-		    	v3: Real ~> (Int, Real[0][0]) := vx[1];
+		    	v3: Real -> (Int, Real[0][0]) := vx[1];
 		    	v4: (Int, Real[0][0]) := vx[1](100);
 		    	v5: Int := vx[1](100)[0];
 		    	v6: Real[0][0] := vx[1](100)[matrix];

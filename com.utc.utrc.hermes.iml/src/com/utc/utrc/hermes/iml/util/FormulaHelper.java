@@ -38,10 +38,6 @@ public class FormulaHelper {
 		return EcoreUtil.copy(TRUE);
 	}
 	
-	public static FolFormula toCNF(FolFormula source) {
-		return null ;
-	}
-
 	public static FolFormula orAll(List<FolFormula> formulas) {
 		if (!formulas.isEmpty()) {
 			FolFormula disjunction = formulas.get(0);
