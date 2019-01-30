@@ -39,7 +39,7 @@ class ImlUtilsTest {
 		testGetTypeNameManually("Int", "Int")
 		testGetTypeNameManually("Int<Real,Int>", "Int<Real, Int>")
 		testGetTypeNameManually("Int[10][]", "Int[][]")
-		testGetTypeNameManually("(Int~>Real)", "(Int~>Real)")
+		testGetTypeNameManually("(Int->Real)", "Int->Real")
 		testGetTypeNameManually("(Int,Real)", "(Int, Real)")
 	}
 	

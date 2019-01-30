@@ -24,7 +24,7 @@ import com.utc.utrc.hermes.iml.iml.HigherOrderType;
 import com.utc.utrc.hermes.iml.iml.ImplicitInstanceConstructor;
 import com.utc.utrc.hermes.iml.iml.Model;
 import com.utc.utrc.hermes.iml.iml.ParenthesizedTerm;
-import com.utc.utrc.hermes.iml.iml.ParenthesizedType;
+//import com.utc.utrc.hermes.iml.iml.ParenthesizedType;
 import com.utc.utrc.hermes.iml.iml.Property;
 import com.utc.utrc.hermes.iml.iml.Relation;
 import com.utc.utrc.hermes.iml.iml.SignedAtomicFormula;
@@ -146,8 +146,8 @@ public class ImlUtil {
 			return "(" + ((TupleType) hot).getSymbols().stream()
 				.map(symbol -> getTypeName(symbol.getType(), qnp))
 				.reduce((accum, current) -> accum + ", " + current).get() + ")";
-		} else if (hot instanceof ParenthesizedType) {
-			return "(" +  getTypeName(((ParenthesizedType) hot).getSubexpression(), qnp) + ")";
+//		} else if (hot instanceof ParenthesizedType) {
+//			return "(" +  getTypeName(((ParenthesizedType) hot).getSubexpression(), qnp) + ")";
 		} else {
 			return getTypeName(hot.getDomain(), qnp) + "->" + getTypeName(hot.getRange(), qnp);
 		}

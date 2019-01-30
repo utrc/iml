@@ -18,6 +18,7 @@ import java.util.List
 import java.util.ArrayList
 import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
 import com.utc.utrc.hermes.iml.typing.ImlTypeProvider
+import com.google.common.reflect.TypeToken.TypeSet
 
 /**
  * @author Ayman Elkfrawy
@@ -214,8 +215,8 @@ class TypingServicesTest {
 			type Int;
 			type Boolean;
 			type t1 {
-				var1 : (p1: Int, p2: Boolean) ~> Int;
-				var2 : (p1: Int, p3: Boolean) ~> Int;
+				var1 : (p1: Int, p2: Boolean) -> Int;
+				var2 : (p1: Int, p3: Boolean) -> Int;
 			}
 		'''.parse
 		
@@ -233,7 +234,7 @@ class TypingServicesTest {
 			type Int;
 			type Boolean;
 			type t1 {
-				var1 : (p1: Int, p2: Boolean) ~> Int;
+				var1 : (p1: Int, p2: Boolean) -> Int;
 				var2 : (p1: Int, p3: Boolean);
 			}
 		'''.parse
@@ -252,8 +253,8 @@ class TypingServicesTest {
 			type Int;
 			type Boolean;
 			type t1 {
-				var1 : (p1: Int, p2: Boolean) ~> Int;
-				var2 : (p1: Int, p2: Boolean) ~> Boolean;
+				var1 : (p1: Int, p2: Boolean) -> Int;
+				var2 : (p1: Int, p2: Boolean) -> Boolean;
 			}
 		'''.parse
 		
@@ -376,6 +377,35 @@ class TypingServicesTest {
 		val eq = TypingServices.isCompatible(decltype,deftype)
 		assertTrue(eq)
 		model.assertNoErrors
+	}
+	
+	@Test
+	def testRemoveAliases() {
+		assertTrue(testRemoveAliases("T2", "T1"))
+		assertTrue(testRemoveAliases("T3", "T1"))
+		assertTrue(testRemoveAliases("(T2, T3)", "(T1, T1)"))
+		assertTrue(testRemoveAliases("T2 -> T3", "T1 -> T1"))
+		assertTrue(testRemoveAliases("T2[][]", "T1[][]"))
+		assertTrue(testRemoveAliases("(T2, T1) -> T3", "(T1, T1)->T1"))
+		assertTrue(testRemoveAliases("T1", "T1"))
+	}
+	
+	def testRemoveAliases(String var1TypeString, String var2TypeString) {
+		val model = '''
+			package p;
+			type T1;
+			type T2 is T1;
+			type T3 is T2;
+			type Tx {
+				var1 : «var1TypeString»;
+				var2 : «var2TypeString»;
+			}
+		'''.parse
+		
+		val var1Type = ((model.findSymbol("Tx") as ConstrainedType).findSymbol("var1") as SymbolDeclaration).type
+		val var2Type = ((model.findSymbol("Tx") as ConstrainedType).findSymbol("var2") as SymbolDeclaration).type
+		return TypingServices.isEqual(var2Type, TypingServices.resolveAliases(var1Type))
+		
 	}
 	
 }

@@ -16,6 +16,7 @@ import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
 import com.utc.utrc.hermes.iml.iml.ConstrainedType
 import com.utc.utrc.hermes.iml.iml.SimpleTypeReference
 import static extension org.junit.Assert.*
+import com.utc.utrc.hermes.iml.custom.ImlCustomFactory
 
 @RunWith(XtextRunner)
 @InjectWith(ImlInjectorProvider)
@@ -42,7 +43,7 @@ class ImlParsingTest {
 			package p;
 			type Int;
 			type t {
-				var1 : Int ~> (Int ~> Int);
+				var1 : Int -> (Int -> Int);
 			}
 		'''.parse
 		
@@ -69,7 +70,7 @@ class ImlParsingTest {
 			package p;
 			type Int;
 			type t {
-				var1 : (Int ~> Int)[];
+				var1 : (Int -> Int)[];
 			}
 		'''.parse
 		
@@ -95,7 +96,7 @@ class ImlParsingTest {
 		val model = '''
 			package p;
 			type t {
-				a1 assertion := True;
+				assert x {true};
 			}
 		'''.parse
 		
@@ -106,10 +107,10 @@ class ImlParsingTest {
 	def void testParsingMetaProperty() {
 		val model = '''
 			package p;
-			meta type myassertion;
+			type myassertion;
 			type Bool;
 			type t {
-				a1 <<a:myassertion>> : Bool := True;
+				[myassertion] a1 : Bool := true;
 			}
 		'''.parse
 		
@@ -117,20 +118,51 @@ class ImlParsingTest {
 	}
 	
 	@Test
-	def void testParsingSameAsActualType() {
+	def void testParseParentheizedType() {
 		val model = '''
 			package p;
 			type Int;
-			type Integer sameas Int;
-			
-			var1 : Integer;
+			type Real;
+			type T {
+				x : Int -> Real [10];
+				y : (Int -> Real) [10];				
+			}
 		'''.parse
 		
 		model.assertNoErrors
-		val var1 = model.findSymbol("var1") as SymbolDeclaration;
-		val intType = model.findSymbol("Int") as ConstrainedType
-		val integerType = model.findSymbol("Integer") as ConstrainedType
-		
-		assertEquals(intType, (var1.type as SimpleTypeReference).type)
 	}
+	
+	@Test
+	def void testSerializingParentheizedType() {
+		val model = '''
+			package p;
+			type Int;
+			type Real;
+			type T {
+			} 
+		'''.parse
+		
+		val intType = model.findSymbol("Int") as ConstrainedType;
+		val realType = model.findSymbol("Real") as ConstrainedType;
+		val T = model.findSymbol("T") as ConstrainedType
+		T.symbols.add(ImlCustomFactory.INST.createSymbolDeclaration("x", 
+			ImlCustomFactory.INST.createHigherOrderType => [
+				domain = ImlCustomFactory.INST.createSimpleTypeReference(intType)
+				range = ImlCustomFactory.INST.createArrayType => [
+					type = ImlCustomFactory.INST.createSimpleTypeReference(realType)
+					dimensions.add(ImlCustomFactory.INST.createOptionalTermExpr)
+				]
+		]))
+		T.symbols.add(ImlCustomFactory.INST.createSymbolDeclaration("y", 
+			ImlCustomFactory.INST.createArrayType => [
+				type = ImlCustomFactory.INST.createHigherOrderType => [
+						domain = ImlCustomFactory.INST.createSimpleTypeReference(intType)
+						range = ImlCustomFactory.INST.createSimpleTypeReference(realType)
+					]
+				dimensions.add(ImlCustomFactory.INST.createOptionalTermExpr)
+			]))
+		
+		model.assertNoErrors
+		model.eResource.save(System.out, newHashMap)
+	}	
 }
