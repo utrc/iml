@@ -524,7 +524,7 @@ public class ImlTypeProvider {
 
 	/* Check whether t is primitive type */
 	def static boolean isPrimitive(HigherOrderType t) {
-		return ( t == Null || t == Int || t == Real || t == Bool || t == Any)
+		return ( t == Null || t.isInt || t.isReal || t.isBool || t == Any)
 	}
 
 	/* Check whether t is numeric type reference */
