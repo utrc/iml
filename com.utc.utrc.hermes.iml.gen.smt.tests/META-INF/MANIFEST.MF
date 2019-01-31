@@ -1,0 +1,17 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Tests
+Bundle-SymbolicName: com.utc.utrc.hermes.iml.gen.smt.tests
+Bundle-Version: 1.0.0.qualifier
+Bundle-Vendor: UTC
+Automatic-Module-Name: com.utc.utrc.hermes.iml.gen.smt.tests
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Require-Bundle: com.utc.utrc.hermes.iml.gen.smt;bundle-version="1.0.0",
+ com.utc.utrc.hermes.iml;bundle-version="1.0.0",
+ com.utc.utrc.hermes.iml.tests;bundle-version="1.0.0",
+ org.junit;bundle-version="4.12.0",
+ org.eclipse.xtext.testing,
+ org.eclipse.xtext.xbase.testing,
+ org.eclipse.xtext.xbase.lib
+Export-Package: com.utc.utrc.hermes.iml.gen.smt.tests.encoding
+Import-Package: com.utc.utrc.hermes.iml.gen.smt.tests.encoding
