@@ -176,7 +176,7 @@ public class ImlUtil {
 					types.addAll(((Extension) relation).getExtensions());
 				} else if (relation instanceof Alias) {
 					types.add(((Alias) relation).getType());
-				} else {
+				} else if (relation instanceof TraitExhibition){
 					types.addAll(((TraitExhibition) relation).getExhibitions());
 				}
 			}

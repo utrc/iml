@@ -256,30 +256,6 @@ class ImlScopeProviderTest {
 	}
 	
 	@Test
-	def scopeInsideLambda() {
-		val model = '''
-			package p;
-			type Int;
-			type Real;
-			type Bool;
-			
-			type T1 {
-				var1 : Int;
-			}
-			
-			type T2 {
-				fun : Int ~> Real;
-				formul : Bool := {
-					fun = lambda(x: T1) {
-						x.var1 = x.var1;
-					};
-				};
-			}
-		'''.parse
-		model.assertNoErrors
-	}
-	
-	@Test
 	def scopeInsideProgram() {
 		val model = '''
 			package p;
@@ -292,7 +268,6 @@ class ImlScopeProviderTest {
 			}
 			
 			type T2 {
-				fun : Int ~> Real;
 				prog: Int := {
 					var t1 : T1;
 					t1.var1;	
@@ -316,7 +291,7 @@ class ImlScopeProviderTest {
 			}
 			
 			type T2 {
-				vv : T1 := new T1{var1 = vvv; var2.vsub=5;};
+				vv : T1 := some(a:T1) {a.var1 = vvv && a.var2.vsub=5};
 				vvv: Int;
 			}
 			
@@ -341,7 +316,7 @@ class ImlScopeProviderTest {
 			}
 			
 			type T2 {
-				vv : T1<SubT> := oneof T1<SubT> {var1 = vvv; var2.vsub = 5};
+				vv : T1<SubT> := some(t: T1<SubT>) {t.var1 = vvv && t.var2.vsub = 5};
 				vvv: Int;
 			}
 			
@@ -381,12 +356,9 @@ class ImlScopeProviderTest {
 		val model = '''
 		package iml.notes ;
 		type RGB enum {red , green , blue} ;
-		assert "Green and blue are different" : RGB.green != RGB.red ;
+		assert "Green and blue are different" { RGB.green != RGB.red };
 		'''.parse
 		model.assertNoErrors
-		val assert = model.symbols.last as Assertion
-		val ref = assert.definition.left.left
-		assertScope(ref,ImlPackage::eINSTANCE.symbolReferenceTerm_Symbol,Arrays.asList("red", "green","blue"))
 		return
 	}
 	
@@ -403,13 +375,9 @@ class ImlScopeProviderTest {
 		};
 		sup : Employee ;
 		aEmployee : Employee := some(x:Employee) { x.level = 4 && x.supervisor = sup} ;
-		bEmployee : Employee := oneof Employee{level = 4 && supervisor = sup} ;
 		'''.parse
 		//Let's get all the elements and compute their scopes
-		val bEmployee = model.symbols.last as SymbolDeclaration
-		val constr = bEmployee.definition.left as ImplicitInstanceConstructor
-		val level = (constr.definition as SequenceTerm).^return.left.left.left
-		val scope = level.getScope(ImlPackage::eINSTANCE.symbolReferenceTerm_Symbol)
+		val aEmployee = model.symbols.last as SymbolDeclaration
 		model.assertNoErrors
 		return
 	}

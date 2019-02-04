@@ -1,71 +1,62 @@
 package com.utc.utrc.hermes.iml.typing
 
+import com.utc.utrc.hermes.iml.custom.ImlCustomFactory
 import com.utc.utrc.hermes.iml.iml.Addition
+import com.utc.utrc.hermes.iml.iml.ArrayAccess
 import com.utc.utrc.hermes.iml.iml.ArrayType
+import com.utc.utrc.hermes.iml.iml.AtomicExpression
+import com.utc.utrc.hermes.iml.iml.CaseTermExpression
 import com.utc.utrc.hermes.iml.iml.ConstrainedType
+import com.utc.utrc.hermes.iml.iml.EnumRestriction
+import com.utc.utrc.hermes.iml.iml.Extension
 import com.utc.utrc.hermes.iml.iml.FloatNumberLiteral
 import com.utc.utrc.hermes.iml.iml.FolFormula
 import com.utc.utrc.hermes.iml.iml.HigherOrderType
+import com.utc.utrc.hermes.iml.iml.ImlFactory
+import com.utc.utrc.hermes.iml.iml.ImplicitInstanceConstructor
+import com.utc.utrc.hermes.iml.iml.InstanceConstructor
 import com.utc.utrc.hermes.iml.iml.IteTermExpression
+import com.utc.utrc.hermes.iml.iml.LambdaExpression
 import com.utc.utrc.hermes.iml.iml.Multiplication
 import com.utc.utrc.hermes.iml.iml.NumberLiteral
-import com.utc.utrc.hermes.iml.iml.SignedAtomicFormula
+import com.utc.utrc.hermes.iml.iml.ParenthesizedTerm
+import com.utc.utrc.hermes.iml.iml.QuantifiedFormula
+import com.utc.utrc.hermes.iml.iml.SelfTerm
+import com.utc.utrc.hermes.iml.iml.SelfType
+import com.utc.utrc.hermes.iml.iml.SequenceTerm
 import com.utc.utrc.hermes.iml.iml.SimpleTypeReference
+import com.utc.utrc.hermes.iml.iml.Symbol
 import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
+import com.utc.utrc.hermes.iml.iml.SymbolReferenceTail
+import com.utc.utrc.hermes.iml.iml.SymbolReferenceTerm
 import com.utc.utrc.hermes.iml.iml.TermExpression
 import com.utc.utrc.hermes.iml.iml.TermMemberSelection
-import com.utc.utrc.hermes.iml.iml.SelfTerm
 import com.utc.utrc.hermes.iml.iml.TruthValue
-import java.util.Map
-
-import static extension com.utc.utrc.hermes.iml.typing.TypingServices.*
-import static extension org.eclipse.xtext.EcoreUtil2.*
-import java.util.HashMap
-import com.utc.utrc.hermes.iml.iml.ImlFactory
-import com.utc.utrc.hermes.iml.iml.AtomicExpression
-import com.utc.utrc.hermes.iml.iml.LambdaExpression
-import com.utc.utrc.hermes.iml.iml.SequenceTerm
-import com.utc.utrc.hermes.iml.iml.SymbolReferenceTerm
-import com.utc.utrc.hermes.iml.iml.SymbolReferenceTail
-import com.utc.utrc.hermes.iml.iml.ArrayAccess
-import org.eclipse.xtext.EcoreUtil2
-import com.utc.utrc.hermes.iml.iml.InstanceConstructor
 import com.utc.utrc.hermes.iml.iml.TupleConstructor
 import com.utc.utrc.hermes.iml.iml.TupleType
 import com.utc.utrc.hermes.iml.iml.TypeRestriction
-import java.util.Enumeration
-import com.utc.utrc.hermes.iml.iml.EnumRestriction
-import com.utc.utrc.hermes.iml.iml.Symbol
-import com.utc.utrc.hermes.iml.iml.ImplicitInstanceConstructor
-import org.eclipse.emf.ecore.util.EcoreUtil
-import com.utc.utrc.hermes.iml.iml.Assertion
-import com.utc.utrc.hermes.iml.iml.SelfType
-import com.utc.utrc.hermes.iml.iml.ParenthesizedTerm
-import com.utc.utrc.hermes.iml.iml.QuantifiedFormula
-import com.utc.utrc.hermes.iml.iml.CaseTermExpression
 import com.utc.utrc.hermes.iml.util.ImlUtil
-import com.utc.utrc.hermes.iml.custom.ImlCustomFactory
+import java.util.HashMap
+import java.util.Map
+import org.eclipse.emf.ecore.util.EcoreUtil
+import org.eclipse.xtext.EcoreUtil2
+
+import static org.eclipse.emf.ecore.util.EcoreUtil.*
+
+import static extension com.utc.utrc.hermes.iml.typing.TypingServices.*
+import static extension org.eclipse.xtext.EcoreUtil2.*
+import static extension com.utc.utrc.hermes.iml.lib.ImlStdLib.*
+import org.eclipse.emf.ecore.EObject
+import com.utc.utrc.hermes.iml.iml.Model
 
 public class ImlTypeProvider {
 
-	public static val Any = createBasicType('Any')
-
-	public static val Int = createBasicType('Int')
-
-	public static val Null = createBasicType('Null')
-
-	public static val Real = createBasicType('Real')
-
-	public static val Bool = createBasicType('Bool')
-
-	public static val String = createBasicType('String')
-
 	def static HigherOrderType termExpressionType(FolFormula t) {
-		termExpressionType(t, createSimpleTypeRef(t.getContainerOfType(ConstrainedType)))
+		termExpressionType(t, null)
 	}
 
 	def static HigherOrderType termExpressionType(TermExpression t) {
-		termExpressionType(t, createSimpleTypeRef(t.getContainerOfType(ConstrainedType)))
+		termExpressionType(t, null)
 	}
 	
 	def static HigherOrderType termExpressionType(FolFormula t, SimpleTypeReference context) {
@@ -73,10 +64,15 @@ public class ImlTypeProvider {
 			return termExpressionType((t as TermExpression), context)
 		}
 		if (t instanceof AtomicExpression) {
-			return Bool
+			return BOOL_REF
 		}
 		return t.left.termExpressionType(context);
 	}
+	
+		def static HigherOrderType termExpressionType(TermExpression t, SimpleTypeReference context) {
+			return termExpressionType(t, context, false)
+		}
+	
 
 	/* Compute the type of a TermExpression 
 	 * This is the most important function in the type provider. 
@@ -84,27 +80,24 @@ public class ImlTypeProvider {
 	 * that contains stereotypes, type and type binding information
 	 * for the term. 
 	 * */
-	def static HigherOrderType termExpressionType(TermExpression t, SimpleTypeReference context) {
+	def static HigherOrderType termExpressionType(TermExpression t, SimpleTypeReference context, boolean normalizeAliases) {
 
 		switch (t) {
 			// If the expression is "self", then its type is 
 			// type of the container type.
 			SelfTerm: {
-//				if (context.eContainer instanceof InstanceConstructor) {
-//					return context // This here refers to the container type constructor
-//				}
 				return bind(createBasicType(t.getContainerOfType(ConstrainedType)), context)
 			}
 			// Additions are among numeric types and the result is a numeric 
 			// type. If one of the two terms is real, then the type is real
 			// otherwise it is integer.
 			Addition: {
-				// note that in csl grammar, addition includes both "+" and "-".
-				if (t.left.termExpressionType(context).isEqual(Real) ||
-					t.right.termExpressionType(context).isEqual(Real)) {
-					return Real
+				// note that in iml grammar, addition includes both "+" and "-".
+				if (t.left.termExpressionType(context).isReal ||
+					t.right.termExpressionType(context).isReal) {
+					return REAL_REF
 				}
-				return Int
+				return INT_REF
 			}
 			// For reminder and modulo, the result is integer
 			// For multiplication and division, the result is numeric
@@ -113,15 +106,15 @@ public class ImlTypeProvider {
 			Multiplication: {
 
 				if (t.sign == '%' || t.sign == 'mod') {
-					return Int;
+					return INT_REF;
 				}
 
-				// note that in csl grammar, multiplication includes both "x" and "/".
-				if (t.left.termExpressionType(context).isEqual(Real) ||
-					t.right.termExpressionType(context).isEqual(Real) || t.sign == '/') {
-					return Real
+				// note that in iml grammar, multiplication includes both "x" and "/".
+				if (t.left.termExpressionType(context).isReal ||
+					t.right.termExpressionType(context).isReal || t.sign == '/') {
+					return REAL_REF
 				}
-				return Int;
+				return INT_REF;
 			}
 			// Compute the actual type reference which 
 			// depends on the types of the change of member selections
@@ -133,26 +126,16 @@ public class ImlTypeProvider {
 					return null // TODO Should we raise an exception better?
 			}
 			SymbolReferenceTerm: {
-				if (t.symbol instanceof ConstrainedType) {
-					// Reference to a literal
-					return createBasicType(t.symbol as ConstrainedType)
-				} else if (t.symbol.eContainer instanceof ConstrainedType &&
-					t.symbol.isLiteralOf(t.symbol.eContainer as ConstrainedType)) {
-					// Accessing specific literal
-					return createBasicType(t.symbol.eContainer as ConstrainedType)
-				} else {
-					// Reference to a symbol
-					return getSymbolReferenceType(t, context)
-				}
+				return getSymbolReferenceType(t, context)
 
 			}
 			// A number literal is always an integer
 			NumberLiteral: {
-				return Int;
+				return INT_REF;
 
 			}
 			FloatNumberLiteral: {
-				return Real;
+				return REAL_REF;
 
 			}
 			IteTermExpression: {
@@ -163,7 +146,7 @@ public class ImlTypeProvider {
 			}
 			
 			TruthValue: {
-				return Bool;
+				return BOOL_REF;
 			}
 			LambdaExpression: {
 				var HigherOrderType d = null
@@ -186,9 +169,7 @@ public class ImlTypeProvider {
 			TupleConstructor: {
 				return ImlFactory.eINSTANCE.createTupleType => [
 					symbols.addAll(t.elements.map [
-						val ts = ImlFactory.eINSTANCE.createSymbolDeclaration;
-						ts.type = it.termExpressionType(context)
-						ts
+						 ImlCustomFactory.INST.createSymbolDeclaration(null, it.termExpressionType(context));
 					]);
 				]
 			}
@@ -199,12 +180,20 @@ public class ImlTypeProvider {
 				return t.sub.termExpressionType(context)
 			} 
 			QuantifiedFormula : {
-				return Bool
+				return BOOL_REF
 			}
 			default: {
-				return Null
+				return NULL_REF
 			}
 		}
+	}
+	
+	def static isEnumLiteral(Symbol s) {
+		val container = EcoreUtil2.getContainerOfType(s, ConstrainedType)
+		if (container !== null) {
+			return isLiteralOf(s, container)
+		}
+		return false
 	}
 
 	def static isLiteralOf(Symbol s, ConstrainedType t) {
@@ -220,6 +209,8 @@ public class ImlTypeProvider {
 	
 	def static getSymbolRefSegmentType(SymbolReferenceTerm symbolRef) {
 		val symbolRefWithoutTail = ImlCustomFactory.INST.createSymbolReferenceTerm(symbolRef.symbol as SymbolDeclaration)
+		symbolRefWithoutTail.typeBinding.addAll(symbolRef.typeBinding.map[copy(it)])
+		
 		var TermExpression symbolRefTerm = symbolRefWithoutTail;
 		if (symbolRef.eContainer instanceof TermMemberSelection) {
 			symbolRefTerm = ImlCustomFactory.INST.createTermMemberSelection(
@@ -229,14 +220,28 @@ public class ImlTypeProvider {
 		return termExpressionType(symbolRefTerm, ImlCustomFactory.INST.createSimpleTypeReference(getContainerOfType(symbolRef, ConstrainedType)))
 	}
 
-	def static getSymbolReferenceType(SymbolReferenceTerm term, SimpleTypeReference context) {
-		//Change this call to include type parameters
-		var term_type = getType(term, context);
-	   	for (tail : term.tails) {
-			term_type = accessTail(term_type, tail)
+	def static getSymbolReferenceType(SymbolReferenceTerm sr, SimpleTypeReference context) {
+		if (sr.symbol instanceof ConstrainedType) {
+			if (isAlias(sr.symbol as ConstrainedType)) {
+				return getAliasType(sr.symbol as ConstrainedType)
+			} else {
+				// Reference to a literal
+				return createBasicType(sr.symbol as ConstrainedType)
+			}
+		} else if (sr.symbol.isEnumLiteral) {
+			// Accessing specific literal
+			return createBasicType(EcoreUtil2.getContainerOfType(sr.symbol, ConstrainedType))
+		} else {
+			// Reference to a symbol
+			//Change this call to include type parameters
+			var term_type = getType(sr, context);
+		   	for (tail : sr.tails) {
+				term_type = accessTail(term_type, tail)
+			}
+				
+			return term_type
 		}
-			
-		return term_type
+		
 	}
 
 	def static accessTail(HigherOrderType type, SymbolReferenceTail tail) {
@@ -293,6 +298,7 @@ public class ImlTypeProvider {
 	}
 	
 	// FIXME this is a temp implementation as we ignore SymbolDeclaration templates
+	// TODO do we need this? Why not getType(SymbolTermReference, SimpleTypeReference)?
 	def static HigherOrderType getType(SymbolDeclaration s, SimpleTypeReference ctx) {
 		if (ImlUtil.isGlobalSymbol(s)) {
 			return s.type // Global symbols doesn't need binding with context
@@ -309,7 +315,7 @@ public class ImlTypeProvider {
 			
 			for (rel : ctx.type.relations) {
 				switch (rel) {
-					com.utc.utrc.hermes.iml.iml.Extension: {
+					Extension: {
 						for (twp : rel.extensions) {
 							val target = twp.type
 							if (target instanceof SimpleTypeReference) {
@@ -330,15 +336,13 @@ public class ImlTypeProvider {
 		}
 	}
 
-	def static HigherOrderType getType(SymbolReferenceTerm s, SimpleTypeReference ctx) {
+	def static HigherOrderType getType(SymbolReferenceTerm s, SimpleTypeReference context) {
+		var ctx = context;
 		if (ctx === null) {
-			if (s.symbol instanceof SymbolDeclaration) {
-				return (s.symbol as SymbolDeclaration).getType()
-			} else if (s.symbol instanceof ConstrainedType) {
-				return createBasicType(s.symbol as ConstrainedType) 
-			}
+			ctx = getSymbolRefContext(s) as SimpleTypeReference
 		}
-		if (ctx.type === null) {
+		
+		if (ctx === null || ctx.type === null) {
 			if ( s.symbol instanceof SymbolDeclaration) {
 				if (! (s.symbol as SymbolDeclaration).isPolymorphic) {
 					return EcoreUtil.copy( (s.symbol as SymbolDeclaration).type)
@@ -359,10 +363,6 @@ public class ImlTypeProvider {
 				return ctx;
 			}
 			
-//			if(ImlUtil.isGlobalSymbol(s.symbol)) {
-//				return (s.symbol as SymbolDeclaration).type
-//			}
-			
 			if (ctx.type.symbols.contains(s.symbol as SymbolDeclaration) || symbolInsideLambda(s.symbol as SymbolDeclaration) || symbolInsideProgram(s.symbol as SymbolDeclaration)) {
 				return bind(s, ctx)
 			}
@@ -371,7 +371,7 @@ public class ImlTypeProvider {
 
 		for (rel : ctx.type.relations) {
 			switch (rel) {
-				com.utc.utrc.hermes.iml.iml.Extension: {
+				Extension: {
 					for (twp : rel.extensions) {
 						val target = twp.type
 						if (target instanceof SimpleTypeReference) {
@@ -388,7 +388,35 @@ public class ImlTypeProvider {
 		}
 		return bind(s, ctx);
 	}
-
+	
+	def static getSymbolRefContext(SymbolReferenceTerm symbolRef) {
+		return getSymbolRefContext(symbolRef, symbolRef.eContainer)		
+	}
+	
+	def static SimpleTypeReference getSymbolRefContext(SymbolReferenceTerm symbolRef, EObject container) {
+		switch (container) {
+			TermMemberSelection: {
+				if (container.member == symbolRef.symbol) {
+					return termExpressionType(container.receiver) as SimpleTypeReference
+				}
+			}
+			ConstrainedType: {
+				if (container.symbols.contains(symbolRef.symbol)) {
+					return createBasicType(container)
+				}
+				for (target : ImlUtil.getRelationTypes(container, Extension)) {
+					if (target.type instanceof SimpleTypeReference && (target.type as SimpleTypeReference).type.symbols.contains(symbolRef.symbol)) {
+						return target.type as SimpleTypeReference
+					}
+				}
+			}
+			Model: {
+				return null; // End of recursion
+			}
+		}
+		return getSymbolRefContext(symbolRef, container.eContainer)
+	}
+		
 	/**
 	 * Check if symbol declaration is defined inside a program
 	 */
@@ -522,82 +550,8 @@ public class ImlTypeProvider {
 		}
 	}
 
-	/* Check whether t is primitive type */
-	def static boolean isPrimitive(HigherOrderType t) {
-		return ( t == Null || t.isInt || t.isReal || t.isBool || t == Any)
-	}
-
-	/* Check whether t is numeric type reference */
-	def static boolean isNumeric(HigherOrderType t) {
-		return t.isInt || t.isReal
-	}
-	
-	def static boolean isInt(HigherOrderType t) {
-		if (t instanceof SimpleTypeReference) {
-			return isInt(t.type)
-		}
-		return false
-	}
-	
-	def static boolean isInt(ConstrainedType t) {
-		// FIXME we need to find better way to do this
-		return Int.type.name == t.name
-	}
-	
-	def static boolean isReal(HigherOrderType t) {
-		if (t instanceof SimpleTypeReference) {
-			return isReal(t.type)
-		}
-		return false
-	}
-	
-	def static boolean isReal(ConstrainedType t) {
-		return Real.type.name == t.name
-	}
-	
-	def static boolean isBool(HigherOrderType t) {
-		if (t instanceof SimpleTypeReference) {
-			return isBool(t.type)
-		}
-		return false
-	}
-	
-	def static boolean isBool(ConstrainedType t) {
-		return Bool.type.name == t.name
-	}
-
-	/* Check whether t is numeric type reference */
-	def static boolean isNumeric(ConstrainedType t) {
-		if (t == Int.type || t == Real.type) {
-			return true;
-		}
-		return false;
-	}
-	
 	def static HigherOrderType ct2hot(ConstrainedType type) {
 		return createBasicType(type)
 	}
-	
-//	def static removeAlias(HigherOrderType type) {
-//		if (type instanceof SimpleTypeReference) {
-//			return removeAlias(type.type)
-//		} 
-//		return type;
-//	}
-//	
-//	def static removeAlias(ConstrainedType type) {
-//		for (RelationInstance relation : type.relations) {
-//			if (relation instanceof Alias) {
-//				return removeAlias(relation.target)
-//			}
-//		}
-//		return type;
-//	}
-//	
-//	def static removeAlias(Symbol symbol) {
-//		if (symbol instanceof ConstrainedType) {
-//			return removeAlias(symbol as ConstrainedType)
-//		}
-//	}
 
 }

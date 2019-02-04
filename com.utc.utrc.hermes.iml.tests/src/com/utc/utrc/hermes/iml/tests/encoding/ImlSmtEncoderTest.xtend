@@ -504,7 +504,7 @@ class ImlSmtEncoderTest {
 			package p;
 			type Int;
 			type T1 {
-				assert var1 : if (true && false) {5};
+				assert var1 { if (true && false) {5}};
 			}
 			varT : T1;
 		''', "T1");
@@ -597,7 +597,7 @@ class ImlSmtEncoderTest {
 				type Int;
 				type T1 {
 					var1 : Int;
-					assert : var1 > 0;
+					assert { var1 > 0};
 				}
 			''', "T1");
 			
