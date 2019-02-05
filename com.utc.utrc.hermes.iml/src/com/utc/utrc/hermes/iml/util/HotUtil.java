@@ -8,17 +8,7 @@ import com.utc.utrc.hermes.iml.iml.TupleType;
 
 public class HotUtil {
 	
-	public static HigherOrderType removeParenthesis(HigherOrderType type) {
-//		if (type instanceof ParenthesizedType) {
-//			return removeParenthesis(((ParenthesizedType) type).getSubexpression());
-//		} else {
-			return type;
-//		}
-	}
-	
 	public static boolean isSimpleHot(HigherOrderType type) {
-		type = removeParenthesis(type);
-
 		if (isActualHot(type)) {
 			if (containsHot(type.getDomain())) {
 				return false;
@@ -54,20 +44,9 @@ public class HotUtil {
 	}
 	
 	public static boolean isActualHot(HigherOrderType type) {
-		if (removeParenthesis(type).getRange() != null) {
+		if (type.getRange() != null) {
 			return true;
 		}
 		return false;
 	}
-	
-	public static HigherOrderType domain(HigherOrderType type) {
-		type = removeParenthesis(type);
-		return removeParenthesis(type.getDomain());
-	}
-	
-	public static HigherOrderType range(HigherOrderType type) {
-		type = removeParenthesis(type);
-		return removeParenthesis(type.getRange());
-	}
-
 }

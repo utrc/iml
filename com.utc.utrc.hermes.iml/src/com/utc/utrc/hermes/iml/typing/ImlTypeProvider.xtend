@@ -462,6 +462,7 @@ public class ImlTypeProvider {
 	}
 
 	def static bind(HigherOrderType t, SimpleTypeReference ctx) {
+		if (ctx === null) return t; // Precondition
 		var ctxbinds = new HashMap<ConstrainedType, HigherOrderType>();
 		if (ctx.typeBinding.size == ctx.type.typeParameter.size) {
 			for (i : 0 ..< ctx.type.typeParameter.size) {

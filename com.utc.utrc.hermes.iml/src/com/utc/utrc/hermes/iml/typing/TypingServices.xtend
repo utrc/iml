@@ -76,31 +76,6 @@ public class TypingServices {
 
 	def static HigherOrderType clone(HigherOrderType other) {
 		return EcoreUtil.copy(other)
-//		if (other !== null) {
-//			if (other instanceof SimpleTypeReference) {
-//				return clone(other as SimpleTypeReference)
-//			}
-//
-//			if (other instanceof ArrayType) {
-//				return clone(other as ArrayType)
-//			}
-//
-//			if (other instanceof TupleType) {
-//				return clone(other as TupleType)
-//			}
-//
-//			// Not a leaf node
-//			var ret = ImlFactory::eINSTANCE.createHigherOrderType();
-//			// TODO We are not cloning the property list here
-//			ret.domain = clone(other.domain);
-//			if (other.range !== null) {
-//				ret.range = clone(other.range);
-//			}
-//			return ret
-//
-//		} else {
-//			return null
-//		}
 
 	}
 
@@ -157,7 +132,9 @@ public class TypingServices {
 		return isEqual(resolveAliases(left), resolveAliases(right), false);
 	}
 
-	/* Check whether two type references are the same */
+	/**
+	 * Check whether two type are the same or at least are compatible if compatiblityCheck was true
+	 */
 	def static boolean isEqual(HigherOrderType left, HigherOrderType right, boolean compatibilityCheck) {
 		if (left === null && right === null) {
 			return true
@@ -378,7 +355,7 @@ public class TypingServices {
 	/* Check if two types are compatible or not
 	 * */
 	def static boolean isCompatible(HigherOrderType expected, HigherOrderType actual) {
-		return isEqual(expected, actual, true)
+		return isEqual(resolveAliases(expected), resolveAliases(actual), true)
 	}
 
 	def static isSingleElementTuple(HigherOrderType type) {
@@ -439,94 +416,63 @@ public class TypingServices {
 		
 	}
 	
-	def static HigherOrderType trueType(HigherOrderType type) {
-		// Remove parenthesis and aliases!
-	}
-
-	// TODO
-	def static boolean isTemplateParameter(HigherOrderType t) {
-//		if (t.type.eContainer === null) {
-//			return false
-//		} else if (!(t.type.eContainer instanceof Model)) {
-//			// We do not allow nested types
-//			return true
-//		}
-		return false
-	}
-
 	/* Check whether a constrained type is a template  */
 	def static boolean isTemplate(ConstrainedType ct) {
 		return ct.template;
 	}
 
-	/* compute what type t is used to bind a term which is declared in parametric constrainedtype container and is being used in instantiated constrainedtype c */
-	// TODO This cloning function should be revisited
-	def static TermExpression cloneTermExpression(TermExpression te) {
-		switch (te) {
-			default:
-				null
-		}
-	}
-
-	def static boolean isTermExpressionLiteralPosInt(TermExpression te) {
-		switch (te) {
-			NumberLiteral: {
-				return !te.neg
-			}
-			default:
-				return false
-		}
-	}
-
-	def static boolean isTermExpressionLiteralPosNum(TermExpression te) {
-		switch (te) {
-			NumberLiteral: {
-				return !te.neg
-			}
-			FloatNumberLiteral: {
-				return !te.neg
-			}
-			default:
-				return false
-		}
-	}
-
-	/* Print information of a type reference */
-	def static String printType(HigherOrderType t) {
-		var String s = ''
-
-		return s
-	}
-
-	def static qualifiedName(Symbol elem) {
-		var EObject e = elem.eContainer;
-		var StringBuffer s = new StringBuffer()
-		s.append(elem.name);
-		while (e !== null) {
-			if (e instanceof Model) {
-				s.insert(0, e.name.replace('.', '::') + '::');
-			} else if (e instanceof ConstrainedType) {
-				s.insert(0, e.name + '::');
-			}
-			e = e.eContainer;
-		}
-		return s.toString
-	}
-
-	def static isExtension(ConstrainedType t, String qname) {
-		if (qualifiedName(t).equals(qname)) {
-			return true;
-		}
-		var extensions = getAllSuperTypes(t);
-		for (l : extensions) {
-			for (sup : l) {
-				if (sup.qualifiedName.equals(qname)) {
-					return true;
-				}
-			}
-		}
-		return false;
-	}
+//	def static boolean isTermExpressionLiteralPosInt(TermExpression te) {
+//		switch (te) {
+//			NumberLiteral: {
+//				return !te.neg
+//			}
+//			default:
+//				return false
+//		}
+//	}
+//
+//	def static boolean isTermExpressionLiteralPosNum(TermExpression te) {
+//		switch (te) {
+//			NumberLiteral: {
+//				return !te.neg
+//			}
+//			FloatNumberLiteral: {
+//				return !te.neg
+//			}
+//			default:
+//				return false
+//		}
+//	}
+//
+//	def static qualifiedName(Symbol elem) {
+//		var EObject e = elem.eContainer;
+//		var StringBuffer s = new StringBuffer()
+//		s.append(elem.name);
+//		while (e !== null) {
+//			if (e instanceof Model) {
+//				s.insert(0, e.name.replace('.', '::') + '::');
+//			} else if (e instanceof ConstrainedType) {
+//				s.insert(0, e.name + '::');
+//			}
+//			e = e.eContainer;
+//		}
+//		return s.toString
+//	}
+//
+//	def static isExtension(ConstrainedType t, String qname) {
+//		if (qualifiedName(t).equals(qname)) {
+//			return true;
+//		}
+//		var extensions = getAllSuperTypes(t);
+//		for (l : extensions) {
+//			for (sup : l) {
+//				if (sup.qualifiedName.equals(qname)) {
+//					return true;
+//				}
+//			}
+//		}
+//		return false;
+//	}
 
 	def static isSimpleTR(HigherOrderType hot) {
 		return hot instanceof SimpleTypeReference

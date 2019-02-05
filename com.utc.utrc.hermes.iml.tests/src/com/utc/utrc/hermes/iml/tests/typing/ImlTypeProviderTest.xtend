@@ -26,6 +26,7 @@ import com.utc.utrc.hermes.iml.iml.IteTermExpression
 import com.utc.utrc.hermes.iml.iml.TermMemberSelection
 
 import static com.utc.utrc.hermes.iml.lib.ImlStdLib.*
+import com.utc.utrc.hermes.iml.services.ImlGrammarAccess.SymbolDeclarationElements
 
 /**
  * Test related helper methods
@@ -343,6 +344,34 @@ class ImlTypeProviderTest {
 			
 		assertEquals(List, exprType.type)		
 		assertEquals(Int, (exprType.typeBinding.get(0) as SimpleTypeReference).type)
+	}
+	
+	@Test
+	def testTermExpressionType_TemplateWithExtension() {
+		val model = '''
+			package p;
+			type Int;
+			type Real;
+			
+			type T1<T> {
+				t1Var : T -> T;
+			}
+			
+			type T2<T> extends (T1<Int>) {
+				t2Var : T[];
+			}
+			
+			type T3 {
+				var1 : T2<Real>;
+				x : Int -> Int := var1.t1Var;
+			}
+		'''.parse
+		
+		model.assertNoErrors
+		
+		val x = (model.findSymbol("T3") as ConstrainedType).findSymbol("x") as SymbolDeclaration
+		val xExprType = ImlTypeProvider.termExpressionType(x.definition)
+		assertTrue(TypingServices.isEqual(xExprType, x.type))
 	}
 	
 	@Test
