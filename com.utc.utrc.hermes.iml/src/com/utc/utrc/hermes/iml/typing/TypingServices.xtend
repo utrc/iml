@@ -22,6 +22,7 @@ import com.utc.utrc.hermes.iml.iml.TraitExhibition
 import com.utc.utrc.hermes.iml.iml.ImplicitInstanceConstructor
 import org.eclipse.emf.ecore.util.EcoreUtil
 import com.utc.utrc.hermes.iml.custom.ImlCustomFactory
+import static extension com.utc.utrc.hermes.iml.lib.ImlStdLib.*
 
 public class TypingServices {
 
@@ -75,31 +76,6 @@ public class TypingServices {
 
 	def static HigherOrderType clone(HigherOrderType other) {
 		return EcoreUtil.copy(other)
-//		if (other !== null) {
-//			if (other instanceof SimpleTypeReference) {
-//				return clone(other as SimpleTypeReference)
-//			}
-//
-//			if (other instanceof ArrayType) {
-//				return clone(other as ArrayType)
-//			}
-//
-//			if (other instanceof TupleType) {
-//				return clone(other as TupleType)
-//			}
-//
-//			// Not a leaf node
-//			var ret = ImlFactory::eINSTANCE.createHigherOrderType();
-//			// TODO We are not cloning the property list here
-//			ret.domain = clone(other.domain);
-//			if (other.range !== null) {
-//				ret.range = clone(other.range);
-//			}
-//			return ret
-//
-//		} else {
-//			return null
-//		}
 
 	}
 
@@ -152,20 +128,26 @@ public class TypingServices {
 	}
 	
 	def static boolean isEqual(HigherOrderType left, HigherOrderType right) {
-		return isEqual(left, right, true);
+		// We almost always wants to resolve aliases
+		return isEqual(resolveAliases(left), resolveAliases(right), false);
 	}
 
-	/* Check whether two type references are the same */
-	def static boolean isEqual(HigherOrderType left, HigherOrderType right, boolean resolveAliases) {
+	/**
+	 * Check whether two type are the same or at least are compatible if compatiblityCheck was true
+	 */
+	def static boolean isEqual(HigherOrderType left, HigherOrderType right, boolean compatibilityCheck) {
 		if (left === null && right === null) {
 			return true
 		} else if (left === null || right === null) {
 			return false
 		}
+				
+		if (left instanceof TupleType && (left as TupleType).symbols.size == 1) {
+			return isEqual((left as TupleType).symbols.get(0).type, right, compatibilityCheck)
+		}
 		
-		if (resolveAliases) {
-			//remove aliases
-			return isEqual(resolveAliases(left), resolveAliases(right), false);
+		if (right instanceof TupleType && (right as TupleType).symbols.size == 1) {
+			return isEqual(left, (right as TupleType).symbols.get(0).type, compatibilityCheck)
 		}
 		
 		if (left.class != right.class) {
@@ -173,28 +155,28 @@ public class TypingServices {
 		}
 
 		if (left instanceof SimpleTypeReference) {
-			if (!isEqual(left as SimpleTypeReference, right as SimpleTypeReference, resolveAliases)) {
+			if (!isEqual(left as SimpleTypeReference, right as SimpleTypeReference, compatibilityCheck)) {
 				return false
 			}
 		}
 
 		if (left instanceof ArrayType) {
-			if (!isEqual(left as ArrayType, right as ArrayType, resolveAliases)) {
+			if (!isEqual(left as ArrayType, right as ArrayType, compatibilityCheck)) {
 				return false
 			}
 		}
 
 		if (left instanceof TupleType) {
-			if (!isEqual(left as TupleType, right as TupleType, resolveAliases)) {
+			if (!isEqual(left as TupleType, right as TupleType, compatibilityCheck)) {
 				return false
 			}
 		}
 
-		if (!isEqual(left.domain, right.domain, resolveAliases)) {
+		if (!isEqual(left.domain, right.domain, compatibilityCheck)) {
 			return false
 		}
 
-		if (!isEqual(left.range, right.range, resolveAliases)) {
+		if (!isEqual(left.range, right.range, compatibilityCheck)) {
 			return false
 		}
 
@@ -202,14 +184,14 @@ public class TypingServices {
 	}
 
 	/* Check whether two type references are the same */
-	def static boolean isEqual(ArrayType left, ArrayType right, boolean resolveAliases) {
+	def static boolean isEqual(ArrayType left, ArrayType right, boolean compatibilityCheck) {
 		if (left === null && right === null) {
 			return true
 		} else if (left === null || right === null) {
 			return false
 		}
 
-		if (!isEqual(left.type, right.type, resolveAliases)) {
+		if (!isEqual(left.type, right.type, compatibilityCheck)) {
 			return false
 		}
 
@@ -220,12 +202,12 @@ public class TypingServices {
 		return true
 	}
 
-	def static boolean isEqual(TupleType left, TupleType right, boolean resolveAliases) {
+	def static boolean isEqual(TupleType left, TupleType right, boolean compatibilityCheck) {
 		if (left.symbols.length != right.symbols.length) {
 			return false
 		} else {
 			for (i : 0 ..< left.symbols.length) {
-				if (!isEqual(left.symbols.get(i).type, right.symbols.get(i).type, resolveAliases)) {
+				if (!isEqual(left.symbols.get(i).type, right.symbols.get(i).type, compatibilityCheck)) {
 					return false
 				}
 			}
@@ -234,13 +216,13 @@ public class TypingServices {
 	}
 
 	//TODO Equal means that the definitions are also equal
-	def static boolean isEqual(PropertyList left, PropertyList right, boolean resolveAliases) {
+	def static boolean isEqual(PropertyList left, PropertyList right, boolean compatibilityCheck) {
 		if (left.properties.size != right.properties.size) {
 			return false;
 		}
 
 		for (i : 0 ..< left.properties.size) {
-			if (! isEqual(left.properties.get(i).ref, right.properties.get(i).ref, resolveAliases)) {
+			if (! isEqual(left.properties.get(i).ref, right.properties.get(i).ref, compatibilityCheck)) {
 				return false
 			}
 		}
@@ -249,20 +231,30 @@ public class TypingServices {
 	}
 
 	/* Check whether two type references are the same */
-	def static boolean isEqual(SimpleTypeReference left, SimpleTypeReference right, boolean resolveAliases) {
+	def static boolean isEqual(SimpleTypeReference left, SimpleTypeReference right, boolean compatibilityCheck) {
 		// Check pre condition for primitives
+		if (compatibilityCheck) {
+			if (left.isNumeric && right.isNumeric) {
+				if (left.isReal || (left.isInt && right.isInt)) {
+					return true;
+				}
+			}
+			if (right.allSuperTypes.flatten.exists[isEqual(it, left)]) {
+				return true; // Found compatible super type
+			}
+		}
+		
 		if (left.isPrimitive || right.isPrimitive) {
 			return left.type.name.equals(right.type.name)
 		}
+		
 		if (!left.type.isEqual(right.type)) {
 			return false
-		} // if (left.type.name != right.type.name || left.type.template != right.type.template || left.type.extends != right.type.extends ) {
-		// return false
-		else if (left.typeBinding.size != right.typeBinding.size) {
+		} else if (left.typeBinding.size != right.typeBinding.size) {
 			return false
 		} else {
 			for (i : 0 ..< left.typeBinding.size) {
-				if (! left.typeBinding.get(i).isEqual(right.typeBinding.get(i), resolveAliases)) {
+				if (! left.typeBinding.get(i).isEqual(right.typeBinding.get(i), compatibilityCheck)) {
 					return false
 				}
 			}
@@ -360,111 +352,14 @@ public class TypingServices {
 		return retVal
 	}
 
-	/* Check whether actual paramemter's type is compatible with formal/signature parameter's type.
-	 * If the flag checkStereotypes is true, then also compare stereotypes. 
+	/* Check if two types are compatible or not
 	 * */
-	def static boolean isCompatible(HigherOrderType actual, HigherOrderType sig) {
-		/* 
-		 * if (actual.array || sig.array) {
-		 * 	if (actual.dimension.size != sig.dimension.size) {
-		 * 		return false;
-		 * 	}
-
-		 * }
-		 * if (sig.type.name == 'Any')
-		 * 	return true
-		 * if (sig.numeric && actual.numeric) {
-		 * 	if ((sig.type.name == 'Real') || (sig.type.name == 'Int' && actual.type.name != 'Real'))
-		 * 		return true
-		 * 	else
-		 * 		return false
-		 * }
-		 * if (sig.isEqual(actual))
-		 * 	return true
-		 * // if (checkStereotypes && ! actual.stereotypes.containsAll(sig.stereotypes))
-		 * // return false
-		 * if (! sig.type.isSuperType(actual.type))
-		 * 	return false;
-
-		 * var str = sig.allSuperTypesReferences;
-		 * for (level : str) {
-		 * 	for (tr : level) {
-		 * 		if (tr.type == actual.type) {
-		 * 			var TypeReference bounded = tr.bindTypeRefWith(sig)
-		 * 			if (bounded.typeBinding.size != actual.typeBinding.size) {
-		 * 				return false;
-		 * 			}
-		 * 			for (i : 0 ..< bounded.typeBinding.size) {
-		 * 				if (! bounded.typeBinding.get(i).isEqual(actual.typeBinding.get(i))) {
-		 * 					return false;
-		 * 				}
-		 * 			}
-		 * 		}
-		 * 	}
-		 * }
-		 */
-		 
-		return isEqual(actual, sig, true);
+	def static boolean isCompatible(HigherOrderType expected, HigherOrderType actual) {
+		return isEqual(resolveAliases(expected), resolveAliases(actual), true)
 	}
 
-	// TODO
-	def static boolean isSuperType(HigherOrderType t, HigherOrderType sub, boolean checkStereotypes) {
-		var str = sub.allSuperTypes;
-		for (level : str) {
-			for (tr : level) {
-//				if (tr.type == t.type) {
-//					var TypeReference bounded = tr.bindTypeRefWith(sub)
-//					if (bounded.typeBinding.size == t.typeBinding.size) {
-//						var found = true;
-//						for (i : 0 ..< bounded.typeBinding.size) {
-//							if (! bounded.typeBinding.get(i).isEqual(t.typeBinding.get(i))) {
-//								found = false;
-//							}
-//						}
-//						if (found) {
-//							return true;
-//						}
-//					}
-//				}
-			}
-		}
-		return false;
-	}
-
-	/* Check whether one ConstrainedType is a super type of the other */
-	def static boolean isSuperType(ConstrainedType t, ConstrainedType sub) {
-
-		if (t.name == 'Any')
-			return true;
-		if (t == sub)
-			return true;
-
-		val closed = <ConstrainedType>newArrayList()
-		val retval = new ArrayList<List<ConstrainedType>>()
-		retval.add(new ArrayList<ConstrainedType>());
-		retval.get(0).add(sub);
-		var index = 0;
-		while (retval.get(index).size() > 0) {
-			val toadd = <ConstrainedType>newArrayList();
-			for (current : retval.get(index)) {
-//				for (sup : current.superType) {
-//					if (!closed.contains(sup.type)) {
-//						if (sup.type.isEqual(t)) {
-//							return true;
-//						}
-//						toadd.add(sup.type)
-//					}
-//				}
-				closed.add(current)
-			}
-			if (toadd.size() > 0) {
-				retval.add(toadd)
-				index = index + 1
-			} else {
-				return false;
-			}
-		}
-		return false
+	def static isSingleElementTuple(HigherOrderType type) {
+		return type instanceof TupleType && (type as TupleType).symbols.size == 0
 	}
 
 	/* A non-template type without stereotype is a pure type */
@@ -521,94 +416,63 @@ public class TypingServices {
 		
 	}
 	
-	def static HigherOrderType trueType(HigherOrderType type) {
-		// Remove parenthesis and aliases!
-	}
-
-	// TODO
-	def static boolean isTemplateParameter(HigherOrderType t) {
-//		if (t.type.eContainer === null) {
-//			return false
-//		} else if (!(t.type.eContainer instanceof Model)) {
-//			// We do not allow nested types
-//			return true
-//		}
-		return false
-	}
-
 	/* Check whether a constrained type is a template  */
 	def static boolean isTemplate(ConstrainedType ct) {
 		return ct.template;
 	}
 
-	/* compute what type t is used to bind a term which is declared in parametric constrainedtype container and is being used in instantiated constrainedtype c */
-	// TODO This cloning function should be revisited
-	def static TermExpression cloneTermExpression(TermExpression te) {
-		switch (te) {
-			default:
-				null
-		}
-	}
-
-	def static boolean isTermExpressionLiteralPosInt(TermExpression te) {
-		switch (te) {
-			NumberLiteral: {
-				return !te.neg
-			}
-			default:
-				return false
-		}
-	}
-
-	def static boolean isTermExpressionLiteralPosNum(TermExpression te) {
-		switch (te) {
-			NumberLiteral: {
-				return !te.neg
-			}
-			FloatNumberLiteral: {
-				return !te.neg
-			}
-			default:
-				return false
-		}
-	}
-
-	/* Print information of a type reference */
-	def static String printType(HigherOrderType t) {
-		var String s = ''
-
-		return s
-	}
-
-	def static qualifiedName(Symbol elem) {
-		var EObject e = elem.eContainer;
-		var StringBuffer s = new StringBuffer()
-		s.append(elem.name);
-		while (e !== null) {
-			if (e instanceof Model) {
-				s.insert(0, e.name.replace('.', '::') + '::');
-			} else if (e instanceof ConstrainedType) {
-				s.insert(0, e.name + '::');
-			}
-			e = e.eContainer;
-		}
-		return s.toString
-	}
-
-	def static isExtension(ConstrainedType t, String qname) {
-		if (qualifiedName(t).equals(qname)) {
-			return true;
-		}
-		var extensions = getAllSuperTypes(t);
-		for (l : extensions) {
-			for (sup : l) {
-				if (sup.qualifiedName.equals(qname)) {
-					return true;
-				}
-			}
-		}
-		return false;
-	}
+//	def static boolean isTermExpressionLiteralPosInt(TermExpression te) {
+//		switch (te) {
+//			NumberLiteral: {
+//				return !te.neg
+//			}
+//			default:
+//				return false
+//		}
+//	}
+//
+//	def static boolean isTermExpressionLiteralPosNum(TermExpression te) {
+//		switch (te) {
+//			NumberLiteral: {
+//				return !te.neg
+//			}
+//			FloatNumberLiteral: {
+//				return !te.neg
+//			}
+//			default:
+//				return false
+//		}
+//	}
+//
+//	def static qualifiedName(Symbol elem) {
+//		var EObject e = elem.eContainer;
+//		var StringBuffer s = new StringBuffer()
+//		s.append(elem.name);
+//		while (e !== null) {
+//			if (e instanceof Model) {
+//				s.insert(0, e.name.replace('.', '::') + '::');
+//			} else if (e instanceof ConstrainedType) {
+//				s.insert(0, e.name + '::');
+//			}
+//			e = e.eContainer;
+//		}
+//		return s.toString
+//	}
+//
+//	def static isExtension(ConstrainedType t, String qname) {
+//		if (qualifiedName(t).equals(qname)) {
+//			return true;
+//		}
+//		var extensions = getAllSuperTypes(t);
+//		for (l : extensions) {
+//			for (sup : l) {
+//				if (sup.qualifiedName.equals(qname)) {
+//					return true;
+//				}
+//			}
+//		}
+//		return false;
+//	}
 
 	def static isSimpleTR(HigherOrderType hot) {
 		return hot instanceof SimpleTypeReference

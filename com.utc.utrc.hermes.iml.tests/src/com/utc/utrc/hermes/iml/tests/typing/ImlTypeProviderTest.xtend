@@ -25,6 +25,9 @@ import com.utc.utrc.hermes.iml.iml.SequenceTerm
 import com.utc.utrc.hermes.iml.iml.IteTermExpression
 import com.utc.utrc.hermes.iml.iml.TermMemberSelection
 
+import static com.utc.utrc.hermes.iml.lib.ImlStdLib.*
+import com.utc.utrc.hermes.iml.services.ImlGrammarAccess.SymbolDeclarationElements
+
 /**
  * Test related helper methods
  * @author Ayman Elkfrawy
@@ -41,27 +44,27 @@ class ImlTypeProviderTest {
 	
 	@Test
 	def testTermExpressionType_withAddition_int() {
-		assertFormulaType("5 + 6", "Int", ImlTypeProvider.Int);
+		assertFormulaType("5 + 6", "Int", INT_REF);
 	}
 	
 	@Test
 	def testTermExpressionType_withAddition_real() {
-		assertFormulaType("5 * 6.5", "Real", ImlTypeProvider.Real);
+		assertFormulaType("5 * 6.5", "Real", REAL_REF);
 	}
 	
 	@Test
 	def testTermExpressionType_withAddition_realDiv() {
-		assertFormulaType("5 / 6", "Real",ImlTypeProvider.Real);
+		assertFormulaType("5 / 6", "Real",REAL_REF);
 	}
 	
 	@Test
 	def testTermExpressionType_withAddition_boolean() {
-		assertFormulaType("5 = 6", "Bool", ImlTypeProvider.Bool);
+		assertFormulaType("5 = 6", "Bool", BOOL_REF);
 	}
 	
 	@Test
 	def testTermExpressionType_withAnd_boolean() {
-		assertFormulaType("True && False", "Bool", ImlTypeProvider.Bool);
+		assertFormulaType("true && false", "Bool", BOOL_REF);
 	}
 	
 	def assertFormulaType(String formula, String declaredType, HigherOrderType type) {
@@ -344,13 +347,41 @@ class ImlTypeProviderTest {
 	}
 	
 	@Test
+	def testTermExpressionType_TemplateWithExtension() {
+		val model = '''
+			package p;
+			type Int;
+			type Real;
+			
+			type T1<T> {
+				t1Var : T -> T;
+			}
+			
+			type T2<T> extends (T1<Int>) {
+				t2Var : T[];
+			}
+			
+			type T3 {
+				var1 : T2<Real>;
+				x : Int -> Int := var1.t1Var;
+			}
+		'''.parse
+		
+		model.assertNoErrors
+		
+		val x = (model.findSymbol("T3") as ConstrainedType).findSymbol("x") as SymbolDeclaration
+		val xExprType = ImlTypeProvider.termExpressionType(x.definition)
+		assertTrue(TypingServices.isEqual(xExprType, x.type))
+	}
+	
+	@Test
 	def testTermExpressionType_LambdaWithOneElement() {
 		val model = '''
 			package p;
 			type Int;
 			type Bool;
 			type t1 {
-				varx : (Int)->Bool := lambda (p1: Int) {True;};
+				varx : (Int)->Bool := fun (p1: Int) {true;};
 			}
 		'''.parse
 		
@@ -359,8 +390,8 @@ class ImlTypeProviderTest {
 		val Int = model.findSymbol("Int")
 		val exprType = ImlTypeProvider.termExpressionType(t1.findSymbol("varx").definition)
 		
-		assertEquals(Int, ((exprType.domain as TupleType).symbols.get(0).type as SimpleTypeReference).type)
-		assertEquals(ImlTypeProvider.Bool, exprType.range)
+		assertEquals(Int, (exprType.domain  as SimpleTypeReference).type)
+		assertEquals(BOOL_REF, exprType.range)
 	}
 	
 	@Test
@@ -368,8 +399,9 @@ class ImlTypeProviderTest {
 		val model = '''
 			package p;
 			type Int;
+			type Bool;
 			type t1 {
-				varx : (Int)->Int := lambda (p1: Int) {True;3*5;};
+				varx : (Int)->Int := fun (p1: Int) {var x: Bool := true; 3*5;};
 			}
 		'''.parse
 		
@@ -378,8 +410,8 @@ class ImlTypeProviderTest {
 		val exprType = ImlTypeProvider.termExpressionType(t1.findSymbol("varx").definition)
 		val Int = model.findSymbol("Int")
 		
-		assertEquals(Int,  ((exprType.domain as TupleType).symbols.get(0).type as SimpleTypeReference).type)
-		assertEquals(ImlTypeProvider.Int, exprType.range)
+		assertEquals(Int, (exprType.domain as SimpleTypeReference).type)
+		assertEquals(INT_REF, exprType.range)
 	}
 	
 	@Test
@@ -490,7 +522,7 @@ class ImlTypeProviderTest {
 			type Bool;
 			type Real;
 			type t1 {
-				varx : (Int, Bool, Real) := (2, False, 2.5);
+				varx : (Int, Bool, Real) := (2, false, 2.5);
 			}
 		'''.parse
 		
@@ -501,9 +533,9 @@ class ImlTypeProviderTest {
 		
 		assertTrue(exprType instanceof TupleType)
 		assertEquals(3, (exprType as TupleType).symbols.size)
-		assertEquals(ImlTypeProvider.Int, (exprType as TupleType).symbols.get(0).type)
-		assertEquals(ImlTypeProvider.Bool, (exprType as TupleType).symbols.get(1).type)
-		assertEquals(ImlTypeProvider.Real, (exprType as TupleType).symbols.get(2).type)
+		assertEquals(INT_REF, (exprType as TupleType).symbols.get(0).type)
+		assertEquals(BOOL_REF, (exprType as TupleType).symbols.get(1).type)
+		assertEquals(REAL_REF, (exprType as TupleType).symbols.get(2).type)
 	}
 	
 	@Test
@@ -513,7 +545,7 @@ class ImlTypeProviderTest {
 			type Int;
 			type Bool;
 			type t1 {
-				varx : Int := if (True) {5};
+				varx : Int := if (true) {5};
 			}
 		'''.parse
 		
@@ -522,7 +554,7 @@ class ImlTypeProviderTest {
 		val t1 = model.findSymbol("t1") as ConstrainedType
 		val exprType = ImlTypeProvider.termExpressionType(t1.findSymbol("varx").definition)
 		
-		assertEquals(ImlTypeProvider.Int, exprType)
+		assertEquals(INT_REF, exprType)
 	}
 	
 	@Test
@@ -532,7 +564,7 @@ class ImlTypeProviderTest {
 			type Int;
 			type Bool;
 			type t1 {
-				varx : Int := if (True) {5} else {True};
+				varx : Int := if (true) {5} else {true};
 			}
 		'''.parse
 		
@@ -541,7 +573,7 @@ class ImlTypeProviderTest {
 		val t1 = model.findSymbol("t1") as ConstrainedType
 		val exprType = ImlTypeProvider.termExpressionType(t1.findSymbol("varx").definition)
 		
-		assertEquals(ImlTypeProvider.Int, exprType)
+		assertEquals(INT_REF, exprType)
 	}
 	
 	@Test
@@ -615,28 +647,6 @@ class ImlTypeProviderTest {
 	}
 	
 	@Test
-	def testTermExpressionType_TypeConstructor() {
-		val model = '''
-			package p;
-			type Int;
-			type Bool;
-			type Real;
-			type t1 { 
-				varx : t2 := new t2{};
-			}
-			type t2;
-		'''.parse
-		
-		model.assertNoErrors
-		
-		val t1 = model.findSymbol("t1") as ConstrainedType
-		val t2 = model.findSymbol("t2") as ConstrainedType
-		val exprType = ImlTypeProvider.termExpressionType(t1.findSymbol("varx").definition)
-		
-		assertEquals(t2, (exprType as SimpleTypeReference).type)
-	}
-	
-	@Test
 	def typeOfImplicitConstructor(){
 		val model = '''
 		package iml.notes ;
@@ -649,12 +659,12 @@ class ImlTypeProviderTest {
 		};
 		sup : Employee ;
 		aEmployee : Employee := some(x:Employee) { x.level = 4 && x.supervisor = sup} ;
-		bEmployee : Employee := oneof Employee{level = 4 && supervisor = sup} ;
 		'''.parse
-		val bEmployee = model.symbols.last as SymbolDeclaration
-		val constr = bEmployee.definition.left as ImplicitInstanceConstructor
-		val type = ImlTypeProvider.termExpressionType(constr)
 		model.assertNoErrors
+
+		val aEmployee = model.symbols.last as SymbolDeclaration
+//		val constr = aEmployee.definition.left as ImplicitInstanceConstructor
+//		val type = ImlTypeProvider.termExpressionType(constr)
 		return 
 	}
 	
@@ -667,7 +677,7 @@ class ImlTypeProviderTest {
 			c : Int := 4 ;
 			d : Int ;
 			f : Int -> Int := fun ( x : Int ) { x + 1 } ;
-			assert : d > 0 ;
+			assert { d > 0 };
 		};
 		'''.parse
 		
@@ -691,36 +701,38 @@ class ImlTypeProviderTest {
 		  isEmpty: Bool;
 		  pop : () -> Stack<T> := fun (x:()) {
 		     if (!isEmpty) { 
-		       oneof Stack<T> { top = rest.top && 
-		                 rest = rest.pop() &&
-		                 isEmpty = rest.isEmpty } 
+		       some (s : Stack<T>) { s.top = s.rest.top && 
+		                 s.rest = s.rest.pop() &&
+		                 s.isEmpty = s.rest.isEmpty } 
 		    }
 		  } ;
 		  push : T -> Stack<T> := fun (x:T) {
-		    oneof Stack<T> { top = x && rest = self && isEmpty = false } 
+		    some (s: Stack<T>) { s.top = x && s.rest = self && s.isEmpty = false } 
 		  } ;
 		} ;
 		
-		<T>emptyStack : Stack<T> := oneof Stack<T> { isEmpty = true };
+		<T>emptyStack : Stack<T> := some (s: Stack<T>) { s.isEmpty = true };
 		
 		e : Stack<Int> := <Int>emptyStack ;
 		
 		s : Stack<Int> := e.push(1); //.push(2).push(3) ;
 		'''.parse
 		
-		val stackt = model.symbols.get(2) as ConstrainedType
-		val pop = stackt.symbols.get(3) as SymbolDeclaration
-		val popdefite = ((pop.definition.left as LambdaExpression).definition as SequenceTerm).^return.left as IteTermExpression
-		val rest_pop = ((popdefite.left as ImplicitInstanceConstructor).definition as SequenceTerm).^return.left.left.left.right as TermMemberSelection
-		val rest = rest_pop.receiver
-		val type = ImlTypeProvider.termExpressionType(rest);
-		val rest_decl = stackt.symbols.get(1) as SymbolDeclaration
-		assertTrue(TypingServices.isEqual(type,rest_decl.type))
+		model.assertNoErrors
 		
-		val s = model.symbols.last as SymbolDeclaration
-		val e_push = s.definition.left as TermMemberSelection
-		val e_push_type = ImlTypeProvider.termExpressionType(e_push)
-		assertTrue(TypingServices.isEqual(e_push_type,s.type))
+		val stackt = model.findSymbol("Stack") as ConstrainedType
+		val pop = stackt.findSymbol("pop") as SymbolDeclaration
+		val popdefite = ((pop.definition.left as LambdaExpression).definition as SequenceTerm).^return.left as IteTermExpression
+//		val rest_pop = (popdefite.left as SequenceTerm).^return.left.left.left.right as TermMemberSelection
+//		val rest = rest_pop.receiver
+//		val type = ImlTypeProvider.termExpressionType(rest);
+//		val rest_decl = stackt.symbols.get(1) as SymbolDeclaration
+//		assertTrue(TypingServices.isEqual(type,rest_decl.type))
+//		
+//		val s = model.symbols.last as SymbolDeclaration
+//		val e_push = s.definition.left as TermMemberSelection
+//		val e_push_type = ImlTypeProvider.termExpressionType(e_push)
+//		assertTrue(TypingServices.isEqual(e_push_type,s.type))
 		
 	}
 	
@@ -736,17 +748,17 @@ class ImlTypeProviderTest {
 		  isEmpty: Bool;
 		  pop : () -> Stack<T> := fun (x:()) {
 		     if (!isEmpty) { 
-		       oneof Stack<T> { top = rest.top && 
+		       some(Stack<T>) { top = rest.top && 
 		                 rest = rest.pop() &&
 		                 isEmpty = rest.isEmpty } 
 		    }
 		  } ;
 		  push : T -> Stack<T> := fun (x:T) {
-		    oneof Stack<T> { top = x && rest = self && isEmpty = false } 
+		    some(Stack<T>) { top = x && rest = self && isEmpty = false } 
 		  } ;
 		} ;
 		
-		<T>emptyStack : Stack<T> := oneof Stack<T> { isEmpty = true };
+		<T>emptyStack : Stack<T> := some(Stack<T>) { isEmpty = true };
 		
 		e : Stack<Int> := <Int>emptyStack ;
 		'''.parse
@@ -754,8 +766,7 @@ class ImlTypeProviderTest {
 		val e = model.symbols.last as SymbolDeclaration
 		val d = e.definition.left
 		val t = ImlTypeProvider.termExpressionType(d)
-		val dom = t.domain
-		val equal = TypingServices.isEqual(e.type,dom)
+		val equal = TypingServices.isEqual(e.type, t)
 		assertTrue(equal)
 	}
 	

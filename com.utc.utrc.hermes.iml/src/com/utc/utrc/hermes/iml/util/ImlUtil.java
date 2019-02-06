@@ -108,17 +108,8 @@ public class ImlUtil {
 
 	/**
 	 * Get the type declaration as a string
-	 * 
-	 * @param hot
-	 * @return
 	 */
 	public static String getTypeName(HigherOrderType hot, IQualifiedNameProvider qnp) {
-//		String typeAsString = getElementAsString(hot);
-//		if (!typeAsString.isEmpty()) {
-//			return typeAsString;
-//		} else {
-//			
-//		}
 		return getTypeNameManually(hot, qnp);
 	}
 	
@@ -146,8 +137,6 @@ public class ImlUtil {
 			return "(" + ((TupleType) hot).getSymbols().stream()
 				.map(symbol -> getTypeName(symbol.getType(), qnp))
 				.reduce((accum, current) -> accum + ", " + current).get() + ")";
-//		} else if (hot instanceof ParenthesizedType) {
-//			return "(" +  getTypeName(((ParenthesizedType) hot).getSubexpression(), qnp) + ")";
 		} else {
 			return getTypeName(hot.getDomain(), qnp) + "->" + getTypeName(hot.getRange(), qnp);
 		}
@@ -176,7 +165,7 @@ public class ImlUtil {
 					types.addAll(((Extension) relation).getExtensions());
 				} else if (relation instanceof Alias) {
 					types.add(((Alias) relation).getType());
-				} else {
+				} else if (relation instanceof TraitExhibition){
 					types.addAll(((TraitExhibition) relation).getExhibitions());
 				}
 			}

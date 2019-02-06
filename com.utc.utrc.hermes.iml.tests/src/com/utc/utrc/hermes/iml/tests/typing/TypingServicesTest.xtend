@@ -289,7 +289,7 @@ class TypingServicesTest {
 			package p;
 			type Int;
 			type Parent;
-			type t1 extends Parent {
+			type t1 extends (Parent) {
 				
 			}
 		'''.parse
@@ -306,7 +306,7 @@ class TypingServicesTest {
 			package p;
 			type Int;
 			type Parent;
-			type t1 extends Parent extends Int {
+			type t1 extends (Parent, Int) {
 				
 			}
 		'''.parse
@@ -323,14 +323,14 @@ class TypingServicesTest {
 			package p;
 			type Int;
 			type Parent33;
-			type Parent3 sameas Parent33;
-			type Parent2 extends Parent3 extends Int;
-			type Parent extends Parent2;
-			type t1 extends Parent {
+			type Parent3 is Parent33;
+			type Parent2 extends (Parent3, Int);
+			type Parent extends (Parent2);
+			type t1 extends (Parent) {
 				
 			}
 		'''.parse
-		
+		 
 		model.assertNoErrors
 		val t1 = model.findSymbol("t1") as ConstrainedType
 		

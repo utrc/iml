@@ -885,4 +885,62 @@ class ImlValidatorTest {
 		model.assertError(ImlPackage.eINSTANCE.simpleTypeReference, INVALID_PARAMETER_LIST)
 	 }
 	 
+	 @Test
+	 def issue26_AliasWithTuple() {
+	 	val model = '''
+	 	package iml.graphs;
+	 	
+	 	type Bool;
+	 	
+	 	type Vertex ;
+	 	
+	 	type Edge is (v1:Vertex,v2:Vertex);
+	 	
+	 	type Graph {
+	 	    edges : List<Edge> ;
+	 	    something : List<Vertex>;
+	 	    var1 : Graph := add(something.head, something.head);
+	 	    add : Edge -> Graph := fun(x:Edge) {
+	 	        some (y:Graph){y.edges = self.edges.push(x)}//<---------------- here!
+	 	    } ;
+	 	}
+	 	
+	 	type List<T> {
+	 	    isEmpty : Bool ;
+	 	    head :T ;
+	 	    tail : List<T>;
+	 	    push : T -> List<T> := fun (x:T) {
+	 	        some (y:List<T>) { y.head = x && y.tail = self && y.isEmpty = false }  
+	 		};
+	 	}
+	 	
+	 	'''.parse
+	 	
+	 	model.assertNoErrors
+	 }
+	 
+	 @Test
+	 def testAliasWithTupleUsage() {
+	 	val model = '''
+	 	package test;
+	 	
+	 	type Int;
+	 	type Real;
+	 	
+	 	type IntPair is (Int, Int);
+	 	
+	 	type T1 {
+	 		fun1 : IntPair -> Real;
+	 		fun2 : (Int, Int) -> Real;
+	 		pair : IntPair;
+	 		var1 : Real := fun1(pair);
+	 		var2 : Real := fun1(1, 2);
+	 		var3 : Real := fun2(pair);
+	 		var4 : Real := fun2(1, 2);	 		
+	 	}
+	 	'''.parse
+	 	
+	 	model.assertNoErrors
+	 }
+	 
 }
