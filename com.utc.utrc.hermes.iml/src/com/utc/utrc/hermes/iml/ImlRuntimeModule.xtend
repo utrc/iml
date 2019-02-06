@@ -20,8 +20,6 @@ class ImlRuntimeModule extends AbstractImlRuntimeModule {
 						com.google.inject.name.Names
 								.named(AbstractDeclarativeScopeProvider.NAMED_DELEGATE))
 				.to(ImlImportedNamespaceAwareLocalScopeProvider);
-		
-		//binder.bind(new TypeLiteral<SmtModelProvider<SimpleSort, SimpleFunDeclaration, SimpleSmtFormula>>() {}).to(SimpleSmtModelProvider)
 	}
 	
 }

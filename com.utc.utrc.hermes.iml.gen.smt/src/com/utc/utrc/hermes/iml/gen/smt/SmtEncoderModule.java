@@ -13,7 +13,6 @@ import com.utc.utrc.hermes.iml.gen.smt.encoding.SmtModelProvider;
 import com.google.inject.TypeLiteral;
 
 /**
- * TODO: This probably has to be changed to a runtime module that does not rely on IML
  * @author SCHULZCH
  *
  */
