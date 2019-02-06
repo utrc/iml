@@ -103,7 +103,7 @@
 					<dependency>
 						<groupId>org.eclipse.platform</groupId>
 						<artifactId>org.eclipse.equinox.common</artifactId>
-						<version>3.10.0</version>
+						<version>[3.8.0,4.0.0)</version>
 					</dependency>
 				</dependencies>
 			</plugin>
@@ -291,6 +291,8 @@
 		<module>../../com.utc.utrc.hermes.iml.ui</module>
 		<module>../../com.utc.utrc.hermes.iml.ui.tests</module>
 		<module>../../com.utc.utrc.hermes.iml.gen.nusmv</module>
+		<module>../../com.utc.utrc.hermes.iml.gen.smt</module>
+		<module>../../com.utc.utrc.hermes.iml.gen.smt.tests</module>
 
 		<module>../com.utc.utrc.hermes.iml.target</module>
 		<module>../com.utc.utrc.hermes.iml.feature</module>

@@ -1,0 +1,73 @@
+package SW ; import iml.contracts.* ; import iml.connectivity.* ; import iml.lang.* ; import iml.aadl.* ; type [ data ] Coordinate ; type [ data , implementation ] Coordinate_dot_Impl extends ( Coordinate ) { [ data , subcomponent ] lat : Int ; [ data , subcomponent ] long : Int ; [ data , subcomponent ] alt : Int ; } ; type [ data ] Map ; type [ data , implementation ] Map_dot_Impl extends ( Map ) { [ data , subcomponent ] wp1 : Coordinate_dot_Impl ; [ data , subcomponent ] wp2 : Coordinate_dot_Impl ; [ data , subcomponent ] wp3 : Coordinate_dot_Impl ; [ data , subcomponent ] wp4 : Coordinate_dot_Impl ; } ; type [ data ] FlightPattern enum { ZigZag , StraightLine , Perimeter } ; type [ data ] Command ; type [ data , implementation ] Command_dot_Impl extends ( Command ) { [ data , subcomponent ] Map : Map_dot_Impl ; [ data , subcomponent ] Pattern : FlightPattern ; [ data , subcomponent ] HMAC : Bool ; } ; type [ data ] Mission ; type [ data , implementation ] Mission_dot_Impl extends ( Mission ) { [ data , subcomponent ] wp1 : Coordinate_dot_Impl ; [ data , subcomponent ] wp2 : Coordinate_dot_Impl ; [ data , subcomponent ] wp3 : Coordinate_dot_Impl ; [ data , subcomponent ] wp4 : Coordinate_dot_Impl ; [ data , subcomponent ] wp5 : Coordinate_dot_Impl ; [ data , subcomponent ] wp6 : Coordinate_dot_Impl ; [ data , subcomponent ] wp7 : Coordinate_dot_Impl ; [ data , subcomponent ] wp8 : Coordinate_dot_Impl ; [ data , subcomponent ] wp9 : Coordinate_dot_Impl ; [ data , subcomponent ] wp10 : Coordinate_dot_Impl ; } ; type [ data ] MissionWindow ; type [ data , implementation ] MissionWindow_dot_Impl extends ( MissionWindow ) { [ data , subcomponent ] wp1 : Coordinate_dot_Impl ; [ data , subcomponent ] wp2 : Coordinate_dot_Impl ; [ data , subcomponent ] wp3 : Coordinate_dot_Impl ; [ data , subcomponent ] wp4 : Coordinate_dot_Impl ; [ data , subcomponent ] crc : Bool ; } ; type [ thread ] RadioDriver { [ in , eventData , port ] recv_map_in : Command_dot_Impl ; [ out , eventData , port ] send_status_out : Coordinate_dot_Impl ; [ in , eventData , port ] send_status_in : Coordinate_dot_Impl ; [ out , eventData , port ] recv_map_out : Command_dot_Impl ; 
+
+			[ assumption ] a : Bool := recv_map_in.HMAC = true;
+			[ guarantee ] g : Bool := recv_map_out.HMAC = true ;
+		
+} ; type [ thread ] FlightPlanner { [ out , data , port ] flight_plan : Mission_dot_Impl ; [ in , eventData , port ] recv_map : Command_dot_Impl ; [ in , eventData , port ] position_status : Coordinate_dot_Impl ; 
+
+			[ assumption ] a1 : Bool := recv_map.HMAC = true;
+    		[ assumption ] a2 : Bool := good_gs_command(recv_map);
+    		[ guarantee ] g : Bool := good_mission(flight_plan);
+		
+} ; type [ thread ] WaypointManager { [ in , data , port ] flight_plan : Mission_dot_Impl ; [ out , eventData , port ] waypoint : MissionWindow_dot_Impl ; [ in , eventData , port ] position_status : Coordinate_dot_Impl ; 
+
+			[ assumption ] a : Bool :=  good_mission(flight_plan);
+			[ guarantee ] g : Bool:= good_mission_window(waypoint);
+		
+} ; type [ thread ] UARTDriver { [ in , eventData , port ] position_status_in : Coordinate_dot_Impl ; [ out , eventData , port ] waypoint_out : MissionWindow_dot_Impl ; [ out , eventData , port ] position_status_out : Coordinate_dot_Impl ; [ in , eventData , port ] waypoint_in : MissionWindow_dot_Impl ; 
+
+			[ assumption ] a : Bool := good_mission_window(waypoint_in);
+			[ guarantee ] g : Bool  := waypoint_out.crc = true;
+		
+} ; type [ process ] MC_SW { [ in , eventData , port ] recv_map : Command_dot_Impl ; [ out , eventData , port ] send_status : Coordinate_dot_Impl ; [ out , eventData , port ] waypoint : MissionWindow_dot_Impl ; [ in , eventData , port ] position_status : Coordinate_dot_Impl ; 
+
+			// we abstract away the authentication and just assume the message has undergone authenticity verification
+			[ assumption ] a : Bool := recv_map.HMAC = true;
+			[ guarantee ] g: Bool := waypoint.crc = true;
+		
+} ; type [ process , implementation ] MC_SW_dot_Impl extends ( MC_SW ) { [ thread , subcomponent ] RADIO : RadioDriver ; [ thread , subcomponent ] FPLN : FlightPlanner ; [ thread , subcomponent ] WPM : WaypointManager ; [ thread , subcomponent ] UART : UARTDriver ; [ connection ] c1 : Connector < Command_dot_Impl > := oneof Connector < Command_dot_Impl > { recv_map = source && RADIO . recv_map_in = target } ; [ connection ] c2 : Connector < Coordinate_dot_Impl > := oneof Connector < Coordinate_dot_Impl > { RADIO . send_status_out = source && send_status = target } ; [ connection ] c3 : Connector < Command_dot_Impl > := oneof Connector < Command_dot_Impl > { RADIO . recv_map_out = source && FPLN . recv_map = target } ; [ connection ] c5 : Connector < Mission_dot_Impl > := oneof Connector < Mission_dot_Impl > { FPLN . flight_plan = source && WPM . flight_plan = target } ; [ connection ] c6 : Connector < MissionWindow_dot_Impl > := oneof Connector < MissionWindow_dot_Impl > { WPM . waypoint = source && UART . waypoint_in = target } ; [ connection ] c7 : Connector < Coordinate_dot_Impl > := oneof Connector < Coordinate_dot_Impl > { UART . position_status_out = source && WPM . position_status = target } ; [ connection ] c8 : Connector < Coordinate_dot_Impl > := oneof Connector < Coordinate_dot_Impl > { UART . position_status_out = source && FPLN . position_status = target } ; [ connection ] c9 : Connector < Coordinate_dot_Impl > := oneof Connector < Coordinate_dot_Impl > { UART . position_status_out = source && RADIO . send_status_in = target } ; [ connection ] c10 : Connector < MissionWindow_dot_Impl > := oneof Connector < MissionWindow_dot_Impl > { UART . waypoint_out = source && waypoint = target } ; [ connection ] c11 : Connector < Coordinate_dot_Impl > := oneof Connector < Coordinate_dot_Impl > { position_status = source && UART . position_status_in = target } ; } ; 
+
+			
+		// These functions check the well-formedness of message structures
+	
+		good_coordinate : Coordinate_dot_Impl -> Bool := fun(coord : Coordinate_dot_Impl) {
+																coord.lat >= -90 && 
+																coord.lat <= 90 && 
+																coord.long >= -180 && 
+																coord.long <= 180 && 
+																coord.alt >= 0 && 
+																coord.alt <= 15000 } ;
+		
+		
+		good_map : Map_dot_Impl -> Bool := fun(map : Map_dot_Impl) {	
+			 												good_coordinate(map.wp1) && 
+															good_coordinate(map.wp2) && 
+															good_coordinate(map.wp3) && 
+															good_coordinate(map.wp4) } ;
+															
+		good_pattern : FlightPattern -> Bool :=	fun(pattern : FlightPattern) {pattern = FlightPattern.ZigZag ||
+																			  (pattern = FlightPattern.StraightLine) ||
+																			   (pattern = FlightPattern.Perimeter)} ;
+																		
+		good_HMAC : Bool -> Bool := fun(hmac : Bool) { (hmac = true) || (hmac = false) } ;
+			
+			
+		good_gs_command : Command_dot_Impl -> Bool :=	fun(cmd : Command_dot_Impl) {good_map(cmd.Map) && 
+																		good_pattern(cmd.Pattern) && 
+																		good_HMAC(cmd.HMAC) };
+																		
+		good_mission : Mission_dot_Impl -> Bool :=	fun( mission : Mission_dot_Impl) {good_coordinate(mission.wp1) && 
+																		good_coordinate(mission.wp2) && 
+																		good_coordinate(mission.wp3) && 
+																		good_coordinate(mission.wp4) && 
+																		good_coordinate(mission.wp5) && 
+																		good_coordinate(mission.wp6) && 
+																		good_coordinate(mission.wp7) && 
+																		good_coordinate(mission.wp8) && 
+																		good_coordinate(mission.wp9) && 
+																		good_coordinate(mission.wp10) };
+																		
+		good_mission_window : MissionWindow_dot_Impl -> Bool :=	fun(win : MissionWindow_dot_Impl) {good_coordinate(win.wp1) && 
+																				good_coordinate(win.wp2) && 
+																				good_coordinate(win.wp3) && 
+																				good_coordinate(win.wp4)};

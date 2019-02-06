@@ -1,12 +1,11 @@
-package com.utc.utrc.hermes.iml.tests.encoding
+package com.utc.utrc.hermes.iml.gen.smt.tests.encoding
 
 import com.google.inject.Inject
-import com.utc.utrc.hermes.iml.encoding.ImlSmtEncoder
-import com.utc.utrc.hermes.iml.encoding.simplesmt.SimpleFunDeclaration
-import com.utc.utrc.hermes.iml.encoding.simplesmt.SimpleSmtFormula
-import com.utc.utrc.hermes.iml.encoding.simplesmt.SimpleSort
+import com.utc.utrc.hermes.iml.gen.smt.encoding.ImlSmtEncoder
+import com.utc.utrc.hermes.iml.gen.smt.encoding.simplesmt.SimpleFunDeclaration
+import com.utc.utrc.hermes.iml.gen.smt.encoding.simplesmt.SimpleSmtFormula
+import com.utc.utrc.hermes.iml.gen.smt.encoding.simplesmt.SimpleSort
 import com.utc.utrc.hermes.iml.iml.Model
-import com.utc.utrc.hermes.iml.tests.ImlInjectorProvider
 import com.utc.utrc.hermes.iml.tests.TestHelper
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.XtextRunner
@@ -18,9 +17,10 @@ import static extension org.junit.Assert.*
 import java.util.stream.Collectors
 import com.utc.utrc.hermes.iml.util.FileUtil
 import org.eclipse.emf.ecore.resource.ResourceSet
+import com.utc.utrc.hermes.iml.gen.smt.tests.SmtTestInjectorProvider
 
 @RunWith(XtextRunner)
-@InjectWith(ImlInjectorProvider)
+@InjectWith(SmtTestInjectorProvider)
 class ModelSmtEncodingTest {
 	
 	@Inject extension ParseHelper<Model>
