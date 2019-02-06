@@ -38,6 +38,7 @@ import com.utc.utrc.hermes.iml.iml.QuantifiedFormula
 import com.utc.utrc.hermes.iml.iml.ImplicitInstanceConstructor
 import com.utc.utrc.hermes.iml.iml.ImlPackage
 import com.utc.utrc.hermes.iml.iml.SequenceTerm
+import com.utc.utrc.hermes.iml.lib.ImlStdLib
 
 /**
  * This class contains custom scoping description.
@@ -107,22 +108,12 @@ class ImlScopeProvider extends AbstractDeclarativeScopeProvider {
 		return !containersOfO1.empty
 	}
 
-	// def IScope getGlobalScope (TypeReference context, EReference r) {
 	def IScope getGlobalScope(EObject context, EReference r) {
-		// val delegateScope = delegateGetScope(context, r)
 		var global = delegateGetScope(context, r)
 
 		val (IEObjectDescription)=>boolean filter = [ieod|ieod.isImported(context.getContainerOfType(typeof(Model)))]
 
 		global = new FilteringScope(global, filter);
-
-	// val (IEObjectDescription)=>boolean filter = [ieod|!shareSameContainer(ieod.EObjectOrProxy, context.eContainer)]
-//		val (IEObjectDescription)=>boolean filter = [ ieod |
-//			!ieod.EObjectURI.toString.startsWith(context.eResource.URI.toString)
-//		]
-//		val global = new FilteringScope(delegateScope, filter)
-//		global
-	// delegateScope	
 	}
 
 	def scope_SymbolReferenceTerm_symbol(SymbolReferenceTerm context, EReference r) {
@@ -204,7 +195,6 @@ class ImlScopeProvider extends AbstractDeclarativeScopeProvider {
 		} else {
 			return (term.symbol as SymbolDeclaration).type
 		}
-//		return (term.symbol as SymbolDeclaration).type
 	}
 
 	def scope_SymbolReferenceTerm_symbol(TermMemberSelection context, EReference r) {
@@ -228,7 +218,7 @@ class ImlScopeProvider extends AbstractDeclarativeScopeProvider {
 
 		var receiverType = receiver.termExpressionType
 
-		if (receiverType === null || receiverType.isPrimitive) {
+		if (receiverType === null || ImlStdLib.isPrimitive(receiverType)) {
 			return parentScope
 		}
 
@@ -257,16 +247,6 @@ class ImlScopeProvider extends AbstractDeclarativeScopeProvider {
 		}
 	}
 
-//	def dispatch computeScope(EObject container, EObject context, IScope scope) {
-//		return computeScope(container.eContainer, context, scope)
-//	}
-//	def dispatch computeScope(InstanceConstructor constructor, EObject context, IScope scope) {
-//		var newScope = scopeOfConstrainedType((constructor.ref as SimpleTypeReference).type, scope);
-//		return computeScope(constructor.eContainer, context, newScope)
-//	}
-//	def dispatch computeScope(ConstrainedType type, EObject context, IScope scope) {
-//		return scope;
-//	}
 	def IScope buildNestedScope(EObject o) {
 		if (o === null) {
 			return IScope::NULLSCOPE
@@ -315,320 +295,4 @@ class ImlScopeProvider extends AbstractDeclarativeScopeProvider {
 				return buildNestedScope(o.eContainer)
 		}
 	}
-
-//	def scope_FolFormula(SymbolReferenceTerm context, EReference r) {
-//		var parentScope = IScope::NULLSCOPE
-//		
-//		return parentScope
-//	}
-//	
-//
-//	def scope_TypeReference_type(TypeReference context, EReference r) {
-//		val global = Scope(context, r)
-//		// val global = delegateGetScope(context, r)
-//		context.eContainer.computeScopeTypeRefType(context, global)
-//	}
-//
-//	def scope_TypeReference_type(ConstrainedType context, EReference r) {
-//		val global = getGlobalScope(context, r)
-//		// val global = delegateGetScope(context, r)
-//		context.eContainer.computeScopeTypeRefType(context, global)
-//	}
-//
-//	def scope_TypeReference_stereotype(TypeReference context, EReference r) {
-//		val global = getGlobalScope(context, r)
-//		// val global = delegateGetScope(context, r)
-//		context.eContainer.computeScopeTypeRefType(context, global)
-//	}
-//
-//	// add ContrainedType in container and perform one more step of recursion
-//	def dispatch IScope computeScopeTypeRefType(EObject cont, EObject o, IScope global) {
-//		cont.eContainer.computeScopeTypeRefType(o.eContainer, global)
-//	}
-//
-//
-//	// this ends the recursion
-//	def dispatch IScope computeScopeTypeRefType(Model cont, EObject o, IScope global) {
-//		//Scopes::scopeFor(cont.elements.filter(typeof(ConstrainedType)), global)
-//		global
-//	}
-//	
-//	// add template type parameters if any and recurse to its parent
-//	def dispatch IScope computeScopeTypeRefType(VariableDeclaration cont, EObject o, IScope global) {
-//		var parentScope = cont.eContainer.computeScopeTypeRefType(cont, global)
-//		parentScope
-//	}
-//
-//	// add template type parameters if any and recurse to its parent
-//	def dispatch IScope computeScopeTypeRefType(ConstrainedType cont, EObject o, IScope global) {
-//		var parentScope = cont.eContainer.computeScopeTypeRefType(cont, global)
-//		if (cont.template)
-//			parentScope = Scopes::scopeFor(cont.typeParameter, parentScope)
-//		Scopes::scopeFor(cont.elements.filter(typeof(ConstrainedType)), parentScope)
-//	}
-//
-//	// notice that second argument is never used in this method
-//	def scope_TermSymbol(TermMemberSelection sel, EReference r) {
-//		var context = ct2tr(sel.getContainerOfType(ConstrainedType))
-//		
-//		var parentScope = IScope::NULLSCOPE
-//		var typeref = sel.receiver.termExpressionType(context)
-//
-//		if (typeref.array) {
-//			if (typeref.dimension.size > sel.index.size) {
-////			var features = new HashSet
-////			features.add(arraysize)
-////			return Scopes::scopeFor(features, parentScope)
-//				return parentScope;
-//			}
-//		}
-//
-//		if (typeref === null || typeref.primitive)
-//			return parentScope
-//		var supertypes = getAllSuperTypesReferences(typeref);
-//		for (level : supertypes.reverseView) {
-//			var features = new HashSet
-//			for (t : level) {
-//				var theType = t.type;
-//				switch (theType) {
-//					ConstrainedType: features.addAll(theType.elements.filter(typeof(TermSymbol)))
-//				}
-//			}
-//			parentScope = Scopes::scopeFor(features, parentScope)
-//		}
-//		parentScope
-//	}
-//	
-//	
-//
-//	def scope_SecondOrderTerm_member(SecondOrderTerm context, EReference r) {
-//		val global = getGlobalScope(context, r)
-//		var features = new HashSet
-//		features.add(context.^var)
-//		Scopes::scopeFor(features, global)
-//	}
-//
-//	def scope_SymbolRef_ref(FolFormula context, EReference r) {
-//		val global = getGlobalScope(context, r);
-//		val retval = context.eContainer.computeScope(context, global)
-//		return retval 
-//	}
-//	
-//	def scope_PredicateDeclaration(FolFormula context, EReference r) {
-//		var parentScope = getGlobalScope(context, r);
-//		var container = context.getContainerOfType(typeof(ConstrainedType))
-//		var supertypes = getAllSuperTypes(container);
-//		for (level : supertypes.reverseView) {
-//			var features = new HashSet
-//			for (t : level) {
-//				features.addAll(t.elements.filter(typeof(TermSymbol)))
-//			}
-//			parentScope = Scopes::scopeFor(features, parentScope)
-//		}
-//		return parentScope
-//	}
-//
-//	def scope_SymbolRef_ref(TermExpression context, EReference r) {
-//		val global = getGlobalScope(context, r)
-//		val retval = context.eContainer.computeScope(context, global)
-//		return retval
-//	}
-//
-//	def scope_EnumRef_constant(TermExpression context, EReference r) {
-//		val global = getGlobalScope(context, r)
-//		context.eContainer.computeScope(context, global)
-//	}
-//
-//
-//
-//	def scope_DomainLiteral(EnumLiteral context, EReference r) {
-//		var parentScope = IScope::NULLSCOPE
-//		// val global = getGlobalScope(context, r)
-//		var features = new HashSet
-//		if (context.type.finite) {
-//			features.addAll(context.type.literals)
-//		}
-//		Scopes::scopeFor(features, parentScope)
-//	}
-//
-////	def scope_StaticReference_element(StaticReference context, EReference r) {
-////		val global = getGlobalScope(context, r)
-////		var features = new HashSet
-////		features.addAll(context.type.elements.filter(typeof(TermSymbol)))
-////		Scopes::scopeFor(features, global)
-////	}
-//
-//	def dispatch IScope computeScope(EnumLiteral container, EObject o, IScope global) {
-//		var features = new HashSet
-//		features.addAll(container.type.literals)
-//		Scopes::scopeFor(features, container.eContainer.computeScope(o.eContainer, global))
-//
-//	}
-//
-//	def dispatch IScope computeScope(EObject container, EObject o, IScope global) {
-//		container.eContainer.computeScope(o.eContainer, global)
-//	}
-//	
-//	
-//	def dispatch IScope computeScope(SecondOrderTerm container, FolFormula member, IScope global) {
-//		var features = new HashSet
-//		features.add(container.^var)
-//		Scopes::scopeFor(features, container.eContainer.computeScope(member.eContainer, global))
-//	}
-//
-//	def dispatch IScope computeScope(SecondOrderTerm container, TermExpression member, IScope global) {
-//		var features = new HashSet
-//		features.add(container.^var)
-//		Scopes::scopeFor(features, container.eContainer.computeScope(member.eContainer, global))
-//	}
-//
-//	def dispatch IScope computeScope(FolFormula container, FolFormula o, IScope global) {
-//		Scopes::scopeFor(container.scope, container.eContainer.computeScope(o.eContainer, global))
-//	}
-//
-//
-//	def dispatch IScope computeScope(ConstrainedType container, NamedFormula o, IScope global) {
-//		// var parentScope = container.eContainer.computeScope(container, global);
-//		var parentScope = global;
-//		var supertypes = getAllSuperTypes(container);
-//		for (level : supertypes.reverseView) {
-//			var features = new HashSet
-//			for (t : level) {
-//				features.addAll(t.elements.filter(typeof(Symbol)))
-//			}
-//			parentScope = Scopes::scopeFor(features, parentScope)
-//		}
-//		return parentScope
-//	}
-//
-//	def dispatch IScope computeScope(ConstrainedType container, ConstrainedType o, IScope global) {
-//		var parentScope = container.eContainer.computeScope(container, global);
-//		var supertypes = getAllSuperTypes(container);
-//		for (level : supertypes.reverseView) {
-//			var features = new HashSet
-//			for (t : level) {
-//				features.addAll(t.elements.filter(typeof(Symbol)))
-//			}
-//			parentScope = Scopes::scopeFor(features, parentScope)
-//		}
-//		return parentScope
-//	}
-//
-//	def dispatch IScope computeScope(Model container, ConstrainedType o, IScope global) {
-//
-//		// return global;
-//		Scopes::scopeFor(container.elements.filter(typeof(Symbol)), global)
-//	}
-//
-//	def dispatch IScope computeScope(Model container, NamedFormula o, IScope global) {
-//
-//		// return global;
-//		Scopes::scopeFor(container.elements.filter(typeof(Symbol)), global)
-//	}
-//
-//	def scope_VariableAssignment_key(Interpretation context, EReference r) {
-//		// if the econtainer is a variable declaration, then get all the attributes
-//		val container = context.eContainer
-//		var parentScope = IScope::NULLSCOPE
-//		var TypeReference typeref = null;
-//		switch (container) {
-//			VariableDeclaration: {
-//				typeref = container.type
-//			}
-//			ConstantDeclaration: {
-//				typeref = container.type
-//			}
-//			FunctionDefinition: {
-//				typeref = container.type
-//			}
-//			
-////			TermValue: {
-////				if ((container.eContainer as VariableAssignment).key != null) {
-////					typeref = (container.eContainer as VariableAssignment).key.type
-////				}
-////			}
-//		}
-//		if (typeref === null ){
-//			return IScope::NULLSCOPE
-//		} 
-//		return typeref.getSuperclassScopes(parentScope)
-//	}
-//
-//	def scope_EnumLiteral_type(FolFormula context, EReference r) {
-//		var global = getGlobalScope(context, r)
-//		// only report types and only the one that are enums
-//		val (IEObjectDescription)=>boolean filter = [ieod|isEnum(ieod)]
-//		global = new FilteringScope(global, filter);
-//
-//	}
-//
-//	def scope_StaticReference_type(FolFormula context, EReference r) {
-//		var global = getGlobalScope(context, r)
-//		// only report types and only the one that are enums
-//		val (IEObjectDescription)=>boolean filter = [ieod|isStatic(ieod)]
-//
-//		global = new FilteringScope(global, filter);
-//
-//	}
-//
-//	def boolean isEnum(IEObjectDescription ieod) {
-//		val obj = ieod.EObjectOrProxy
-//		if (obj instanceof ConstrainedType){
-//			if (obj.eIsProxy) {
-//				return true;
-//			}
-//			if (obj.isFinite) {
-//				return true;
-//			}
-//		}
-//		return false;
-//	}
-//
-//	def boolean isStatic(IEObjectDescription ieod) {
-//		val obj = ieod.EObjectOrProxy
-//		if (obj instanceof ConstrainedType) {
-////			if (obj.isStatic) {
-////				return true;
-////			}
-//		}
-//		return false;
-//	}
-//
-//	def getAllBoundVariables(TermExpression context) {
-//		val variables = <Symbol>newArrayList()
-//		var f = context.getContainerOfType(typeof(FolFormula))
-//		while (f !== null && f.symbol !== null) {
-//
-//			if (f.symbol == "Forall" || f.symbol == "Exists") {
-//				variables.addAll(f.scope)
-//			}
-//			f = f.getContainerOfType(typeof(FolFormula))
-//		}
-//		variables
-//	}
-//
-//	def getSuperclassScopes(TypeReference typeref, IScope parentScope) {
-//		var IScope computed
-//		if (typeref === null || typeref.primitive)
-//			return parentScope
-//		var supertypes = getAllSuperTypesReferences(typeref);
-//		var first = true;
-//		for (level : supertypes.reverseView) {
-//			var features = new HashSet
-//			for (t : level) {
-//				var theType = t.type;
-//				switch (theType) {
-//					ConstrainedType: features.addAll(theType.elements.filter(typeof(Symbol)))
-//				}
-//			}
-//			if (first) {
-//				computed = Scopes::scopeFor(features, parentScope)
-//				first = false;
-//			} else {
-//				computed = Scopes::scopeFor(features, computed)
-//
-//			}
-//		}
-//		return computed
-//	}
 }

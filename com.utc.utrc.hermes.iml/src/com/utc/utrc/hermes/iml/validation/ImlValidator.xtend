@@ -31,6 +31,8 @@ import org.eclipse.xtext.validation.EValidatorRegistrar
 
 import static extension com.utc.utrc.hermes.iml.typing.ImlTypeProvider.*
 import static extension com.utc.utrc.hermes.iml.typing.TypingServices.*
+import static extension com.utc.utrc.hermes.iml.lib.ImlStdLib.*
+
 import com.utc.utrc.hermes.iml.iml.Alias
 import org.eclipse.xtext.EcoreUtil2
 import com.utc.utrc.hermes.iml.iml.ArrayType
@@ -44,6 +46,7 @@ import com.utc.utrc.hermes.iml.iml.QuantifiedFormula
 import com.utc.utrc.hermes.iml.util.ImlUtil
 import com.utc.utrc.hermes.iml.iml.SignedAtomicFormula
 import com.utc.utrc.hermes.iml.iml.RelationKind
+import com.utc.utrc.hermes.iml.iml.CardinalityRestriction
 
 /**
  * This class contains custom validation rules. 
@@ -109,7 +112,6 @@ class ImlValidator extends AbstractImlValidator {
 	def checkNoDuplicateElement(Symbol e) {
 		if (e.eContainer.eContents.filter(Symbol).exists[it != e && it.name !== null && it.name == e.name])
 			error("Duplicate term symbol '" + e.name + "'", ImlPackage::eINSTANCE.symbol_Name, DUPLICATE_ELEMENT)
-
 	}
 
 	@Check
@@ -244,16 +246,23 @@ class ImlValidator extends AbstractImlValidator {
 			)
 			}
 		} else if (symbol instanceof SymbolDeclaration) {
-			var symbolType = TypingServices.resolveAliases(ImlTypeProvider.getSymbolRefSegmentType(symbolRef))
+			var symbolType = TypingServices.resolveAliases(ImlTypeProvider.getSymbolRefSegmentType(symbolRef)) // Get the type of symbol without tail
 			checkTypeAgainstTails(symbolType, symbolRef.tails, symbol)
 		} else if (symbol instanceof ConstrainedType) {
 			if (!symbolRef.tails.nullOrEmpty) {
-				error('''Method invocatin and array access are not applicable on the simple type '«symbol.name»' ''',
-					ImlPackage.eINSTANCE.symbolReferenceTerm_Tails,
-					METHOD_INVOCATION_ON_CONSTRAINEDTYPE
-				)
+				// We can only use array access 1 level in case of finite type
+				if (symbolRef.tails.size != 1 || !symbol.isFinite) {
+					error('''You can only use single array access on a finite type: '«symbol.name»' ''',
+						ImlPackage.eINSTANCE.symbolReferenceTerm_Tails,
+						METHOD_INVOCATION_ON_CONSTRAINEDTYPE
+					)
+				}
 			}
 		}
+	}
+	
+	def boolean isFinite(ConstrainedType type) {
+		type.restrictions.filter[it instanceof CardinalityRestriction].size > 0
 	}
 	
 	def checkTypeAgainstTails(HigherOrderType type, List<SymbolReferenceTail> tails, Symbol symbol) {
@@ -263,7 +272,7 @@ class ImlValidator extends AbstractImlValidator {
 				val tail = tails.get(i)
 				if (checkTypeAgainstTail(tmpType, tail, symbol)) {
 					tmpType = ImlTypeProvider.accessTail(tmpType, tail)
-				} else {
+				} else { // There was a validation error, no need to continue check
 					stop=true;
 				}
 			}
@@ -329,6 +338,12 @@ class ImlValidator extends AbstractImlValidator {
 			domainList = newArrayList(domain)
 		}
 		
+		if (tupleTail.elements.size == 1) { // Special case to handle alias
+			if (TypingServices.isCompatible(domain, ImlTypeProvider.termExpressionType(tupleTail.elements.get(0)))) {
+				return true;
+			}
+		}
+				
 		if (domainList.size != tupleTail.elements.size) {
 			error('''Number of parameters provided don't match the declared parameters in: '«symbol.name»'. 
 			Expected «domainList.size» but got «tupleTail.elements.size» ''',
@@ -337,11 +352,12 @@ class ImlValidator extends AbstractImlValidator {
 				)
 			return false;
 		}
+		
 		// TODO check type matching of parameter provided v.s declared
 		for (i : 0 ..< domainList.size) {
 			val paramType = ImlTypeProvider.termExpressionType(tupleTail.elements.get(i))
 			if (!TypingServices.isCompatible(domainList.get(i), paramType)) {
-				error('''Invalid argument type Expecting: «ImlUtil.getTypeName(domainList.get(i), qnp)» but got 
+				error('''Invalid argument type. Expecting: «ImlUtil.getTypeName(domainList.get(i), qnp)» but got 
 							«ImlUtil.getTypeName(paramType, qnp)»''',
 					ImlPackage.eINSTANCE.symbolReferenceTerm_Tails,
 					INVALID_PARAMETER_LIST
