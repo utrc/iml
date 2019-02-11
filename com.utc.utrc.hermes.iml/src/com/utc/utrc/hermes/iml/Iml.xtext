@@ -24,12 +24,12 @@ QualifiedNameWithWildcard:
 
 Symbol :
 	SymbolDeclaration ";"|
-	ConstrainedType |
+	NamedType |
 	Assertion ";"
 ;
 
 Doc :
-  {Doc}('@' properties+=[ConstrainedType|QualifiedName] descriptions+=STRING)+
+  {Doc}('@' properties+=[NamedType|QualifiedName] descriptions+=STRING)+
 ;
 	
 Property returns ImplicitInstanceConstructor:
@@ -41,7 +41,7 @@ PropertyList:
 ;
 
 TypeWithProperties :
-	(properties=PropertyList)? type=HigherOrderType
+	(properties=PropertyList)? type=ImlType
 ;
 
 Relation:
@@ -50,11 +50,11 @@ Relation:
 	{TraitExhibition}( exhibits?='exhibits' '('exhibitions+=TypeWithProperties (',' exhibitions+=TypeWithProperties)*  ')' ) 
 ;
 
-ConstrainedType:
+NamedType:
 	(
 		{Annotation} 'annotation' | 
 	 	{Trait} 'trait' | 
-	 	{ConstrainedType} 'type'
+	 	{NamedType} 'type'
 	)   
 	(propertylist=PropertyList)? 
 	name=ID 
@@ -75,7 +75,7 @@ TypeRestriction :
 	)
 ;
 
-TypeParameter returns ConstrainedType:
+TypeParameter returns NamedType:
 	name=ID (relations+=Relation)*
 ;
 
@@ -83,7 +83,7 @@ SymbolDeclaration:
 	(propertylist=PropertyList)?
 	 (template?='<' typeParameter+=TypeParameter 
 	 	            (',' typeParameter+=TypeParameter)* '>')? 
-     name=ID   (':' type=HigherOrderType )?  (':=' definition=FolFormula)? 
+     name=ID   (':' type=ImlType )?  (':=' definition=FolFormula)? 
 ;
 
 Assertion returns SymbolDeclaration :
@@ -96,33 +96,33 @@ NonParametricUntypedSymbolDeclaration returns SymbolDeclaration :
 
 
 NonParametricTypedSymbolDeclaration returns SymbolDeclaration :
-	name=ID  ':' type=HigherOrderType 
+	name=ID  ':' type=ImlType 
 ;
 
-HigherOrderType:
-	ArrayType ({HigherOrderType.domain=current} '->' range=ArrayType)*  
+ImlType:
+	ArrayType ({FunctionType.domain=current} '->' range=ArrayType)*  
 ;
 
-ArrayType returns HigherOrderType:
+ArrayType returns ImlType:
 	(SimpleTypeReference|TupleOrExpressionType) 
 	   ({ArrayType.type=current} (('['dimensions+=OptionalTermExpr']'))+)?
 ;
 
 
-TupleOrExpressionType returns HigherOrderType :
+TupleOrExpressionType returns ImlType :
 	ExplicitTupleType |
 	ParenthesizedTypeExpression	
 	
 ;
 
-ExplicitTupleType returns HigherOrderType :
+ExplicitTupleType returns ImlType :
 	{TupleType} 'Tuple' '(' symbols+=TupleSymbol (',' symbols+=TupleSymbol)* ')'  
 ;
 	
 
-ParenthesizedTypeExpression returns HigherOrderType :
+ParenthesizedTypeExpression returns ImlType :
 	//=>({EmptyTupleType}'('')') |
-	=>('(' HigherOrderType  ')') |
+	=>('(' ImlType  ')') |
 	 {TupleType}('(' (symbols+=TupleSymbol (',' symbols+=TupleSymbol)*)?  ')') 
 ;
 	
@@ -134,14 +134,14 @@ OptionalTermExpr:
 
 
 TupleSymbol returns SymbolDeclaration:
-	(name=ID ':')? type=HigherOrderType
+	(name=ID ':')? type=ImlType
 ;
 
-SimpleTypeReference returns HigherOrderType:
+SimpleTypeReference returns ImlType:
 	{SelfType} 'Self' |
-	{SimpleTypeReference} type=[ConstrainedType|QualifiedName]
+	{SimpleTypeReference} type=[NamedType|QualifiedName]
 	/*Optional type parameters for generic types */
-	('<' typeBinding+=HigherOrderType (',' typeBinding+=HigherOrderType)* '>')? 
+	('<' typeBinding+=ImlType (',' typeBinding+=ImlType)* '>')? 
 ;
 
 /*Entry point for a first order logic formula.*/
@@ -199,11 +199,16 @@ Addition returns TermExpression:
 
 /*Multiplication, division, reminder and modulo of two terms */
 Multiplication returns TermExpression:
-	TermSelectionExpression ({Multiplication.left=current} sign=('*' | '/' | '%' | 'mod')
-	right=TermSelectionExpression)*;
+	TailedTerm ({Multiplication.left=current} sign=('*' | '/' | '%' | 'mod')
+	right=TailedTerm)*;
+	
+//InfixExpression returns TermExpression:
+//	TailedTerm ({InfixExpression.left=current} operator=[SymbolDeclaration] right=TailedTerm)?
+//;
 
-
-
+TailedTerm returns TermExpression:
+	TermSelectionExpression ({TailedTerm.left=current} tails+=SymbolReferenceTail)?
+;
 /*Selection of a term is a recursive definition. It is a terminal term followed
  * by the scoping operator :: and by a member terms. The member term is a 
  * symbol possibly followed by type binding information (for generic functions),
@@ -231,8 +236,8 @@ TerminalTerm returns TermExpression:
 	CaseTermExpression |
 	{SelfTerm} 'self' |
 	SequenceTerm |
-	{LambdaExpression}'fun' signature=TupleOrExpressionType definition=SequenceTerm |
-	QuantifiedFormula 
+	{LambdaExpression}'fun' signature=TupleOrExpressionType (':' returnType=ImlType)?  definition=SequenceTerm |
+	QuantifiedFormula
 	 ;
 	
 EqualityListTerm returns TermExpression :
@@ -263,16 +268,12 @@ TupleConstructor returns TermExpression:
 	//=>({EmptyTuple}'('')') |
 	 {TupleConstructor} ('(' (elements+=FolFormula  (',' elements+=FolFormula)*)?  ')') 
 ;
-	
-
-
 
 SymbolReferenceTerm returns TermExpression:
-{SymbolReferenceTerm}  ('<' typeBinding+=HigherOrderType 
-	                       (',' typeBinding+=HigherOrderType)* '>')? 
-	                    symbol=[Symbol]  (tails+=SymbolReferenceTail)*
+{SymbolReferenceTerm}  ('<' typeBinding+=ImlType 
+	                       (',' typeBinding+=ImlType)* '>')? 
+	                    symbol=[Symbol] 
 ;
-
 
 SymbolReferenceTail:
 	TupleConstructor |

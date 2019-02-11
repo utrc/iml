@@ -4,16 +4,15 @@ import com.utc.utrc.hermes.iml.iml.Addition;
 import com.utc.utrc.hermes.iml.iml.Alias;
 import com.utc.utrc.hermes.iml.iml.Annotation;
 import com.utc.utrc.hermes.iml.iml.ArrayAccess;
-import com.utc.utrc.hermes.iml.iml.ArrayType;
 import com.utc.utrc.hermes.iml.iml.Assertion;
 import com.utc.utrc.hermes.iml.iml.AtomicExpression;
 import com.utc.utrc.hermes.iml.iml.CardinalityRestriction;
 import com.utc.utrc.hermes.iml.iml.CaseTermExpression;
-import com.utc.utrc.hermes.iml.iml.ConstrainedType;
+import com.utc.utrc.hermes.iml.iml.NamedType;
 import com.utc.utrc.hermes.iml.iml.EnumRestriction;
 import com.utc.utrc.hermes.iml.iml.Extension;
 import com.utc.utrc.hermes.iml.iml.FolFormula;
-import com.utc.utrc.hermes.iml.iml.HigherOrderType;
+import com.utc.utrc.hermes.iml.iml.ImlType;
 import com.utc.utrc.hermes.iml.iml.ImplicitInstanceConstructor;
 import com.utc.utrc.hermes.iml.iml.Import;
 import com.utc.utrc.hermes.iml.iml.IteTermExpression;
@@ -31,6 +30,7 @@ import com.utc.utrc.hermes.iml.iml.Symbol;
 import com.utc.utrc.hermes.iml.iml.SymbolDeclaration;
 import com.utc.utrc.hermes.iml.iml.SymbolReferenceTail;
 import com.utc.utrc.hermes.iml.iml.SymbolReferenceTerm;
+import com.utc.utrc.hermes.iml.iml.TailedTerm;
 import com.utc.utrc.hermes.iml.iml.TermMemberSelection;
 import com.utc.utrc.hermes.iml.iml.Trait;
 import com.utc.utrc.hermes.iml.iml.TraitExhibition;
@@ -48,13 +48,13 @@ public abstract class AbstractModelAcceptor implements IModelAcceptor {
 		for(Symbol s : m.getSymbols()) {
 			if (s instanceof Assertion) {
 				accept((Assertion)s,visitor) ;
-			} else if (s  instanceof ConstrainedType) {
+			} else if (s  instanceof NamedType) {
 				if (s instanceof Annotation) {
 					accept((Annotation)s,visitor);
 				} else if (s instanceof Trait) {
 					accept((Trait)s,visitor);
 				} else {
-					accept((ConstrainedType)s,visitor);
+					accept((NamedType)s,visitor);
 				}
 			} else {
 				accept((SymbolDeclaration)s,visitor);
@@ -73,12 +73,12 @@ public abstract class AbstractModelAcceptor implements IModelAcceptor {
 	}
 
 	@Override
-	public  void accept(ConstrainedType s, IModelVisitor visitor) {
+	public  void accept(NamedType s, IModelVisitor visitor) {
 		if (s.getPropertylist() != null) {
 			accept(s.getPropertylist(),visitor);
 		}
 		if (s.isTemplate()) {
-			for(ConstrainedType tp : s.getTypeParameter()) {
+			for(NamedType tp : s.getTypeParameter()) {
 				accept(tp, visitor);
 			}
 		}
@@ -125,7 +125,7 @@ public abstract class AbstractModelAcceptor implements IModelAcceptor {
 			accept(s.getPropertylist(),visitor);
 		}
 		if (s.isTemplate()) {
-			for(ConstrainedType tp : s.getTypeParameter()) {
+			for(NamedType tp : s.getTypeParameter()) {
 				accept(tp,visitor);
 			}
 		}
@@ -163,7 +163,7 @@ public abstract class AbstractModelAcceptor implements IModelAcceptor {
 	@Override
 	public void accept(SimpleTypeReference s, IModelVisitor visitor) {
 		if (s.getTypeBinding() != null) {
-			for(HigherOrderType t : s.getTypeBinding()) {
+			for(ImlType t : s.getTypeBinding()) {
 				accept(t,visitor);
 			}
 		}
@@ -209,7 +209,7 @@ public abstract class AbstractModelAcceptor implements IModelAcceptor {
 			accept(s.getPropertylist(),visitor);
 		}
 		if (s.isTemplate()) {
-			for(ConstrainedType tp : s.getTypeParameter()) {
+			for(NamedType tp : s.getTypeParameter()) {
 				accept(tp, visitor);
 			}
 		}
@@ -270,7 +270,7 @@ public abstract class AbstractModelAcceptor implements IModelAcceptor {
 	}
 
 	@Override
-	public void accept(HigherOrderType e, IModelVisitor visitor) {
+	public void accept(ImlType e, IModelVisitor visitor) {
 		//TODO Accept
 		visitor.visit(e);
 	}
@@ -302,17 +302,17 @@ public abstract class AbstractModelAcceptor implements IModelAcceptor {
 			accept(((TermMemberSelection) e).getMember(),visitor);
 			visitor.visit((TermMemberSelection)e);
 		}else if (e instanceof SymbolReferenceTerm) {
-			if (((SymbolReferenceTerm) e).getTails() != null) {
-				for(SymbolReferenceTail tail : ((SymbolReferenceTerm) e).getTails()) {
-					if (tail instanceof TupleConstructor) {
-						accept((TupleConstructor) tail, visitor);
-					} else {
-						accept(((ArrayAccess)tail).getIndex(),visitor );
-					}
+			visitor.visit((SymbolReferenceTerm)e);
+		} else if (e instanceof TailedTerm) {
+			for(SymbolReferenceTail tail : ((TailedTerm)e).getTails()) {
+				if (tail instanceof TupleConstructor) {
+					accept((TupleConstructor) tail, visitor);
+				} else {
+					accept(((ArrayAccess)tail).getIndex(),visitor );
 				}
 			}
-			visitor.visit((SymbolReferenceTerm)e);
-		}else if (e instanceof ImplicitInstanceConstructor) {
+			visitor.visit((TailedTerm) e);
+		} else if (e instanceof ImplicitInstanceConstructor) {
 			accept(((ImplicitInstanceConstructor) e).getRef(),visitor) ;
 			accept((SequenceTerm) ((ImplicitInstanceConstructor)e).getDefinition(),visitor);
 			visitor.visit((ImplicitInstanceConstructor)e);
@@ -346,7 +346,7 @@ public abstract class AbstractModelAcceptor implements IModelAcceptor {
 			visitor.visit((SequenceTerm)e);
 		}else if (e instanceof QuantifiedFormula) {
 			if (((QuantifiedFormula) e).isTemplate()) {
-				for(ConstrainedType tp : ((QuantifiedFormula) e).getTypeParameter()) {
+				for(NamedType tp : ((QuantifiedFormula) e).getTypeParameter()) {
 					accept(tp,visitor);
 				}
 			}

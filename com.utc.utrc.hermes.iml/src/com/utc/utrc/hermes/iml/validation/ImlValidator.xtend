@@ -7,10 +7,10 @@ import com.google.inject.Inject
 import com.utc.utrc.hermes.iml.iml.Addition
 import com.utc.utrc.hermes.iml.iml.Assertion
 import com.utc.utrc.hermes.iml.iml.AtomicExpression
-import com.utc.utrc.hermes.iml.iml.ConstrainedType
+import com.utc.utrc.hermes.iml.iml.NamedType
 import com.utc.utrc.hermes.iml.iml.Extension
 import com.utc.utrc.hermes.iml.iml.FolFormula
-import com.utc.utrc.hermes.iml.iml.HigherOrderType
+import com.utc.utrc.hermes.iml.iml.ImlType
 import com.utc.utrc.hermes.iml.iml.ImlPackage
 import com.utc.utrc.hermes.iml.iml.Multiplication
 import com.utc.utrc.hermes.iml.iml.SequenceTerm
@@ -70,7 +70,7 @@ class ImlValidator extends AbstractImlValidator {
 	public static val TYPE_MISMATCH_IN_TERM_EXPRESSION = 'com.utc.utrc.hermes.iml.validation.TypeMismatchInTermExpression'
 	public static val TYPE_MISMATCH_IN_TERM_RELATION = 'com.utc.utrc.hermes.iml.validation.TypeMismatchInTermRelation'
 	public static val INVALID_STEREOTYPE_HIERARCHY = 'com.utc.utrc.hermes.iml.validation.InvalidStereotypeHierarchy'
-	public static val CYCLIC_CONSTRAINEDTYPE_HIERARCHY = 'com.utc.utrc.hermes.iml.validation.CyclicConstrainedTypeHierarchy'
+	public static val CYCLIC_CONSTRAINEDTYPE_HIERARCHY = 'com.utc.utrc.hermes.iml.validation.CyclicNamedTypeHierarchy'
 	public static val DUPLICATE_ELEMENT = 'com.utc.utrc.hermes.iml.validation.DuplicateElement'
 	public static val INVALID_STEREOTYPE = 'com.utc.utrc.hermes.iml.validation.InvalidStereotype';
 	public static val ELEMENTS_IN_STATIC_TYPES = 'com.utc.utrc.hermes.iml.validation.ElementsInStaticTypes';
@@ -115,7 +115,7 @@ class ImlValidator extends AbstractImlValidator {
 	}
 
 	@Check
-	def checkExtension(ConstrainedType t) {
+	def checkExtension(NamedType t) {
 		val extensions = t.relations.filter[it instanceof Extension].map[it as Extension]
 		if (t.numeric) {
 			if (extensions.size > 1) {
@@ -140,17 +140,17 @@ class ImlValidator extends AbstractImlValidator {
 	}
 
 	@Check
-	def checkNoCycleInConstrainedTypeHierarchy(ConstrainedType ct) {
+	def checkNoCycleInNamedTypeHierarchy(NamedType ct) {
 		val extensions = getExtensions(ct) 
 		if (extensions.empty)
 			return
-		val visited = <ConstrainedType>newArrayList()
-		val superTypeHierarchy = new ArrayList<List<ConstrainedType>>()
-		superTypeHierarchy.add(new ArrayList<ConstrainedType>())
+		val visited = <NamedType>newArrayList()
+		val superTypeHierarchy = new ArrayList<List<NamedType>>()
+		superTypeHierarchy.add(new ArrayList<NamedType>())
 		superTypeHierarchy.get(0).add(ct)
 		var index = 0
 		while (superTypeHierarchy.get(index).size() > 0) {
-			val toAdd = <ConstrainedType>newArrayList()
+			val toAdd = <NamedType>newArrayList()
 			for (cur : superTypeHierarchy.get(index)) {
 				for (supType : getExtensions(cur)) {
 					for(tr : supType.extensions){
@@ -176,7 +176,7 @@ class ImlValidator extends AbstractImlValidator {
 		return
 	}
 	
-	def getExtensions(ConstrainedType type) {
+	def getExtensions(NamedType type) {
 		type.relations.filter[it instanceof Extension].map[it as Extension]
 	}
 
@@ -248,7 +248,7 @@ class ImlValidator extends AbstractImlValidator {
 		} else if (symbol instanceof SymbolDeclaration) {
 			var symbolType = TypingServices.resolveAliases(ImlTypeProvider.getSymbolRefSegmentType(symbolRef)) // Get the type of symbol without tail
 			checkTypeAgainstTails(symbolType, symbolRef.tails, symbol)
-		} else if (symbol instanceof ConstrainedType) {
+		} else if (symbol instanceof NamedType) {
 			if (!symbolRef.tails.nullOrEmpty) {
 				// We can only use array access 1 level in case of finite type
 				if (symbolRef.tails.size != 1 || !symbol.isFinite) {
@@ -261,11 +261,11 @@ class ImlValidator extends AbstractImlValidator {
 		}
 	}
 	
-	def boolean isFinite(ConstrainedType type) {
+	def boolean isFinite(NamedType type) {
 		type.restrictions.filter[it instanceof CardinalityRestriction].size > 0
 	}
 	
-	def checkTypeAgainstTails(HigherOrderType type, List<SymbolReferenceTail> tails, Symbol symbol) {
+	def checkTypeAgainstTails(ImlType type, List<SymbolReferenceTail> tails, Symbol symbol) {
 		var tmpType = type
 		if (!tails.nullOrEmpty) {
 			for (var i=0, var stop=false ; i < tails.length ; i++) {
@@ -280,7 +280,7 @@ class ImlValidator extends AbstractImlValidator {
 	}
 		
 	
-	def checkTypeAgainstTail(HigherOrderType type, SymbolReferenceTail tail, Symbol symbol) {
+	def checkTypeAgainstTail(ImlType type, SymbolReferenceTail tail, Symbol symbol) {
 		if (type instanceof SimpleTypeReference) {
 			error('''Method invocatin and array access are not applicable on the simple type '«symbol.name»' ''',
 				ImlPackage.eINSTANCE.symbolReferenceTerm_Tails,
@@ -330,8 +330,8 @@ class ImlValidator extends AbstractImlValidator {
 		return true
 	}
 	
-	def checkFunctionCallParameters(HigherOrderType domain, TupleConstructor tupleTail, Symbol symbol) {
-		var List<HigherOrderType> domainList = null;
+	def checkFunctionCallParameters(ImlType domain, TupleConstructor tupleTail, Symbol symbol) {
+		var List<ImlType> domainList = null;
 		if (domain instanceof TupleType) {
 			domainList = domain.symbols.map[it.type]
 		} else {
@@ -417,7 +417,7 @@ class ImlValidator extends AbstractImlValidator {
 	def checkCorrectSymbolDeclaration(SymbolDeclaration symbol) {
 		val container = symbol.eContainer
 		switch (container) {
-			ConstrainedType: {
+			NamedType: {
 				if (container.symbols.contains(symbol)) { // Symbols must have a type if there is no primitive properties
 					if (symbol.type === null && !(symbol instanceof Assertion)) {
 						error('''Symobl declaration  "«symbol.name»" must have a type''',
@@ -445,7 +445,7 @@ class ImlValidator extends AbstractImlValidator {
 		val aliasType = TypingServices.resolveAliases(alias.type.type)
 		
 		if (!TypingServices.isEqual(aliasType, alias.type.type, false)) {
-			val mainType = EcoreUtil2.getContainerOfType(alias, ConstrainedType);
+			val mainType = EcoreUtil2.getContainerOfType(alias, NamedType);
 			error('''Type «mainType.name» alias shouldn't include any further aliases''',
 				ImlPackage.eINSTANCE.alias_Type,
 				INVALID_TYPE_DECLARATION
@@ -454,7 +454,7 @@ class ImlValidator extends AbstractImlValidator {
 	}
 	
 	@Check
-	def checkConstrainedTypeDeclaration(ConstrainedType type) {
+	def checkNamedTypeDeclaration(NamedType type) {
 		// Should have only one alias
 		if (type.relations !== null) {
 			if (type.relations.filter[it instanceof Alias].size > 1) {

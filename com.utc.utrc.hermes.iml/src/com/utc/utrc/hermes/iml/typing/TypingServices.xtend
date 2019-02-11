@@ -1,8 +1,8 @@
 package com.utc.utrc.hermes.iml.typing
 
-import com.utc.utrc.hermes.iml.iml.HigherOrderType
+import com.utc.utrc.hermes.iml.iml.ImlType
 import com.utc.utrc.hermes.iml.iml.ImlFactory
-import com.utc.utrc.hermes.iml.iml.ConstrainedType
+import com.utc.utrc.hermes.iml.iml.NamedType
 import com.utc.utrc.hermes.iml.iml.ArrayType
 import com.utc.utrc.hermes.iml.iml.SimpleTypeReference
 import com.utc.utrc.hermes.iml.iml.TupleType
@@ -23,17 +23,18 @@ import com.utc.utrc.hermes.iml.iml.ImplicitInstanceConstructor
 import org.eclipse.emf.ecore.util.EcoreUtil
 import com.utc.utrc.hermes.iml.custom.ImlCustomFactory
 import static extension com.utc.utrc.hermes.iml.lib.ImlStdLib.*
+import com.utc.utrc.hermes.iml.iml.FunctionType
 
 public class TypingServices {
 
 	def static createBasicType(String n) {
 		val ret = ImlFactory::eINSTANCE.createSimpleTypeReference => [
-			type = ImlFactory::eINSTANCE.createConstrainedType => [name = n]
+			type = ImlFactory::eINSTANCE.createNamedType => [name = n]
 		];
 		return ret
 	}
 
-	def static createBasicType(ConstrainedType t) {
+	def static createBasicType(NamedType t) {
 		val ret = ImlFactory::eINSTANCE.createSimpleTypeReference => [
 			type = t
 		];
@@ -41,7 +42,7 @@ public class TypingServices {
 	}
 
 
-	def static SimpleTypeReference createSimpleTypeRef(ConstrainedType t) {
+	def static SimpleTypeReference createSimpleTypeRef(NamedType t) {
 		ImlFactory::eINSTANCE.createSimpleTypeReference => [
 			type = t
 		]
@@ -74,7 +75,7 @@ public class TypingServices {
 		return ret
 	}
 
-	def static HigherOrderType clone(HigherOrderType other) {
+	def static ImlType clone(ImlType other) {
 		return EcoreUtil.copy(other)
 
 	}
@@ -109,7 +110,7 @@ public class TypingServices {
 		return ret
 	}
 
-	def static HigherOrderType accessArray(ArrayType type, int dim) {
+	def static ImlType accessArray(ArrayType type, int dim) {
 		if (dim == type.dimensions.size) {
 			return type.type
 		} else {
@@ -127,7 +128,7 @@ public class TypingServices {
 		}
 	}
 	
-	def static boolean isEqual(HigherOrderType left, HigherOrderType right) {
+	def static boolean isEqual(ImlType left, ImlType right) {
 		// We almost always wants to resolve aliases
 		return isEqual(resolveAliases(left), resolveAliases(right), false);
 	}
@@ -135,7 +136,7 @@ public class TypingServices {
 	/**
 	 * Check whether two type are the same or at least are compatible if compatiblityCheck was true
 	 */
-	def static boolean isEqual(HigherOrderType left, HigherOrderType right, boolean compatibilityCheck) {
+	def static boolean isEqual(ImlType left, ImlType right, boolean compatibilityCheck) {
 		if (left === null && right === null) {
 			return true
 		} else if (left === null || right === null) {
@@ -171,14 +172,17 @@ public class TypingServices {
 				return false
 			}
 		}
-
-		if (!isEqual(left.domain, right.domain, compatibilityCheck)) {
-			return false
+		
+		if (left instanceof FunctionType) {
+			if (!isEqual(left.domain, (right as FunctionType).domain, compatibilityCheck)) {
+				return false
+			}
+	
+			if (!isEqual(left.range, (right as FunctionType).range, compatibilityCheck)) {
+				return false
+			}
 		}
-
-		if (!isEqual(left.range, right.range, compatibilityCheck)) {
-			return false
-		}
+		
 
 		return true
 	}
@@ -263,14 +267,14 @@ public class TypingServices {
 	}
 
 	// Checks whether two types are equal
-	def static boolean isEqual(ConstrainedType left, ConstrainedType right) {
+	def static boolean isEqual(NamedType left, NamedType right) {
 		if (left == right)
 			return true;
 		return false;
 	}
 
 	// TODO 
-	def static getAllDeclarations(HigherOrderType ctx) {
+	def static getAllDeclarations(ImlType ctx) {
 		var List<SymbolDeclaration> tlist = <SymbolDeclaration>newArrayList()
 		var List<List<SimpleTypeReference>> hierarchy = ctx.allSuperTypes;
 		for (level : hierarchy) {
@@ -287,12 +291,12 @@ public class TypingServices {
 	}
 
 	/* Compute all super types of a ContrainedType  */
-	def static getAllSuperTypes(ConstrainedType ct) {
+	def static getAllSuperTypes(NamedType ct) {
 		getSuperTypes(createSimpleTypeRef(ct)).map[it.map[it.type]]
 	}
 
 	/* Compute all super type references of a TypeReference */
-	def static getAllSuperTypes(HigherOrderType hot) {
+	def static getAllSuperTypes(ImlType hot) {
 		if (hot instanceof SimpleTypeReference) {
 			return getSuperTypes(hot)
 		} else {
@@ -301,7 +305,7 @@ public class TypingServices {
 	}
 
 	def static getSuperTypes(SimpleTypeReference tf) {
-		val closed = <ConstrainedType>newArrayList()
+		val closed = <NamedType>newArrayList()
 		val retVal = new ArrayList<List<SimpleTypeReference>>()
 		retVal.add(new ArrayList<SimpleTypeReference>());
 		retVal.get(0).add(tf); // A type is a super type of itself
@@ -354,23 +358,23 @@ public class TypingServices {
 
 	/* Check if two types are compatible or not
 	 * */
-	def static boolean isCompatible(HigherOrderType expected, HigherOrderType actual) {
+	def static boolean isCompatible(ImlType expected, ImlType actual) {
 		return isEqual(resolveAliases(expected), resolveAliases(actual), true)
 	}
 
-	def static isSingleElementTuple(HigherOrderType type) {
+	def static isSingleElementTuple(ImlType type) {
 		return type instanceof TupleType && (type as TupleType).symbols.size == 0
 	}
 
 	/* A non-template type without stereotype is a pure type */
-	def static boolean isPureType(HigherOrderType t) {
+	def static boolean isPureType(ImlType t) {
 		if (t instanceof SimpleTypeReference && (t as SimpleTypeReference).typeBinding.size == 0) {
 			return true;
 		}
 		return false;
 	}
 	
-	def static boolean isAlias(ConstrainedType t) {
+	def static boolean isAlias(NamedType t) {
 		if (t.relations.filter(Alias).size > 0) {
 			return true
 		}
@@ -379,10 +383,10 @@ public class TypingServices {
 	def static boolean isAlias(SimpleTypeReference r){
 		return r.type.isAlias
 	}
-	def static getAliasType(ConstrainedType type) {
+	def static getAliasType(NamedType type) {
 		com.utc.utrc.hermes.iml.typing.TypingServices.getAliasType(ImlCustomFactory.INST.createSimpleTypeReference(type))
 	}
-	def static HigherOrderType getAliasType(SimpleTypeReference r){
+	def static ImlType getAliasType(SimpleTypeReference r){
 		if (r.isAlias){
 			var alias = r.type.relations.filter(Alias).get(0).type.type
 			return ImlTypeProvider.bind(alias,r)
@@ -390,7 +394,7 @@ public class TypingServices {
 		return r // if it is not alias return the original type
 	}
 	
-	def static HigherOrderType resolveAliases(HigherOrderType type) {
+	def static ImlType resolveAliases(ImlType type) {
 		if (type instanceof SimpleTypeReference) {
 			if (type.isAlias) {
 				return com.utc.utrc.hermes.iml.typing.TypingServices.resolveAliases(com.utc.utrc.hermes.iml.typing.TypingServices.getAliasType(type))
@@ -409,15 +413,16 @@ public class TypingServices {
 				it.dimensions.addAll(type.dimensions.map[ImlCustomFactory.INST.createOptionalTermExpr])
 			]
 		}
-		return ImlCustomFactory.INST.createHigherOrderType => [
-			domain = clone(resolveAliases(type.domain))
-			range = clone(resolveAliases(type.range))
-		]
-		
+		if (type instanceof FunctionType) {
+			return ImlCustomFactory.INST.createFunctionType => [
+				domain = clone(resolveAliases(type.domain))
+				range = clone(resolveAliases(type.range))
+			]
+		}
 	}
 	
 	/* Check whether a constrained type is a template  */
-	def static boolean isTemplate(ConstrainedType ct) {
+	def static boolean isTemplate(NamedType ct) {
 		return ct.template;
 	}
 
@@ -451,7 +456,7 @@ public class TypingServices {
 //		while (e !== null) {
 //			if (e instanceof Model) {
 //				s.insert(0, e.name.replace('.', '::') + '::');
-//			} else if (e instanceof ConstrainedType) {
+//			} else if (e instanceof NamedType) {
 //				s.insert(0, e.name + '::');
 //			}
 //			e = e.eContainer;
@@ -459,7 +464,7 @@ public class TypingServices {
 //		return s.toString
 //	}
 //
-//	def static isExtension(ConstrainedType t, String qname) {
+//	def static isExtension(NamedType t, String qname) {
 //		if (qualifiedName(t).equals(qname)) {
 //			return true;
 //		}
@@ -474,11 +479,11 @@ public class TypingServices {
 //		return false;
 //	}
 
-	def static isSimpleTR(HigherOrderType hot) {
+	def static isSimpleTR(ImlType hot) {
 		return hot instanceof SimpleTypeReference
 	}
 
-	def static asSimpleTR(HigherOrderType hot) {
+	def static asSimpleTR(ImlType hot) {
 		if (isSimpleTR(hot)) {
 			return hot as SimpleTypeReference
 		}

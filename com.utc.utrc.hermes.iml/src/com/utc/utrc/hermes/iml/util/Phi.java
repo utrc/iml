@@ -5,32 +5,18 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.emf.ecore.util.EcoreUtil;
-import org.eclipse.emf.ecore.util.EcoreUtil.EqualityHelper;
 
 import com.utc.utrc.hermes.iml.custom.ImlCustomFactory;
-import com.utc.utrc.hermes.iml.iml.Addition;
 import com.utc.utrc.hermes.iml.iml.AndExpression;
 import com.utc.utrc.hermes.iml.iml.AtomicExpression;
-import com.utc.utrc.hermes.iml.iml.CaseTermExpression;
 import com.utc.utrc.hermes.iml.iml.FolFormula;
-import com.utc.utrc.hermes.iml.iml.ImplicitInstanceConstructor;
-import com.utc.utrc.hermes.iml.iml.IteTermExpression;
-import com.utc.utrc.hermes.iml.iml.Multiplication;
 import com.utc.utrc.hermes.iml.iml.OrExpression;
 import com.utc.utrc.hermes.iml.iml.ParenthesizedTerm;
-import com.utc.utrc.hermes.iml.iml.QuantifiedFormula;
 import com.utc.utrc.hermes.iml.iml.RelationKind;
-import com.utc.utrc.hermes.iml.iml.SequenceTerm;
 import com.utc.utrc.hermes.iml.iml.SignedAtomicFormula;
-import com.utc.utrc.hermes.iml.iml.SymbolDeclaration;
-import com.utc.utrc.hermes.iml.iml.SymbolReferenceTerm;
 import com.utc.utrc.hermes.iml.iml.TermExpression;
-import com.utc.utrc.hermes.iml.iml.TermMemberSelection;
-import com.utc.utrc.hermes.iml.iml.TupleConstructor;
 
 public class Phi {
-	
-	private FolFormula retval;
 	
 	public static AndExpression and(FolFormula left, FolFormula right) {
 		AndExpression retval = ImlCustomFactory.INST.createAndExpression();

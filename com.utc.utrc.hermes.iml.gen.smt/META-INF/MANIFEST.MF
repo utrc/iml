@@ -13,4 +13,5 @@ Require-Bundle: com.utc.utrc.hermes.iml;bundle-version="1.0.0",
 Import-Package: com.google.inject
 Export-Package: com.utc.utrc.hermes.iml.gen.smt,
  com.utc.utrc.hermes.iml.gen.smt.encoding,
- com.utc.utrc.hermes.iml.gen.smt.encoding.simplesmt
+ com.utc.utrc.hermes.iml.gen.smt.encoding.simplesmt,
+ com.utc.utrc.hermes.iml.gen.smt.sexpr

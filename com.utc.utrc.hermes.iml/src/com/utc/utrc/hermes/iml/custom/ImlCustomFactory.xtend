@@ -1,17 +1,16 @@
 package com.utc.utrc.hermes.iml.custom
 
 import com.utc.utrc.hermes.iml.iml.impl.ImlFactoryImpl
-import com.utc.utrc.hermes.iml.iml.TermMemberSelection
 import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
 import com.utc.utrc.hermes.iml.iml.FolFormula
 import com.utc.utrc.hermes.iml.iml.TermExpression
-import com.utc.utrc.hermes.iml.iml.ConstrainedType
 import com.utc.utrc.hermes.iml.iml.RelationKind
 import com.utc.utrc.hermes.iml.iml.SimpleTypeReference
 import com.utc.utrc.hermes.iml.iml.Symbol
 import java.util.List
-import com.utc.utrc.hermes.iml.iml.HigherOrderType
 import com.utc.utrc.hermes.iml.iml.SymbolReferenceTerm
+import com.utc.utrc.hermes.iml.iml.NamedType
+import com.utc.utrc.hermes.iml.iml.ImlType
 
 public class ImlCustomFactory extends ImlFactoryImpl {
 	
@@ -22,13 +21,7 @@ public class ImlCustomFactory extends ImlFactoryImpl {
 			it.symbol = symbol;
 		]
 	}
-	
-	def createConstrainedType(String name) {
-		createConstrainedType => [
-			it.name = name;
-		]
-	}
-	
+
 	def createTermMemberSelection(SymbolDeclaration receiver, SymbolDeclaration member) {
 		createTermMemberSelection(createSymbolReferenceTerm(receiver), member);
 	}
@@ -73,14 +66,14 @@ public class ImlCustomFactory extends ImlFactoryImpl {
 		]
 	}
 	
-	def createSymbolDeclaration(ConstrainedType type, String name) {
+	def createSymbolDeclaration(NamedType type, String name) {
 		createSymbolDeclaration => [
 			it.type = createSimpleTypeReference(type)
 			it.name = name
 		]
 	}
 	
-	def createSimpleTypeReference(ConstrainedType type) {
+	def createSimpleTypeReference(NamedType type) {
 		createSimpleTypeReference => [
 			it.type = type
 		]
@@ -95,7 +88,7 @@ public class ImlCustomFactory extends ImlFactoryImpl {
 	}
 	
 	def createNamedType(String name){
-		createConstrainedType() => [it.name = name]
+		createNamedType() => [it.name = name]
 	}
 	
 	
@@ -107,13 +100,13 @@ public class ImlCustomFactory extends ImlFactoryImpl {
 		] ;
 	}
 	
-	def createAnnotationProperty(ConstrainedType t) {
+	def createAnnotationProperty(NamedType t) {
 		createProperty() => [
 			it.ref = createSimpleTypeReference(t)
 		]
 	}
 	
-	def createTypeWithProperties(ConstrainedType t) {
+	def createTypeWithProperties(NamedType t) {
 		createTypeWithProperties() => [
 			it.type = createSimpleTypeReference(t)
 		]
@@ -133,7 +126,7 @@ public class ImlCustomFactory extends ImlFactoryImpl {
 		retval
 	}
 	
-	def createProperty(ConstrainedType propertyType) {
+	def createProperty(NamedType propertyType) {
 		createProperty => [
 			ref = createSimpleTypeReference(propertyType);
 		]
@@ -151,7 +144,7 @@ public class ImlCustomFactory extends ImlFactoryImpl {
 		]
 	}
 	
-	def createExtension(ConstrainedType  extendedType) {
+	def createExtension(NamedType  extendedType) {
 		createExtension => [
 			^extends = true;
 			extensions.add(createTypeWithProperties(extendedType))
@@ -241,10 +234,11 @@ public class ImlCustomFactory extends ImlFactoryImpl {
 		]
 	}
 	
-	def createSymbolDeclaration(String name, HigherOrderType type) {
+	def createSymbolDeclaration(String name, ImlType type) {
 		createSymbolDeclaration => [
 			it.name = name
 			it.type = type
 		]
 	}
+	
 }

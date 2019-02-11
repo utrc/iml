@@ -6,8 +6,6 @@ import java.util.List;
 import com.utc.utrc.hermes.iml.iml.FolFormula;
 import com.utc.utrc.hermes.iml.iml.Symbol;
 import com.utc.utrc.hermes.iml.iml.SymbolReferenceTerm;
-import com.utc.utrc.hermes.iml.iml.TermExpression;
-import com.utc.utrc.hermes.iml.iml.TermMemberSelection;
 
 /**
  * @author Alessandro Pinto (pintoa@utrc.utc.com)

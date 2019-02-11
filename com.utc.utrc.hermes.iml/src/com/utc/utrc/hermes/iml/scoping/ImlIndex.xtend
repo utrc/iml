@@ -29,7 +29,7 @@ class ImlIndex {
 	}
 
 	def getVisibleConstrainedTypeDescriptions(EObject o) {
-		o.getVisibleEObjectDescriptions(ImlPackage::eINSTANCE.constrainedType)
+		o.getVisibleEObjectDescriptions(ImlPackage::eINSTANCE.namedType)
 	}
 	
 

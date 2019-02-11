@@ -5,27 +5,23 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.eclipse.emf.common.util.EList;
-import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.naming.IQualifiedNameProvider;
-import org.eclipse.xtext.resource.IResourceServiceProvider;
 import org.eclipse.xtext.resource.XtextResource;
-import org.eclipse.xtext.serializer.ISerializer;
 
 import com.utc.utrc.hermes.iml.iml.Alias;
 import com.utc.utrc.hermes.iml.iml.ArrayType;
-import com.utc.utrc.hermes.iml.iml.ConstrainedType;
+import com.utc.utrc.hermes.iml.iml.NamedType;
 import com.utc.utrc.hermes.iml.iml.Extension;
 import com.utc.utrc.hermes.iml.iml.FolFormula;
-import com.utc.utrc.hermes.iml.iml.HigherOrderType;
+import com.utc.utrc.hermes.iml.iml.FunctionType;
+import com.utc.utrc.hermes.iml.iml.ImlType;
 import com.utc.utrc.hermes.iml.iml.ImplicitInstanceConstructor;
 import com.utc.utrc.hermes.iml.iml.Model;
 import com.utc.utrc.hermes.iml.iml.ParenthesizedTerm;
-//import com.utc.utrc.hermes.iml.iml.ParenthesizedType;
-import com.utc.utrc.hermes.iml.iml.Property;
 import com.utc.utrc.hermes.iml.iml.Relation;
 import com.utc.utrc.hermes.iml.iml.SignedAtomicFormula;
 import com.utc.utrc.hermes.iml.iml.SimpleTypeReference;
@@ -39,11 +35,11 @@ import com.utc.utrc.hermes.iml.iml.TypeWithProperties;
 
 public class ImlUtil {
 
-	public static List<SymbolDeclaration> getSymbolsWithProperty(ConstrainedType type, String property,
+	public static List<SymbolDeclaration> getSymbolsWithProperty(NamedType type, String property,
 			boolean considerParent) {
 		List<SymbolDeclaration> symbolsWithTheProperty = new ArrayList<SymbolDeclaration>();
 		if (considerParent) {
-			for (ConstrainedType parent : getDirectParents(type)) {
+			for (NamedType parent : getDirectParents(type)) {
 				symbolsWithTheProperty.addAll(getSymbolsWithProperty(parent, property, true));
 			}
 		}
@@ -55,8 +51,8 @@ public class ImlUtil {
 		return symbolsWithTheProperty;
 	}
 
-	public static List<ConstrainedType> getDirectParents(ConstrainedType type) {
-		List<ConstrainedType> retval = new ArrayList<>();
+	public static List<NamedType> getDirectParents(NamedType type) {
+		List<NamedType> retval = new ArrayList<>();
 		if (type.getRelations() != null) {
 			for(Relation rel : type.getRelations()) {
 				if(rel instanceof Extension) {
@@ -70,7 +66,7 @@ public class ImlUtil {
 		return retval;
 	}
 
-	public static List<SimpleTypeReference> getDirectParentTypeRefs(ConstrainedType type) {
+	public static List<SimpleTypeReference> getDirectParentTypeRefs(NamedType type) {
 		List<SimpleTypeReference> retval = new ArrayList<>();
 		if (type.getRelations() != null) {
 			for(Relation rel : type.getRelations()) {
@@ -96,24 +92,24 @@ public class ImlUtil {
 		return false;
 	}
 
-	public static ConstrainedType getConstrainedTypeByName(Model model, String name) {
-		return (ConstrainedType) model.getSymbols().stream()
-				.filter(it -> it instanceof ConstrainedType && it.getName().equals(name)).findFirst().orElse(null);
+	public static NamedType getNamedTypeByName(Model model, String name) {
+		return (NamedType) model.getSymbols().stream()
+				.filter(it -> it instanceof NamedType && it.getName().equals(name)).findFirst().orElse(null);
 	}
 
-	public static List<ConstrainedType> getConstrainedTypes(Model model) {
-		return model.getSymbols().stream().filter(it -> it instanceof ConstrainedType).map(ConstrainedType.class::cast)
+	public static List<NamedType> getNamedTypes(Model model) {
+		return model.getSymbols().stream().filter(it -> it instanceof NamedType).map(NamedType.class::cast)
 				.collect(Collectors.toList());
 	}
 
 	/**
 	 * Get the type declaration as a string
 	 */
-	public static String getTypeName(HigherOrderType hot, IQualifiedNameProvider qnp) {
+	public static String getTypeName(ImlType hot, IQualifiedNameProvider qnp) {
 		return getTypeNameManually(hot, qnp);
 	}
 	
-	public static String getTypeNameManually(HigherOrderType hot, IQualifiedNameProvider qnp) {
+	public static String getTypeNameManually(ImlType hot, IQualifiedNameProvider qnp) {
 		if (hot instanceof SimpleTypeReference) {
 			String name = "";
 			if (qnp != null) {
@@ -137,12 +133,13 @@ public class ImlUtil {
 			return "(" + ((TupleType) hot).getSymbols().stream()
 				.map(symbol -> getTypeName(symbol.getType(), qnp))
 				.reduce((accum, current) -> accum + ", " + current).get() + ")";
-		} else {
-			return getTypeName(hot.getDomain(), qnp) + "->" + getTypeName(hot.getRange(), qnp);
+		} else if (hot instanceof FunctionType){
+			return getTypeName(((FunctionType)hot).getDomain(), qnp) + "->" + getTypeName(((FunctionType)hot).getRange(), qnp);
 		}
+		return "UNKNOWN_IML_TYPE";
 	}
 	
-	public static List<TypeWithProperties> getRelationTypes(ConstrainedType type) {
+	public static List<TypeWithProperties> getRelationTypes(NamedType type) {
 		List<TypeWithProperties> types = new ArrayList<>();
 		EList<Relation> relations = type.getRelations();
 		for (Relation relation : relations) {
@@ -157,7 +154,7 @@ public class ImlUtil {
 		return types;
 	}
 	
-	public static List<TypeWithProperties> getRelationTypes(ConstrainedType type, Class<? extends Relation> relationType) {
+	public static List<TypeWithProperties> getRelationTypes(NamedType type, Class<? extends Relation> relationType) {
 		List<TypeWithProperties> types = new ArrayList<>();
 		for (Relation relation : type.getRelations()) {
 			if (relationType.isInstance(relation)) {
@@ -186,7 +183,7 @@ public class ImlUtil {
 		return "";
 	}
 
-	public static boolean isNullOrEmpty(List list) {
+	public static boolean isNullOrEmpty(List<?> list) {
 		return list == null || list.isEmpty();
 	}
 	
@@ -199,9 +196,9 @@ public class ImlUtil {
 		return parts[parts.length - 1];
 	}
 
-	public static boolean isSubTypeOf(ConstrainedType type, String ParentTypeName) {
+	public static boolean isSubTypeOf(NamedType type, String ParentTypeName) {
 		for (TypeWithProperties parent : getRelationTypes(type, Extension.class)) {
-			ConstrainedType parentCt = ((SimpleTypeReference)parent.getType()).getType();
+			NamedType parentCt = ((SimpleTypeReference)parent.getType()).getType();
 			if (parentCt.getName().equals(ParentTypeName)) {
 				return true;
 			}
@@ -243,7 +240,7 @@ public class ImlUtil {
 		return null;
 	}
 	
-	public static SymbolDeclaration findSymbol(ConstrainedType type, String symbolName) {
+	public static SymbolDeclaration findSymbol(NamedType type, String symbolName) {
 		for (SymbolDeclaration symbol : type.getSymbols()) {
 			if (symbolName.equals(symbol.getName())) {
 				return symbol;
@@ -252,15 +249,15 @@ public class ImlUtil {
 		return null;
 	}
 
-	public static ConstrainedType getContainerCt(EObject eObject) {
-		return EcoreUtil2.getContainerOfType(eObject, ConstrainedType.class);
+	public static NamedType getContainerCt(EObject eObject) {
+		return EcoreUtil2.getContainerOfType(eObject, NamedType.class);
 	}
 	
 	public static <T extends EObject> T getContainerOfType(EObject eObject, Class<T> containerType) {
 		return EcoreUtil2.getContainerOfType(eObject, containerType);
 	}
 
-	public static ConstrainedType getSimpleSymbolType(FolFormula receiver) {
+	public static NamedType getSimpleSymbolType(FolFormula receiver) {
 		return ((SimpleTypeReference)((SymbolDeclaration)((SymbolReferenceTerm) receiver).getSymbol()).getType()).getType();
 	}
 
