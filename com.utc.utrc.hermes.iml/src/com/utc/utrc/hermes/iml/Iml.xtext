@@ -199,16 +199,18 @@ Addition returns TermExpression:
 
 /*Multiplication, division, reminder and modulo of two terms */
 Multiplication returns TermExpression:
-	TailedTerm ({Multiplication.left=current} sign=('*' | '/' | '%' | 'mod')
-	right=TailedTerm)*;
+	TailedExpression ({Multiplication.left=current} sign=('*' | '/' | '%' | 'mod')
+	right=TailedExpression)*;
 	
-//InfixExpression returns TermExpression:
-//	TailedTerm ({InfixExpression.left=current} operator=[SymbolDeclaration] right=TailedTerm)?
-//;
-
-TailedTerm returns TermExpression:
-	TermSelectionExpression ({TailedTerm.left=current} tails+=SymbolReferenceTail)?
+TailedExpression returns TermExpression:
+	TermSelectionExpression ({TailedExpression.left=current} tails+=ExpressionTail+)?
 ;
+
+ExpressionTail:
+	TupleConstructor |
+	{ArrayAccess}  '['index=FolFormula']'
+;
+
 /*Selection of a term is a recursive definition. It is a terminal term followed
  * by the scoping operator :: and by a member terms. The member term is a 
  * symbol possibly followed by type binding information (for generic functions),
@@ -273,11 +275,6 @@ SymbolReferenceTerm returns TermExpression:
 {SymbolReferenceTerm}  ('<' typeBinding+=ImlType 
 	                       (',' typeBinding+=ImlType)* '>')? 
 	                    symbol=[Symbol] 
-;
-
-SymbolReferenceTail:
-	TupleConstructor |
-	{ArrayAccess}  '['index=FolFormula']'
 ;
 
 IteTermExpression returns TermExpression:

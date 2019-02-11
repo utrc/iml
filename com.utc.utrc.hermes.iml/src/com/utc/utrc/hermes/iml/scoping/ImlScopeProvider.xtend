@@ -16,7 +16,6 @@ import com.utc.utrc.hermes.iml.iml.SequenceTerm
 import com.utc.utrc.hermes.iml.iml.SignedAtomicFormula
 import com.utc.utrc.hermes.iml.iml.SimpleTypeReference
 import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
-import com.utc.utrc.hermes.iml.iml.SymbolReferenceTail
 import com.utc.utrc.hermes.iml.iml.SymbolReferenceTerm
 import com.utc.utrc.hermes.iml.iml.TermMemberSelection
 import com.utc.utrc.hermes.iml.iml.TupleType
@@ -35,8 +34,11 @@ import org.eclipse.xtext.scoping.impl.AbstractDeclarativeScopeProvider
 import org.eclipse.xtext.scoping.impl.FilteringScope
 
 import static extension com.utc.utrc.hermes.iml.typing.ImlTypeProvider.*
+import static extension com.utc.utrc.hermes.iml.typing.TypingServices.*
 import static extension org.eclipse.xtext.EcoreUtil2.*
 import com.utc.utrc.hermes.iml.iml.NamedType
+import com.utc.utrc.hermes.iml.iml.TailedExpression
+import com.utc.utrc.hermes.iml.iml.ExpressionTail
 
 /**
  * This class contains custom scoping description.
@@ -162,21 +164,19 @@ class ImlScopeProvider extends AbstractDeclarativeScopeProvider {
 	}
 
 	def getScopeOfTupleAccess(ArrayAccess arrayAccess) {
-		val symbolRef = arrayAccess.eContainer as SymbolReferenceTerm
-		if (symbolRef.symbol instanceof SymbolDeclaration) {
-			var type = getTypeWithoutTail(symbolRef)
-			var break = false;
-			for (SymbolReferenceTail tail : symbolRef.tails) {
-				if (!break) {
-					if (tail === arrayAccess) {
-						if (type instanceof TupleType) {
-							return Scopes::scopeFor(type.symbols);
-						} else { // It is just normal array access not tuple
-							break = true;
-						}
-					} else {
-						type = ImlTypeProvider.accessTail(type, tail)
+		val tailedExpr = arrayAccess.eContainer as TailedExpression
+		var type = termExpressionType(tailedExpr.left)
+		var break = false;
+		for (ExpressionTail tail : tailedExpr.tails) {
+			if (!break) {
+				if (tail === arrayAccess) {
+					if (type instanceof TupleType) {
+						return Scopes::scopeFor(type.symbols);
+					} else { // It is just normal array access not tuple
+						break = true;
 					}
+				} else {
+					type = ImlTypeProvider.accessTail(type, tail)
 				}
 			}
 		}

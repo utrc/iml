@@ -10,6 +10,7 @@ import com.utc.utrc.hermes.iml.iml.CardinalityRestriction;
 import com.utc.utrc.hermes.iml.iml.CaseTermExpression;
 import com.utc.utrc.hermes.iml.iml.NamedType;
 import com.utc.utrc.hermes.iml.iml.EnumRestriction;
+import com.utc.utrc.hermes.iml.iml.ExpressionTail;
 import com.utc.utrc.hermes.iml.iml.Extension;
 import com.utc.utrc.hermes.iml.iml.FolFormula;
 import com.utc.utrc.hermes.iml.iml.ImlType;
@@ -28,9 +29,8 @@ import com.utc.utrc.hermes.iml.iml.SignedAtomicFormula;
 import com.utc.utrc.hermes.iml.iml.SimpleTypeReference;
 import com.utc.utrc.hermes.iml.iml.Symbol;
 import com.utc.utrc.hermes.iml.iml.SymbolDeclaration;
-import com.utc.utrc.hermes.iml.iml.SymbolReferenceTail;
 import com.utc.utrc.hermes.iml.iml.SymbolReferenceTerm;
-import com.utc.utrc.hermes.iml.iml.TailedTerm;
+import com.utc.utrc.hermes.iml.iml.TailedExpression;
 import com.utc.utrc.hermes.iml.iml.TermMemberSelection;
 import com.utc.utrc.hermes.iml.iml.Trait;
 import com.utc.utrc.hermes.iml.iml.TraitExhibition;
@@ -303,15 +303,15 @@ public abstract class AbstractModelAcceptor implements IModelAcceptor {
 			visitor.visit((TermMemberSelection)e);
 		}else if (e instanceof SymbolReferenceTerm) {
 			visitor.visit((SymbolReferenceTerm)e);
-		} else if (e instanceof TailedTerm) {
-			for(SymbolReferenceTail tail : ((TailedTerm)e).getTails()) {
+		} else if (e instanceof TailedExpression) {
+			for(ExpressionTail tail : ((TailedExpression)e).getTails()) {
 				if (tail instanceof TupleConstructor) {
 					accept((TupleConstructor) tail, visitor);
 				} else {
 					accept(((ArrayAccess)tail).getIndex(),visitor );
 				}
 			}
-			visitor.visit((TailedTerm) e);
+			visitor.visit((TailedExpression) e);
 		} else if (e instanceof ImplicitInstanceConstructor) {
 			accept(((ImplicitInstanceConstructor) e).getRef(),visitor) ;
 			accept((SequenceTerm) ((ImplicitInstanceConstructor)e).getDefinition(),visitor);

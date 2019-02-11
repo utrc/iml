@@ -116,6 +116,12 @@ public class ImlCustomFactory extends ImlFactoryImpl {
 		var retval = createSymbolReferenceTerm;
 		retval.symbol = s
 		retval.typeBinding.add(bind)
+		createTailedExpression(retval, args)
+	}
+	
+	def createTailedExpression(TermExpression left, List<TermExpression> args) {
+		val retval = createTailedExpression
+		retval.left = left
 		var tail = createTupleConstructor;
 		for(te : args){
 			var f = createSignedAtomicFormula
@@ -123,7 +129,7 @@ public class ImlCustomFactory extends ImlFactoryImpl {
 			tail.elements.add(f)
 		}
 		retval.tails.add(tail)
-		retval
+		return retval
 	}
 	
 	def createProperty(NamedType propertyType) {

@@ -27,7 +27,6 @@ import com.utc.utrc.hermes.iml.iml.SequenceTerm
 import com.utc.utrc.hermes.iml.iml.SimpleTypeReference
 import com.utc.utrc.hermes.iml.iml.Symbol
 import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
-import com.utc.utrc.hermes.iml.iml.SymbolReferenceTail
 import com.utc.utrc.hermes.iml.iml.SymbolReferenceTerm
 import com.utc.utrc.hermes.iml.iml.TermExpression
 import com.utc.utrc.hermes.iml.iml.TermMemberSelection
@@ -48,6 +47,9 @@ import static extension org.eclipse.xtext.EcoreUtil2.*
 import static extension com.utc.utrc.hermes.iml.lib.ImlStdLib.*
 import org.eclipse.emf.ecore.EObject
 import com.utc.utrc.hermes.iml.iml.Model
+import com.utc.utrc.hermes.iml.iml.ExpressionTail
+import com.utc.utrc.hermes.iml.iml.FunctionType
+import com.utc.utrc.hermes.iml.iml.TailedExpression
 
 public class ImlTypeProvider {
 
@@ -124,6 +126,13 @@ public class ImlTypeProvider {
 					return termExpressionType(t.member, receiverType)
 				} else
 					return null // TODO Should we raise an exception better?
+			}
+			TailedExpression: {
+				var leftType = termExpressionType(t.left)
+				for (tail : t.tails) {
+					leftType = accessTail(leftType, tail)
+				}
+			return leftType
 			}
 			SymbolReferenceTerm: {
 				return getSymbolReferenceType(t, context)
@@ -234,17 +243,12 @@ public class ImlTypeProvider {
 		} else {
 			// Reference to a symbol
 			//Change this call to include type parameters
-			var term_type = getType(sr, context);
-		   	for (tail : sr.tails) {
-				term_type = accessTail(term_type, tail)
-			}
-				
-			return term_type
+			return getType(sr, context);
 		}
 		
 	}
 
-	def static accessTail(ImlType type, SymbolReferenceTail tail) {
+	def static accessTail(ImlType type, ExpressionTail tail) {
 		if (tail instanceof ArrayAccess) {
 			if (type instanceof ArrayType) {
 				return accessArray(type as ArrayType, tail as ArrayAccess)
@@ -253,7 +257,7 @@ public class ImlTypeProvider {
 			}
 
 		} else { // Method invocation using Tuple
-			if (type.range !== null) {
+			if (type instanceof FunctionType) {
 				return type.range
 			}
 		}
@@ -289,7 +293,7 @@ public class ImlTypeProvider {
 		return type
 	}
 	
-	def static accessSymbolTail(SymbolReferenceTerm symbolRef, SymbolReferenceTail tail, SimpleTypeReference ctx) {
+	def static accessSymbolTail(SymbolReferenceTerm symbolRef, ExpressionTail tail, SimpleTypeReference ctx) {
 		val symbol = symbolRef.symbol;
 		if (symbol instanceof SymbolDeclaration) {
 //			val symbolType = getType(symbol.type, ctx)
@@ -531,8 +535,8 @@ public class ImlTypeProvider {
 				}
 				return retval;
 			}
-			default: {
-				var retval = ImlFactory.eINSTANCE.createImlType;
+			FunctionType: { // Function type
+				var retval = ImlFactory.eINSTANCE.createFunctionType;
 				retval.domain = remap(t.domain, map)
 				if (t.range !== null) {
 					retval.range = remap(t.range, map)

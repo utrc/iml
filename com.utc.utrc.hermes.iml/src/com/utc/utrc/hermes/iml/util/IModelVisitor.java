@@ -21,7 +21,7 @@ import com.utc.utrc.hermes.iml.iml.SignedAtomicFormula;
 import com.utc.utrc.hermes.iml.iml.SimpleTypeReference;
 import com.utc.utrc.hermes.iml.iml.SymbolDeclaration;
 import com.utc.utrc.hermes.iml.iml.SymbolReferenceTerm;
-import com.utc.utrc.hermes.iml.iml.TailedTerm;
+import com.utc.utrc.hermes.iml.iml.TailedExpression;
 import com.utc.utrc.hermes.iml.iml.TermMemberSelection;
 import com.utc.utrc.hermes.iml.iml.TupleConstructor;
 import com.utc.utrc.hermes.iml.iml.TypeWithProperties;
@@ -66,7 +66,7 @@ public interface IModelVisitor {
 	
 	public void visit(SymbolReferenceTerm e);
 	
-	public void visit(TailedTerm e);
+	public void visit(TailedExpression e);
 	
 	public void visit(ImplicitInstanceConstructor e);
 	

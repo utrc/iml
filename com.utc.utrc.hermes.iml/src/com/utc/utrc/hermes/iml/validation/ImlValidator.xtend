@@ -4,7 +4,6 @@
 package com.utc.utrc.hermes.iml.validation
 
 import com.google.inject.Inject
-import com.utc.utrc.hermes.iml.iml.Addition
 import com.utc.utrc.hermes.iml.iml.Assertion
 import com.utc.utrc.hermes.iml.iml.AtomicExpression
 import com.utc.utrc.hermes.iml.iml.NamedType
@@ -18,7 +17,6 @@ import com.utc.utrc.hermes.iml.iml.SimpleTypeReference
 import com.utc.utrc.hermes.iml.iml.Symbol
 import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
 import com.utc.utrc.hermes.iml.iml.SymbolReferenceTerm
-import com.utc.utrc.hermes.iml.iml.TermMemberSelection
 import com.utc.utrc.hermes.iml.typing.ImlTypeProvider
 import com.utc.utrc.hermes.iml.typing.TypingServices
 import java.util.ArrayList
@@ -32,13 +30,13 @@ import org.eclipse.xtext.validation.EValidatorRegistrar
 import static extension com.utc.utrc.hermes.iml.typing.ImlTypeProvider.*
 import static extension com.utc.utrc.hermes.iml.typing.TypingServices.*
 import static extension com.utc.utrc.hermes.iml.lib.ImlStdLib.*
+import static extension com.utc.utrc.hermes.iml.util.ImlUtil.getTypeName
 
 import com.utc.utrc.hermes.iml.iml.Alias
 import org.eclipse.xtext.EcoreUtil2
 import com.utc.utrc.hermes.iml.iml.ArrayType
 import com.utc.utrc.hermes.iml.iml.ArrayAccess
 import com.utc.utrc.hermes.iml.iml.TupleConstructor
-import com.utc.utrc.hermes.iml.iml.SymbolReferenceTail
 import com.utc.utrc.hermes.iml.iml.TupleType
 import com.utc.utrc.hermes.iml.iml.NumberLiteral
 import org.eclipse.xtext.naming.IQualifiedNameProvider
@@ -47,6 +45,10 @@ import com.utc.utrc.hermes.iml.util.ImlUtil
 import com.utc.utrc.hermes.iml.iml.SignedAtomicFormula
 import com.utc.utrc.hermes.iml.iml.RelationKind
 import com.utc.utrc.hermes.iml.iml.CardinalityRestriction
+import com.utc.utrc.hermes.iml.iml.TermExpression
+import com.utc.utrc.hermes.iml.iml.TailedExpression
+import com.utc.utrc.hermes.iml.iml.FunctionType
+import com.utc.utrc.hermes.iml.iml.ExpressionTail
 
 /**
  * This class contains custom validation rules. 
@@ -159,7 +161,7 @@ class ImlValidator extends AbstractImlValidator {
 						else {
 							error(
 								"Cycle in hierarchy of constrained type '" + cur.name + "'",
-								ImlPackage::eINSTANCE.constrainedType_Relations,
+								ImlPackage::eINSTANCE.namedType_Relations,
 								CYCLIC_CONSTRAINEDTYPE_HIERARCHY
 							)
 						}
@@ -236,41 +238,43 @@ class ImlValidator extends AbstractImlValidator {
 	}
 
 	@Check
-	def checkSymbolRefTail(SymbolReferenceTerm symbolRef) {
-		val symbol = symbolRef.symbol
-		if (symbol instanceof Assertion) { 
-			if (!symbolRef.tails.isNullOrEmpty) {
-				error('''Method invocatin and array access are not applicable on assertion '«symbol.name»' ''',
-				ImlPackage.eINSTANCE.symbolReferenceTerm_Tails,
-				METHOD_INVOCATION_ON_ASSERTION
-			)
-			}
-		} else if (symbol instanceof SymbolDeclaration) {
-			var symbolType = TypingServices.resolveAliases(ImlTypeProvider.getSymbolRefSegmentType(symbolRef)) // Get the type of symbol without tail
-			checkTypeAgainstTails(symbolType, symbolRef.tails, symbol)
-		} else if (symbol instanceof NamedType) {
-			if (!symbolRef.tails.nullOrEmpty) {
-				// We can only use array access 1 level in case of finite type
-				if (symbolRef.tails.size != 1 || !symbol.isFinite) {
-					error('''You can only use single array access on a finite type: '«symbol.name»' ''',
-						ImlPackage.eINSTANCE.symbolReferenceTerm_Tails,
-						METHOD_INVOCATION_ON_CONSTRAINEDTYPE
-					)
-				}
-			}
-		}
+	def checkTailedExpression(TailedExpression expr) {
+		val leftType = TypingServices.resolveAliases(ImlTypeProvider.termExpressionType(expr.left))
+		checkTypeAgainstTails(leftType, expr.tails)
+		
+//		if (symbol instanceof Assertion) { 
+//			if (!symbolRef.tails.isNullOrEmpty) {
+//				error('''Method invocatin and array access are not applicable on assertion '«symbol.name»' ''',
+//				ImlPackage.eINSTANCE.symbolReferenceTerm_Tails,
+//				METHOD_INVOCATION_ON_ASSERTION
+//			)
+//			}
+//		} else if (symbol instanceof SymbolDeclaration) {
+//			var symbolType = TypingServices.resolveAliases(ImlTypeProvider.getSymbolRefSegmentType(symbolRef)) // Get the type of symbol without tail
+//			checkTypeAgainstTails(symbolType, symbolRef.tails, symbol)
+//		} else if (symbol instanceof NamedType) {
+//			if (!symbolRef.tails.nullOrEmpty) {
+//				// We can only use array access 1 level in case of finite type
+//				if (symbolRef.tails.size != 1 || !symbol.isFinite) {
+//					error('''You can only use single array access on a finite type: '«symbol.name»' ''',
+//						ImlPackage.eINSTANCE.symbolReferenceTerm_Tails,
+//						METHOD_INVOCATION_ON_CONSTRAINEDTYPE
+//					)
+//				}
+//			}
+//		}
 	}
 	
 	def boolean isFinite(NamedType type) {
 		type.restrictions.filter[it instanceof CardinalityRestriction].size > 0
 	}
 	
-	def checkTypeAgainstTails(ImlType type, List<SymbolReferenceTail> tails, Symbol symbol) {
+	def checkTypeAgainstTails(ImlType type, List<ExpressionTail> tails) {
 		var tmpType = type
 		if (!tails.nullOrEmpty) {
 			for (var i=0, var stop=false ; i < tails.length ; i++) {
 				val tail = tails.get(i)
-				if (checkTypeAgainstTail(tmpType, tail, symbol)) {
+				if (checkTypeAgainstTail(tmpType, tail)) {
 					tmpType = ImlTypeProvider.accessTail(tmpType, tail)
 				} else { // There was a validation error, no need to continue check
 					stop=true;
@@ -280,35 +284,36 @@ class ImlValidator extends AbstractImlValidator {
 	}
 		
 	
-	def checkTypeAgainstTail(ImlType type, SymbolReferenceTail tail, Symbol symbol) {
+	def checkTypeAgainstTail(ImlType type, ExpressionTail tail) {
+		val typeAsString = getTypeName(type, qnp)
 		if (type instanceof SimpleTypeReference) {
-			error('''Method invocatin and array access are not applicable on the simple type '«symbol.name»' ''',
-				ImlPackage.eINSTANCE.symbolReferenceTerm_Tails,
+			error('''Method invocatin and array access are not applicable on the simple type '«typeAsString»' ''',
+				ImlPackage.eINSTANCE.tailedExpression_Tails,
 				METHOD_INVOCATION_ON_VARIABLE
 			)
 			return false				
 		} else if (type instanceof ArrayType) {
 			if (tail instanceof TupleConstructor) {
-				error('''Method invocation is not applicable over Array type '«symbol.name»' ''',
-					ImlPackage.eINSTANCE.symbolReferenceTerm_Tails,
+				error('''Method invocation is not applicable over Array type '«typeAsString»' ''',
+					ImlPackage.eINSTANCE.tailedExpression_Tails,
 					METHOD_INVOCATION_ON_ARRAY
 				)
 				return false
 			}
 		} else if (type instanceof TupleType) {
 			if (tail instanceof TupleConstructor) {
-				error('''Method invocation is not applicable over tuple type '«symbol.name»' ''',
-					ImlPackage.eINSTANCE.symbolReferenceTerm_Tails,
+				error('''Method invocation is not applicable over tuple type '«typeAsString»' ''',
+					ImlPackage.eINSTANCE.tailedExpression_Tails,
 					METHOD_INVOCATION_ON_TUPLE
 				)
 				return false
-			} else if (tail instanceof ArrayAccess) { // ArrayAccess
+			} else if (tail instanceof ArrayAccess) { 
 				val index = tail.index.left
 				if (index instanceof NumberLiteral) {
 					if (index.value >= type.symbols.size || index.neg) {
-						error('''Tuple access index must be within the declare tuple elements size of '«symbol.name»'. Expected <
+						error('''Tuple access index must be within the declare tuple elements size of '«typeAsString»'. Expected <
 						«type.symbols.size» but got «if (index.neg) '-'»«index.value» ''',
-							ImlPackage.eINSTANCE.symbolReferenceTerm_Tails,
+							ImlPackage.eINSTANCE.tailedExpression_Tails,
 							INVALID_INDEX_ACCESS
 						)
 					}
@@ -316,21 +321,21 @@ class ImlValidator extends AbstractImlValidator {
 					// TODO Check if this symbol declared inside the tuple
 				}
 			}
-		} else { // Higher order type
+		} else if (type instanceof FunctionType) { 
 			if (tail instanceof ArrayAccess) {
-				error('''Array access is not applicatble over Higher Order Type of: '«symbol.name»' ''',
-							ImlPackage.eINSTANCE.symbolReferenceTerm_Tails,
+				error('''Array access is not applicatble over Higher Order Type of: '«typeAsString»' ''',
+							ImlPackage.eINSTANCE.tailedExpression_Tails,
 							ARRAY_ACCESS_ON_HOT
 						)
 				return false
 			} else if (tail instanceof TupleConstructor) {
-				return checkFunctionCallParameters(type.domain, tail as TupleConstructor, symbol)
+				return checkFunctionCallParameters(type.domain, tail as TupleConstructor)
 			}
 		}
 		return true
 	}
 	
-	def checkFunctionCallParameters(ImlType domain, TupleConstructor tupleTail, Symbol symbol) {
+	def checkFunctionCallParameters(ImlType domain, TupleConstructor tupleTail) {
 		var List<ImlType> domainList = null;
 		if (domain instanceof TupleType) {
 			domainList = domain.symbols.map[it.type]
@@ -345,9 +350,9 @@ class ImlValidator extends AbstractImlValidator {
 		}
 				
 		if (domainList.size != tupleTail.elements.size) {
-			error('''Number of parameters provided don't match the declared parameters in: '«symbol.name»'. 
+			error('''Number of parameters provided don't match the declared parameters in: '«getTypeName(domain, qnp)»'. 
 			Expected «domainList.size» but got «tupleTail.elements.size» ''',
-					ImlPackage.eINSTANCE.symbolReferenceTerm_Tails,
+					ImlPackage.eINSTANCE.tailedExpression_Tails,
 					INVALID_PARAMETER_LIST
 				)
 			return false;
@@ -359,7 +364,7 @@ class ImlValidator extends AbstractImlValidator {
 			if (!TypingServices.isCompatible(domainList.get(i), paramType)) {
 				error('''Invalid argument type. Expecting: «ImlUtil.getTypeName(domainList.get(i), qnp)» but got 
 							«ImlUtil.getTypeName(paramType, qnp)»''',
-					ImlPackage.eINSTANCE.symbolReferenceTerm_Tails,
+					ImlPackage.eINSTANCE.tailedExpression_Tails,
 					INVALID_PARAMETER_LIST
 				)
 			}
@@ -459,7 +464,7 @@ class ImlValidator extends AbstractImlValidator {
 		if (type.relations !== null) {
 			if (type.relations.filter[it instanceof Alias].size > 1) {
 				error('''Type «type.name» can NOT have more that one alias''',
-					ImlPackage.eINSTANCE.constrainedType_Relations,
+					ImlPackage.eINSTANCE.namedType_Relations,
 					INVALID_TYPE_DECLARATION
 				)
 			}
