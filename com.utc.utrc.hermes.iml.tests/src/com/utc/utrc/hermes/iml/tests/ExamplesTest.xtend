@@ -1,19 +1,13 @@
 package com.utc.utrc.hermes.iml.tests
 
-
 import com.google.inject.Inject
 import com.utc.utrc.hermes.iml.iml.Model
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.XtextRunner
 import org.eclipse.xtext.testing.util.ParseHelper
-import org.junit.Assert
+import org.eclipse.xtext.testing.validation.ValidationTestHelper
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.eclipse.xtext.testing.validation.ValidationTestHelper
-import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
-import com.utc.utrc.hermes.iml.iml.ConstrainedType
-import com.utc.utrc.hermes.iml.iml.SimpleTypeReference
-import static extension org.junit.Assert.*
 
 @RunWith(XtextRunner)
 @InjectWith(ImlInjectorProvider)

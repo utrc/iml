@@ -12,7 +12,7 @@ import com.google.inject.Inject
 import org.junit.Test
 import com.utc.utrc.hermes.iml.iml.ImlPackage
 import static com.utc.utrc.hermes.iml.validation.ImlValidator.*
-import com.utc.utrc.hermes.iml.iml.ConstrainedType
+import com.utc.utrc.hermes.iml.iml.NamedType
 import com.utc.utrc.hermes.iml.iml.SimpleTypeReference
 import static extension org.junit.Assert.*
 
@@ -54,7 +54,7 @@ class ImlValidatorTest {
 			type T2;
 			
 		'''.parse
-		model.assertError(ImlPackage.eINSTANCE.constrainedType, DUPLICATE_ELEMENT)
+		model.assertError(ImlPackage.eINSTANCE.namedType, DUPLICATE_ELEMENT)
 	}
 	
 	@Test
@@ -113,11 +113,11 @@ class ImlValidatorTest {
 		model2.assertNoErrors
 		// Check if shadowing work
 		val model1T = model1.findSymbol("T1")
-		val model1Ref = ((model1.findSymbol("x") as ConstrainedType).findSymbol("varx").type as SimpleTypeReference).type
+		val model1Ref = ((model1.findSymbol("x") as NamedType).findSymbol("varx").type as SimpleTypeReference).type
 		assertSame(model1T, model1Ref)
 		
 		val model2T = model2.findSymbol("T1")
-		val model2Ref = ((model2.findSymbol("x") as ConstrainedType).findSymbol("varx").type as SimpleTypeReference).type
+		val model2Ref = ((model2.findSymbol("x") as NamedType).findSymbol("varx").type as SimpleTypeReference).type
 		assertSame(model2T, model2Ref)
 		assertNotSame(model1Ref, model2Ref)
 	}
@@ -158,7 +158,7 @@ class ImlValidatorTest {
 			package p;
 			type T1 <T, T>;
 		'''.parse
-		model.assertError(ImlPackage.eINSTANCE.constrainedType, DUPLICATE_ELEMENT)
+		model.assertError(ImlPackage.eINSTANCE.namedType, DUPLICATE_ELEMENT)
 	}
 	
 	/*****************************
@@ -247,7 +247,7 @@ class ImlValidatorTest {
 			type T2 extends (T1);
 		'''.parse
 		
-		model.assertError(ImlPackage.eINSTANCE.constrainedType, CYCLIC_CONSTRAINEDTYPE_HIERARCHY)
+		model.assertError(ImlPackage.eINSTANCE.namedType, CYCLIC_NAMEDTYPE_HIERARCHY)
 	}
 	
 	@Test
@@ -260,7 +260,7 @@ class ImlValidatorTest {
 			type T3 extends (T1);
 		'''.parse
 		
-		model.assertError(ImlPackage.eINSTANCE.constrainedType, CYCLIC_CONSTRAINEDTYPE_HIERARCHY)
+		model.assertError(ImlPackage.eINSTANCE.namedType, CYCLIC_NAMEDTYPE_HIERARCHY)
 	}
 	
 	
@@ -443,7 +443,7 @@ class ImlValidatorTest {
 				var1 : Real := Real[10];
 			}
 		'''.parse
-		model.assertError(ImlPackage.eINSTANCE.symbolReferenceTerm, METHOD_INVOCATION_ON_CONSTRAINEDTYPE)
+		model.assertError(ImlPackage.eINSTANCE.symbolReferenceTerm, METHOD_INVOCATION_ON_NAMEDTYPE)
 	}
 	
 	@Test
@@ -456,7 +456,7 @@ class ImlValidatorTest {
 				var1 : Real := Real(10);
 			}
 		'''.parse
-		model.assertError(ImlPackage.eINSTANCE.symbolReferenceTerm, METHOD_INVOCATION_ON_CONSTRAINEDTYPE)
+		model.assertError(ImlPackage.eINSTANCE.symbolReferenceTerm, METHOD_INVOCATION_ON_NAMEDTYPE)
 	}
 	
 	@Test
@@ -660,7 +660,7 @@ class ImlValidatorTest {
 			type T2;
 			type T3 is T1 is T2;
 		'''.parse
-		model.assertError(ImlPackage.eINSTANCE.constrainedType, INVALID_TYPE_DECLARATION)
+		model.assertError(ImlPackage.eINSTANCE.namedType, INVALID_TYPE_DECLARATION)
 	 }
 	 
 	 /*********************

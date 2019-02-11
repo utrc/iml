@@ -4,19 +4,16 @@
 package com.utc.utrc.hermes.iml.tests
 
 import com.google.inject.Inject
+import com.utc.utrc.hermes.iml.custom.ImlCustomFactory
 import com.utc.utrc.hermes.iml.iml.Model
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.XtextRunner
 import org.eclipse.xtext.testing.util.ParseHelper
+import org.eclipse.xtext.testing.validation.ValidationTestHelper
 import org.junit.Assert
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.eclipse.xtext.testing.validation.ValidationTestHelper
-import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
-import com.utc.utrc.hermes.iml.iml.ConstrainedType
-import com.utc.utrc.hermes.iml.iml.SimpleTypeReference
-import static extension org.junit.Assert.*
-import com.utc.utrc.hermes.iml.custom.ImlCustomFactory
+import com.utc.utrc.hermes.iml.iml.NamedType
 
 @RunWith(XtextRunner)
 @InjectWith(ImlInjectorProvider)
@@ -38,7 +35,7 @@ class ImlParsingTest {
 	}
 	
 	@Test
-	def void parsingHigherOrderType() {
+	def void parsingImlType() {
 		val model = '''
 			package p;
 			type Int;
@@ -142,11 +139,11 @@ class ImlParsingTest {
 			} 
 		'''.parse
 		
-		val intType = model.findSymbol("Int") as ConstrainedType;
-		val realType = model.findSymbol("Real") as ConstrainedType;
-		val T = model.findSymbol("T") as ConstrainedType
+		val intType = model.findSymbol("Int") as NamedType;
+		val realType = model.findSymbol("Real") as NamedType;
+		val T = model.findSymbol("T") as NamedType
 		T.symbols.add(ImlCustomFactory.INST.createSymbolDeclaration("x", 
-			ImlCustomFactory.INST.createHigherOrderType => [
+			ImlCustomFactory.INST.createFunctionType => [
 				domain = ImlCustomFactory.INST.createSimpleTypeReference(intType)
 				range = ImlCustomFactory.INST.createArrayType => [
 					type = ImlCustomFactory.INST.createSimpleTypeReference(realType)
@@ -155,7 +152,7 @@ class ImlParsingTest {
 		]))
 		T.symbols.add(ImlCustomFactory.INST.createSymbolDeclaration("y", 
 			ImlCustomFactory.INST.createArrayType => [
-				type = ImlCustomFactory.INST.createHigherOrderType => [
+				type = ImlCustomFactory.INST.createFunctionType => [
 						domain = ImlCustomFactory.INST.createSimpleTypeReference(intType)
 						range = ImlCustomFactory.INST.createSimpleTypeReference(realType)
 					]

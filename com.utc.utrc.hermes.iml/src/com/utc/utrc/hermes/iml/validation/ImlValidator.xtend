@@ -65,14 +65,14 @@ class ImlValidator extends AbstractImlValidator {
 	public static val INVALID_PARAMETER_LIST = 'com.utc.utrc.hermes.iml.validation.InvalidParameterList'
 	public static val METHOD_INVOCATION_ON_VARIABLE = 'com.utc.utrc.hermes.iml.validation.MethodInvocationOnVariable'
 	public static val METHOD_INVOCATION_ON_ASSERTION= 'com.utc.utrc.hermes.iml.validation.MethodInvocationOnAssertion'
-	public static val METHOD_INVOCATION_ON_CONSTRAINEDTYPE= 'com.utc.utrc.hermes.iml.validation.MethodInvocationOnCt'
+	public static val METHOD_INVOCATION_ON_NAMEDTYPE= 'com.utc.utrc.hermes.iml.validation.MethodInvocationOnNamedType'
 	public static val METHOD_INVOCATION_ON_ARRAY = 'com.utc.utrc.hermes.iml.validation.MethodInvocationOnArray'
 	public static val METHOD_INVOCATION_ON_TUPLE = 'com.utc.utrc.hermes.iml.validation.MethodInvocationOnTuple'
 	public static val MISSING_METHOD_INVOCATION = 'com.utc.utrc.hermes.iml.validation.MissingMethodInvocation'
 	public static val TYPE_MISMATCH_IN_TERM_EXPRESSION = 'com.utc.utrc.hermes.iml.validation.TypeMismatchInTermExpression'
 	public static val TYPE_MISMATCH_IN_TERM_RELATION = 'com.utc.utrc.hermes.iml.validation.TypeMismatchInTermRelation'
 	public static val INVALID_STEREOTYPE_HIERARCHY = 'com.utc.utrc.hermes.iml.validation.InvalidStereotypeHierarchy'
-	public static val CYCLIC_CONSTRAINEDTYPE_HIERARCHY = 'com.utc.utrc.hermes.iml.validation.CyclicNamedTypeHierarchy'
+	public static val CYCLIC_NAMEDTYPE_HIERARCHY = 'com.utc.utrc.hermes.iml.validation.CyclicNamedTypeHierarchy'
 	public static val DUPLICATE_ELEMENT = 'com.utc.utrc.hermes.iml.validation.DuplicateElement'
 	public static val INVALID_STEREOTYPE = 'com.utc.utrc.hermes.iml.validation.InvalidStereotype';
 	public static val ELEMENTS_IN_STATIC_TYPES = 'com.utc.utrc.hermes.iml.validation.ElementsInStaticTypes';
@@ -162,7 +162,7 @@ class ImlValidator extends AbstractImlValidator {
 							error(
 								"Cycle in hierarchy of constrained type '" + cur.name + "'",
 								ImlPackage::eINSTANCE.namedType_Relations,
-								CYCLIC_CONSTRAINEDTYPE_HIERARCHY
+								CYCLIC_NAMEDTYPE_HIERARCHY
 							)
 						}
 					}

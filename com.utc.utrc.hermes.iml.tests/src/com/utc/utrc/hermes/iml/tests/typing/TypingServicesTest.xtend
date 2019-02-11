@@ -12,7 +12,7 @@ import static org.junit.Assert.*
 import org.eclipse.xtext.testing.validation.ValidationTestHelper
 import com.utc.utrc.hermes.iml.tests.TestHelper
 import com.utc.utrc.hermes.iml.typing.TypingServices
-import com.utc.utrc.hermes.iml.iml.ConstrainedType
+import com.utc.utrc.hermes.iml.iml.NamedType
 import java.util.Arrays
 import java.util.List
 import java.util.ArrayList
@@ -38,7 +38,7 @@ class TypingServicesTest {
 	 * Testing isEqual methods 
 	 * ************************/
 	@Test
-	def testIsEqual_HigherOrderType() {
+	def testIsEqual_ImlType() {
 		val model = '''
 			package p;
 			type Int;
@@ -49,14 +49,14 @@ class TypingServicesTest {
 		'''.parse
 		
 		model.assertNoErrors
-		val var1 = (model.findSymbol("t1") as ConstrainedType).findSymbol("var1")
-		val var2 = (model.findSymbol("t1") as ConstrainedType).findSymbol("var2")
+		val var1 = (model.findSymbol("t1") as NamedType).findSymbol("var1")
+		val var2 = (model.findSymbol("t1") as NamedType).findSymbol("var2")
 		
 		assertTrue(TypingServices.isEqual(var1.type, var2.type))
 	}
 	
 	@Test
-	def testIsEqual_HigherOrderType_WithTemplate() {
+	def testIsEqual_ImlType_WithTemplate() {
 		val model = '''
 			package p;
 			type TemType<T, P>;
@@ -69,14 +69,14 @@ class TypingServicesTest {
 		'''.parse
 		
 		model.assertNoErrors
-		val var1 = (model.findSymbol("t1") as ConstrainedType).findSymbol("var1")
-		val var2 = (model.findSymbol("t1") as ConstrainedType).findSymbol("var2")
+		val var1 = (model.findSymbol("t1") as NamedType).findSymbol("var1")
+		val var2 = (model.findSymbol("t1") as NamedType).findSymbol("var2")
 		
 		assertTrue(TypingServices.isEqual(var1.type, var2.type))
 	}
 	
 	@Test
-	def testIsEqual_HigherOrderType_WithTemplate_DifferentTypes() {
+	def testIsEqual_ImlType_WithTemplate_DifferentTypes() {
 		val model = '''
 			package p;
 			type TemType<T, P>;
@@ -89,14 +89,14 @@ class TypingServicesTest {
 		'''.parse
 		
 		model.assertNoErrors
-		val var1 = (model.findSymbol("t1") as ConstrainedType).findSymbol("var1")
-		val var2 = (model.findSymbol("t1") as ConstrainedType).findSymbol("var2")
+		val var1 = (model.findSymbol("t1") as NamedType).findSymbol("var1")
+		val var2 = (model.findSymbol("t1") as NamedType).findSymbol("var2")
 		
 		assertFalse(TypingServices.isEqual(var1.type, var2.type))
 	}
 	
 	@Test
-	def testIsEqual_HigherOrderType_WithArray() {
+	def testIsEqual_ImlType_WithArray() {
 		val model = '''
 			package p;
 			type Int;
@@ -107,14 +107,14 @@ class TypingServicesTest {
 		'''.parse
 		
 		model.assertNoErrors
-		val var1 = (model.findSymbol("t1") as ConstrainedType).findSymbol("var1")
-		val var2 = (model.findSymbol("t1") as ConstrainedType).findSymbol("var2")
+		val var1 = (model.findSymbol("t1") as NamedType).findSymbol("var1")
+		val var2 = (model.findSymbol("t1") as NamedType).findSymbol("var2")
 		
 		assertTrue(TypingServices.isEqual(var1.type, var2.type))
 	}
 	
 	@Test
-	def testIsEqual_HigherOrderType_WithArray_DifferentTypes() {
+	def testIsEqual_ImlType_WithArray_DifferentTypes() {
 		val model = '''
 			package p;
 			type Int;
@@ -126,14 +126,14 @@ class TypingServicesTest {
 		'''.parse
 		
 		model.assertNoErrors
-		val var1 = (model.findSymbol("t1") as ConstrainedType).findSymbol("var1")
-		val var2 = (model.findSymbol("t1") as ConstrainedType).findSymbol("var2")
+		val var1 = (model.findSymbol("t1") as NamedType).findSymbol("var1")
+		val var2 = (model.findSymbol("t1") as NamedType).findSymbol("var2")
 		
 		assertFalse(TypingServices.isEqual(var1.type, var2.type))
 	}
 	
 	@Test
-	def testIsEqual_HigherOrderType_WithArray_DifferentDiminsions() {
+	def testIsEqual_ImlType_WithArray_DifferentDiminsions() {
 		val model = '''
 			package p;
 			type Int;
@@ -145,14 +145,14 @@ class TypingServicesTest {
 		'''.parse
 		
 		model.assertNoErrors
-		val var1 = (model.findSymbol("t1") as ConstrainedType).findSymbol("var1")
-		val var2 = (model.findSymbol("t1") as ConstrainedType).findSymbol("var2")
+		val var1 = (model.findSymbol("t1") as NamedType).findSymbol("var1")
+		val var2 = (model.findSymbol("t1") as NamedType).findSymbol("var2")
 		
 		assertFalse(TypingServices.isEqual(var1.type, var2.type))
 	}
 	
 	@Test
-	def testIsEqual_HigherOrderType_WithTuples() {
+	def testIsEqual_ImlType_WithTuples() {
 		val model = '''
 			package p;
 			type Int;
@@ -164,14 +164,14 @@ class TypingServicesTest {
 		'''.parse
 		
 		model.assertNoErrors
-		val var1 = (model.findSymbol("t1") as ConstrainedType).findSymbol("var1")
-		val var2 = (model.findSymbol("t1") as ConstrainedType).findSymbol("var2")
+		val var1 = (model.findSymbol("t1") as NamedType).findSymbol("var1")
+		val var2 = (model.findSymbol("t1") as NamedType).findSymbol("var2")
 		
 		assertTrue(TypingServices.isEqual(var1.type, var2.type))
 	}
 	
 	@Test
-	def testIsEqual_HigherOrderType_WithTuples_DifferentTypes() {
+	def testIsEqual_ImlType_WithTuples_DifferentTypes() {
 		val model = '''
 			package p;
 			type Int;
@@ -183,14 +183,14 @@ class TypingServicesTest {
 		'''.parse
 		
 		model.assertNoErrors
-		val var1 = (model.findSymbol("t1") as ConstrainedType).findSymbol("var1")
-		val var2 = (model.findSymbol("t1") as ConstrainedType).findSymbol("var2")
+		val var1 = (model.findSymbol("t1") as NamedType).findSymbol("var1")
+		val var2 = (model.findSymbol("t1") as NamedType).findSymbol("var2")
 		
 		assertFalse(TypingServices.isEqual(var1.type, var2.type))
 	}
 	
 	@Test
-	def testIsEqual_HigherOrderType_WithTuples_DifferentSize() {
+	def testIsEqual_ImlType_WithTuples_DifferentSize() {
 		val model = '''
 			package p;
 			type Int;
@@ -202,14 +202,14 @@ class TypingServicesTest {
 		'''.parse
 		
 		model.assertNoErrors
-		val var1 = (model.findSymbol("t1") as ConstrainedType).findSymbol("var1")
-		val var2 = (model.findSymbol("t1") as ConstrainedType).findSymbol("var2")
+		val var1 = (model.findSymbol("t1") as NamedType).findSymbol("var1")
+		val var2 = (model.findSymbol("t1") as NamedType).findSymbol("var2")
 		
 		assertFalse(TypingServices.isEqual(var1.type, var2.type))
 	}
 	
 	@Test
-	def testIsEqual_HigherOrderType_Range() {
+	def testIsEqual_ImlType_Range() {
 		val model = '''
 			package p;
 			type Int;
@@ -221,14 +221,14 @@ class TypingServicesTest {
 		'''.parse
 		
 		model.assertNoErrors
-		val var1 = (model.findSymbol("t1") as ConstrainedType).findSymbol("var1")
-		val var2 = (model.findSymbol("t1") as ConstrainedType).findSymbol("var2")
+		val var1 = (model.findSymbol("t1") as NamedType).findSymbol("var1")
+		val var2 = (model.findSymbol("t1") as NamedType).findSymbol("var2")
 		
 		assertTrue(TypingServices.isEqual(var1.type, var2.type))
 	}
 	
 	@Test
-	def testIsEqual_HigherOrderType_RangeAndNoRange() {
+	def testIsEqual_ImlType_RangeAndNoRange() {
 		val model = '''
 			package p;
 			type Int;
@@ -240,14 +240,14 @@ class TypingServicesTest {
 		'''.parse
 		
 		model.assertNoErrors
-		val var1 = (model.findSymbol("t1") as ConstrainedType).findSymbol("var1")
-		val var2 = (model.findSymbol("t1") as ConstrainedType).findSymbol("var2")
+		val var1 = (model.findSymbol("t1") as NamedType).findSymbol("var1")
+		val var2 = (model.findSymbol("t1") as NamedType).findSymbol("var2")
 		
 		assertFalse(TypingServices.isEqual(var1.type, var2.type))
 	}
 	
 	@Test
-	def testIsEqual_HigherOrderType_Range_DifferentTypes() {
+	def testIsEqual_ImlType_Range_DifferentTypes() {
 		val model = '''
 			package p;
 			type Int;
@@ -259,8 +259,8 @@ class TypingServicesTest {
 		'''.parse
 		
 		model.assertNoErrors
-		val var1 = (model.findSymbol("t1") as ConstrainedType).findSymbol("var1")
-		val var2 = (model.findSymbol("t1") as ConstrainedType).findSymbol("var2")
+		val var1 = (model.findSymbol("t1") as NamedType).findSymbol("var1")
+		val var2 = (model.findSymbol("t1") as NamedType).findSymbol("var2")
 		
 		assertFalse(TypingServices.isEqual(var1.type, var2.type))
 	}
@@ -278,7 +278,7 @@ class TypingServicesTest {
 		'''.parse
 		
 		model.assertNoErrors
-		val t1 = model.findSymbol("t1") as ConstrainedType
+		val t1 = model.findSymbol("t1") as NamedType
 		
 		assertParents(TypingServices.getAllSuperTypes(t1), Arrays.asList("t1"))
 	}
@@ -295,7 +295,7 @@ class TypingServicesTest {
 		'''.parse
 		
 		model.assertNoErrors
-		val t1 = model.findSymbol("t1") as ConstrainedType
+		val t1 = model.findSymbol("t1") as NamedType
 		
 		assertParents(TypingServices.getAllSuperTypes(t1), Arrays.asList("t1", "Parent"))
 	}
@@ -312,7 +312,7 @@ class TypingServicesTest {
 		'''.parse
 		
 		model.assertNoErrors
-		val t1 = model.findSymbol("t1") as ConstrainedType
+		val t1 = model.findSymbol("t1") as NamedType
 		
 		assertParents(TypingServices.getAllSuperTypes(t1), Arrays.asList("t1", "Parent", "Int"))
 	}
@@ -332,12 +332,12 @@ class TypingServicesTest {
 		'''.parse
 		 
 		model.assertNoErrors
-		val t1 = model.findSymbol("t1") as ConstrainedType
+		val t1 = model.findSymbol("t1") as NamedType
 		
 		assertParents(TypingServices.getAllSuperTypes(t1), Arrays.asList("t1", "Parent", "Parent2", "Parent3", "Int"))
 	}
 	
-	def assertParents(List<List<ConstrainedType>> parents, List<String> types) {
+	def assertParents(List<List<NamedType>> parents, List<String> types) {
 		val parentsFlat = parents.flatten.toList.map[it.name]
 		assertEquals(types.size, parentsFlat.size)
 		assertTrue(parentsFlat.containsAll(types))
@@ -371,7 +371,7 @@ class TypingServicesTest {
 			};
 		'''.parse
 		
-		val c = (model.symbols.last as ConstrainedType).symbols.last as SymbolDeclaration
+		val c = (model.symbols.last as NamedType).symbols.last as SymbolDeclaration
 		val decltype = c.type
 		val deftype = ImlTypeProvider.termExpressionType(c.definition)
 		val eq = TypingServices.isCompatible(decltype,deftype)
@@ -402,8 +402,8 @@ class TypingServicesTest {
 			}
 		'''.parse
 		
-		val var1Type = ((model.findSymbol("Tx") as ConstrainedType).findSymbol("var1") as SymbolDeclaration).type
-		val var2Type = ((model.findSymbol("Tx") as ConstrainedType).findSymbol("var2") as SymbolDeclaration).type
+		val var1Type = ((model.findSymbol("Tx") as NamedType).findSymbol("var1") as SymbolDeclaration).type
+		val var2Type = ((model.findSymbol("Tx") as NamedType).findSymbol("var2") as SymbolDeclaration).type
 		return TypingServices.isEqual(var2Type, TypingServices.resolveAliases(var1Type))
 		
 	}

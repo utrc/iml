@@ -265,4 +265,37 @@ public class ImlUtil {
 		return (SymbolDeclaration)((SymbolReferenceTerm) receiver).getSymbol();
 	}
 	
+	public static boolean isFirstOrderFunction(ImlType type) {
+		if (type instanceof FunctionType) {
+			if (containsFunctionType(((FunctionType)type).getDomain())) {
+				return false;
+			}
+			if (containsFunctionType(((FunctionType)type).getRange())) {
+				return false;
+			}
+			return true;
+		}
+		return !containsFunctionType(type);
+	}
+
+	private static boolean containsFunctionType(ImlType type) {
+		if (type instanceof FunctionType) {
+			return true;
+		}
+		if (type instanceof TupleType) {
+			for (SymbolDeclaration tupleElement : ((TupleType) type).getSymbols()) {
+				if (containsFunctionType(tupleElement.getType())) {
+					return true;
+				}
+			}
+		}
+		
+		if (type instanceof ArrayType) {
+			if (containsFunctionType(((ArrayType) type).getType())) {
+				return true;
+			}
+		}
+		
+		return false;
+	}
 }

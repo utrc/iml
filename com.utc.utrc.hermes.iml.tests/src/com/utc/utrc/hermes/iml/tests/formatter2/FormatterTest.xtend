@@ -11,7 +11,7 @@ import org.eclipse.xtext.testing.InjectWith
 import com.utc.utrc.hermes.iml.tests.ImlInjectorProvider
 import com.utc.utrc.hermes.iml.custom.ImlCustomFactory
 import com.utc.utrc.hermes.iml.tests.TestHelper
-import com.utc.utrc.hermes.iml.iml.ConstrainedType
+import com.utc.utrc.hermes.iml.iml.NamedType
 
 @RunWith(XtextRunner)
 @InjectWith(ImlInjectorProvider)
@@ -26,9 +26,9 @@ class FormatterTest {
 			package p;
 		'''.parse
 		
-		model.symbols.add(ImlCustomFactory.INST.createConstrainedType => [name = "Int"])
+		model.symbols.add(ImlCustomFactory.INST.createNamedType => [name = "Int"])
 		model.symbols.add(ImlCustomFactory.INST.createSymbolDeclaration => [name = "var1"; 
-			type = ImlCustomFactory.INST.createSimpleTypeReference(model.findSymbol("Int") as ConstrainedType)
+			type = ImlCustomFactory.INST.createSimpleTypeReference(model.findSymbol("Int") as NamedType)
 		])
 		
 		print(model.serialize)
