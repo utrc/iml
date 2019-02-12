@@ -19,12 +19,6 @@ class ImlStdLib {
 	public static val STRING_TYPE = ImlCustomFactory.INST.createNamedType(STRING)
 	public static val NULL_TYPE = ImlCustomFactory.INST.createNamedType(NULL)
 	
-	public static val INT_REF = ImlCustomFactory.INST.createSimpleTypeReference(INT_TYPE)
-	public static val REAL_REF = ImlCustomFactory.INST.createSimpleTypeReference(REAL_TYPE)
-	public static val BOOL_REF = ImlCustomFactory.INST.createSimpleTypeReference(BOOL_TYPE)
-	public static val STRING_REF = ImlCustomFactory.INST.createSimpleTypeReference(STRING_TYPE)
-	public static val NULL_REF = ImlCustomFactory.INST.createSimpleTypeReference(NULL_TYPE)
-	
 	def static boolean isPrimitive(ImlType t) {
 		return t.isInt || t.isReal || t.isBool || t.isString
 	}
@@ -84,5 +78,25 @@ class ImlStdLib {
 	
 	def static boolean isString(NamedType t) {
 		return STRING == t.name
+	}
+	
+	def static createIntRef() {
+		return ImlCustomFactory.INST.createSimpleTypeReference(INT_TYPE);
+	}
+	
+	def static createRealRef() {
+		return ImlCustomFactory.INST.createSimpleTypeReference(REAL_TYPE);
+	}
+	
+	def static createBoolRef() {
+		return ImlCustomFactory.INST.createSimpleTypeReference(BOOL_TYPE);
+	}
+	
+	def static createStringRef() {
+		return ImlCustomFactory.INST.createSimpleTypeReference(STRING_TYPE);
+	}
+
+	def static createNullRef() {
+		return ImlCustomFactory.INST.createSimpleTypeReference(NULL_TYPE);
 	}
 }

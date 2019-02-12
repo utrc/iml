@@ -328,7 +328,7 @@ class ImlValidatorTest {
 			}
 		'''.parse
 		
-		model.assertError(ImlPackage.eINSTANCE.symbolReferenceTerm, METHOD_INVOCATION_ON_VARIABLE)
+		model.assertError(ImlPackage.eINSTANCE.tailedExpression, METHOD_INVOCATION_ON_NAMEDTYPE)
 	}
 	
 	@Test
@@ -343,7 +343,7 @@ class ImlValidatorTest {
 			}
 		'''.parse
 		
-		model.assertError(ImlPackage.eINSTANCE.symbolReferenceTerm, METHOD_INVOCATION_ON_ARRAY)
+		model.assertError(ImlPackage.eINSTANCE.tailedExpression, METHOD_INVOCATION_ON_ARRAY)
 	}
 	
 	@Test
@@ -358,7 +358,7 @@ class ImlValidatorTest {
 			}
 		'''.parse
 		
-		model.assertError(ImlPackage.eINSTANCE.symbolReferenceTerm, METHOD_INVOCATION_ON_TUPLE)
+		model.assertError(ImlPackage.eINSTANCE.tailedExpression, METHOD_INVOCATION_ON_TUPLE)
 	}
 	
 	
@@ -374,7 +374,7 @@ class ImlValidatorTest {
 			}
 		'''.parse
 		
-		model.assertError(ImlPackage.eINSTANCE.symbolReferenceTerm, INVALID_INDEX_ACCESS)
+		model.assertError(ImlPackage.eINSTANCE.tailedExpression, INVALID_INDEX_ACCESS)
 	}
 	
 	@Test
@@ -402,7 +402,7 @@ class ImlValidatorTest {
 				var2 : Real := var1[10];
 			}
 		'''.parse
-		model.assertError(ImlPackage.eINSTANCE.symbolReferenceTerm, ARRAY_ACCESS_ON_HOT)
+		model.assertError(ImlPackage.eINSTANCE.tailedExpression, ARRAY_ACCESS_ON_HOT)
 	}
 	
 	@Test
@@ -416,7 +416,7 @@ class ImlValidatorTest {
 				var2 : Real := var1(5, 6);
 			}
 		'''.parse
-		model.assertError(ImlPackage.eINSTANCE.symbolReferenceTerm, INVALID_PARAMETER_LIST)
+		model.assertError(ImlPackage.eINSTANCE.tailedExpression, INVALID_PARAMETER_LIST)
 	}
 	
 	@Test
@@ -430,7 +430,7 @@ class ImlValidatorTest {
 				var2 : Real := var1(5);
 			}
 		'''.parse
-		model.assertError(ImlPackage.eINSTANCE.symbolReferenceTerm, INVALID_PARAMETER_LIST)
+		model.assertError(ImlPackage.eINSTANCE.tailedExpression, INVALID_PARAMETER_LIST)
 	}
 	
 	@Test
@@ -443,7 +443,7 @@ class ImlValidatorTest {
 				var1 : Real := Real[10];
 			}
 		'''.parse
-		model.assertError(ImlPackage.eINSTANCE.symbolReferenceTerm, METHOD_INVOCATION_ON_NAMEDTYPE)
+		model.assertError(ImlPackage.eINSTANCE.tailedExpression, METHOD_INVOCATION_ON_NAMEDTYPE)
 	}
 	
 	@Test
@@ -456,7 +456,7 @@ class ImlValidatorTest {
 				var1 : Real := Real(10);
 			}
 		'''.parse
-		model.assertError(ImlPackage.eINSTANCE.symbolReferenceTerm, METHOD_INVOCATION_ON_NAMEDTYPE)
+		model.assertError(ImlPackage.eINSTANCE.tailedExpression, METHOD_INVOCATION_ON_NAMEDTYPE)
 	}
 	
 	@Test
@@ -501,7 +501,7 @@ class ImlValidatorTest {
 				v1 : Int := f1(10, 5.5);
 			}
 		'''.parse
-		model.assertError(ImlPackage.eINSTANCE.symbolReferenceTerm, INVALID_PARAMETER_LIST)
+		model.assertError(ImlPackage.eINSTANCE.tailedExpression, INVALID_PARAMETER_LIST)
 	}
 	
 	/**********************************************

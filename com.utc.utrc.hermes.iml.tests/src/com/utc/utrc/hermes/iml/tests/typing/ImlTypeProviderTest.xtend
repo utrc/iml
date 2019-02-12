@@ -28,6 +28,7 @@ import com.utc.utrc.hermes.iml.iml.TermMemberSelection
 import static com.utc.utrc.hermes.iml.lib.ImlStdLib.*
 import com.utc.utrc.hermes.iml.services.ImlGrammarAccess.SymbolDeclarationElements
 import com.utc.utrc.hermes.iml.iml.FunctionType
+import com.utc.utrc.hermes.iml.lib.ImlStdLib
 
 /**
  * Test related helper methods
@@ -45,27 +46,27 @@ class ImlTypeProviderTest {
 	
 	@Test
 	def testTermExpressionType_withAddition_int() {
-		assertFormulaType("5 + 6", "Int", INT_REF);
+		assertFormulaType("5 + 6", "Int", createIntRef);
 	}
 	
 	@Test
 	def testTermExpressionType_withAddition_real() {
-		assertFormulaType("5 * 6.5", "Real", REAL_REF);
+		assertFormulaType("5 * 6.5", "Real", createRealRef);
 	}
 	
 	@Test
 	def testTermExpressionType_withAddition_realDiv() {
-		assertFormulaType("5 / 6", "Real",REAL_REF);
+		assertFormulaType("5 / 6", "Real",createRealRef);
 	}
 	
 	@Test
 	def testTermExpressionType_withAddition_boolean() {
-		assertFormulaType("5 = 6", "Bool", BOOL_REF);
+		assertFormulaType("5 = 6", "Bool", createBoolRef);
 	}
 	
 	@Test
 	def testTermExpressionType_withAnd_boolean() {
-		assertFormulaType("true && false", "Bool", BOOL_REF);
+		assertFormulaType("true && false", "Bool", createBoolRef);
 	}
 	
 	def assertFormulaType(String formula, String declaredType, ImlType type) {
@@ -85,7 +86,7 @@ class ImlTypeProviderTest {
 		val var1 = t1.findSymbol("var1") 
 		val folForm = var1.definition
 		
-		assertEquals(ImlTypeProvider.termExpressionType(folForm), type)
+		assertTrue(TypingServices.isEqual(ImlTypeProvider.termExpressionType(folForm), type))
 		
 	}
 	
@@ -112,7 +113,7 @@ class ImlTypeProviderTest {
 		
 		val exprType = ImlTypeProvider.termExpressionType(folForm)
 		
-		assertEquals((exprType as SimpleTypeReference).type, t2)
+		assertTrue(TypingServices.isEqual((exprType as SimpleTypeReference).type, t2))
 	}
 	
 	@Test
@@ -390,7 +391,7 @@ class ImlTypeProviderTest {
 		val exprType = ImlTypeProvider.termExpressionType(t1.findSymbol("varx").definition)
 		
 		assertEquals(Int, ((exprType as FunctionType).domain  as SimpleTypeReference).type)
-		assertEquals(BOOL_REF, (exprType as FunctionType).range)
+		assertTrue(TypingServices.isEqual(createBoolRef, (exprType as FunctionType).range))
 	}
 	
 	@Test
@@ -410,7 +411,7 @@ class ImlTypeProviderTest {
 		val Int = model.findSymbol("Int")
 		
 		assertEquals(Int, ((exprType as FunctionType).domain as SimpleTypeReference).type)
-		assertEquals(INT_REF, (exprType as FunctionType).range)
+		assertTrue(TypingServices.isEqual(createIntRef, (exprType as FunctionType).range))
 	}
 	
 	@Test
@@ -532,9 +533,9 @@ class ImlTypeProviderTest {
 		
 		assertTrue(exprType instanceof TupleType)
 		assertEquals(3, (exprType as TupleType).symbols.size)
-		assertEquals(INT_REF, (exprType as TupleType).symbols.get(0).type)
-		assertEquals(BOOL_REF, (exprType as TupleType).symbols.get(1).type)
-		assertEquals(REAL_REF, (exprType as TupleType).symbols.get(2).type)
+		assertTrue(TypingServices.isEqual(createIntRef, (exprType as TupleType).symbols.get(0).type))
+		assertTrue(TypingServices.isEqual(createBoolRef, (exprType as TupleType).symbols.get(1).type))
+		assertTrue(TypingServices.isEqual(createRealRef, (exprType as TupleType).symbols.get(2).type))
 	}
 	
 	@Test
@@ -553,7 +554,7 @@ class ImlTypeProviderTest {
 		val t1 = model.findSymbol("t1") as NamedType
 		val exprType = ImlTypeProvider.termExpressionType(t1.findSymbol("varx").definition)
 		
-		assertEquals(INT_REF, exprType)
+		assertTrue(TypingServices.isEqual(createIntRef, exprType))
 	}
 	
 	@Test
@@ -572,7 +573,7 @@ class ImlTypeProviderTest {
 		val t1 = model.findSymbol("t1") as NamedType
 		val exprType = ImlTypeProvider.termExpressionType(t1.findSymbol("varx").definition)
 		
-		assertEquals(INT_REF, exprType)
+		assertTrue(TypingServices.isEqual(createIntRef, exprType))
 	}
 	
 	@Test

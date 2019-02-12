@@ -287,10 +287,18 @@ class ImlValidator extends AbstractImlValidator {
 	def checkTypeAgainstTail(ImlType type, ExpressionTail tail) {
 		val typeAsString = getTypeName(type, qnp)
 		if (type instanceof SimpleTypeReference) {
-			error('''Method invocatin and array access are not applicable on the simple type '«typeAsString»' ''',
-				ImlPackage.eINSTANCE.tailedExpression_Tails,
-				METHOD_INVOCATION_ON_VARIABLE
-			)
+			// Tail might be applied to NamedType or a SymbolReference
+			if ((tail.eContainer as TailedExpression).left instanceof SymbolReferenceTerm) {
+				val symbol = ((tail.eContainer as TailedExpression).left as SymbolReferenceTerm).symbol
+				// FIXME check for the correct finite access
+				if (!(symbol instanceof NamedType && (symbol as NamedType).isFinite)) {
+					error('''Method invocation and array access are not applicable on the simple type '«typeAsString»' ''',
+						ImlPackage.eINSTANCE.tailedExpression_Tails,
+						METHOD_INVOCATION_ON_NAMEDTYPE
+					)
+				}
+			}
+			
 			return false				
 		} else if (type instanceof ArrayType) {
 			if (tail instanceof TupleConstructor) {
@@ -316,6 +324,7 @@ class ImlValidator extends AbstractImlValidator {
 							ImlPackage.eINSTANCE.tailedExpression_Tails,
 							INVALID_INDEX_ACCESS
 						)
+						return false
 					}
 				} else if (index instanceof SymbolReferenceTerm) {
 					// TODO Check if this symbol declared inside the tuple

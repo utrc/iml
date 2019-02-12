@@ -66,7 +66,7 @@ public class ImlTypeProvider {
 			return termExpressionType((t as TermExpression), context)
 		}
 		if (t instanceof AtomicExpression) {
-			return BOOL_REF
+			return createBoolRef
 		}
 		return t.left.termExpressionType(context);
 	}
@@ -97,9 +97,9 @@ public class ImlTypeProvider {
 				// note that in iml grammar, addition includes both "+" and "-".
 				if (t.left.termExpressionType(context).isReal ||
 					t.right.termExpressionType(context).isReal) {
-					return REAL_REF
+					return createRealRef
 				}
-				return INT_REF
+				return createIntRef
 			}
 			// For reminder and modulo, the result is integer
 			// For multiplication and division, the result is numeric
@@ -108,15 +108,15 @@ public class ImlTypeProvider {
 			Multiplication: {
 
 				if (t.sign == '%' || t.sign == 'mod') {
-					return INT_REF;
+					return createIntRef;
 				}
 
 				// note that in iml grammar, multiplication includes both "x" and "/".
 				if (t.left.termExpressionType(context).isReal ||
 					t.right.termExpressionType(context).isReal || t.sign == '/') {
-					return REAL_REF
+					return createRealRef
 				}
-				return INT_REF;
+				return createIntRef;
 			}
 			// Compute the actual type reference which 
 			// depends on the types of the change of member selections
@@ -132,7 +132,7 @@ public class ImlTypeProvider {
 				for (tail : t.tails) {
 					leftType = accessTail(leftType, tail)
 				}
-			return leftType
+				return leftType
 			}
 			SymbolReferenceTerm: {
 				return getSymbolReferenceType(t, context)
@@ -140,11 +140,11 @@ public class ImlTypeProvider {
 			}
 			// A number literal is always an integer
 			NumberLiteral: {
-				return INT_REF;
+				return createIntRef;
 
 			}
 			FloatNumberLiteral: {
-				return REAL_REF;
+				return createRealRef;
 
 			}
 			IteTermExpression: {
@@ -155,7 +155,7 @@ public class ImlTypeProvider {
 			}
 			
 			TruthValue: {
-				return BOOL_REF;
+				return createBoolRef;
 			}
 			LambdaExpression: {
 				var ImlType d = null
@@ -189,10 +189,10 @@ public class ImlTypeProvider {
 				return t.sub.termExpressionType(context)
 			} 
 			QuantifiedFormula : {
-				return BOOL_REF
+				return createBoolRef
 			}
 			default: {
-				return NULL_REF
+				return createNullRef
 			}
 		}
 	}
@@ -490,6 +490,9 @@ public class ImlTypeProvider {
 	}
 
 	def static ImlType remap(ImlType t, Map<NamedType, ImlType> map) {
+		if (map.isEmpty) { // TODO test this throughly to avoid removing t from its eContainer to another one
+			return t
+		}
 		switch (t) {
 			ArrayType: {
 				var retval = ImlFactory.eINSTANCE.createArrayType;
