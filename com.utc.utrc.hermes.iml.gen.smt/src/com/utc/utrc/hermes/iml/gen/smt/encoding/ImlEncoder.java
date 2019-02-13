@@ -1,8 +1,8 @@
 package com.utc.utrc.hermes.iml.gen.smt.encoding;
 
-import com.utc.utrc.hermes.iml.iml.ConstrainedType;
+import com.utc.utrc.hermes.iml.iml.NamedType;
 import com.utc.utrc.hermes.iml.iml.FolFormula;
-import com.utc.utrc.hermes.iml.iml.HigherOrderType;
+import com.utc.utrc.hermes.iml.iml.ImlType;
 import com.utc.utrc.hermes.iml.iml.Model;
 import com.utc.utrc.hermes.iml.iml.Symbol;
 import com.utc.utrc.hermes.iml.iml.SymbolDeclaration;
@@ -13,9 +13,9 @@ import com.utc.utrc.hermes.iml.iml.SymbolDeclaration;
  * @author Gerald Wang (wangg@utrc.utc.com) 
  */
 public interface ImlEncoder {
-	public void encode(ConstrainedType type);
+	public void encode(NamedType type);
 	
-	public void encode(HigherOrderType hot);
+	public void encode(ImlType hot);
 	
 	public void encode(Symbol symbol);
 	

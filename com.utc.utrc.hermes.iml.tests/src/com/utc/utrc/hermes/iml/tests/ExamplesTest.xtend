@@ -21,6 +21,7 @@ class ExamplesTest {
 	@Test
 	def void finiteAssertExampleTest(){
 		val model = '''
+			package p;
 			type Choice finite 4 ; 
 			assert "Choice 0 and 4 are the same" {Choice(0) = Choice(3)} ;
 		'''.parse
@@ -31,8 +32,9 @@ class ExamplesTest {
 	@Test
 	def void enumAssertExampleTest(){
 		val model = '''
+			package p;
 			type RGB enum {red , green , blue} ;
-			assert "Green and blue are different" {RGB.green != 3};
+			assert "Green and blue are different" {RGB.green != RGB.blue};
 		'''.parse
 		
 		model.assertNoErrors
@@ -41,14 +43,16 @@ class ExamplesTest {
 	@Test
 	def void typeIsExampleTest(){
 		val model = '''
+			package p;
 			type Int;
 			type Real;
 			type Bool;
 			type String;
 			type Queue<T>;
 			type Map<T,U>;
+			type A;
 			
-			type TestType1 is Queue<MyType> ;
+			type TestType1 is Queue<A> ;
 			type TestType2 is Map<Int, Real> ;
 			type TestType4 is Int->Real;
 			type TestType5 is Int->Int->Real;

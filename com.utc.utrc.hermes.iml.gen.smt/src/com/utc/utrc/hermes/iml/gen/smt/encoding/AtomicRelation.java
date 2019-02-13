@@ -13,13 +13,13 @@ import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.resource.Resource;
 
-import com.utc.utrc.hermes.iml.iml.HigherOrderType;
+import com.utc.utrc.hermes.iml.iml.ImlType;
 import com.utc.utrc.hermes.iml.iml.Relation;
 
 public class AtomicRelation implements EObject {
 	
 	private Relation relation;
-	private HigherOrderType relatedType;
+	private ImlType relatedType;
 	
 	public Relation getRelation() {
 		return relation;
@@ -29,15 +29,15 @@ public class AtomicRelation implements EObject {
 		this.relation = relation;
 	}
 
-	public HigherOrderType getRelatedType() {
+	public ImlType getRelatedType() {
 		return relatedType;
 	}
 
-	public void setRelatedType(HigherOrderType relatedType) {
+	public void setRelatedType(ImlType relatedType) {
 		this.relatedType = relatedType;
 	}
 
-	public AtomicRelation(Relation relation, HigherOrderType relatedType) {
+	public AtomicRelation(Relation relation, ImlType relatedType) {
 		this.relatedType = relatedType;
 		this.relation = relation;
 	}

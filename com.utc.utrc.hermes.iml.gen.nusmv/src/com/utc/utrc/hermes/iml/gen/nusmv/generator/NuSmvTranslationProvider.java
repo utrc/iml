@@ -3,27 +3,18 @@ package com.utc.utrc.hermes.iml.gen.nusmv.generator;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.utc.utrc.hermes.iml.iml.ConstrainedType;
 import com.utc.utrc.hermes.iml.iml.EnumRestriction;
 import com.utc.utrc.hermes.iml.iml.ImplicitInstanceConstructor;
-import com.utc.utrc.hermes.iml.iml.Property;
-import com.utc.utrc.hermes.iml.iml.Relation;
-import com.utc.utrc.hermes.iml.iml.SignedAtomicFormula;
+import com.utc.utrc.hermes.iml.iml.NamedType;
 import com.utc.utrc.hermes.iml.iml.SimpleTypeReference;
 import com.utc.utrc.hermes.iml.iml.SymbolDeclaration;
-import com.utc.utrc.hermes.iml.iml.SymbolReferenceTail;
 import com.utc.utrc.hermes.iml.iml.SymbolReferenceTerm;
-import com.utc.utrc.hermes.iml.iml.TermExpression;
-import com.utc.utrc.hermes.iml.iml.TermMemberSelection;
-import com.utc.utrc.hermes.iml.iml.TupleConstructor;
 import com.utc.utrc.hermes.iml.iml.TypeRestriction;
-import com.utc.utrc.hermes.iml.util.AbstractModelAcceptor;
-import com.utc.utrc.hermes.iml.util.AbstractModelVisitor;
 
 public class NuSmvTranslationProvider {
 
 	
-	public static boolean isEnum(ConstrainedType t) {
+	public static boolean isEnum(NamedType t) {
 		if (t.getRelations() == null) {
 			return false;
 		}
@@ -36,7 +27,7 @@ public class NuSmvTranslationProvider {
 
 	}
 
-	public static boolean isA(SymbolDeclaration s, ConstrainedType imlType) {
+	public static boolean isA(SymbolDeclaration s, NamedType imlType) {
 		if (s.getPropertylist() == null)
 			return false;
 		for (ImplicitInstanceConstructor p : s.getPropertylist().getProperties()) {
@@ -52,7 +43,7 @@ public class NuSmvTranslationProvider {
 	}
 	
 
-	public static boolean hasType(SymbolDeclaration s, ConstrainedType imlType) {
+	public static boolean hasType(SymbolDeclaration s, NamedType imlType) {
 		if (s.getType() instanceof SimpleTypeReference) {
 			if (((SimpleTypeReference) s.getType()).getType() == imlType) {
 				return true;
@@ -61,7 +52,7 @@ public class NuSmvTranslationProvider {
 		return false;
 	}
 
-	public static List<String> getLiterals(ConstrainedType t) {
+	public static List<String> getLiterals(NamedType t) {
 		List<String> retval = new ArrayList<String>();
 		if (t.getRelations() != null) {
 

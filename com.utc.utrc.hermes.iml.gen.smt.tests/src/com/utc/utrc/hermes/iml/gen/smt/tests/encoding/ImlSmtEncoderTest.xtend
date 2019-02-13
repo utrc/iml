@@ -17,11 +17,11 @@ import java.util.List
 import org.eclipse.emf.ecore.EObject
 import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
 import java.util.stream.Collectors
-import com.utc.utrc.hermes.iml.iml.ConstrainedType
+import com.utc.utrc.hermes.iml.iml.NamedType
 import com.utc.utrc.hermes.iml.typing.ImlTypeProvider
 import com.utc.utrc.hermes.iml.iml.ArrayType
 import com.utc.utrc.hermes.iml.typing.TypingServices
-import com.utc.utrc.hermes.iml.iml.HigherOrderType
+import com.utc.utrc.hermes.iml.iml.ImlType
 import com.utc.utrc.hermes.iml.iml.SimpleTypeReference
 import com.utc.utrc.hermes.iml.gen.smt.encoding.simplesmt.SimpleSmtFormula
 import com.utc.utrc.hermes.iml.gen.smt.encoding.AtomicRelation
@@ -43,7 +43,7 @@ class ImlSmtEncoderTest {
 	@Inject ImlSmtEncoder<SimpleSort, SimpleFunDeclaration, SimpleSmtFormula> encoder
 	
 	@Test
-	def void testSimpleConstrainedTypeEncoder() {
+	def void testSimpleNamedTypeEncoder() {
 		val model = 
 		encode('''
 			package p1;
@@ -54,7 +54,7 @@ class ImlSmtEncoderTest {
 	}
 	
 	@Test
-	def void testConstrainedTypeWithElementsEncoder() {
+	def void testNamedTypeWithElementsEncoder() {
 		val model = 
 		encode('''
 			package p1;
@@ -68,16 +68,16 @@ class ImlSmtEncoderTest {
 		val intSort = assertAndGetSort(model.findSymbol("Int"))
 		
 		val var1Fun = assertAndGetFuncDecl(
-			(model.findSymbol("T1") as ConstrainedType).findSymbol("var1"), #[t1Sort], intSort
+			(model.findSymbol("T1") as NamedType).findSymbol("var1"), #[t1Sort], intSort
 		)
 		
 		val var2Fun = assertAndGetFuncDecl(
-			(model.findSymbol("T1") as ConstrainedType).findSymbol("var2"), #[t1Sort], intSort
+			(model.findSymbol("T1") as NamedType).findSymbol("var2"), #[t1Sort], intSort
 		)
 	}
 	
 	@Test
-	def void testConstrainedTypeWithExtensionEncoder() {
+	def void testNamedTypeWithExtensionEncoder() {
 		val model = 
 		encode('''
 			package p1;
@@ -88,7 +88,7 @@ class ImlSmtEncoderTest {
 		val t1Sort = assertAndGetSort(model.findSymbol("T1"))
 		val t2Sort =  assertAndGetSort(model.findSymbol("T2"))
 		
-		val extensionRelation = (model.findSymbol("T1") as ConstrainedType).relations.get(0) as Extension;
+		val extensionRelation = (model.findSymbol("T1") as NamedType).relations.get(0) as Extension;
 		val extensionFun = assertAndGetFuncDecl(
 			new AtomicRelation(extensionRelation, extensionRelation.extensions.get(0).type),
 			#[t1Sort], t2Sort
@@ -96,7 +96,7 @@ class ImlSmtEncoderTest {
 	}
 	
 	@Test
-	def void testConstrainedTypeWithAliasEncoder() {
+	def void testNamedTypeWithAliasEncoder() {
 		val model = 
 		encode('''
 			package p1;
@@ -106,7 +106,7 @@ class ImlSmtEncoderTest {
 		
 		val t1Sort = assertAndGetSort(model.findSymbol("T1"))
 		val t2Sort =  assertAndGetSort(model.findSymbol("T2"))
-		val aliasRelation = (model.findSymbol("T1") as ConstrainedType).relations.get(0) as Alias
+		val aliasRelation = (model.findSymbol("T1") as NamedType).relations.get(0) as Alias
 		val extensionFun = assertAndGetFuncDecl(
 			new AtomicRelation(aliasRelation, aliasRelation.type.type),
 			#[t1Sort], t2Sort 
@@ -131,7 +131,7 @@ class ImlSmtEncoderTest {
 		val t1Sort = assertAndGetSort(model.findSymbol("T1"))
 		val intSort =  assertAndGetSort(model.findSymbol("Int"))
 		val realSort =  assertAndGetSort(model.findSymbol("Real"))
-		val var1 = (model.findSymbol("T1") as ConstrainedType).findSymbol("var1") as SymbolDeclaration;
+		val var1 = (model.findSymbol("T1") as NamedType).findSymbol("var1") as SymbolDeclaration;
 		val hotSort = assertAndGetSort(var1.type)
 		
 		assertEquals(intSort, hotSort.domain)
@@ -156,7 +156,7 @@ class ImlSmtEncoderTest {
 		
 		val t1Sort = assertAndGetSort(model.findSymbol("T1"))
 		val intSort =  assertAndGetSort(model.findSymbol("Int"))
-		val var1 = (model.findSymbol("T1") as ConstrainedType).findSymbol("var1") as SymbolDeclaration;
+		val var1 = (model.findSymbol("T1") as NamedType).findSymbol("var1") as SymbolDeclaration;
 		val int2Sort = assertAndGetSort(var1.type)
 		val int1Sort = assertAndGetSort(TypingServices.accessArray(var1.type as ArrayType, 1))
 		
@@ -222,12 +222,12 @@ class ImlSmtEncoderTest {
 		
 		// Make sure we create concurrent sorts for T -> P
 		val intToRealType = ImlTypeProvider.getType(
-			(model.findSymbol("T1") as ConstrainedType).findSymbol("vart") as SymbolDeclaration,
+			(model.findSymbol("T1") as NamedType).findSymbol("vart") as SymbolDeclaration,
 			model.getSymbolType("T2", "var1") as SimpleTypeReference
 		)
 		
 		val intToIntType = ImlTypeProvider.getType(
-			(model.findSymbol("T1") as ConstrainedType).findSymbol("vart") as SymbolDeclaration,
+			(model.findSymbol("T1") as NamedType).findSymbol("vart") as SymbolDeclaration,
 			model.getSymbolType("T2", "var2") as SimpleTypeReference
 		)
 		
@@ -237,22 +237,22 @@ class ImlSmtEncoderTest {
 		
 		// Make sure we create function declarations for concurrent sorts
 		val vartIntRealFun = assertAndGetFuncDecl(model.getSymbolType("T2", "var1"), 
-			(model.findSymbol("T1") as ConstrainedType).findSymbol("vart"),
+			(model.findSymbol("T1") as NamedType).findSymbol("vart"),
 			#[t1IntReal], intToRealSort
 		)
 		val vartIntIntFun = assertAndGetFuncDecl(model.getSymbolType("T2", "var2"), 
-			(model.findSymbol("T1") as ConstrainedType).findSymbol("vart"),
+			(model.findSymbol("T1") as NamedType).findSymbol("vart"),
 			#[t1IntInt], intToIntSort
 		)
 		assertNotSame(vartIntRealFun, vartIntIntFun)
 	}
 	
 	
-	def HigherOrderType getSymbolType(Model model, String ctName, String symbolName) {
+	def ImlType getSymbolType(Model model, String ctName, String symbolName) {
 		if (ctName === null || ctName.empty) {
 			return (model.findSymbol(symbolName) as SymbolDeclaration).type
 		} else {
-			return ((model.findSymbol(ctName) as ConstrainedType).findSymbol(symbolName) as SymbolDeclaration).type
+			return ((model.findSymbol(ctName) as NamedType).findSymbol(symbolName) as SymbolDeclaration).type
 		}
 	}
 	
@@ -441,7 +441,7 @@ class ImlSmtEncoderTest {
 		
 		
 		val varT = (model.findSymbol("varT") as SymbolDeclaration).type as SimpleTypeReference
-		val definition = ((model.findSymbol("T1") as ConstrainedType).findSymbol("var1") as SymbolDeclaration).definition
+		val definition = ((model.findSymbol("T1") as NamedType).findSymbol("var1") as SymbolDeclaration).definition
 		
 		val formulaEncoding = encoder.encodeFormula(definition, varT, new SimpleSmtFormula("inst"), null);
 		
@@ -466,7 +466,7 @@ class ImlSmtEncoderTest {
 		
 		
 		val varT = (model.findSymbol("varT") as SymbolDeclaration).type as SimpleTypeReference
-		val definition = ((model.findSymbol("T2") as ConstrainedType).findSymbol("var3") as SymbolDeclaration).definition
+		val definition = ((model.findSymbol("T2") as NamedType).findSymbol("var3") as SymbolDeclaration).definition
 		
 		val formulaEncoding = encoder.encodeFormula(definition, varT, new SimpleSmtFormula("inst"), null);
 		
@@ -490,7 +490,7 @@ class ImlSmtEncoderTest {
 		
 		
 		val varT = (model.findSymbol("varT") as SymbolDeclaration).type as SimpleTypeReference
-		val definition = ((model.findSymbol("T2") as ConstrainedType).findSymbol("var2") as SymbolDeclaration).definition
+		val definition = ((model.findSymbol("T2") as NamedType).findSymbol("var2") as SymbolDeclaration).definition
 		
 		val formulaEncoding = encoder.encodeFormula(definition, varT, new SimpleSmtFormula("inst"), null);
 		
@@ -511,7 +511,7 @@ class ImlSmtEncoderTest {
 		
 		
 		val varT = (model.findSymbol("varT") as SymbolDeclaration).type as SimpleTypeReference
-		val definition = ((model.findSymbol("T1") as ConstrainedType).findSymbol("var1") as SymbolDeclaration).definition
+		val definition = ((model.findSymbol("T1") as NamedType).findSymbol("var1") as SymbolDeclaration).definition
 		
 		val formulaEncoding = encoder.encodeFormula(definition, varT, new SimpleSmtFormula("inst"), null);
 		
@@ -534,8 +534,8 @@ class ImlSmtEncoderTest {
 		
 		
 		val varT = (model.findSymbol("varT") as SymbolDeclaration).type as SimpleTypeReference
-		val definitionForAll = ((model.findSymbol("T1") as ConstrainedType).findSymbol("var1") as SymbolDeclaration).definition
-		val definitionExists = ((model.findSymbol("T1") as ConstrainedType).findSymbol("var2") as SymbolDeclaration).definition
+		val definitionForAll = ((model.findSymbol("T1") as NamedType).findSymbol("var1") as SymbolDeclaration).definition
+		val definitionExists = ((model.findSymbol("T1") as NamedType).findSymbol("var2") as SymbolDeclaration).definition
 		
 		
 		val formulaEncoding = encoder.encodeFormula(definitionForAll, varT, new SimpleSmtFormula("inst"), null);
@@ -560,7 +560,7 @@ class ImlSmtEncoderTest {
 		
 		
 		val varT = (model.findSymbol("varT") as SymbolDeclaration).type as SimpleTypeReference
-		val definition = ((model.findSymbol("T1") as ConstrainedType).findSymbol("var2") as SymbolDeclaration).definition
+		val definition = ((model.findSymbol("T1") as NamedType).findSymbol("var2") as SymbolDeclaration).definition
 		
 		val formulaEncoding = encoder.encodeFormula(definition, varT, new SimpleSmtFormula("inst"), null);
 		
@@ -582,7 +582,7 @@ class ImlSmtEncoderTest {
 			''', "T1");
 			val varT = (model.findSymbol("varT") as SymbolDeclaration).type as SimpleTypeReference
 			
-			val definition = ((model.findSymbol("T1") as ConstrainedType).findSymbol("var2") as SymbolDeclaration).definition
+			val definition = ((model.findSymbol("T1") as NamedType).findSymbol("var2") as SymbolDeclaration).definition
 			val formulaEncoding = encoder.encodeFormula(definition, varT, new SimpleSmtFormula("inst"), null);
 			
 			assertTrue(false);

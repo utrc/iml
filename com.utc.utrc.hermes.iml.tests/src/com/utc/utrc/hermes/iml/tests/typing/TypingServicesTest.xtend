@@ -334,7 +334,7 @@ class TypingServicesTest {
 		model.assertNoErrors
 		val t1 = model.findSymbol("t1") as NamedType
 		
-		assertParents(TypingServices.getAllSuperTypes(t1), Arrays.asList("t1", "Parent", "Parent2", "Parent3", "Int"))
+		assertParents(TypingServices.getAllSuperTypes(t1), Arrays.asList("t1", "Parent", "Parent2", "Parent3", "Int", "Parent33"))
 	}
 	
 	def assertParents(List<List<NamedType>> parents, List<String> types) {

@@ -37,5 +37,5 @@ class ImlFormatter extends AbstractFormatter2 {
 		)[indent]
 	}
 	
-	// TODO: implement for Alias, MetaRelaion, PropertyList, ConstrainedType, SymbolDeclaration, HigherOrderType, ArrayType, OptionalTermExpr, TupleType, SimpleTypeReference, FolFormula, OrExpression, AndExpression, SignedAtomicFormula, AtomicExpression, Addition, Multiplication, TermMemberSelection, LambdaExpression, TypeConstructor, TupleConstructor, SymbolReferenceTerm, ArrayAccess, IteTermExpression, Program
+	// TODO: implement for Alias, MetaRelaion, PropertyList, ConstrainedType, SymbolDeclaration, ImlType, ArrayType, OptionalTermExpr, TupleType, SimpleTypeReference, FolFormula, OrExpression, AndExpression, SignedAtomicFormula, AtomicExpression, Addition, Multiplication, TermMemberSelection, LambdaExpression, TypeConstructor, TupleConstructor, SymbolReferenceTerm, ArrayAccess, IteTermExpression, Program
 }

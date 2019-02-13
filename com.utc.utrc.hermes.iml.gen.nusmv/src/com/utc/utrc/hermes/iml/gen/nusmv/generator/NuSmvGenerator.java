@@ -8,6 +8,7 @@ import static com.utc.utrc.hermes.iml.gen.nusmv.generator.NuSmvTranslationProvid
 
 import org.eclipse.emf.ecore.util.EcoreUtil;
 
+import com.utc.utrc.hermes.iml.custom.ImlCustomFactory;
 import com.utc.utrc.hermes.iml.gen.nusmv.model.NuSmvElementType;
 import com.utc.utrc.hermes.iml.gen.nusmv.model.NuSmvModel;
 import com.utc.utrc.hermes.iml.gen.nusmv.model.NuSmvModule;
@@ -15,16 +16,17 @@ import com.utc.utrc.hermes.iml.gen.nusmv.model.NuSmvSymbol;
 import com.utc.utrc.hermes.iml.gen.nusmv.model.NuSmvTypeInstance;
 import com.utc.utrc.hermes.iml.gen.nusmv.model.NuSmvVariable;
 import com.utc.utrc.hermes.iml.iml.Assertion;
-import com.utc.utrc.hermes.iml.iml.ConstrainedType;
+import com.utc.utrc.hermes.iml.iml.NamedType;
 import com.utc.utrc.hermes.iml.iml.Extension;
 import com.utc.utrc.hermes.iml.iml.FolFormula;
-import com.utc.utrc.hermes.iml.iml.HigherOrderType;
+import com.utc.utrc.hermes.iml.iml.ImlType;
 import com.utc.utrc.hermes.iml.iml.Relation;
 import com.utc.utrc.hermes.iml.iml.SignedAtomicFormula;
 import com.utc.utrc.hermes.iml.iml.SimpleTypeReference;
 import com.utc.utrc.hermes.iml.iml.Symbol;
 import com.utc.utrc.hermes.iml.iml.SymbolDeclaration;
 import com.utc.utrc.hermes.iml.iml.SymbolReferenceTerm;
+import com.utc.utrc.hermes.iml.iml.TailedExpression;
 import com.utc.utrc.hermes.iml.iml.TermExpression;
 import com.utc.utrc.hermes.iml.iml.TupleConstructor;
 import com.utc.utrc.hermes.iml.iml.TypeWithProperties;
@@ -72,7 +74,7 @@ public class NuSmvGenerator {
 		return main ;
 	}
 	
-	public NuSmvModule generateType(NuSmvModel m, HigherOrderType tr) {
+	public NuSmvModule generateType(NuSmvModel m, ImlType tr) {
 		if (tr instanceof SimpleTypeReference) {
 			return generateType(m, (SimpleTypeReference) tr);
 		}
@@ -87,7 +89,7 @@ public class NuSmvGenerator {
 			return generateEnumType(m, tr.getType());
 		} else {
 			
-			for (HigherOrderType b : tr.getTypeBinding()) {
+			for (ImlType b : tr.getTypeBinding()) {
 				generateType(m, b);
 			}
 			NuSmvModule target = new NuSmvModule(type_name);
@@ -155,7 +157,7 @@ public class NuSmvGenerator {
 		
 	}
 
-	private NuSmvModule generateEnumType(NuSmvModel m, ConstrainedType type) {
+	private NuSmvModule generateEnumType(NuSmvModel m, NamedType type) {
 		NuSmvModule target = new NuSmvModule(qualifiedName(type));
 		m.addModule(target);
 		target.setEnum(true);
@@ -165,7 +167,7 @@ public class NuSmvGenerator {
 
 	private NuSmvSymbol generateSymbolDeclaration(NuSmvModule m, SymbolDeclaration sd, SimpleTypeReference ctx) {
 			
-		HigherOrderType bound = null;
+		ImlType bound = null;
 		String name = null;
 		if (sd instanceof Assertion) {
 			if (sd.getName() != null) {
@@ -173,7 +175,7 @@ public class NuSmvGenerator {
 			} else {
 				name = m.getContainer().newSymbolName();
 			}
-			bound = ImlTypeProvider.ct2hot(libs.getImlType("iml.lang.Bool"));
+			bound = ImlCustomFactory.INST.createSimpleTypeReference(libs.getImlType("iml.lang.Bool"));
 		} else {
 			name = sd.getName();
 			bound = ImlTypeProvider.bind(sd.getType(), ctx);
@@ -225,8 +227,8 @@ public class NuSmvGenerator {
 					NuSmvSymbol toadd = new NuSmvSymbol("") ;
 					FolFormula def = 
 							Phi.eq(
-									EcoreUtil.copy((TermExpression) ((TupleConstructor) ((SymbolReferenceTerm)sd.getDefinition().getLeft()).getTails().get(0)).getElements().get(0).getLeft()), 
-									EcoreUtil.copy((TermExpression) ((TupleConstructor) ((SymbolReferenceTerm)sd.getDefinition().getLeft()).getTails().get(0)).getElements().get(1).getLeft())
+									EcoreUtil.copy((TermExpression) ((TupleConstructor) ((TailedExpression)sd.getDefinition().getLeft()).getTails().get(0)).getElements().get(0).getLeft()), 
+									EcoreUtil.copy((TermExpression) ((TupleConstructor) ((TailedExpression)sd.getDefinition().getLeft()).getTails().get(0)).getElements().get(1).getLeft())
 									) ;
 					toadd.setName(m.getContainer().newSymbolName());
 					toadd.setElementType(NuSmvElementType.INVAR);
@@ -278,8 +280,8 @@ public class NuSmvGenerator {
 		FolFormula f = sd.getDefinition();
 		if (f instanceof SignedAtomicFormula) {
 			FolFormula f1 = f.getLeft();
-			if (f1 instanceof SymbolReferenceTerm) {
-				SymbolReferenceTerm connect = (SymbolReferenceTerm) f1;
+			if (f1 instanceof TailedExpression) {
+				TailedExpression connect = (TailedExpression) f1;
 				// get the source and destination
 				if (connect.getTails().size() >= 1) {
 					FolFormula sourcef = ((TupleConstructor) connect.getTails().get(0)).getElements().get(0).getLeft();
@@ -343,7 +345,7 @@ public class NuSmvGenerator {
 		return ( st.getType() == libs.getImlType("iml.ports.delay"));
 	}
 
-	public boolean isSimpleTypeReference(HigherOrderType hot) {
+	public boolean isSimpleTypeReference(ImlType hot) {
 		return (hot instanceof SimpleTypeReference);
 	}
 

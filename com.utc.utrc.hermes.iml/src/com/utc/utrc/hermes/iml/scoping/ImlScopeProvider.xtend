@@ -212,7 +212,7 @@ class ImlScopeProvider extends AbstractDeclarativeScopeProvider {
 					}
 				}
 			}
-		}
+		} 
 
 		var receiverType = receiver.termExpressionType
 

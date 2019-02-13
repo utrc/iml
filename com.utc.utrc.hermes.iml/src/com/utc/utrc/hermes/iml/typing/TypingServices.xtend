@@ -27,88 +27,10 @@ import com.utc.utrc.hermes.iml.iml.FunctionType
 
 public class TypingServices {
 
-	def static createBasicType(String n) {
-		val ret = ImlFactory::eINSTANCE.createSimpleTypeReference => [
-			type = ImlFactory::eINSTANCE.createNamedType => [name = n]
-		];
-		return ret
+	def static <T extends EObject> T clone(T eObject) {
+	  	return EcoreUtil.copy(eObject)
 	}
 
-	def static createBasicType(NamedType t) {
-		val ret = ImlFactory::eINSTANCE.createSimpleTypeReference => [
-			type = t
-		];
-		return ret
-	}
-
-
-	def static SimpleTypeReference createSimpleTypeRef(NamedType t) {
-		ImlFactory::eINSTANCE.createSimpleTypeReference => [
-			type = t
-		]
-	}
-
-	def static clone(PropertyList pl) {
-		var ret = ImlFactory::eINSTANCE.createPropertyList;
-		for (p : pl.properties) {
-			ret.properties.add(clone(p))
-		}
-	}
-
-	def static clone(ImplicitInstanceConstructor c){
-		var ret = ImlFactory::eINSTANCE.createProperty
-		ret.ref = clone(c.ref)
-		ret.definition = EcoreUtil.copy(c.definition)
-		return ret
-	}
-
-	// TODO Are we going to have cloning functions for everything?
-	// What do we actually need to clone? What can instead just
-	// be copied as reference?
-	def static clone(SymbolDeclaration v) {
-		var ret = ImlFactory::eINSTANCE.createSymbolDeclaration;
-		// Following added By Ayman for 4-higher-order-types-only
-		ret.name = v.name
-		// TODO Do we need to copy the property list?
-		ret.type = clone(v.type)
-		// TODO What to do with the definition?
-		return ret
-	}
-
-	def static ImlType clone(ImlType other) {
-		return EcoreUtil.copy(other)
-
-	}
-
-	def static clone(SimpleTypeReference tr) {
-		var ret = ImlFactory::eINSTANCE.createSimpleTypeReference();
-		ret.type = tr.type;
-		for (t : tr.typeBinding) {
-			ret.typeBinding.add(clone(t))
-		}
-		return ret;
-	}
-
-	def static clone(TupleType tt) {
-		var ret = ImlFactory::eINSTANCE.createTupleType();
-
-		for (s : tt.symbols) {
-			ret.symbols.add(clone(s))
-		}
-		return ret
-	}
-
-	def static clone(ArrayType at) {
-		var ret = ImlFactory::eINSTANCE.createArrayType();
-		ret.type = clone(at.type)
-		for (d : at.dimensions) {
-			// TODO : Should we clone the term expressions?
-			ret.dimensions.add(ImlFactory::eINSTANCE.createOptionalTermExpr => [
-				term = ImlFactory::eINSTANCE.createNumberLiteral => [value = 0];
-			])
-		}
-		return ret
-	}
 
 	def static ImlType accessArray(ArrayType type, int dim) {
 		if (dim == type.dimensions.size) {
@@ -292,7 +214,7 @@ public class TypingServices {
 
 	/* Compute all super types of a ContrainedType  */
 	def static getAllSuperTypes(NamedType ct) {
-		getSuperTypes(createSimpleTypeRef(ct)).map[it.map[it.type]]
+		getSuperTypes(ImlCustomFactory.INST.createSimpleTypeReference(ct)).map[it.map[it.type]]
 	}
 
 	/* Compute all super type references of a TypeReference */

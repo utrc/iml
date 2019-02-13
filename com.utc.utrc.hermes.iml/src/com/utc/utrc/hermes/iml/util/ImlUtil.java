@@ -135,6 +135,8 @@ public class ImlUtil {
 				.reduce((accum, current) -> accum + ", " + current).get() + ")";
 		} else if (hot instanceof FunctionType){
 			return getTypeName(((FunctionType)hot).getDomain(), qnp) + "->" + getTypeName(((FunctionType)hot).getRange(), qnp);
+		} else if (hot == null) {
+			return "NULL";
 		}
 		return "UNKNOWN_IML_TYPE";
 	}

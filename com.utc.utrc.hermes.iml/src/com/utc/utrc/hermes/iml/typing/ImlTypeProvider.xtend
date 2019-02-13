@@ -72,7 +72,7 @@ public class ImlTypeProvider {
 	}
 	
 		def static ImlType termExpressionType(TermExpression t, SimpleTypeReference context) {
-			return termExpressionType(t, context, false)
+			return copy(termExpressionType(t, context, false))
 		}
 	
 
@@ -88,7 +88,7 @@ public class ImlTypeProvider {
 			// If the expression is "self", then its type is 
 			// type of the container type.
 			SelfTerm: {
-				return bind(createBasicType(t.getContainerOfType(NamedType)), context)
+				return bind(ImlCustomFactory.INST.createSimpleTypeReference(t.getContainerOfType(NamedType)), context)
 			}
 			// Additions are among numeric types and the result is a numeric 
 			// type. If one of the two terms is real, then the type is real
@@ -165,7 +165,7 @@ public class ImlTypeProvider {
 					d = t.signature
 				}
 				var retval = ImlFactory.eINSTANCE.createFunctionType
-				retval.domain =  clone(d);
+				retval.domain =  TypingServices.clone(d);
 				retval.range = (t.definition as SequenceTerm).^return.termExpressionType(context)
 				return retval
 			}
@@ -235,11 +235,11 @@ public class ImlTypeProvider {
 				return getAliasType(sr.symbol as NamedType)
 			} else {
 				// Reference to a literal
-				return createBasicType(sr.symbol as NamedType)
+				return ImlCustomFactory.INST.createSimpleTypeReference(sr.symbol as NamedType)
 			}
 		} else if (sr.symbol.isEnumLiteral) {
 			// Accessing specific literal
-			return createBasicType(EcoreUtil2.getContainerOfType(sr.symbol, NamedType))
+			return ImlCustomFactory.INST.createSimpleTypeReference(EcoreUtil2.getContainerOfType(sr.symbol, NamedType))
 		} else {
 			// Reference to a symbol
 			//Change this call to include type parameters
@@ -406,7 +406,7 @@ public class ImlTypeProvider {
 			}
 			NamedType: {
 				if (container.symbols.contains(symbolRef.symbol)) {
-					return createBasicType(container)
+					return ImlCustomFactory.INST.createSimpleTypeReference(container)
 				}
 				for (target : ImlUtil.getRelationTypes(container, Extension)) {
 					if (target.type instanceof SimpleTypeReference && (target.type as SimpleTypeReference).type.symbols.contains(symbolRef.symbol)) {
@@ -452,7 +452,7 @@ public class ImlTypeProvider {
 
 	def static bind(SymbolReferenceTerm s, SimpleTypeReference ctx) {
 		if (ctx.type === null){
-			return (s.symbol as SymbolDeclaration).type
+			return TypingServices.clone((s.symbol as SymbolDeclaration).type)
 		}
 		var partialbind = new HashMap<NamedType, ImlType>();
 		for(var i =0 ; i < s.typeBinding.size() ; i++){
@@ -490,15 +490,15 @@ public class ImlTypeProvider {
 	}
 
 	def static ImlType remap(ImlType t, Map<NamedType, ImlType> map) {
-		if (map.isEmpty) { // TODO test this throughly to avoid removing t from its eContainer to another one
-			return t
-		}
+//		if (map.isEmpty) { // TODO test this throughly to avoid removing t from its eContainer to another one
+//			return t
+//		}
 		switch (t) {
 			ArrayType: {
 				var retval = ImlFactory.eINSTANCE.createArrayType;
 				retval.type = remap(t.type, map)
 				for (d : t.dimensions) {
-					// TODO : Should we clone the term expressions?
+					// TODO : Should we TypingServices.clone the term expressions?
 					retval.dimensions.add(ImlFactory::eINSTANCE.createOptionalTermExpr => [
 						term = ImlFactory::eINSTANCE.createNumberLiteral => [value = 0];
 					])
@@ -507,7 +507,7 @@ public class ImlTypeProvider {
 			}
 			SimpleTypeReference: {
 				if (map.containsKey(t.type)) {
-					return clone(map.get(t.type))					
+					return TypingServices.clone(map.get(t.type))					
 				}
 				var retval = ImlFactory.eINSTANCE.createSimpleTypeReference;
 				retval.type = t.type
@@ -515,9 +515,9 @@ public class ImlTypeProvider {
 					if (h instanceof SimpleTypeReference) {
 						if ((h as SimpleTypeReference).typeBinding.size === 0) {
 							if (map.containsKey(h.type)) {
-								retval.typeBinding.add(clone(map.get(h.type)))
+								retval.typeBinding.add(TypingServices.clone(map.get(h.type)))
 							} else {
-								retval.typeBinding.add(clone(h))
+								retval.typeBinding.add(TypingServices.clone(h))
 							}
 						} else {
 							retval.typeBinding.add(remap(h, map))
@@ -557,9 +557,4 @@ public class ImlTypeProvider {
 				return false
 		}
 	}
-
-	def static ImlType ct2hot(NamedType type) {
-		return createBasicType(type)
-	}
-
 }

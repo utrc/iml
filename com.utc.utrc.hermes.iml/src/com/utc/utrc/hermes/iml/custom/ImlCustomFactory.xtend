@@ -73,9 +73,10 @@ public class ImlCustomFactory extends ImlFactoryImpl {
 		]
 	}
 	
-	def createSimpleTypeReference(NamedType type) {
+	def SimpleTypeReference createSimpleTypeReference(NamedType type) {
 		createSimpleTypeReference => [
 			it.type = type
+			it.typeBinding.addAll(type.typeParameter.map[createSimpleTypeReference(it)])
 		]
 	}
 	

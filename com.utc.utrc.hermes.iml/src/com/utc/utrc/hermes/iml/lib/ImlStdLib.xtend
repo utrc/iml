@@ -4,8 +4,14 @@ import com.utc.utrc.hermes.iml.iml.NamedType
 import com.utc.utrc.hermes.iml.custom.ImlCustomFactory
 import com.utc.utrc.hermes.iml.iml.ImlType
 import com.utc.utrc.hermes.iml.iml.SimpleTypeReference
+import org.eclipse.xtext.resource.XtextResourceSet
+import com.google.inject.Inject
 
 class ImlStdLib {
+	
+	@Inject
+	XtextResourceSet rs;
+	
 	public static val INT = "Int";
 	public static val REAL = "Real";
 	public static val BOOL = "Bool";

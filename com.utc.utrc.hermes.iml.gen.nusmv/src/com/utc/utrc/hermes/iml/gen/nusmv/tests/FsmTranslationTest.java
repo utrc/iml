@@ -6,12 +6,13 @@ import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.junit.Test;
 import com.utc.utrc.hermes.iml.ImlStandaloneSetup;
+import com.utc.utrc.hermes.iml.custom.ImlCustomFactory;
 import com.utc.utrc.hermes.iml.gen.nusmv.generator.Configuration;
 import com.utc.utrc.hermes.iml.gen.nusmv.generator.NuSmvGenerator;
 import com.utc.utrc.hermes.iml.gen.nusmv.generator.NuSmvGeneratorServices;
 import com.utc.utrc.hermes.iml.gen.nusmv.generator.StandardLibProvider;
 import com.utc.utrc.hermes.iml.gen.nusmv.model.NuSmvModel;
-import com.utc.utrc.hermes.iml.iml.ConstrainedType;
+import com.utc.utrc.hermes.iml.iml.NamedType;
 import com.utc.utrc.hermes.iml.iml.Model;
 import com.utc.utrc.hermes.iml.iml.Symbol;
 import com.utc.utrc.hermes.iml.typing.ImlTypeProvider;
@@ -48,9 +49,9 @@ public class FsmTranslationTest {
 		Model m = (Model) translationunit.getContents().get(0);
 		NuSmvModel nm = new NuSmvModel();
 		for (Symbol s : m.getSymbols()) {
-			if (s instanceof ConstrainedType) {
+			if (s instanceof NamedType) {
 				if ( s.getName().equals("UxAS_responds_dot_i") )
-				gen.generateType(nm, ImlTypeProvider.ct2hot((ConstrainedType) s));
+				gen.generateType(nm, ImlCustomFactory.INST.createSimpleTypeReference(((NamedType) s)));
 			}
 		}
 
