@@ -1,29 +1,24 @@
 package com.utc.utrc.hermes.iml.typing
 
-import com.utc.utrc.hermes.iml.iml.ImlType
-import com.utc.utrc.hermes.iml.iml.ImlFactory
-import com.utc.utrc.hermes.iml.iml.NamedType
-import com.utc.utrc.hermes.iml.iml.ArrayType
-import com.utc.utrc.hermes.iml.iml.SimpleTypeReference
-import com.utc.utrc.hermes.iml.iml.TupleType
-import com.utc.utrc.hermes.iml.iml.PropertyList
-import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
-import java.util.List
-import java.util.ArrayList
-import com.utc.utrc.hermes.iml.iml.TermExpression
-import com.utc.utrc.hermes.iml.iml.NumberLiteral
-import com.utc.utrc.hermes.iml.iml.FloatNumberLiteral
-import com.utc.utrc.hermes.iml.iml.Symbol
-import org.eclipse.emf.ecore.EObject
-import com.utc.utrc.hermes.iml.iml.Model
-import static extension com.utc.utrc.hermes.iml.typing.ImlTypeProvider.*
-import com.utc.utrc.hermes.iml.iml.Alias
-import com.utc.utrc.hermes.iml.iml.TraitExhibition
-import com.utc.utrc.hermes.iml.iml.ImplicitInstanceConstructor
-import org.eclipse.emf.ecore.util.EcoreUtil
 import com.utc.utrc.hermes.iml.custom.ImlCustomFactory
-import static extension com.utc.utrc.hermes.iml.lib.ImlStdLib.*
+import com.utc.utrc.hermes.iml.iml.Alias
+import com.utc.utrc.hermes.iml.iml.ArrayType
+import com.utc.utrc.hermes.iml.iml.Extension
 import com.utc.utrc.hermes.iml.iml.FunctionType
+import com.utc.utrc.hermes.iml.iml.ImlFactory
+import com.utc.utrc.hermes.iml.iml.ImlType
+import com.utc.utrc.hermes.iml.iml.NamedType
+import com.utc.utrc.hermes.iml.iml.PropertyList
+import com.utc.utrc.hermes.iml.iml.SimpleTypeReference
+import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
+import com.utc.utrc.hermes.iml.iml.TraitExhibition
+import com.utc.utrc.hermes.iml.iml.TupleType
+import java.util.ArrayList
+import java.util.List
+import org.eclipse.emf.ecore.EObject
+import org.eclipse.emf.ecore.util.EcoreUtil
+
+import static extension com.utc.utrc.hermes.iml.lib.ImlStdLib.*
 
 public class TypingServices {
 
@@ -237,7 +232,7 @@ public class TypingServices {
 			for (current : retVal.get(index)) {
 				val ctype = current.type
 				if (ctype.relations != null) {
-					for (rel : ctype.relations.filter(com.utc.utrc.hermes.iml.iml.Extension)) {
+					for (rel : ctype.relations.filter(Extension)) {
 							for(twp : rel.extensions){
 							if (twp.type instanceof SimpleTypeReference) {
 								if (! closed.contains((twp.type as SimpleTypeReference).type)) {
@@ -306,7 +301,7 @@ public class TypingServices {
 		return r.type.isAlias
 	}
 	def static getAliasType(NamedType type) {
-		com.utc.utrc.hermes.iml.typing.TypingServices.getAliasType(ImlCustomFactory.INST.createSimpleTypeReference(type))
+		TypingServices.getAliasType(ImlCustomFactory.INST.createSimpleTypeReference(type))
 	}
 	def static ImlType getAliasType(SimpleTypeReference r){
 		if (r.isAlias){
@@ -319,14 +314,14 @@ public class TypingServices {
 	def static ImlType resolveAliases(ImlType type) {
 		if (type instanceof SimpleTypeReference) {
 			if (type.isAlias) {
-				return com.utc.utrc.hermes.iml.typing.TypingServices.resolveAliases(com.utc.utrc.hermes.iml.typing.TypingServices.getAliasType(type))
+				return TypingServices.resolveAliases(TypingServices.getAliasType(type))
 			} else {
 				return type
 			}
 		}
 		if (type instanceof TupleType) {
 			return ImlCustomFactory.INST.createTupleType(type.symbols.map[
-				ImlCustomFactory.INST.createSymbolDeclaration(it.name, clone(com.utc.utrc.hermes.iml.typing.TypingServices.resolveAliases(it.type)))	
+				ImlCustomFactory.INST.createSymbolDeclaration(it.name, clone(TypingServices.resolveAliases(it.type)))	
 			])
 		}
 		if (type instanceof ArrayType) {

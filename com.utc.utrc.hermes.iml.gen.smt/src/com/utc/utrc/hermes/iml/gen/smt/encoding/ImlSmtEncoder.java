@@ -28,7 +28,6 @@ import com.utc.utrc.hermes.iml.iml.FloatNumberLiteral;
 import com.utc.utrc.hermes.iml.iml.FolFormula;
 import com.utc.utrc.hermes.iml.iml.FunctionType;
 import com.utc.utrc.hermes.iml.iml.ImlType;
-import com.utc.utrc.hermes.iml.iml.ImplicitInstanceConstructor;
 import com.utc.utrc.hermes.iml.iml.InstanceConstructor;
 import com.utc.utrc.hermes.iml.iml.IteTermExpression;
 import com.utc.utrc.hermes.iml.iml.LambdaExpression;
@@ -653,24 +652,25 @@ public class ImlSmtEncoder<SortT extends AbstractSort, FuncDeclT, FormulaT> impl
 			}
 			return symbolRefFormula;*/
 		} else if (formula instanceof InstanceConstructor) {
-			if (formula instanceof ImplicitInstanceConstructor) {
-				ImplicitInstanceConstructor instanceConstructor = (ImplicitInstanceConstructor) formula;
-				SimpleTypeReference constructedType = (SimpleTypeReference) instanceConstructor.getRef();
-				SymbolDeclaration containerSymbol = EcoreUtil2.getContainerOfType(formula, SymbolDeclaration.class);
-				SortT inputSort = symbolTable.getSort(context);
-				SortT outputSort = symbolTable.getSort(constructedType);
-				
-//				String funName = getUniqueName(containerSymbol) + "_" + getUniqueName(constructedType.getType());
-				String funName = getUniqueName(formula);
-				FuncDeclT instanceConstructorFun = smtModelProvider.createFuncDecl(funName, Arrays.asList(inputSort), outputSort);
-				symbolTable.addFunDecl(context, formula, instanceConstructorFun);
-				
-				// TODO to complete
-//				encodeFormula(instanceConstructor.getDefinition(), constructedType, inst, scope)
-				
-			} else { // TODO handle some instance constructor
-				
-			}
+			// TODO handle some instance constructor
+//			if (formula instanceof ImplicitInstanceConstructor) {
+//				ImplicitInstanceConstructor instanceConstructor = (ImplicitInstanceConstructor) formula;
+//				SimpleTypeReference constructedType = (SimpleTypeReference) instanceConstructor.getRef();
+//				SymbolDeclaration containerSymbol = EcoreUtil2.getContainerOfType(formula, SymbolDeclaration.class);
+//				SortT inputSort = symbolTable.getSort(context);
+//				SortT outputSort = symbolTable.getSort(constructedType);
+//				
+////				String funName = getUniqueName(containerSymbol) + "_" + getUniqueName(constructedType.getType());
+//				String funName = getUniqueName(formula);
+//				FuncDeclT instanceConstructorFun = smtModelProvider.createFuncDecl(funName, Arrays.asList(inputSort), outputSort);
+//				symbolTable.addFunDecl(context, formula, instanceConstructorFun);
+//				
+//				// TODO to complete
+////				encodeFormula(instanceConstructor.getDefinition(), constructedType, inst, scope)
+//				
+//			} else { 
+//				
+//			}
 			
 		} else if (formula instanceof IteTermExpression) {
 			FolFormula condition = ((IteTermExpression) formula).getCondition();

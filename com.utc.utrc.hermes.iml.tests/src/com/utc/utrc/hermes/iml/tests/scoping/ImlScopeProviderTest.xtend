@@ -1,35 +1,29 @@
 package com.utc.utrc.hermes.iml.tests.scoping
 
-import com.utc.utrc.hermes.iml.tests.ImlInjectorProvider
-import org.eclipse.xtext.testing.InjectWith
-import org.eclipse.xtext.testing.XtextRunner
-import org.junit.runner.RunWith
-import org.eclipse.xtext.testing.util.ParseHelper
-import com.utc.utrc.hermes.iml.iml.Model
 import com.google.inject.Inject
-import org.eclipse.xtext.testing.validation.ValidationTestHelper
-import com.utc.utrc.hermes.iml.tests.TestHelper
-import org.junit.Test
-import com.utc.utrc.hermes.iml.scoping.ImlScopeProvider
-import com.utc.utrc.hermes.iml.iml.NamedType
-import com.utc.utrc.hermes.iml.iml.TermMemberSelection
+import com.utc.utrc.hermes.iml.iml.ArrayAccess
 import com.utc.utrc.hermes.iml.iml.ImlPackage
-import org.eclipse.emf.ecore.EReference
-import org.eclipse.emf.ecore.EObject
-import static extension org.junit.Assert.*
+import com.utc.utrc.hermes.iml.iml.Model
+import com.utc.utrc.hermes.iml.iml.NamedType
+import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
+import com.utc.utrc.hermes.iml.iml.SymbolReferenceTerm
+import com.utc.utrc.hermes.iml.iml.TailedExpression
+import com.utc.utrc.hermes.iml.iml.TermMemberSelection
+import com.utc.utrc.hermes.iml.scoping.ImlScopeProvider
+import com.utc.utrc.hermes.iml.tests.ImlInjectorProvider
+import com.utc.utrc.hermes.iml.tests.TestHelper
 import java.util.Arrays
 import java.util.List
-import com.utc.utrc.hermes.iml.iml.SymbolReferenceTerm
-import com.utc.utrc.hermes.iml.iml.ArrayAccess
-import com.utc.utrc.hermes.iml.iml.InstanceConstructor
-import com.utc.utrc.hermes.iml.iml.AtomicExpression
-import com.utc.utrc.hermes.iml.iml.SequenceTerm
-import com.utc.utrc.hermes.iml.iml.Assertion
-import com.utc.utrc.hermes.iml.iml.ImlFactory
-import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
-import com.utc.utrc.hermes.iml.iml.SimpleTypeReference
-import com.utc.utrc.hermes.iml.iml.ImplicitInstanceConstructor
-import com.utc.utrc.hermes.iml.iml.TailedExpression
+import org.eclipse.emf.ecore.EObject
+import org.eclipse.emf.ecore.EReference
+import org.eclipse.xtext.testing.InjectWith
+import org.eclipse.xtext.testing.XtextRunner
+import org.eclipse.xtext.testing.util.ParseHelper
+import org.eclipse.xtext.testing.validation.ValidationTestHelper
+import org.junit.Test
+import org.junit.runner.RunWith
+
+import static org.junit.Assert.*
 
 /**
  * 

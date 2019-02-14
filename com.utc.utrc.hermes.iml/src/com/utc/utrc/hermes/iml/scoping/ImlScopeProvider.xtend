@@ -7,7 +7,6 @@ import com.google.inject.Inject
 import com.utc.utrc.hermes.iml.iml.ArrayAccess
 import com.utc.utrc.hermes.iml.iml.EnumRestriction
 import com.utc.utrc.hermes.iml.iml.ImlPackage
-import com.utc.utrc.hermes.iml.iml.ImplicitInstanceConstructor
 import com.utc.utrc.hermes.iml.iml.InstanceConstructor
 import com.utc.utrc.hermes.iml.iml.LambdaExpression
 import com.utc.utrc.hermes.iml.iml.Model
@@ -20,7 +19,6 @@ import com.utc.utrc.hermes.iml.iml.SymbolReferenceTerm
 import com.utc.utrc.hermes.iml.iml.TermMemberSelection
 import com.utc.utrc.hermes.iml.iml.TupleType
 import com.utc.utrc.hermes.iml.lib.ImlStdLib
-import com.utc.utrc.hermes.iml.typing.ImlTypeProvider
 import java.util.Arrays
 import java.util.HashSet
 import org.eclipse.emf.ecore.EObject
@@ -258,29 +256,6 @@ class ImlScopeProvider extends AbstractDeclarativeScopeProvider {
 				return scopeOfNamedType(o, buildNestedScope(o.eContainer))
 			InstanceConstructor:
 				return Scopes::scopeFor(Arrays.asList(o.ref), buildNestedScope(o.eContainer))
-			ImplicitInstanceConstructor: {
-				var parentScope = IScope::NULLSCOPE
-				val superTypes = o.ref.allSuperTypes
-				for (level : superTypes.reverseView) {
-					var features = new HashSet
-					for (t : level) {
-						if (t instanceof SimpleTypeReference) {
-							var theType = t.type;
-							switch (theType) {
-								NamedType: features.addAll(theType.symbols)
-							}
-						}
-					}
-					if (parentScope === IScope::NULLSCOPE)
-						parentScope = Scopes::scopeFor(features,buildNestedScope(o.eContainer))
-					else 
-						parentScope = Scopes::scopeFor(features, parentScope)				
-				}
-				if (parentScope === IScope::NULLSCOPE)
-					return buildNestedScope(o.eContainer)
-				else 
-					return parentScope
-			}
 			LambdaExpression:
 				if (o.signature instanceof TupleType) {
 					return Scopes::scopeFor((o.signature as TupleType).symbols, buildNestedScope(o.eContainer));

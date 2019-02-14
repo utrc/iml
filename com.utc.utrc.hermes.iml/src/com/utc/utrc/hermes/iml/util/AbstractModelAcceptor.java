@@ -14,7 +14,6 @@ import com.utc.utrc.hermes.iml.iml.ExpressionTail;
 import com.utc.utrc.hermes.iml.iml.Extension;
 import com.utc.utrc.hermes.iml.iml.FolFormula;
 import com.utc.utrc.hermes.iml.iml.ImlType;
-import com.utc.utrc.hermes.iml.iml.ImplicitInstanceConstructor;
 import com.utc.utrc.hermes.iml.iml.Import;
 import com.utc.utrc.hermes.iml.iml.IteTermExpression;
 import com.utc.utrc.hermes.iml.iml.Model;
@@ -145,7 +144,7 @@ public abstract class AbstractModelAcceptor implements IModelAcceptor {
 
 	@Override
 	public void accept(PropertyList l,  IModelVisitor visitor) {
-		for(ImplicitInstanceConstructor p : l.getProperties()) {
+		for(Property p : l.getProperties()) {
 			accept((Property)p,visitor);
 		}
 		visitor.visit(l);
@@ -310,11 +309,7 @@ public abstract class AbstractModelAcceptor implements IModelAcceptor {
 				accept(((ArrayAccess)((TailedExpression)e).getTail()).getIndex(),visitor );
 			}
 			visitor.visit((TailedExpression) e);
-		} else if (e instanceof ImplicitInstanceConstructor) {
-			accept(((ImplicitInstanceConstructor) e).getRef(),visitor) ;
-			accept((SequenceTerm) ((ImplicitInstanceConstructor)e).getDefinition(),visitor);
-			visitor.visit((ImplicitInstanceConstructor)e);
-		}else if (e instanceof TupleConstructor) {
+		} else if (e instanceof TupleConstructor) {
 			for(FolFormula el : ((TupleConstructor) e).getElements()) {
 				accept(el,visitor);
 			}

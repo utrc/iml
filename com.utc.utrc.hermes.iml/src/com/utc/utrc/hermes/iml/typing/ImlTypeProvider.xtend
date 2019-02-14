@@ -13,7 +13,6 @@ import com.utc.utrc.hermes.iml.iml.FloatNumberLiteral
 import com.utc.utrc.hermes.iml.iml.FolFormula
 import com.utc.utrc.hermes.iml.iml.ImlType
 import com.utc.utrc.hermes.iml.iml.ImlFactory
-import com.utc.utrc.hermes.iml.iml.ImplicitInstanceConstructor
 import com.utc.utrc.hermes.iml.iml.InstanceConstructor
 import com.utc.utrc.hermes.iml.iml.IteTermExpression
 import com.utc.utrc.hermes.iml.iml.LambdaExpression
@@ -168,9 +167,6 @@ public class ImlTypeProvider {
 			}
 			InstanceConstructor: {
 				return t.ref.type
-			}
-			ImplicitInstanceConstructor : {
-				return t.ref ;
 			}
 			TupleConstructor: {
 				return ImlFactory.eINSTANCE.createTupleType => [

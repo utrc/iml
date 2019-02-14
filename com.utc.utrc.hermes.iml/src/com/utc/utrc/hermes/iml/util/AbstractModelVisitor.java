@@ -9,7 +9,6 @@ import com.utc.utrc.hermes.iml.iml.NamedType;
 import com.utc.utrc.hermes.iml.iml.EnumRestriction;
 import com.utc.utrc.hermes.iml.iml.FolFormula;
 import com.utc.utrc.hermes.iml.iml.ImlType;
-import com.utc.utrc.hermes.iml.iml.ImplicitInstanceConstructor;
 import com.utc.utrc.hermes.iml.iml.Import;
 import com.utc.utrc.hermes.iml.iml.IteTermExpression;
 import com.utc.utrc.hermes.iml.iml.Model;
@@ -146,12 +145,6 @@ public abstract class AbstractModelVisitor implements IModelVisitor {
 	public void visit(TailedExpression e) {
 		// TODO Auto-generated method stub
 		
-	}
-
-	@Override
-	public void visit(ImplicitInstanceConstructor e) {
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override

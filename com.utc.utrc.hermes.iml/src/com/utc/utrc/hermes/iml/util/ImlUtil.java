@@ -19,9 +19,9 @@ import com.utc.utrc.hermes.iml.iml.Extension;
 import com.utc.utrc.hermes.iml.iml.FolFormula;
 import com.utc.utrc.hermes.iml.iml.FunctionType;
 import com.utc.utrc.hermes.iml.iml.ImlType;
-import com.utc.utrc.hermes.iml.iml.ImplicitInstanceConstructor;
 import com.utc.utrc.hermes.iml.iml.Model;
 import com.utc.utrc.hermes.iml.iml.ParenthesizedTerm;
+import com.utc.utrc.hermes.iml.iml.Property;
 import com.utc.utrc.hermes.iml.iml.Relation;
 import com.utc.utrc.hermes.iml.iml.SignedAtomicFormula;
 import com.utc.utrc.hermes.iml.iml.SimpleTypeReference;
@@ -84,7 +84,7 @@ public class ImlUtil {
 	public static boolean hasProperty(Symbol symbol, String property) {
 		if (symbol.getPropertylist() == null)
 			return false;
-		for (ImplicitInstanceConstructor actualProperty : symbol.getPropertylist().getProperties()) {
+		for (Property actualProperty : symbol.getPropertylist().getProperties()) {
 			if (((SimpleTypeReference) actualProperty.getRef()).getType().getName().equals(property)) {
 				return true;
 			}

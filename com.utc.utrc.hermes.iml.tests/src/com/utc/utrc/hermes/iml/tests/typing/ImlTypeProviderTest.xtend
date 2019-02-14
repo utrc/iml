@@ -1,34 +1,30 @@
 package com.utc.utrc.hermes.iml.tests.typing
 
-import org.junit.runner.RunWith
-import org.eclipse.xtext.testing.XtextRunner
-import com.utc.utrc.hermes.iml.tests.ImlInjectorProvider
-import org.eclipse.xtext.testing.InjectWith
 import com.google.inject.Inject
-import org.eclipse.xtext.testing.util.ParseHelper
-import com.utc.utrc.hermes.iml.iml.Model
-import org.junit.Test
-import static org.junit.Assert.*
-import org.eclipse.xtext.testing.validation.ValidationTestHelper
-import com.utc.utrc.hermes.iml.tests.TestHelper
-import com.utc.utrc.hermes.iml.typing.TypingServices
-import com.utc.utrc.hermes.iml.iml.NamedType
-import com.utc.utrc.hermes.iml.typing.ImlTypeProvider
-import com.utc.utrc.hermes.iml.iml.ImlType
-import com.utc.utrc.hermes.iml.iml.SimpleTypeReference
-import com.utc.utrc.hermes.iml.iml.TupleType
 import com.utc.utrc.hermes.iml.iml.ArrayType
-import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
-import com.utc.utrc.hermes.iml.iml.ImplicitInstanceConstructor
-import com.utc.utrc.hermes.iml.iml.LambdaExpression
-import com.utc.utrc.hermes.iml.iml.SequenceTerm
+import com.utc.utrc.hermes.iml.iml.FunctionType
+import com.utc.utrc.hermes.iml.iml.ImlType
 import com.utc.utrc.hermes.iml.iml.IteTermExpression
-import com.utc.utrc.hermes.iml.iml.TermMemberSelection
+import com.utc.utrc.hermes.iml.iml.LambdaExpression
+import com.utc.utrc.hermes.iml.iml.Model
+import com.utc.utrc.hermes.iml.iml.NamedType
+import com.utc.utrc.hermes.iml.iml.SequenceTerm
+import com.utc.utrc.hermes.iml.iml.SimpleTypeReference
+import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
+import com.utc.utrc.hermes.iml.iml.TupleType
+import com.utc.utrc.hermes.iml.tests.ImlInjectorProvider
+import com.utc.utrc.hermes.iml.tests.TestHelper
+import com.utc.utrc.hermes.iml.typing.ImlTypeProvider
+import com.utc.utrc.hermes.iml.typing.TypingServices
+import org.eclipse.xtext.testing.InjectWith
+import org.eclipse.xtext.testing.XtextRunner
+import org.eclipse.xtext.testing.util.ParseHelper
+import org.eclipse.xtext.testing.validation.ValidationTestHelper
+import org.junit.Test
+import org.junit.runner.RunWith
 
 import static com.utc.utrc.hermes.iml.lib.ImlStdLib.*
-import com.utc.utrc.hermes.iml.services.ImlGrammarAccess.SymbolDeclarationElements
-import com.utc.utrc.hermes.iml.iml.FunctionType
-import com.utc.utrc.hermes.iml.lib.ImlStdLib
+import static org.junit.Assert.*
 
 /**
  * Test related helper methods

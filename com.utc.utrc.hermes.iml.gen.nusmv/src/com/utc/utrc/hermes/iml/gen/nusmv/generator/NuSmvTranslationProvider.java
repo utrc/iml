@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.utc.utrc.hermes.iml.iml.EnumRestriction;
-import com.utc.utrc.hermes.iml.iml.ImplicitInstanceConstructor;
 import com.utc.utrc.hermes.iml.iml.NamedType;
+import com.utc.utrc.hermes.iml.iml.Property;
 import com.utc.utrc.hermes.iml.iml.SimpleTypeReference;
 import com.utc.utrc.hermes.iml.iml.SymbolDeclaration;
 import com.utc.utrc.hermes.iml.iml.SymbolReferenceTerm;
@@ -30,7 +30,7 @@ public class NuSmvTranslationProvider {
 	public static boolean isA(SymbolDeclaration s, NamedType imlType) {
 		if (s.getPropertylist() == null)
 			return false;
-		for (ImplicitInstanceConstructor p : s.getPropertylist().getProperties()) {
+		for (Property p : s.getPropertylist().getProperties()) {
 			if (((SimpleTypeReference) p.getRef()).getType() == imlType) {
 				return true;
 			}

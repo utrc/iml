@@ -32,7 +32,7 @@ Doc :
   {Doc}('@' properties+=[NamedType|QualifiedName] descriptions+=STRING)+
 ;
 	
-Property returns ImplicitInstanceConstructor:
+Property:
 	{Property} ref=SimpleTypeReference (definition=SequenceTerm)?
 ;
 
@@ -94,7 +94,6 @@ NonParametricUntypedSymbolDeclaration returns SymbolDeclaration :
 	name=ID  
 ;
 
-
 NonParametricTypedSymbolDeclaration returns SymbolDeclaration :
 	name=ID  ':' type=ImlType 
 ;
@@ -108,7 +107,6 @@ ArrayType returns ImlType:
 	   ({ArrayType.type=current} (('['dimensions+=OptionalTermExpr']'))+)?
 ;
 
-
 TupleOrExpressionType returns ImlType :
 	ExplicitTupleType |
 	ParenthesizedTypeExpression	
@@ -118,7 +116,6 @@ TupleOrExpressionType returns ImlType :
 ExplicitTupleType returns ImlType :
 	{TupleType} 'Tuple' '(' symbols+=TupleSymbol (',' symbols+=TupleSymbol)* ')'  
 ;
-	
 
 ParenthesizedTypeExpression returns ImlType :
 	//=>({EmptyTupleType}'('')') |
@@ -126,12 +123,9 @@ ParenthesizedTypeExpression returns ImlType :
 	 {TupleType}('(' (symbols+=TupleSymbol (',' symbols+=TupleSymbol)*)?  ')') 
 ;
 	
-	
-	
 OptionalTermExpr:
 	{OptionalTermExpr} term=TermExpression?
 ;
-
 
 TupleSymbol returns SymbolDeclaration:
 	(name=ID ':')? type=ImlType
@@ -150,7 +144,6 @@ FolFormula:
 	 Formula ({FolFormula.left=current} op=('=>' | '<=>') right=Formula)?;
 
 Formula returns FolFormula:
-	//QuantifiedFormula  | 
 	OrExpression;
 
 /*A quantified formula (universally or existentially quantified) has
@@ -202,7 +195,6 @@ Multiplication returns TermExpression:
 	TailedExpression ({Multiplication.left=current} sign=('*' | '/' | '%' | 'mod')
 	right=TailedExpression)*;
 
-
 TailedExpression returns TermExpression:
 	TerminalTerm (
 		({TermMemberSelection.receiver=current} '.' member=SymbolReferenceTerm) |
@@ -210,30 +202,15 @@ TailedExpression returns TermExpression:
 	) *
 ;
 
-//TailedExpression returns TermExpression:
-//	TermSelectionExpression ({TailedExpression.left=current} tails+=ExpressionTail+)*
-//;
-
 ExpressionTail:
 	TupleConstructor |
 	{ArrayAccess}  '['index=FolFormula']'
-;
-
-/*Selection of a term is a recursive definition. It is a terminal term followed
- * by the scoping operator :: and by a member terms. The member term is a 
- * symbol possibly followed by type binding information (for generic functions),
- * possibly followed by parameters (for functions)
- */
-TermSelectionExpression returns TermExpression:
-	TerminalTerm ({TermMemberSelection.receiver=current} '.' member=SymbolReferenceTerm)*
 ;
 
 /*A terminal term can be a number, a reference to symbol defined in the scope
  * of the term, a reference to a constant of a finite type, an if-then-else term
  * expression, the keyword this, or a parenthesized term.
  */
-
-
 TerminalTerm returns TermExpression:
 	{NumberLiteral} neg?=('-')? value=INT |
 	{FloatNumberLiteral} neg?=('-')? value = FLOAT |
@@ -250,14 +227,8 @@ TerminalTerm returns TermExpression:
 	QuantifiedFormula
 	 ;
 	
-EqualityListTerm returns TermExpression :
-	{EqualityListTerm}'{' (features+=TermSelectionExpression '=' values+=TermExpression ) (';' (features+=TermSelectionExpression '=' values+=TermExpression ))* '}'
-;
-
-
 InstanceConstructor returns TermExpression:
-	{InstanceConstructor} 'some' '(' ref=TupleSymbol ')' definition=SequenceTerm |
-	{ImplicitInstanceConstructor}  'oneof' ref=SimpleTypeReference definition=EqualityListTerm
+	{InstanceConstructor} 'some' '(' ref=TupleSymbol ')' definition=SequenceTerm
 ;
 
 TupleOrFormulaConstructor returns TermExpression:

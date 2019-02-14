@@ -9,7 +9,6 @@ import com.utc.utrc.hermes.iml.iml.NamedType;
 import com.utc.utrc.hermes.iml.iml.EnumRestriction;
 import com.utc.utrc.hermes.iml.iml.FolFormula;
 import com.utc.utrc.hermes.iml.iml.ImlType;
-import com.utc.utrc.hermes.iml.iml.ImplicitInstanceConstructor;
 import com.utc.utrc.hermes.iml.iml.Import;
 import com.utc.utrc.hermes.iml.iml.IteTermExpression;
 import com.utc.utrc.hermes.iml.iml.Model;
@@ -67,8 +66,6 @@ public interface IModelVisitor {
 	public void visit(SymbolReferenceTerm e);
 	
 	public void visit(TailedExpression e);
-	
-	public void visit(ImplicitInstanceConstructor e);
 	
 	public void visit(TupleConstructor e);
 	
