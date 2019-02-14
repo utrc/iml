@@ -8,7 +8,7 @@ import java.util.Map;
 import org.eclipse.emf.ecore.EObject;
 
 import com.google.inject.Inject;
-import com.utc.utrc.hermes.iml.iml.ConstrainedType;
+import com.utc.utrc.hermes.iml.iml.NamedType;
 import com.utc.utrc.hermes.iml.iml.SymbolDeclaration;
 import com.utc.utrc.hermes.iml.iml.TupleType;
 /**
@@ -79,7 +79,7 @@ public class SmtSymbolTable<SortT, FunDeclT, FormulaT> {
 	public SortT getPrimitiveSort(String typeName) {
 		for (Map.Entry<EncodedId, SortT> sort : sorts.entrySet()) {
 			EObject imlObject = sort.getKey().getImlObject();
-			if (imlObject instanceof ConstrainedType && ((ConstrainedType) imlObject).getName().equals(typeName)) {
+			if (imlObject instanceof NamedType && ((NamedType) imlObject).getName().equals(typeName)) {
 				return sort.getValue();
 			}
 		}

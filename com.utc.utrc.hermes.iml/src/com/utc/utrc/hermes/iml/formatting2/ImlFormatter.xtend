@@ -9,7 +9,7 @@ import com.utc.utrc.hermes.iml.iml.Symbol
 import com.utc.utrc.hermes.iml.services.ImlGrammarAccess
 import org.eclipse.xtext.formatting2.AbstractFormatter2
 import org.eclipse.xtext.formatting2.IFormattableDocument
-import com.utc.utrc.hermes.iml.iml.ConstrainedType
+import com.utc.utrc.hermes.iml.iml.NamedType
 
 class ImlFormatter extends AbstractFormatter2 {
 	
@@ -28,7 +28,7 @@ class ImlFormatter extends AbstractFormatter2 {
 		model.allRegionsFor.keywords(";").forEach[it.append[newLine]]
 	}
 
-	def dispatch void format(ConstrainedType constrainedType, extension IFormattableDocument document) {
+	def dispatch void format(NamedType constrainedType, extension IFormattableDocument document) {
 		constrainedType.regionFor.keyword("{").append[newLine]
 		constrainedType.regionFor.keyword("}").prepend[newLine].append[newLine]
 		interior(
@@ -37,5 +37,5 @@ class ImlFormatter extends AbstractFormatter2 {
 		)[indent]
 	}
 	
-	// TODO: implement for Alias, MetaRelaion, PropertyList, ConstrainedType, SymbolDeclaration, HigherOrderType, ArrayType, OptionalTermExpr, TupleType, SimpleTypeReference, FolFormula, OrExpression, AndExpression, SignedAtomicFormula, AtomicExpression, Addition, Multiplication, TermMemberSelection, LambdaExpression, TypeConstructor, TupleConstructor, SymbolReferenceTerm, ArrayAccess, IteTermExpression, Program
+	// TODO: implement for Alias, MetaRelaion, PropertyList, ConstrainedType, SymbolDeclaration, ImlType, ArrayType, OptionalTermExpr, TupleType, SimpleTypeReference, FolFormula, OrExpression, AndExpression, SignedAtomicFormula, AtomicExpression, Addition, Multiplication, TermMemberSelection, LambdaExpression, TypeConstructor, TupleConstructor, SymbolReferenceTerm, ArrayAccess, IteTermExpression, Program
 }

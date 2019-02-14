@@ -6,7 +6,6 @@ import java.util.List;
 import com.utc.utrc.hermes.iml.iml.Addition;
 import com.utc.utrc.hermes.iml.iml.AtomicExpression;
 import com.utc.utrc.hermes.iml.iml.FolFormula;
-import com.utc.utrc.hermes.iml.iml.ImplicitInstanceConstructor;
 import com.utc.utrc.hermes.iml.iml.IteTermExpression;
 import com.utc.utrc.hermes.iml.iml.Multiplication;
 import com.utc.utrc.hermes.iml.iml.SequenceTerm;
@@ -44,12 +43,6 @@ public class FormulaGenerator {
 
 		@Override
 		public void visit(Multiplication e) {
-			
-		}
-
-
-		@Override
-		public void visit(ImplicitInstanceConstructor e) {
 			
 		}
 

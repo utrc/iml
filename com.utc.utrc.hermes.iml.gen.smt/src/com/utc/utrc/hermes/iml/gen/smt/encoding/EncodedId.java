@@ -7,10 +7,9 @@ import org.eclipse.xtext.naming.QualifiedName;
 
 import com.utc.utrc.hermes.iml.iml.Alias;
 import com.utc.utrc.hermes.iml.iml.Assertion;
-import com.utc.utrc.hermes.iml.iml.ConstrainedType;
+import com.utc.utrc.hermes.iml.iml.NamedType;
 import com.utc.utrc.hermes.iml.iml.Extension;
-import com.utc.utrc.hermes.iml.iml.HigherOrderType;
-import com.utc.utrc.hermes.iml.iml.ImplicitInstanceConstructor;
+import com.utc.utrc.hermes.iml.iml.ImlType;
 import com.utc.utrc.hermes.iml.iml.Model;
 import com.utc.utrc.hermes.iml.iml.SimpleTypeReference;
 import com.utc.utrc.hermes.iml.iml.Symbol;
@@ -47,20 +46,20 @@ public class EncodedId {
 			container = null;
 			name = ((Model) imlEObject).getName();
 		}
-		if (imlEObject instanceof ConstrainedType) {
+		if (imlEObject instanceof NamedType) {
 			container = qnp.getFullyQualifiedName(imlEObject.eContainer());
 			name = ((Symbol) imlEObject).getName();
-		} else if (imlEObject instanceof HigherOrderType) {
+		} else if (imlEObject instanceof ImlType) {
 			// use the serialization as name 
 			if (imlEObject instanceof SimpleTypeReference && ((SimpleTypeReference) imlEObject).getTypeBinding().size() == 0) {
-				ConstrainedType type = ((SimpleTypeReference) imlEObject).getType();
+				NamedType type = ((SimpleTypeReference) imlEObject).getType();
 				container = qnp.getFullyQualifiedName(type.eContainer());
 				name = type.getName();
 			} else {
 				container = DEFAULT_CONTAINER;
 //				container = qnp.getFullyQualifiedName(((SimpleTypeReference) imlEObject).getType().eContainer());					
 				// Use the name exactly as declared 					
-				name = ImlUtil.getTypeNameManually((HigherOrderType) imlEObject, qnp);
+				name = ImlUtil.getTypeNameManually((ImlType) imlEObject, qnp);
 			}
 		} else if (imlEObject instanceof AtomicRelation) {
 			container = qnp.getFullyQualifiedName(((AtomicRelation) imlEObject).getRelation().eContainer());
@@ -81,8 +80,8 @@ public class EncodedId {
 					int index = 0;
 					if (eContainer instanceof Model) {
 						index = ((Model) eContainer).getSymbols().indexOf(imlEObject);
-					} else { // Should be ConstrainedType
-						index = ((ConstrainedType) eContainer).getSymbols().indexOf(imlEObject);
+					} else { // Should be NamedType
+						index = ((NamedType) eContainer).getSymbols().indexOf(imlEObject);
 					}
 					name = ASSERTION_DEFAULT_NAME + index;
 				}

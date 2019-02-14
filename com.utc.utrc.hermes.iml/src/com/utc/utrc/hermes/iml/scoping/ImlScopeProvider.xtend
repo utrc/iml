@@ -5,16 +5,21 @@ package com.utc.utrc.hermes.iml.scoping
 
 import com.google.inject.Inject
 import com.utc.utrc.hermes.iml.iml.ArrayAccess
-import com.utc.utrc.hermes.iml.iml.ConstrainedType
+import com.utc.utrc.hermes.iml.iml.EnumRestriction
+import com.utc.utrc.hermes.iml.iml.ImlPackage
+import com.utc.utrc.hermes.iml.iml.InstanceConstructor
+import com.utc.utrc.hermes.iml.iml.LambdaExpression
 import com.utc.utrc.hermes.iml.iml.Model
+import com.utc.utrc.hermes.iml.iml.QuantifiedFormula
+import com.utc.utrc.hermes.iml.iml.SequenceTerm
 import com.utc.utrc.hermes.iml.iml.SignedAtomicFormula
 import com.utc.utrc.hermes.iml.iml.SimpleTypeReference
 import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
-import com.utc.utrc.hermes.iml.iml.SymbolReferenceTail
 import com.utc.utrc.hermes.iml.iml.SymbolReferenceTerm
 import com.utc.utrc.hermes.iml.iml.TermMemberSelection
 import com.utc.utrc.hermes.iml.iml.TupleType
-import com.utc.utrc.hermes.iml.typing.ImlTypeProvider
+import com.utc.utrc.hermes.iml.lib.ImlStdLib
+import java.util.Arrays
 import java.util.HashSet
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
@@ -29,16 +34,9 @@ import org.eclipse.xtext.scoping.impl.FilteringScope
 import static extension com.utc.utrc.hermes.iml.typing.ImlTypeProvider.*
 import static extension com.utc.utrc.hermes.iml.typing.TypingServices.*
 import static extension org.eclipse.xtext.EcoreUtil2.*
-import com.utc.utrc.hermes.iml.iml.InstanceConstructor
-import com.utc.utrc.hermes.iml.iml.EnumRestriction
-import com.utc.utrc.hermes.iml.iml.TermExpression
-import java.util.Arrays
-import com.utc.utrc.hermes.iml.iml.LambdaExpression
-import com.utc.utrc.hermes.iml.iml.QuantifiedFormula
-import com.utc.utrc.hermes.iml.iml.ImplicitInstanceConstructor
-import com.utc.utrc.hermes.iml.iml.ImlPackage
-import com.utc.utrc.hermes.iml.iml.SequenceTerm
-import com.utc.utrc.hermes.iml.lib.ImlStdLib
+import com.utc.utrc.hermes.iml.iml.NamedType
+import com.utc.utrc.hermes.iml.iml.TailedExpression
+import com.utc.utrc.hermes.iml.iml.ExpressionTail
 
 /**
  * This class contains custom scoping description.
@@ -142,17 +140,17 @@ class ImlScopeProvider extends AbstractDeclarativeScopeProvider {
 
 		val typeConstructor = getTypeConstructorType(context)
 		if (typeConstructor !== null) { // Include type symbols inside a type constructor term
-			scope = scopeOfConstrainedType(typeConstructor, scope)
+			scope = scopeOfNamedType(typeConstructor, scope)
 		}
 
-		if (context.getContainerOfType(ConstrainedType) === null) {
+		if (context.getContainerOfType(NamedType) === null) {
 			return scope;
 		}
 
-		return scopeOfConstrainedType(context.getContainerOfType(ConstrainedType), scope)
+		return scopeOfNamedType(context.getContainerOfType(NamedType), scope)
 	}
 
-	protected def scopeOfConstrainedType(ConstrainedType type, IScope scope) {
+	protected def scopeOfNamedType(NamedType type, IScope scope) {
 		val superTypes = type.allSuperTypes
 		var features = new HashSet
 		for (level : superTypes.reverseView) {
@@ -164,24 +162,26 @@ class ImlScopeProvider extends AbstractDeclarativeScopeProvider {
 	}
 
 	def getScopeOfTupleAccess(ArrayAccess arrayAccess) {
-		val symbolRef = arrayAccess.eContainer as SymbolReferenceTerm
-		if (symbolRef.symbol instanceof SymbolDeclaration) {
-			var type = getTypeWithoutTail(symbolRef)
-			var break = false;
-			for (SymbolReferenceTail tail : symbolRef.tails) {
-				if (!break) {
-					if (tail === arrayAccess) {
-						if (type instanceof TupleType) {
-							return Scopes::scopeFor(type.symbols);
-						} else { // It is just normal array access not tuple
-							break = true;
-						}
-					} else {
-						type = ImlTypeProvider.accessTail(type, tail)
-					}
-				}
-			}
+		val tailedExpr = arrayAccess.eContainer as TailedExpression
+		var type = termExpressionType(tailedExpr.left)
+		if (type instanceof TupleType) {
+			return Scopes::scopeFor(type.symbols);
 		}
+
+//		var break = false;
+//		for (ExpressionTail tail : tailedExpr.tails) {
+//			if (!break) {
+//				if (tail === arrayAccess) {
+//					if (type instanceof TupleType) {
+//						return Scopes::scopeFor(type.symbols);
+//					} else { // It is just normal array access not tuple
+//						break = true;
+//					}
+//				} else {
+//					type = ImlTypeProvider.accessTail(type, tail)
+//				}
+//			}
+//		}
 	}
 
 	def getTypeWithoutTail(SymbolReferenceTerm term) {
@@ -203,10 +203,10 @@ class ImlScopeProvider extends AbstractDeclarativeScopeProvider {
 
 		if (receiver instanceof SymbolReferenceTerm) {
 			val symb = (receiver as SymbolReferenceTerm).symbol
-			if (symb instanceof ConstrainedType) {
+			if (symb instanceof NamedType) {
 				// The receiver is a constrained type
 				// This is a reference to an enum
-				val ct = (receiver as SymbolReferenceTerm).symbol as ConstrainedType
+				val ct = (receiver as SymbolReferenceTerm).symbol as NamedType
 				if (! ct.restrictions.isEmpty) {
 					val res = ct.restrictions.filter(EnumRestriction)
 					if (! res.isEmpty) {
@@ -214,7 +214,7 @@ class ImlScopeProvider extends AbstractDeclarativeScopeProvider {
 					}
 				}
 			}
-		}
+		} 
 
 		var receiverType = receiver.termExpressionType
 
@@ -229,7 +229,7 @@ class ImlScopeProvider extends AbstractDeclarativeScopeProvider {
 				if (t instanceof SimpleTypeReference) {
 					var theType = t.type;
 					switch (theType) {
-						ConstrainedType: features.addAll(theType.symbols)
+						NamedType: features.addAll(theType.symbols)
 					}
 				}
 			}
@@ -252,33 +252,10 @@ class ImlScopeProvider extends AbstractDeclarativeScopeProvider {
 			return IScope::NULLSCOPE
 		}
 		switch (o) {
-			ConstrainedType:
-				return scopeOfConstrainedType(o, buildNestedScope(o.eContainer))
+			NamedType:
+				return scopeOfNamedType(o, buildNestedScope(o.eContainer))
 			InstanceConstructor:
 				return Scopes::scopeFor(Arrays.asList(o.ref), buildNestedScope(o.eContainer))
-			ImplicitInstanceConstructor: {
-				var parentScope = IScope::NULLSCOPE
-				val superTypes = o.ref.allSuperTypes
-				for (level : superTypes.reverseView) {
-					var features = new HashSet
-					for (t : level) {
-						if (t instanceof SimpleTypeReference) {
-							var theType = t.type;
-							switch (theType) {
-								ConstrainedType: features.addAll(theType.symbols)
-							}
-						}
-					}
-					if (parentScope === IScope::NULLSCOPE)
-						parentScope = Scopes::scopeFor(features,buildNestedScope(o.eContainer))
-					else 
-						parentScope = Scopes::scopeFor(features, parentScope)				
-				}
-				if (parentScope === IScope::NULLSCOPE)
-					return buildNestedScope(o.eContainer)
-				else 
-					return parentScope
-			}
 			LambdaExpression:
 				if (o.signature instanceof TupleType) {
 					return Scopes::scopeFor((o.signature as TupleType).symbols, buildNestedScope(o.eContainer));

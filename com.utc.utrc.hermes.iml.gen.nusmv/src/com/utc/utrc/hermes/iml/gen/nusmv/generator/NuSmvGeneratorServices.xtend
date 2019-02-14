@@ -7,9 +7,9 @@ import com.utc.utrc.hermes.iml.gen.nusmv.model.NuSmvTypeInstance
 import com.utc.utrc.hermes.iml.iml.Addition
 import com.utc.utrc.hermes.iml.iml.AtomicExpression
 import com.utc.utrc.hermes.iml.iml.CaseTermExpression
-import com.utc.utrc.hermes.iml.iml.ConstrainedType
+import com.utc.utrc.hermes.iml.iml.NamedType
 import com.utc.utrc.hermes.iml.iml.FolFormula
-import com.utc.utrc.hermes.iml.iml.HigherOrderType
+import com.utc.utrc.hermes.iml.iml.ImlType
 import com.utc.utrc.hermes.iml.iml.IteTermExpression
 import com.utc.utrc.hermes.iml.iml.Model
 import com.utc.utrc.hermes.iml.iml.Multiplication
@@ -35,14 +35,14 @@ class NuSmvGeneratorServices {
 			'''«FOR b : tr.typeBinding BEFORE '<' SEPARATOR ',' AFTER '>'» «b.nameFor» «ENDFOR»'''
 	}
 
-	def static String getNameFor(HigherOrderType hot) {
+	def static String getNameFor(ImlType hot) {
 		if (hot instanceof SimpleTypeReference) {
 			return (hot as SimpleTypeReference).nameFor
 		}
 		return "__NOT__SUPPORTED"
 	}
 
-	def static String qualifiedName(ConstrainedType t) {
+	def static String qualifiedName(NamedType t) {
 		var typename = t.getName();
 		return ( ( t.eContainer() as Model ).getName() + "." + typename);
 	}
@@ -180,8 +180,8 @@ class NuSmvGeneratorServices {
 		} else if (e instanceof TermMemberSelection) {
 			// TODO this is a quick hack
 			if (e.receiver instanceof SymbolReferenceTerm &&
-				(e.receiver as SymbolReferenceTerm).symbol instanceof ConstrainedType) {
-				var typename = qualifiedName((e.receiver as SymbolReferenceTerm).symbol as ConstrainedType);
+				(e.receiver as SymbolReferenceTerm).symbol instanceof NamedType) {
+				var typename = qualifiedName((e.receiver as SymbolReferenceTerm).symbol as NamedType);
 				var literalname = serialize(e.member,ctx);
 				retval = '''"«typename».«literalname»"'''
 			} else {
@@ -275,7 +275,7 @@ class NuSmvGeneratorServices {
 		return retval;
 	}
 
-	def static List<String> getSuffix(String sofar, HigherOrderType t, SimpleTypeReference ctx) {
+	def static List<String> getSuffix(String sofar, ImlType t, SimpleTypeReference ctx) {
 		var retval = new ArrayList<String>();
 		if (t instanceof SimpleTypeReference) {
 			

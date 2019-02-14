@@ -1,34 +1,29 @@
 package com.utc.utrc.hermes.iml.tests.scoping
 
-import com.utc.utrc.hermes.iml.tests.ImlInjectorProvider
-import org.eclipse.xtext.testing.InjectWith
-import org.eclipse.xtext.testing.XtextRunner
-import org.junit.runner.RunWith
-import org.eclipse.xtext.testing.util.ParseHelper
-import com.utc.utrc.hermes.iml.iml.Model
 import com.google.inject.Inject
-import org.eclipse.xtext.testing.validation.ValidationTestHelper
-import com.utc.utrc.hermes.iml.tests.TestHelper
-import org.junit.Test
-import com.utc.utrc.hermes.iml.scoping.ImlScopeProvider
-import com.utc.utrc.hermes.iml.iml.ConstrainedType
-import com.utc.utrc.hermes.iml.iml.TermMemberSelection
+import com.utc.utrc.hermes.iml.iml.ArrayAccess
 import com.utc.utrc.hermes.iml.iml.ImlPackage
-import org.eclipse.emf.ecore.EReference
-import org.eclipse.emf.ecore.EObject
-import static extension org.junit.Assert.*
+import com.utc.utrc.hermes.iml.iml.Model
+import com.utc.utrc.hermes.iml.iml.NamedType
+import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
+import com.utc.utrc.hermes.iml.iml.SymbolReferenceTerm
+import com.utc.utrc.hermes.iml.iml.TailedExpression
+import com.utc.utrc.hermes.iml.iml.TermMemberSelection
+import com.utc.utrc.hermes.iml.scoping.ImlScopeProvider
+import com.utc.utrc.hermes.iml.tests.ImlInjectorProvider
+import com.utc.utrc.hermes.iml.tests.TestHelper
 import java.util.Arrays
 import java.util.List
-import com.utc.utrc.hermes.iml.iml.SymbolReferenceTerm
-import com.utc.utrc.hermes.iml.iml.ArrayAccess
-import com.utc.utrc.hermes.iml.iml.InstanceConstructor
-import com.utc.utrc.hermes.iml.iml.AtomicExpression
-import com.utc.utrc.hermes.iml.iml.SequenceTerm
-import com.utc.utrc.hermes.iml.iml.Assertion
-import com.utc.utrc.hermes.iml.iml.ImlFactory
-import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
-import com.utc.utrc.hermes.iml.iml.SimpleTypeReference
-import com.utc.utrc.hermes.iml.iml.ImplicitInstanceConstructor
+import org.eclipse.emf.ecore.EObject
+import org.eclipse.emf.ecore.EReference
+import org.eclipse.xtext.testing.InjectWith
+import org.eclipse.xtext.testing.XtextRunner
+import org.eclipse.xtext.testing.util.ParseHelper
+import org.eclipse.xtext.testing.validation.ValidationTestHelper
+import org.junit.Test
+import org.junit.runner.RunWith
+
+import static org.junit.Assert.*
 
 /**
  * 
@@ -62,7 +57,7 @@ class ImlScopeProviderTest {
 			};
 		'''.parse;
 		model.assertNoErrors ;
-		((model.symbols.last as ConstrainedType).symbols.last.definition.left as TermMemberSelection) => [
+		((model.symbols.last as NamedType).symbols.last.definition.left as TermMemberSelection) => [
 			assertScope(ImlPackage::eINSTANCE.symbolReferenceTerm_Symbol, Arrays.asList("var1"))
 		];
 		return
@@ -86,7 +81,7 @@ class ImlScopeProviderTest {
 			};
 		'''.parse;
 		model.assertNoErrors ;
-		((model.symbols.last as ConstrainedType).symbols.last.definition.left as TermMemberSelection) => [
+		((model.symbols.last as NamedType).symbols.last.definition.left as TermMemberSelection) => [
 			assertScope(ImlPackage::eINSTANCE.symbolReferenceTerm_Symbol, Arrays.asList("var1", "varp"))
 		];
 		return
@@ -106,7 +101,7 @@ class ImlScopeProviderTest {
 			};
 		'''.parse;
 		
-		((model.symbols.last as ConstrainedType).symbols.last.definition.left as SymbolReferenceTerm) => [
+		((model.symbols.last as NamedType).symbols.last.definition.left as SymbolReferenceTerm) => [
 			assertScope(ImlPackage::eINSTANCE.symbolReferenceTerm_Symbol, 
 				Arrays.asList("var1", "varp", "Int", "Parent", "Parent.varp", 
 						"t1.var1", "t1.varx", "varx", "t1"))
@@ -131,7 +126,7 @@ class ImlScopeProviderTest {
 			}
 		'''.parse(model.eResource.resourceSet)
 		
-		((model.symbols.last as ConstrainedType).symbols.last.definition.left as SymbolReferenceTerm) => [
+		((model.symbols.last as NamedType).symbols.last.definition.left as SymbolReferenceTerm) => [
 			assertScope(ImlPackage::eINSTANCE.symbolReferenceTerm_Symbol, 
 				Arrays.asList("var1", "varx", "P2T1", "P2T1.var1", "P2T1.varx", 
 						"Int", "P1T1", "p1.P1T1"))
@@ -152,8 +147,8 @@ class ImlScopeProviderTest {
 		'''.parse
 		model.assertNoErrors;
 		
-		(((model.symbols.last as ConstrainedType).symbols.last.definition.left 
-		   as SymbolReferenceTerm).tails.get(0) as ArrayAccess).index.left => [
+		(((model.symbols.last as NamedType).symbols.last.definition.left 
+		   as TailedExpression).tail as ArrayAccess).index.left => [
 			assertScope(ImlPackage::eINSTANCE.symbolReferenceTerm_Symbol, 
 				Arrays.asList("e1", "e2"))
 		];
@@ -173,8 +168,8 @@ class ImlScopeProviderTest {
 		'''.parse
 		model.assertNoErrors;
 		
-		(((model.symbols.last as ConstrainedType).symbols.last.definition.left 
-		   as SymbolReferenceTerm).tails.get(1) as ArrayAccess).index.left => [
+		(((model.symbols.last as NamedType).symbols.last.definition.left 
+		   as TailedExpression).tail as ArrayAccess).index.left => [
 			assertScope(ImlPackage::eINSTANCE.symbolReferenceTerm_Symbol, 
 				Arrays.asList("e1", "e2"))
 		];
@@ -200,8 +195,8 @@ class ImlScopeProviderTest {
 		'''.parse
 		model.assertNoErrors;
 		
-		((((model.symbols.last as ConstrainedType).symbols.last.definition.left 
-		   as TermMemberSelection).member as SymbolReferenceTerm).tails.get(1) as ArrayAccess).index.left => [
+		((((model.symbols.last as NamedType).symbols.last.definition.left 
+		   as TailedExpression)).tail as ArrayAccess).index.left => [
 			assertScope(ImlPackage::eINSTANCE.symbolReferenceTerm_Symbol, 
 				Arrays.asList("e1", "e2"))
 		];
@@ -230,8 +225,8 @@ class ImlScopeProviderTest {
 		'''.parse
 		model.assertNoErrors;
 		
-		((((model.symbols.last as ConstrainedType).symbols.last.definition.left 
-		   as TermMemberSelection).member as SymbolReferenceTerm).tails.get(2) as ArrayAccess).index.left => [
+		((((model.symbols.last as NamedType).symbols.last.definition.left 
+		   as TailedExpression)).tail as ArrayAccess).index.left => [
 			assertScope(ImlPackage::eINSTANCE.symbolReferenceTerm_Symbol, 
 				Arrays.asList("e3", "e4"))
 		];
@@ -342,9 +337,9 @@ class ImlScopeProviderTest {
 			}
 		'''.parse
 		model.assertNoErrors
-		val ab = (model.findSymbol("A") as ConstrainedType).findSymbol("b");
-		val bb = (model.findSymbol("B") as ConstrainedType).findSymbol("b");
-		//val assignment = (((model.findSymbol("B") as ConstrainedType).findSymbol("a").definition.left as InstanceConstructor)
+		val ab = (model.findSymbol("A") as NamedType).findSymbol("b");
+		val bb = (model.findSymbol("B") as NamedType).findSymbol("b");
+		//val assignment = (((model.findSymbol("B") as NamedType).findSymbol("a").definition.left as InstanceConstructor)
 		//			.init as SequenceTerm).relations.get(0).left as AtomicExpression;
 		
 		//assertEquals(((assignment.left as TermMemberSelection).member as SymbolReferenceTerm).symbol, ab)

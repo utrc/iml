@@ -6,14 +6,13 @@ import com.utc.utrc.hermes.iml.iml.ArrayAccess
 import com.utc.utrc.hermes.iml.iml.ArrayType
 import com.utc.utrc.hermes.iml.iml.AtomicExpression
 import com.utc.utrc.hermes.iml.iml.CaseTermExpression
-import com.utc.utrc.hermes.iml.iml.ConstrainedType
+import com.utc.utrc.hermes.iml.iml.NamedType
 import com.utc.utrc.hermes.iml.iml.EnumRestriction
 import com.utc.utrc.hermes.iml.iml.Extension
 import com.utc.utrc.hermes.iml.iml.FloatNumberLiteral
 import com.utc.utrc.hermes.iml.iml.FolFormula
-import com.utc.utrc.hermes.iml.iml.HigherOrderType
+import com.utc.utrc.hermes.iml.iml.ImlType
 import com.utc.utrc.hermes.iml.iml.ImlFactory
-import com.utc.utrc.hermes.iml.iml.ImplicitInstanceConstructor
 import com.utc.utrc.hermes.iml.iml.InstanceConstructor
 import com.utc.utrc.hermes.iml.iml.IteTermExpression
 import com.utc.utrc.hermes.iml.iml.LambdaExpression
@@ -27,7 +26,6 @@ import com.utc.utrc.hermes.iml.iml.SequenceTerm
 import com.utc.utrc.hermes.iml.iml.SimpleTypeReference
 import com.utc.utrc.hermes.iml.iml.Symbol
 import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
-import com.utc.utrc.hermes.iml.iml.SymbolReferenceTail
 import com.utc.utrc.hermes.iml.iml.SymbolReferenceTerm
 import com.utc.utrc.hermes.iml.iml.TermExpression
 import com.utc.utrc.hermes.iml.iml.TermMemberSelection
@@ -48,29 +46,32 @@ import static extension org.eclipse.xtext.EcoreUtil2.*
 import static extension com.utc.utrc.hermes.iml.lib.ImlStdLib.*
 import org.eclipse.emf.ecore.EObject
 import com.utc.utrc.hermes.iml.iml.Model
+import com.utc.utrc.hermes.iml.iml.ExpressionTail
+import com.utc.utrc.hermes.iml.iml.FunctionType
+import com.utc.utrc.hermes.iml.iml.TailedExpression
 
 public class ImlTypeProvider {
 
-	def static HigherOrderType termExpressionType(FolFormula t) {
+	def static ImlType termExpressionType(FolFormula t) {
 		termExpressionType(t, null)
 	}
 
-	def static HigherOrderType termExpressionType(TermExpression t) {
+	def static ImlType termExpressionType(TermExpression t) {
 		termExpressionType(t, null)
 	}
 	
-	def static HigherOrderType termExpressionType(FolFormula t, SimpleTypeReference context) {
+	def static ImlType termExpressionType(FolFormula t, SimpleTypeReference context) {
 		if (t instanceof TermExpression) {
 			return termExpressionType((t as TermExpression), context)
 		}
 		if (t instanceof AtomicExpression) {
-			return BOOL_REF
+			return createBoolRef
 		}
 		return t.left.termExpressionType(context);
 	}
 	
-		def static HigherOrderType termExpressionType(TermExpression t, SimpleTypeReference context) {
-			return termExpressionType(t, context, false)
+		def static ImlType termExpressionType(TermExpression t, SimpleTypeReference context) {
+			return copy(termExpressionType(t, context, false))
 		}
 	
 
@@ -80,13 +81,13 @@ public class ImlTypeProvider {
 	 * that contains stereotypes, type and type binding information
 	 * for the term. 
 	 * */
-	def static HigherOrderType termExpressionType(TermExpression t, SimpleTypeReference context, boolean normalizeAliases) {
+	def static ImlType termExpressionType(TermExpression t, SimpleTypeReference context, boolean normalizeAliases) {
 
 		switch (t) {
 			// If the expression is "self", then its type is 
 			// type of the container type.
 			SelfTerm: {
-				return bind(createBasicType(t.getContainerOfType(ConstrainedType)), context)
+				return bind(ImlCustomFactory.INST.createSimpleTypeReference(t.getContainerOfType(NamedType)), context)
 			}
 			// Additions are among numeric types and the result is a numeric 
 			// type. If one of the two terms is real, then the type is real
@@ -95,9 +96,9 @@ public class ImlTypeProvider {
 				// note that in iml grammar, addition includes both "+" and "-".
 				if (t.left.termExpressionType(context).isReal ||
 					t.right.termExpressionType(context).isReal) {
-					return REAL_REF
+					return createRealRef
 				}
-				return INT_REF
+				return createIntRef
 			}
 			// For reminder and modulo, the result is integer
 			// For multiplication and division, the result is numeric
@@ -106,15 +107,15 @@ public class ImlTypeProvider {
 			Multiplication: {
 
 				if (t.sign == '%' || t.sign == 'mod') {
-					return INT_REF;
+					return createIntRef;
 				}
 
 				// note that in iml grammar, multiplication includes both "x" and "/".
 				if (t.left.termExpressionType(context).isReal ||
 					t.right.termExpressionType(context).isReal || t.sign == '/') {
-					return REAL_REF
+					return createRealRef
 				}
-				return INT_REF;
+				return createIntRef;
 			}
 			// Compute the actual type reference which 
 			// depends on the types of the change of member selections
@@ -125,17 +126,21 @@ public class ImlTypeProvider {
 				} else
 					return null // TODO Should we raise an exception better?
 			}
+			TailedExpression: {
+				var leftType = termExpressionType(t.left)
+				return accessTail(leftType, t.tail)
+			}
 			SymbolReferenceTerm: {
 				return getSymbolReferenceType(t, context)
 
 			}
 			// A number literal is always an integer
 			NumberLiteral: {
-				return INT_REF;
+				return createIntRef;
 
 			}
 			FloatNumberLiteral: {
-				return REAL_REF;
+				return createRealRef;
 
 			}
 			IteTermExpression: {
@@ -146,25 +151,22 @@ public class ImlTypeProvider {
 			}
 			
 			TruthValue: {
-				return BOOL_REF;
+				return createBoolRef;
 			}
 			LambdaExpression: {
-				var HigherOrderType d = null
+				var ImlType d = null
 				if (t.signature instanceof TupleType && (t.signature as TupleType).symbols.size === 1){
 					d = (t.signature as TupleType).symbols.get(0).type
 				} else {
 					d = t.signature
 				}
-				var retval = ImlFactory.eINSTANCE.createHigherOrderType
-				retval.domain =  clone(d);
+				var retval = ImlFactory.eINSTANCE.createFunctionType
+				retval.domain =  TypingServices.clone(d);
 				retval.range = (t.definition as SequenceTerm).^return.termExpressionType(context)
 				return retval
 			}
 			InstanceConstructor: {
 				return t.ref.type
-			}
-			ImplicitInstanceConstructor : {
-				return t.ref ;
 			}
 			TupleConstructor: {
 				return ImlFactory.eINSTANCE.createTupleType => [
@@ -180,23 +182,23 @@ public class ImlTypeProvider {
 				return t.sub.termExpressionType(context)
 			} 
 			QuantifiedFormula : {
-				return BOOL_REF
+				return createBoolRef
 			}
 			default: {
-				return NULL_REF
+				return createNullRef
 			}
 		}
 	}
 	
 	def static isEnumLiteral(Symbol s) {
-		val container = EcoreUtil2.getContainerOfType(s, ConstrainedType)
+		val container = EcoreUtil2.getContainerOfType(s, NamedType)
 		if (container !== null) {
 			return isLiteralOf(s, container)
 		}
 		return false
 	}
 
-	def static isLiteralOf(Symbol s, ConstrainedType t) {
+	def static isLiteralOf(Symbol s, NamedType t) {
 		for (TypeRestriction r : t.restrictions) {
 			if (r instanceof EnumRestriction) {
 				if (r.literals.contains(s)) {
@@ -217,34 +219,29 @@ public class ImlTypeProvider {
 				copy((symbolRef.eContainer as TermMemberSelection).receiver), symbolRefWithoutTail)
 		}
 		
-		return termExpressionType(symbolRefTerm, ImlCustomFactory.INST.createSimpleTypeReference(getContainerOfType(symbolRef, ConstrainedType)))
+		return termExpressionType(symbolRefTerm, ImlCustomFactory.INST.createSimpleTypeReference(getContainerOfType(symbolRef, NamedType)))
 	}
 
 	def static getSymbolReferenceType(SymbolReferenceTerm sr, SimpleTypeReference context) {
-		if (sr.symbol instanceof ConstrainedType) {
-			if (isAlias(sr.symbol as ConstrainedType)) {
-				return getAliasType(sr.symbol as ConstrainedType)
+		if (sr.symbol instanceof NamedType) {
+			if (isAlias(sr.symbol as NamedType)) {
+				return getAliasType(sr.symbol as NamedType)
 			} else {
 				// Reference to a literal
-				return createBasicType(sr.symbol as ConstrainedType)
+				return ImlCustomFactory.INST.createSimpleTypeReference(sr.symbol as NamedType)
 			}
 		} else if (sr.symbol.isEnumLiteral) {
 			// Accessing specific literal
-			return createBasicType(EcoreUtil2.getContainerOfType(sr.symbol, ConstrainedType))
+			return ImlCustomFactory.INST.createSimpleTypeReference(EcoreUtil2.getContainerOfType(sr.symbol, NamedType))
 		} else {
 			// Reference to a symbol
 			//Change this call to include type parameters
-			var term_type = getType(sr, context);
-		   	for (tail : sr.tails) {
-				term_type = accessTail(term_type, tail)
-			}
-				
-			return term_type
+			return getType(sr, context);
 		}
 		
 	}
 
-	def static accessTail(HigherOrderType type, SymbolReferenceTail tail) {
+	def static accessTail(ImlType type, ExpressionTail tail) {
 		if (tail instanceof ArrayAccess) {
 			if (type instanceof ArrayType) {
 				return accessArray(type as ArrayType, tail as ArrayAccess)
@@ -253,7 +250,7 @@ public class ImlTypeProvider {
 			}
 
 		} else { // Method invocation using Tuple
-			if (type.range !== null) {
+			if (type instanceof FunctionType) {
 				return type.range
 			}
 		}
@@ -289,7 +286,7 @@ public class ImlTypeProvider {
 		return type
 	}
 	
-	def static accessSymbolTail(SymbolReferenceTerm symbolRef, SymbolReferenceTail tail, SimpleTypeReference ctx) {
+	def static accessSymbolTail(SymbolReferenceTerm symbolRef, ExpressionTail tail, SimpleTypeReference ctx) {
 		val symbol = symbolRef.symbol;
 		if (symbol instanceof SymbolDeclaration) {
 //			val symbolType = getType(symbol.type, ctx)
@@ -299,7 +296,7 @@ public class ImlTypeProvider {
 	
 	// FIXME this is a temp implementation as we ignore SymbolDeclaration templates
 	// TODO do we need this? Why not getType(SymbolTermReference, SimpleTypeReference)?
-	def static HigherOrderType getType(SymbolDeclaration s, SimpleTypeReference ctx) {
+	def static ImlType getType(SymbolDeclaration s, SimpleTypeReference ctx) {
 		if (ImlUtil.isGlobalSymbol(s)) {
 			return s.type // Global symbols doesn't need binding with context
 		}
@@ -336,7 +333,7 @@ public class ImlTypeProvider {
 		}
 	}
 
-	def static HigherOrderType getType(SymbolReferenceTerm s, SimpleTypeReference context) {
+	def static ImlType getType(SymbolReferenceTerm s, SimpleTypeReference context) {
 		var ctx = context;
 		if (ctx === null) {
 			ctx = getSymbolRefContext(s) as SimpleTypeReference
@@ -350,7 +347,7 @@ public class ImlTypeProvider {
 				//TODO take care of type binding here
 				var retval = EcoreUtil.copy((s.symbol as SymbolDeclaration).type)
 				//replace all type parameters with the new ones
-				var ctmap = new HashMap<ConstrainedType,HigherOrderType>()	
+				var ctmap = new HashMap<NamedType,ImlType>()	
 				for(var i = 0; i < (s.symbol as SymbolDeclaration).typeParameter.size();i++){
 					ctmap.put((s.symbol as SymbolDeclaration).typeParameter.get(i),s.typeBinding.get(i))
 				}
@@ -400,9 +397,9 @@ public class ImlTypeProvider {
 					return termExpressionType(container.receiver) as SimpleTypeReference
 				}
 			}
-			ConstrainedType: {
+			NamedType: {
 				if (container.symbols.contains(symbolRef.symbol)) {
-					return createBasicType(container)
+					return ImlCustomFactory.INST.createSimpleTypeReference(container)
 				}
 				for (target : ImlUtil.getRelationTypes(container, Extension)) {
 					if (target.type instanceof SimpleTypeReference && (target.type as SimpleTypeReference).type.symbols.contains(symbolRef.symbol)) {
@@ -440,17 +437,17 @@ public class ImlTypeProvider {
 //		val tupleParent = EcoreUtil2.getContainerOfType(term, TupleConstructor)
 //		if (tupleParent !== null) {
 //			val srt = EcoreUtil2.getContainerOfType(tupleParent, SymbolReferenceTerm)
-//			if (srt !== null && srt.symbol instanceof ConstrainedType) {
-//				return srt.symbol as ConstrainedType
+//			if (srt !== null && srt.symbol instanceof NamedType) {
+//				return srt.symbol as NamedType
 //			}
 //		}
 	}
 
 	def static bind(SymbolReferenceTerm s, SimpleTypeReference ctx) {
 		if (ctx.type === null){
-			return (s.symbol as SymbolDeclaration).type
+			return TypingServices.clone((s.symbol as SymbolDeclaration).type)
 		}
-		var partialbind = new HashMap<ConstrainedType, HigherOrderType>();
+		var partialbind = new HashMap<NamedType, ImlType>();
 		for(var i =0 ; i < s.typeBinding.size() ; i++){
 			partialbind.put(s.symbol.typeParameter.get(i),s.typeBinding.get(i))
 		}
@@ -461,9 +458,9 @@ public class ImlTypeProvider {
 		ctx
 	}
 
-	def static bind(HigherOrderType t, SimpleTypeReference ctx) {
+	def static bind(ImlType t, SimpleTypeReference ctx) {
 		if (ctx === null) return t; // Precondition
-		var ctxbinds = new HashMap<ConstrainedType, HigherOrderType>();
+		var ctxbinds = new HashMap<NamedType, ImlType>();
 		if (ctx.typeBinding.size == ctx.type.typeParameter.size) {
 			for (i : 0 ..< ctx.type.typeParameter.size) {
 				ctxbinds.put(ctx.type.typeParameter.get(i), ctx.typeBinding.get(i))
@@ -473,8 +470,8 @@ public class ImlTypeProvider {
 		return remap(t, ctxbinds)
 	}
 	
-	def static bind(HigherOrderType t, Map<ConstrainedType, HigherOrderType> partialbind, SimpleTypeReference ctx) {
-		var ctxbinds = new HashMap<ConstrainedType, HigherOrderType>();
+	def static bind(ImlType t, Map<NamedType, ImlType> partialbind, SimpleTypeReference ctx) {
+		var ctxbinds = new HashMap<NamedType, ImlType>();
 		ctxbinds.putAll(partialbind)
 		if (ctx.typeBinding.size == ctx.type.typeParameter.size) {
 			for (i : 0 ..< ctx.type.typeParameter.size) {
@@ -485,13 +482,16 @@ public class ImlTypeProvider {
 		return remap(t, ctxbinds)
 	}
 
-	def static HigherOrderType remap(HigherOrderType t, Map<ConstrainedType, HigherOrderType> map) {
+	def static ImlType remap(ImlType t, Map<NamedType, ImlType> map) {
+//		if (map.isEmpty) { // TODO test this throughly to avoid removing t from its eContainer to another one
+//			return t
+//		}
 		switch (t) {
 			ArrayType: {
 				var retval = ImlFactory.eINSTANCE.createArrayType;
 				retval.type = remap(t.type, map)
 				for (d : t.dimensions) {
-					// TODO : Should we clone the term expressions?
+					// TODO : Should we TypingServices.clone the term expressions?
 					retval.dimensions.add(ImlFactory::eINSTANCE.createOptionalTermExpr => [
 						term = ImlFactory::eINSTANCE.createNumberLiteral => [value = 0];
 					])
@@ -500,7 +500,7 @@ public class ImlTypeProvider {
 			}
 			SimpleTypeReference: {
 				if (map.containsKey(t.type)) {
-					return clone(map.get(t.type))					
+					return TypingServices.clone(map.get(t.type))					
 				}
 				var retval = ImlFactory.eINSTANCE.createSimpleTypeReference;
 				retval.type = t.type
@@ -508,9 +508,9 @@ public class ImlTypeProvider {
 					if (h instanceof SimpleTypeReference) {
 						if ((h as SimpleTypeReference).typeBinding.size === 0) {
 							if (map.containsKey(h.type)) {
-								retval.typeBinding.add(clone(map.get(h.type)))
+								retval.typeBinding.add(TypingServices.clone(map.get(h.type)))
 							} else {
-								retval.typeBinding.add(clone(h))
+								retval.typeBinding.add(TypingServices.clone(h))
 							}
 						} else {
 							retval.typeBinding.add(remap(h, map))
@@ -531,8 +531,8 @@ public class ImlTypeProvider {
 				}
 				return retval;
 			}
-			default: {
-				var retval = ImlFactory.eINSTANCE.createHigherOrderType;
+			FunctionType: { // Function type
+				var retval = ImlFactory.eINSTANCE.createFunctionType;
 				retval.domain = remap(t.domain, map)
 				if (t.range !== null) {
 					retval.range = remap(t.range, map)
@@ -544,15 +544,10 @@ public class ImlTypeProvider {
 
 	def static boolean isPolymorphic(Symbol s){
 		switch(s){
-			ConstrainedType : { return s.typeParameter.size > 0 }
+			NamedType : { return s.typeParameter.size > 0 }
 			SymbolDeclaration : { return s.typeParameter.size > 0 }
 			default:
 				return false
 		}
 	}
-
-	def static HigherOrderType ct2hot(ConstrainedType type) {
-		return createBasicType(type)
-	}
-
 }

@@ -5,11 +5,10 @@ import com.utc.utrc.hermes.iml.iml.Assertion;
 import com.utc.utrc.hermes.iml.iml.AtomicExpression;
 import com.utc.utrc.hermes.iml.iml.CardinalityRestriction;
 import com.utc.utrc.hermes.iml.iml.CaseTermExpression;
-import com.utc.utrc.hermes.iml.iml.ConstrainedType;
+import com.utc.utrc.hermes.iml.iml.NamedType;
 import com.utc.utrc.hermes.iml.iml.EnumRestriction;
 import com.utc.utrc.hermes.iml.iml.FolFormula;
-import com.utc.utrc.hermes.iml.iml.HigherOrderType;
-import com.utc.utrc.hermes.iml.iml.ImplicitInstanceConstructor;
+import com.utc.utrc.hermes.iml.iml.ImlType;
 import com.utc.utrc.hermes.iml.iml.Import;
 import com.utc.utrc.hermes.iml.iml.IteTermExpression;
 import com.utc.utrc.hermes.iml.iml.Model;
@@ -21,6 +20,7 @@ import com.utc.utrc.hermes.iml.iml.SignedAtomicFormula;
 import com.utc.utrc.hermes.iml.iml.SimpleTypeReference;
 import com.utc.utrc.hermes.iml.iml.SymbolDeclaration;
 import com.utc.utrc.hermes.iml.iml.SymbolReferenceTerm;
+import com.utc.utrc.hermes.iml.iml.TailedExpression;
 import com.utc.utrc.hermes.iml.iml.TermMemberSelection;
 import com.utc.utrc.hermes.iml.iml.TupleConstructor;
 import com.utc.utrc.hermes.iml.iml.TypeWithProperties;
@@ -40,7 +40,7 @@ public abstract class AbstractModelVisitor implements IModelVisitor {
 	}
 
 	@Override
-	public void visit(ConstrainedType e) {
+	public void visit(NamedType e) {
 		// TODO Auto-generated method stub
 
 	}
@@ -100,7 +100,7 @@ public abstract class AbstractModelVisitor implements IModelVisitor {
 	}
 
 	@Override
-	public void visit(HigherOrderType e) {
+	public void visit(ImlType e) {
 		// TODO Auto-generated method stub
 
 	}
@@ -140,11 +140,11 @@ public abstract class AbstractModelVisitor implements IModelVisitor {
 		// TODO Auto-generated method stub
 
 	}
-
+	
 	@Override
-	public void visit(ImplicitInstanceConstructor e) {
+	public void visit(TailedExpression e) {
 		// TODO Auto-generated method stub
-
+		
 	}
 
 	@Override

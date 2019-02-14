@@ -12,7 +12,7 @@ import com.google.inject.Inject
 import org.junit.Test
 import com.utc.utrc.hermes.iml.iml.ImlPackage
 import static com.utc.utrc.hermes.iml.validation.ImlValidator.*
-import com.utc.utrc.hermes.iml.iml.ConstrainedType
+import com.utc.utrc.hermes.iml.iml.NamedType
 import com.utc.utrc.hermes.iml.iml.SimpleTypeReference
 import static extension org.junit.Assert.*
 
@@ -54,7 +54,7 @@ class ImlValidatorTest {
 			type T2;
 			
 		'''.parse
-		model.assertError(ImlPackage.eINSTANCE.constrainedType, DUPLICATE_ELEMENT)
+		model.assertError(ImlPackage.eINSTANCE.namedType, DUPLICATE_ELEMENT)
 	}
 	
 	@Test
@@ -113,11 +113,11 @@ class ImlValidatorTest {
 		model2.assertNoErrors
 		// Check if shadowing work
 		val model1T = model1.findSymbol("T1")
-		val model1Ref = ((model1.findSymbol("x") as ConstrainedType).findSymbol("varx").type as SimpleTypeReference).type
+		val model1Ref = ((model1.findSymbol("x") as NamedType).findSymbol("varx").type as SimpleTypeReference).type
 		assertSame(model1T, model1Ref)
 		
 		val model2T = model2.findSymbol("T1")
-		val model2Ref = ((model2.findSymbol("x") as ConstrainedType).findSymbol("varx").type as SimpleTypeReference).type
+		val model2Ref = ((model2.findSymbol("x") as NamedType).findSymbol("varx").type as SimpleTypeReference).type
 		assertSame(model2T, model2Ref)
 		assertNotSame(model1Ref, model2Ref)
 	}
@@ -158,7 +158,7 @@ class ImlValidatorTest {
 			package p;
 			type T1 <T, T>;
 		'''.parse
-		model.assertError(ImlPackage.eINSTANCE.constrainedType, DUPLICATE_ELEMENT)
+		model.assertError(ImlPackage.eINSTANCE.namedType, DUPLICATE_ELEMENT)
 	}
 	
 	/*****************************
@@ -247,7 +247,7 @@ class ImlValidatorTest {
 			type T2 extends (T1);
 		'''.parse
 		
-		model.assertError(ImlPackage.eINSTANCE.constrainedType, CYCLIC_CONSTRAINEDTYPE_HIERARCHY)
+		model.assertError(ImlPackage.eINSTANCE.namedType, CYCLIC_NAMEDTYPE_HIERARCHY)
 	}
 	
 	@Test
@@ -260,7 +260,7 @@ class ImlValidatorTest {
 			type T3 extends (T1);
 		'''.parse
 		
-		model.assertError(ImlPackage.eINSTANCE.constrainedType, CYCLIC_CONSTRAINEDTYPE_HIERARCHY)
+		model.assertError(ImlPackage.eINSTANCE.namedType, CYCLIC_NAMEDTYPE_HIERARCHY)
 	}
 	
 	
@@ -328,7 +328,7 @@ class ImlValidatorTest {
 			}
 		'''.parse
 		
-		model.assertError(ImlPackage.eINSTANCE.symbolReferenceTerm, METHOD_INVOCATION_ON_VARIABLE)
+		model.assertError(ImlPackage.eINSTANCE.tailedExpression, METHOD_INVOCATION_ON_NAMEDTYPE)
 	}
 	
 	@Test
@@ -343,7 +343,7 @@ class ImlValidatorTest {
 			}
 		'''.parse
 		
-		model.assertError(ImlPackage.eINSTANCE.symbolReferenceTerm, METHOD_INVOCATION_ON_ARRAY)
+		model.assertError(ImlPackage.eINSTANCE.tailedExpression, METHOD_INVOCATION_ON_ARRAY)
 	}
 	
 	@Test
@@ -358,7 +358,7 @@ class ImlValidatorTest {
 			}
 		'''.parse
 		
-		model.assertError(ImlPackage.eINSTANCE.symbolReferenceTerm, METHOD_INVOCATION_ON_TUPLE)
+		model.assertError(ImlPackage.eINSTANCE.tailedExpression, METHOD_INVOCATION_ON_TUPLE)
 	}
 	
 	
@@ -374,7 +374,7 @@ class ImlValidatorTest {
 			}
 		'''.parse
 		
-		model.assertError(ImlPackage.eINSTANCE.symbolReferenceTerm, INVALID_INDEX_ACCESS)
+		model.assertError(ImlPackage.eINSTANCE.tailedExpression, INVALID_INDEX_ACCESS)
 	}
 	
 	@Test
@@ -402,7 +402,7 @@ class ImlValidatorTest {
 				var2 : Real := var1[10];
 			}
 		'''.parse
-		model.assertError(ImlPackage.eINSTANCE.symbolReferenceTerm, ARRAY_ACCESS_ON_HOT)
+		model.assertError(ImlPackage.eINSTANCE.tailedExpression, ARRAY_ACCESS_ON_HOT)
 	}
 	
 	@Test
@@ -416,7 +416,7 @@ class ImlValidatorTest {
 				var2 : Real := var1(5, 6);
 			}
 		'''.parse
-		model.assertError(ImlPackage.eINSTANCE.symbolReferenceTerm, INVALID_PARAMETER_LIST)
+		model.assertError(ImlPackage.eINSTANCE.tailedExpression, INVALID_PARAMETER_LIST)
 	}
 	
 	@Test
@@ -430,7 +430,7 @@ class ImlValidatorTest {
 				var2 : Real := var1(5);
 			}
 		'''.parse
-		model.assertError(ImlPackage.eINSTANCE.symbolReferenceTerm, INVALID_PARAMETER_LIST)
+		model.assertError(ImlPackage.eINSTANCE.tailedExpression, INVALID_PARAMETER_LIST)
 	}
 	
 	@Test
@@ -443,7 +443,7 @@ class ImlValidatorTest {
 				var1 : Real := Real[10];
 			}
 		'''.parse
-		model.assertError(ImlPackage.eINSTANCE.symbolReferenceTerm, METHOD_INVOCATION_ON_CONSTRAINEDTYPE)
+		model.assertError(ImlPackage.eINSTANCE.tailedExpression, METHOD_INVOCATION_ON_NAMEDTYPE)
 	}
 	
 	@Test
@@ -456,7 +456,7 @@ class ImlValidatorTest {
 				var1 : Real := Real(10);
 			}
 		'''.parse
-		model.assertError(ImlPackage.eINSTANCE.symbolReferenceTerm, METHOD_INVOCATION_ON_CONSTRAINEDTYPE)
+		model.assertError(ImlPackage.eINSTANCE.tailedExpression, METHOD_INVOCATION_ON_NAMEDTYPE)
 	}
 	
 	@Test
@@ -501,7 +501,7 @@ class ImlValidatorTest {
 				v1 : Int := f1(10, 5.5);
 			}
 		'''.parse
-		model.assertError(ImlPackage.eINSTANCE.symbolReferenceTerm, INVALID_PARAMETER_LIST)
+		model.assertError(ImlPackage.eINSTANCE.tailedExpression, INVALID_PARAMETER_LIST)
 	}
 	
 	/**********************************************
@@ -660,7 +660,7 @@ class ImlValidatorTest {
 			type T2;
 			type T3 is T1 is T2;
 		'''.parse
-		model.assertError(ImlPackage.eINSTANCE.constrainedType, INVALID_TYPE_DECLARATION)
+		model.assertError(ImlPackage.eINSTANCE.namedType, INVALID_TYPE_DECLARATION)
 	 }
 	 
 	 /*********************

@@ -9,7 +9,7 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 
-import com.utc.utrc.hermes.iml.iml.ConstrainedType;
+import com.utc.utrc.hermes.iml.iml.NamedType;
 import com.utc.utrc.hermes.iml.iml.Model;
 import com.utc.utrc.hermes.iml.iml.Symbol;
 import com.utc.utrc.hermes.iml.iml.SymbolDeclaration;
@@ -52,12 +52,12 @@ public class StandardLibProvider {
 	
 	
 	
-	public ConstrainedType getImlType(String qname) {
+	public NamedType getImlType(String qname) {
 		String pkg = qname.substring(0, qname.lastIndexOf('.')) ;
 		String name = qname.substring(qname.lastIndexOf('.')+1) ;
 		if (iml_symbols.containsKey(pkg)) {
-			if (iml_symbols.get(pkg).get(name) instanceof ConstrainedType) {
-				return (ConstrainedType) iml_symbols.get(pkg).get(name) ;
+			if (iml_symbols.get(pkg).get(name) instanceof NamedType) {
+				return (NamedType) iml_symbols.get(pkg).get(name) ;
 			}
 		}
 		return null;

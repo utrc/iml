@@ -6,8 +6,8 @@ package com.utc.utrc.hermes.iml
 import com.google.inject.Binder
 import org.eclipse.xtext.scoping.impl.AbstractDeclarativeScopeProvider
 import com.utc.utrc.hermes.iml.scoping.ImlImportedNamespaceAwareLocalScopeProvider
-
-
+import org.eclipse.xtext.validation.CompositeEValidator
+import com.google.inject.name.Names
 
 /**
  * Use this class to register components to be used at runtime / without the Equinox extension registry.
@@ -20,6 +20,8 @@ class ImlRuntimeModule extends AbstractImlRuntimeModule {
 						com.google.inject.name.Names
 								.named(AbstractDeclarativeScopeProvider.NAMED_DELEGATE))
 				.to(ImlImportedNamespaceAwareLocalScopeProvider);
+				
+		binder.bind(boolean).annotatedWith(Names.named((CompositeEValidator.USE_EOBJECT_VALIDATOR))).toInstance(false)
 	}
 	
 }

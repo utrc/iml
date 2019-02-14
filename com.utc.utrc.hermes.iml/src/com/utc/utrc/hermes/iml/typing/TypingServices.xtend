@@ -1,115 +1,33 @@
 package com.utc.utrc.hermes.iml.typing
 
-import com.utc.utrc.hermes.iml.iml.HigherOrderType
-import com.utc.utrc.hermes.iml.iml.ImlFactory
-import com.utc.utrc.hermes.iml.iml.ConstrainedType
-import com.utc.utrc.hermes.iml.iml.ArrayType
-import com.utc.utrc.hermes.iml.iml.SimpleTypeReference
-import com.utc.utrc.hermes.iml.iml.TupleType
-import com.utc.utrc.hermes.iml.iml.PropertyList
-import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
-import java.util.List
-import java.util.ArrayList
-import com.utc.utrc.hermes.iml.iml.TermExpression
-import com.utc.utrc.hermes.iml.iml.NumberLiteral
-import com.utc.utrc.hermes.iml.iml.FloatNumberLiteral
-import com.utc.utrc.hermes.iml.iml.Symbol
-import org.eclipse.emf.ecore.EObject
-import com.utc.utrc.hermes.iml.iml.Model
-import static extension com.utc.utrc.hermes.iml.typing.ImlTypeProvider.*
-import com.utc.utrc.hermes.iml.iml.Alias
-import com.utc.utrc.hermes.iml.iml.TraitExhibition
-import com.utc.utrc.hermes.iml.iml.ImplicitInstanceConstructor
-import org.eclipse.emf.ecore.util.EcoreUtil
 import com.utc.utrc.hermes.iml.custom.ImlCustomFactory
+import com.utc.utrc.hermes.iml.iml.Alias
+import com.utc.utrc.hermes.iml.iml.ArrayType
+import com.utc.utrc.hermes.iml.iml.Extension
+import com.utc.utrc.hermes.iml.iml.FunctionType
+import com.utc.utrc.hermes.iml.iml.ImlFactory
+import com.utc.utrc.hermes.iml.iml.ImlType
+import com.utc.utrc.hermes.iml.iml.NamedType
+import com.utc.utrc.hermes.iml.iml.PropertyList
+import com.utc.utrc.hermes.iml.iml.SimpleTypeReference
+import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
+import com.utc.utrc.hermes.iml.iml.TraitExhibition
+import com.utc.utrc.hermes.iml.iml.TupleType
+import java.util.ArrayList
+import java.util.List
+import org.eclipse.emf.ecore.EObject
+import org.eclipse.emf.ecore.util.EcoreUtil
+
 import static extension com.utc.utrc.hermes.iml.lib.ImlStdLib.*
 
 public class TypingServices {
 
-	def static createBasicType(String n) {
-		val ret = ImlFactory::eINSTANCE.createSimpleTypeReference => [
-			type = ImlFactory::eINSTANCE.createConstrainedType => [name = n]
-		];
-		return ret
-	}
-
-	def static createBasicType(ConstrainedType t) {
-		val ret = ImlFactory::eINSTANCE.createSimpleTypeReference => [
-			type = t
-		];
-		return ret
+	def static <T extends EObject> T clone(T eObject) {
+	  	return EcoreUtil.copy(eObject)
 	}
 
 
-	def static SimpleTypeReference createSimpleTypeRef(ConstrainedType t) {
-		ImlFactory::eINSTANCE.createSimpleTypeReference => [
-			type = t
-		]
-	}
-
-	def static clone(PropertyList pl) {
-		var ret = ImlFactory::eINSTANCE.createPropertyList;
-		for (p : pl.properties) {
-			ret.properties.add(clone(p))
-		}
-	}
-
-	def static clone(ImplicitInstanceConstructor c){
-		var ret = ImlFactory::eINSTANCE.createProperty
-		ret.ref = clone(c.ref)
-		ret.definition = EcoreUtil.copy(c.definition)
-		return ret
-	}
-
-	// TODO Are we going to have cloning functions for everything?
-	// What do we actually need to clone? What can instead just
-	// be copied as reference?
-	def static clone(SymbolDeclaration v) {
-		var ret = ImlFactory::eINSTANCE.createSymbolDeclaration;
-		// Following added By Ayman for 4-higher-order-types-only
-		ret.name = v.name
-		// TODO Do we need to copy the property list?
-		ret.type = clone(v.type)
-		// TODO What to do with the definition?
-		return ret
-	}
-
-	def static HigherOrderType clone(HigherOrderType other) {
-		return EcoreUtil.copy(other)
-
-	}
-
-	def static clone(SimpleTypeReference tr) {
-		var ret = ImlFactory::eINSTANCE.createSimpleTypeReference();
-		ret.type = tr.type;
-		for (t : tr.typeBinding) {
-			ret.typeBinding.add(clone(t))
-		}
-		return ret;
-	}
-
-	def static clone(TupleType tt) {
-		var ret = ImlFactory::eINSTANCE.createTupleType();
-
-		for (s : tt.symbols) {
-			ret.symbols.add(clone(s))
-		}
-		return ret
-	}
-
-	def static clone(ArrayType at) {
-		var ret = ImlFactory::eINSTANCE.createArrayType();
-		ret.type = clone(at.type)
-		for (d : at.dimensions) {
-			// TODO : Should we clone the term expressions?
-			ret.dimensions.add(ImlFactory::eINSTANCE.createOptionalTermExpr => [
-				term = ImlFactory::eINSTANCE.createNumberLiteral => [value = 0];
-			])
-		}
-		return ret
-	}
-
-	def static HigherOrderType accessArray(ArrayType type, int dim) {
+	def static ImlType accessArray(ArrayType type, int dim) {
 		if (dim == type.dimensions.size) {
 			return type.type
 		} else {
@@ -127,7 +45,7 @@ public class TypingServices {
 		}
 	}
 	
-	def static boolean isEqual(HigherOrderType left, HigherOrderType right) {
+	def static boolean isEqual(ImlType left, ImlType right) {
 		// We almost always wants to resolve aliases
 		return isEqual(resolveAliases(left), resolveAliases(right), false);
 	}
@@ -135,7 +53,7 @@ public class TypingServices {
 	/**
 	 * Check whether two type are the same or at least are compatible if compatiblityCheck was true
 	 */
-	def static boolean isEqual(HigherOrderType left, HigherOrderType right, boolean compatibilityCheck) {
+	def static boolean isEqual(ImlType left, ImlType right, boolean compatibilityCheck) {
 		if (left === null && right === null) {
 			return true
 		} else if (left === null || right === null) {
@@ -171,14 +89,17 @@ public class TypingServices {
 				return false
 			}
 		}
-
-		if (!isEqual(left.domain, right.domain, compatibilityCheck)) {
-			return false
+		
+		if (left instanceof FunctionType) {
+			if (!isEqual(left.domain, (right as FunctionType).domain, compatibilityCheck)) {
+				return false
+			}
+	
+			if (!isEqual(left.range, (right as FunctionType).range, compatibilityCheck)) {
+				return false
+			}
 		}
-
-		if (!isEqual(left.range, right.range, compatibilityCheck)) {
-			return false
-		}
+		
 
 		return true
 	}
@@ -263,14 +184,14 @@ public class TypingServices {
 	}
 
 	// Checks whether two types are equal
-	def static boolean isEqual(ConstrainedType left, ConstrainedType right) {
+	def static boolean isEqual(NamedType left, NamedType right) {
 		if (left == right)
 			return true;
 		return false;
 	}
 
 	// TODO 
-	def static getAllDeclarations(HigherOrderType ctx) {
+	def static getAllDeclarations(ImlType ctx) {
 		var List<SymbolDeclaration> tlist = <SymbolDeclaration>newArrayList()
 		var List<List<SimpleTypeReference>> hierarchy = ctx.allSuperTypes;
 		for (level : hierarchy) {
@@ -287,12 +208,12 @@ public class TypingServices {
 	}
 
 	/* Compute all super types of a ContrainedType  */
-	def static getAllSuperTypes(ConstrainedType ct) {
-		getSuperTypes(createSimpleTypeRef(ct)).map[it.map[it.type]]
+	def static getAllSuperTypes(NamedType ct) {
+		getSuperTypes(ImlCustomFactory.INST.createSimpleTypeReference(ct)).map[it.map[it.type]]
 	}
 
 	/* Compute all super type references of a TypeReference */
-	def static getAllSuperTypes(HigherOrderType hot) {
+	def static getAllSuperTypes(ImlType hot) {
 		if (hot instanceof SimpleTypeReference) {
 			return getSuperTypes(hot)
 		} else {
@@ -301,7 +222,7 @@ public class TypingServices {
 	}
 
 	def static getSuperTypes(SimpleTypeReference tf) {
-		val closed = <ConstrainedType>newArrayList()
+		val closed = <NamedType>newArrayList()
 		val retVal = new ArrayList<List<SimpleTypeReference>>()
 		retVal.add(new ArrayList<SimpleTypeReference>());
 		retVal.get(0).add(tf); // A type is a super type of itself
@@ -311,7 +232,7 @@ public class TypingServices {
 			for (current : retVal.get(index)) {
 				val ctype = current.type
 				if (ctype.relations != null) {
-					for (rel : ctype.relations.filter(com.utc.utrc.hermes.iml.iml.Extension)) {
+					for (rel : ctype.relations.filter(Extension)) {
 							for(twp : rel.extensions){
 							if (twp.type instanceof SimpleTypeReference) {
 								if (! closed.contains((twp.type as SimpleTypeReference).type)) {
@@ -354,23 +275,23 @@ public class TypingServices {
 
 	/* Check if two types are compatible or not
 	 * */
-	def static boolean isCompatible(HigherOrderType expected, HigherOrderType actual) {
+	def static boolean isCompatible(ImlType expected, ImlType actual) {
 		return isEqual(resolveAliases(expected), resolveAliases(actual), true)
 	}
 
-	def static isSingleElementTuple(HigherOrderType type) {
+	def static isSingleElementTuple(ImlType type) {
 		return type instanceof TupleType && (type as TupleType).symbols.size == 0
 	}
 
 	/* A non-template type without stereotype is a pure type */
-	def static boolean isPureType(HigherOrderType t) {
+	def static boolean isPureType(ImlType t) {
 		if (t instanceof SimpleTypeReference && (t as SimpleTypeReference).typeBinding.size == 0) {
 			return true;
 		}
 		return false;
 	}
 	
-	def static boolean isAlias(ConstrainedType t) {
+	def static boolean isAlias(NamedType t) {
 		if (t.relations.filter(Alias).size > 0) {
 			return true
 		}
@@ -379,10 +300,10 @@ public class TypingServices {
 	def static boolean isAlias(SimpleTypeReference r){
 		return r.type.isAlias
 	}
-	def static getAliasType(ConstrainedType type) {
-		com.utc.utrc.hermes.iml.typing.TypingServices.getAliasType(ImlCustomFactory.INST.createSimpleTypeReference(type))
+	def static getAliasType(NamedType type) {
+		TypingServices.getAliasType(ImlCustomFactory.INST.createSimpleTypeReference(type))
 	}
-	def static HigherOrderType getAliasType(SimpleTypeReference r){
+	def static ImlType getAliasType(SimpleTypeReference r){
 		if (r.isAlias){
 			var alias = r.type.relations.filter(Alias).get(0).type.type
 			return ImlTypeProvider.bind(alias,r)
@@ -390,17 +311,17 @@ public class TypingServices {
 		return r // if it is not alias return the original type
 	}
 	
-	def static HigherOrderType resolveAliases(HigherOrderType type) {
+	def static ImlType resolveAliases(ImlType type) {
 		if (type instanceof SimpleTypeReference) {
 			if (type.isAlias) {
-				return com.utc.utrc.hermes.iml.typing.TypingServices.resolveAliases(com.utc.utrc.hermes.iml.typing.TypingServices.getAliasType(type))
+				return TypingServices.resolveAliases(TypingServices.getAliasType(type))
 			} else {
 				return type
 			}
 		}
 		if (type instanceof TupleType) {
 			return ImlCustomFactory.INST.createTupleType(type.symbols.map[
-				ImlCustomFactory.INST.createSymbolDeclaration(it.name, clone(com.utc.utrc.hermes.iml.typing.TypingServices.resolveAliases(it.type)))	
+				ImlCustomFactory.INST.createSymbolDeclaration(it.name, clone(TypingServices.resolveAliases(it.type)))	
 			])
 		}
 		if (type instanceof ArrayType) {
@@ -409,15 +330,16 @@ public class TypingServices {
 				it.dimensions.addAll(type.dimensions.map[ImlCustomFactory.INST.createOptionalTermExpr])
 			]
 		}
-		return ImlCustomFactory.INST.createHigherOrderType => [
-			domain = clone(resolveAliases(type.domain))
-			range = clone(resolveAliases(type.range))
-		]
-		
+		if (type instanceof FunctionType) {
+			return ImlCustomFactory.INST.createFunctionType => [
+				domain = clone(resolveAliases(type.domain))
+				range = clone(resolveAliases(type.range))
+			]
+		}
 	}
 	
 	/* Check whether a constrained type is a template  */
-	def static boolean isTemplate(ConstrainedType ct) {
+	def static boolean isTemplate(NamedType ct) {
 		return ct.template;
 	}
 
@@ -451,7 +373,7 @@ public class TypingServices {
 //		while (e !== null) {
 //			if (e instanceof Model) {
 //				s.insert(0, e.name.replace('.', '::') + '::');
-//			} else if (e instanceof ConstrainedType) {
+//			} else if (e instanceof NamedType) {
 //				s.insert(0, e.name + '::');
 //			}
 //			e = e.eContainer;
@@ -459,7 +381,7 @@ public class TypingServices {
 //		return s.toString
 //	}
 //
-//	def static isExtension(ConstrainedType t, String qname) {
+//	def static isExtension(NamedType t, String qname) {
 //		if (qualifiedName(t).equals(qname)) {
 //			return true;
 //		}
@@ -474,11 +396,11 @@ public class TypingServices {
 //		return false;
 //	}
 
-	def static isSimpleTR(HigherOrderType hot) {
+	def static isSimpleTR(ImlType hot) {
 		return hot instanceof SimpleTypeReference
 	}
 
-	def static asSimpleTR(HigherOrderType hot) {
+	def static asSimpleTR(ImlType hot) {
 		if (isSimpleTR(hot)) {
 			return hot as SimpleTypeReference
 		}

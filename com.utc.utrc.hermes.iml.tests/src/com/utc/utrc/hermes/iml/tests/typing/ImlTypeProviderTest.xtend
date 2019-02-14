@@ -1,32 +1,30 @@
 package com.utc.utrc.hermes.iml.tests.typing
 
-import org.junit.runner.RunWith
-import org.eclipse.xtext.testing.XtextRunner
-import com.utc.utrc.hermes.iml.tests.ImlInjectorProvider
-import org.eclipse.xtext.testing.InjectWith
 import com.google.inject.Inject
-import org.eclipse.xtext.testing.util.ParseHelper
-import com.utc.utrc.hermes.iml.iml.Model
-import org.junit.Test
-import static org.junit.Assert.*
-import org.eclipse.xtext.testing.validation.ValidationTestHelper
-import com.utc.utrc.hermes.iml.tests.TestHelper
-import com.utc.utrc.hermes.iml.typing.TypingServices
-import com.utc.utrc.hermes.iml.iml.ConstrainedType
-import com.utc.utrc.hermes.iml.typing.ImlTypeProvider
-import com.utc.utrc.hermes.iml.iml.HigherOrderType
-import com.utc.utrc.hermes.iml.iml.SimpleTypeReference
-import com.utc.utrc.hermes.iml.iml.TupleType
 import com.utc.utrc.hermes.iml.iml.ArrayType
-import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
-import com.utc.utrc.hermes.iml.iml.ImplicitInstanceConstructor
-import com.utc.utrc.hermes.iml.iml.LambdaExpression
-import com.utc.utrc.hermes.iml.iml.SequenceTerm
+import com.utc.utrc.hermes.iml.iml.FunctionType
+import com.utc.utrc.hermes.iml.iml.ImlType
 import com.utc.utrc.hermes.iml.iml.IteTermExpression
-import com.utc.utrc.hermes.iml.iml.TermMemberSelection
+import com.utc.utrc.hermes.iml.iml.LambdaExpression
+import com.utc.utrc.hermes.iml.iml.Model
+import com.utc.utrc.hermes.iml.iml.NamedType
+import com.utc.utrc.hermes.iml.iml.SequenceTerm
+import com.utc.utrc.hermes.iml.iml.SimpleTypeReference
+import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
+import com.utc.utrc.hermes.iml.iml.TupleType
+import com.utc.utrc.hermes.iml.tests.ImlInjectorProvider
+import com.utc.utrc.hermes.iml.tests.TestHelper
+import com.utc.utrc.hermes.iml.typing.ImlTypeProvider
+import com.utc.utrc.hermes.iml.typing.TypingServices
+import org.eclipse.xtext.testing.InjectWith
+import org.eclipse.xtext.testing.XtextRunner
+import org.eclipse.xtext.testing.util.ParseHelper
+import org.eclipse.xtext.testing.validation.ValidationTestHelper
+import org.junit.Test
+import org.junit.runner.RunWith
 
 import static com.utc.utrc.hermes.iml.lib.ImlStdLib.*
-import com.utc.utrc.hermes.iml.services.ImlGrammarAccess.SymbolDeclarationElements
+import static org.junit.Assert.*
 
 /**
  * Test related helper methods
@@ -44,30 +42,30 @@ class ImlTypeProviderTest {
 	
 	@Test
 	def testTermExpressionType_withAddition_int() {
-		assertFormulaType("5 + 6", "Int", INT_REF);
+		assertFormulaType("5 + 6", "Int", createIntRef);
 	}
 	
 	@Test
 	def testTermExpressionType_withAddition_real() {
-		assertFormulaType("5 * 6.5", "Real", REAL_REF);
+		assertFormulaType("5 * 6.5", "Real", createRealRef);
 	}
 	
 	@Test
 	def testTermExpressionType_withAddition_realDiv() {
-		assertFormulaType("5 / 6", "Real",REAL_REF);
+		assertFormulaType("5 / 6", "Real",createRealRef);
 	}
 	
 	@Test
 	def testTermExpressionType_withAddition_boolean() {
-		assertFormulaType("5 = 6", "Bool", BOOL_REF);
+		assertFormulaType("5 = 6", "Bool", createBoolRef);
 	}
 	
 	@Test
 	def testTermExpressionType_withAnd_boolean() {
-		assertFormulaType("true && false", "Bool", BOOL_REF);
+		assertFormulaType("true && false", "Bool", createBoolRef);
 	}
 	
-	def assertFormulaType(String formula, String declaredType, HigherOrderType type) {
+	def assertFormulaType(String formula, String declaredType, ImlType type) {
 		val model = '''
 			package p;
 			type Int;
@@ -80,11 +78,11 @@ class ImlTypeProviderTest {
 		'''.parse
 		model.assertNoErrors
 		
-		var t1 = model.findSymbol("t1") as ConstrainedType
+		var t1 = model.findSymbol("t1") as NamedType
 		val var1 = t1.findSymbol("var1") 
 		val folForm = var1.definition
 		
-		assertEquals(ImlTypeProvider.termExpressionType(folForm), type)
+		assertTrue(TypingServices.isEqual(ImlTypeProvider.termExpressionType(folForm), type))
 		
 	}
 	
@@ -104,14 +102,14 @@ class ImlTypeProviderTest {
 		'''.parse
 		model.assertNoErrors
 		
-		var t1 = model.findSymbol("t1") as ConstrainedType
-		var t2 = model.findSymbol("t2") as ConstrainedType
+		var t1 = model.findSymbol("t1") as NamedType
+		var t2 = model.findSymbol("t2") as NamedType
 		val var1 = t1.findSymbol("var1") 
 		val folForm = var1.definition
 		
 		val exprType = ImlTypeProvider.termExpressionType(folForm)
 		
-		assertEquals((exprType as SimpleTypeReference).type, t2)
+		assertTrue(TypingServices.isEqual((exprType as SimpleTypeReference).type, t2))
 	}
 	
 	@Test
@@ -132,8 +130,8 @@ class ImlTypeProviderTest {
 		'''.parse
 		model.assertNoErrors
 		
-		var t1 = model.findSymbol("t1") as ConstrainedType
-		var intType = model.findSymbol("Int") as ConstrainedType
+		var t1 = model.findSymbol("t1") as NamedType
+		var intType = model.findSymbol("Int") as NamedType
 		val var1 = t1.findSymbol("var1") 
 		val folForm = var1.definition
 		
@@ -163,8 +161,8 @@ class ImlTypeProviderTest {
 		'''.parse
 		model.assertNoErrors
 		
-		var t1 = model.findSymbol("t1") as ConstrainedType
-		var intType = model.findSymbol("Int") as ConstrainedType
+		var t1 = model.findSymbol("t1") as NamedType
+		var intType = model.findSymbol("Int") as NamedType
 		val folForm = t1.findSymbol("var1").definition
 		
 		val exprType = ImlTypeProvider.termExpressionType(folForm)
@@ -185,8 +183,8 @@ class ImlTypeProviderTest {
 		'''.parse
 		model.assertNoErrors
 		
-		var t1 = model.findSymbol("t1") as ConstrainedType
-		var intType = model.findSymbol("Int") as ConstrainedType
+		var t1 = model.findSymbol("t1") as NamedType
+		var intType = model.findSymbol("Int") as NamedType
 		val var1 = t1.findSymbol("var1") 
 		val folForm = var1.definition
 		
@@ -208,7 +206,7 @@ class ImlTypeProviderTest {
 		'''.parse
 		model.assertNoErrors
 		
-		var t1 = model.findSymbol("t1") as ConstrainedType
+		var t1 = model.findSymbol("t1") as NamedType
 		val var1 = t1.findSymbol("var1") 
 		val var2 = t1.findSymbol("var2") 
 		val folForm = var1.definition
@@ -219,7 +217,7 @@ class ImlTypeProviderTest {
 	} 
 	
 	@Test
-	def testTermExpressionType_HOTWithTemplate() {
+	def testTermExpressionType_FTWithTemplate() {
 		val model = '''
 			package p;
 			type Int;
@@ -235,18 +233,17 @@ class ImlTypeProviderTest {
 		'''.parse
 		model.assertNoErrors
 		
-		var t1 = model.findSymbol("t1") as ConstrainedType
+		var t1 = model.findSymbol("t1") as NamedType
 		val var1 = t1.findSymbol("var1") 
 		val Int = model.findSymbol("Int")
 		val Real = model.findSymbol("Real")
 		val folForm = var1.definition
 		val exprType = ImlTypeProvider.termExpressionType(folForm)
 
-		assertNotNull(exprType.domain)
-		assertNotNull(exprType.range)
-		val domain = exprType.domain as TupleType
+		assertTrue(exprType instanceof FunctionType)
+		val domain = (exprType as FunctionType).domain as TupleType
 		assertEquals(Int, (domain.symbols.get(0).type as SimpleTypeReference).type)
-		assertEquals(Real, (exprType.range as SimpleTypeReference).type)
+		assertEquals(Real, ((exprType as FunctionType).range as SimpleTypeReference).type)
 	}
 	
 	@Test
@@ -268,7 +265,7 @@ class ImlTypeProviderTest {
 		'''.parse
 		model.assertNoErrors
 		
-		var t1 = model.findSymbol("t1") as ConstrainedType
+		var t1 = model.findSymbol("t1") as NamedType
 		val var1 = t1.findSymbol("var1") 
 		val List = model.findSymbol("List")
 		val Int = model.findSymbol("Int")
@@ -298,7 +295,7 @@ class ImlTypeProviderTest {
 		'''.parse
 		model.assertNoErrors
 		
-		var t1 = model.findSymbol("t1") as ConstrainedType
+		var t1 = model.findSymbol("t1") as NamedType
 		val var1 = t1.findSymbol("var1") 
 		val Int = model.findSymbol("Int")
 		val Real = model.findSymbol("Real")
@@ -306,10 +303,9 @@ class ImlTypeProviderTest {
 		val exprType = (ImlTypeProvider.termExpressionType(folForm) as SimpleTypeReference)
 						.typeBinding.get(0)	
 			
-		assertNotNull(exprType.domain)
-		assertNotNull(exprType.range)
-		assertEquals(Int, (exprType.domain as SimpleTypeReference).type)
-		assertEquals(Real, (exprType.range as SimpleTypeReference).type)
+		assertTrue(exprType instanceof FunctionType)
+		assertEquals(Int, ((exprType as FunctionType).domain as SimpleTypeReference).type)
+		assertEquals(Real, ((exprType as FunctionType).range as SimpleTypeReference).type)
 	}
 	
 	@Test
@@ -335,7 +331,7 @@ class ImlTypeProviderTest {
 		'''.parse
 		model.assertNoErrors
 		
-		var t1 = model.findSymbol("t1") as ConstrainedType
+		var t1 = model.findSymbol("t1") as NamedType
 		val var1 = t1.findSymbol("var1") 
 		val List = model.findSymbol("List")
 		val Int = model.findSymbol("Int")
@@ -369,7 +365,7 @@ class ImlTypeProviderTest {
 		
 		model.assertNoErrors
 		
-		val x = (model.findSymbol("T3") as ConstrainedType).findSymbol("x") as SymbolDeclaration
+		val x = (model.findSymbol("T3") as NamedType).findSymbol("x") as SymbolDeclaration
 		val xExprType = ImlTypeProvider.termExpressionType(x.definition)
 		assertTrue(TypingServices.isEqual(xExprType, x.type))
 	}
@@ -386,12 +382,12 @@ class ImlTypeProviderTest {
 		'''.parse
 		
 		model.assertNoErrors
-		val t1 = model.findSymbol("t1") as ConstrainedType
+		val t1 = model.findSymbol("t1") as NamedType
 		val Int = model.findSymbol("Int")
 		val exprType = ImlTypeProvider.termExpressionType(t1.findSymbol("varx").definition)
 		
-		assertEquals(Int, (exprType.domain  as SimpleTypeReference).type)
-		assertEquals(BOOL_REF, exprType.range)
+		assertEquals(Int, ((exprType as FunctionType).domain  as SimpleTypeReference).type)
+		assertTrue(TypingServices.isEqual(createBoolRef, (exprType as FunctionType).range))
 	}
 	
 	@Test
@@ -406,12 +402,12 @@ class ImlTypeProviderTest {
 		'''.parse
 		
 		model.assertNoErrors
-		val t1 = model.findSymbol("t1") as ConstrainedType
+		val t1 = model.findSymbol("t1") as NamedType
 		val exprType = ImlTypeProvider.termExpressionType(t1.findSymbol("varx").definition)
 		val Int = model.findSymbol("Int")
 		
-		assertEquals(Int, (exprType.domain as SimpleTypeReference).type)
-		assertEquals(INT_REF, exprType.range)
+		assertEquals(Int, ((exprType as FunctionType).domain as SimpleTypeReference).type)
+		assertTrue(TypingServices.isEqual(createIntRef, (exprType as FunctionType).range))
 	}
 	
 	@Test
@@ -427,7 +423,7 @@ class ImlTypeProviderTest {
 		'''.parse
 		
 		model.assertNoErrors
-		val t1 = model.findSymbol("t1") as ConstrainedType
+		val t1 = model.findSymbol("t1") as NamedType
 		val var1 = t1.findSymbol("var1").type
 		val exprType = ImlTypeProvider.termExpressionType(t1.findSymbol("varx").definition)
 		
@@ -447,7 +443,7 @@ class ImlTypeProviderTest {
 		'''.parse
 		
 		model.assertNoErrors
-		val t1 = model.findSymbol("t1") as ConstrainedType
+		val t1 = model.findSymbol("t1") as NamedType
 		val Real = model.findSymbol("Real") 
 		val exprType = ImlTypeProvider.termExpressionType(t1.findSymbol("varx").definition)
 		
@@ -467,7 +463,7 @@ class ImlTypeProviderTest {
 		'''.parse
 		
 		model.assertNoErrors
-		val t1 = model.findSymbol("t1") as ConstrainedType
+		val t1 = model.findSymbol("t1") as NamedType
 		val exprType = ImlTypeProvider.termExpressionType(t1.findSymbol("varx").definition)
 		
 		assertTrue(exprType instanceof ArrayType)
@@ -487,7 +483,7 @@ class ImlTypeProviderTest {
 		'''.parse
 		
 		model.assertNoErrors
-		val t1 = model.findSymbol("t1") as ConstrainedType
+		val t1 = model.findSymbol("t1") as NamedType
 		val Real = model.findSymbol("Real")
 		val exprType = ImlTypeProvider.termExpressionType(t1.findSymbol("varx").definition)
 		
@@ -507,7 +503,7 @@ class ImlTypeProviderTest {
 		'''.parse
 		
 		model.assertNoErrors
-		val t1 = model.findSymbol("t1") as ConstrainedType
+		val t1 = model.findSymbol("t1") as NamedType
 		val Real = model.findSymbol("Real")
 		val exprType = ImlTypeProvider.termExpressionType(t1.findSymbol("varx").definition)
 		
@@ -528,14 +524,14 @@ class ImlTypeProviderTest {
 		
 		model.assertNoErrors
 		
-		val t1 = model.findSymbol("t1") as ConstrainedType
+		val t1 = model.findSymbol("t1") as NamedType
 		val exprType = ImlTypeProvider.termExpressionType(t1.findSymbol("varx").definition)
 		
 		assertTrue(exprType instanceof TupleType)
 		assertEquals(3, (exprType as TupleType).symbols.size)
-		assertEquals(INT_REF, (exprType as TupleType).symbols.get(0).type)
-		assertEquals(BOOL_REF, (exprType as TupleType).symbols.get(1).type)
-		assertEquals(REAL_REF, (exprType as TupleType).symbols.get(2).type)
+		assertTrue(TypingServices.isEqual(createIntRef, (exprType as TupleType).symbols.get(0).type))
+		assertTrue(TypingServices.isEqual(createBoolRef, (exprType as TupleType).symbols.get(1).type))
+		assertTrue(TypingServices.isEqual(createRealRef, (exprType as TupleType).symbols.get(2).type))
 	}
 	
 	@Test
@@ -551,10 +547,10 @@ class ImlTypeProviderTest {
 		
 		model.assertNoErrors
 		
-		val t1 = model.findSymbol("t1") as ConstrainedType
+		val t1 = model.findSymbol("t1") as NamedType
 		val exprType = ImlTypeProvider.termExpressionType(t1.findSymbol("varx").definition)
 		
-		assertEquals(INT_REF, exprType)
+		assertTrue(TypingServices.isEqual(createIntRef, exprType))
 	}
 	
 	@Test
@@ -570,10 +566,10 @@ class ImlTypeProviderTest {
 		
 		model.assertNoErrors
 		
-		val t1 = model.findSymbol("t1") as ConstrainedType
+		val t1 = model.findSymbol("t1") as NamedType
 		val exprType = ImlTypeProvider.termExpressionType(t1.findSymbol("varx").definition)
 		
-		assertEquals(INT_REF, exprType)
+		assertTrue(TypingServices.isEqual(createIntRef, exprType))
 	}
 	
 	@Test
@@ -591,8 +587,8 @@ class ImlTypeProviderTest {
 		
 		model.assertNoErrors
 		
-		val t1 = model.findSymbol("t1") as ConstrainedType
-		val t2 = model.findSymbol("t2") as ConstrainedType
+		val t1 = model.findSymbol("t1") as NamedType
+		val t2 = model.findSymbol("t2") as NamedType
 		val exprType = ImlTypeProvider.termExpressionType(t1.findSymbol("varx").definition)
 		
 		assertEquals(t2, (exprType as SimpleTypeReference).type)
@@ -613,8 +609,8 @@ class ImlTypeProviderTest {
 		
 		model.assertNoErrors
 		
-		val t1 = model.findSymbol("t1") as ConstrainedType
-		val t2 = model.findSymbol("t2") as ConstrainedType
+		val t1 = model.findSymbol("t1") as NamedType
+		val t2 = model.findSymbol("t2") as NamedType
 		val exprType = ImlTypeProvider.termExpressionType(t1.findSymbol("varx").definition)
 		
 		assertEquals(t2, (exprType as SimpleTypeReference).type)
@@ -641,7 +637,7 @@ class ImlTypeProviderTest {
 		
 		model.assertNoErrors
 		
-		val t1 = model.findSymbol("t1") as ConstrainedType
+		val t1 = model.findSymbol("t1") as NamedType
 		#["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"]
 		      .forEach[assertTypeMatches(t1.findSymbol(it))]
 	}
@@ -681,7 +677,7 @@ class ImlTypeProviderTest {
 		};
 		'''.parse
 		
-		val f = findSymbol(model.symbols.last as ConstrainedType,"f")
+		val f = findSymbol(model.symbols.last as NamedType,"f")
 		val fdef = f.definition.left
 		val type  = ImlTypeProvider.termExpressionType(fdef)
 		model.assertNoErrors
@@ -715,12 +711,12 @@ class ImlTypeProviderTest {
 		
 		e : Stack<Int> := <Int>emptyStack ;
 		
-		s : Stack<Int> := e.push(1); //.push(2).push(3) ;
+		s : Stack<Int> := e.push(1).push(2).push(3) ;
 		'''.parse
 		
 		model.assertNoErrors
 		
-		val stackt = model.findSymbol("Stack") as ConstrainedType
+		val stackt = model.findSymbol("Stack") as NamedType
 		val pop = stackt.findSymbol("pop") as SymbolDeclaration
 		val popdefite = ((pop.definition.left as LambdaExpression).definition as SequenceTerm).^return.left as IteTermExpression
 //		val rest_pop = (popdefite.left as SequenceTerm).^return.left.left.left.right as TermMemberSelection

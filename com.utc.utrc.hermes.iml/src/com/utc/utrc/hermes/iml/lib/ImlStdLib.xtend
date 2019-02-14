@@ -1,11 +1,17 @@
 package com.utc.utrc.hermes.iml.lib
 
-import com.utc.utrc.hermes.iml.iml.ConstrainedType
+import com.utc.utrc.hermes.iml.iml.NamedType
 import com.utc.utrc.hermes.iml.custom.ImlCustomFactory
-import com.utc.utrc.hermes.iml.iml.HigherOrderType
+import com.utc.utrc.hermes.iml.iml.ImlType
 import com.utc.utrc.hermes.iml.iml.SimpleTypeReference
+import org.eclipse.xtext.resource.XtextResourceSet
+import com.google.inject.Inject
 
 class ImlStdLib {
+	
+	@Inject
+	XtextResourceSet rs;
+	
 	public static val INT = "Int";
 	public static val REAL = "Real";
 	public static val BOOL = "Bool";
@@ -13,76 +19,90 @@ class ImlStdLib {
 	public static val NULL = "Null";
 	
 	// TODO maybe we need to add these types automatically to the global scope
-	public static val INT_TYPE = ImlCustomFactory.INST.createConstrainedType(INT)
-	public static val REAL_TYPE = ImlCustomFactory.INST.createConstrainedType(REAL)
-	public static val BOOL_TYPE = ImlCustomFactory.INST.createConstrainedType(BOOL)
-	public static val STRING_TYPE = ImlCustomFactory.INST.createConstrainedType(STRING)
-	public static val NULL_TYPE = ImlCustomFactory.INST.createConstrainedType(NULL)
+	public static val INT_TYPE = ImlCustomFactory.INST.createNamedType(INT)
+	public static val REAL_TYPE = ImlCustomFactory.INST.createNamedType(REAL)
+	public static val BOOL_TYPE = ImlCustomFactory.INST.createNamedType(BOOL)
+	public static val STRING_TYPE = ImlCustomFactory.INST.createNamedType(STRING)
+	public static val NULL_TYPE = ImlCustomFactory.INST.createNamedType(NULL)
 	
-	public static val INT_REF = ImlCustomFactory.INST.createSimpleTypeReference(INT_TYPE)
-	public static val REAL_REF = ImlCustomFactory.INST.createSimpleTypeReference(REAL_TYPE)
-	public static val BOOL_REF = ImlCustomFactory.INST.createSimpleTypeReference(BOOL_TYPE)
-	public static val STRING_REF = ImlCustomFactory.INST.createSimpleTypeReference(STRING_TYPE)
-	public static val NULL_REF = ImlCustomFactory.INST.createSimpleTypeReference(NULL_TYPE)
-	
-	def static boolean isPrimitive(HigherOrderType t) {
+	def static boolean isPrimitive(ImlType t) {
 		return t.isInt || t.isReal || t.isBool || t.isString
 	}
 
-	def static boolean isNumeric(HigherOrderType t) {
+	def static boolean isNumeric(ImlType t) {
 		return t.isInt || t.isReal
 	}
 	
-	def static boolean isPrimitive(ConstrainedType t) {
+	def static boolean isPrimitive(NamedType t) {
 		return t.isInt || t.isReal || t.isBool || t.isString
 	}
 
-	def static boolean isNumeric(ConstrainedType t) {
+	def static boolean isNumeric(NamedType t) {
 		return t.isInt || t.isReal
 	}
 	
-	def static boolean isInt(HigherOrderType t) {
+	def static boolean isInt(ImlType t) {
 		if (t instanceof SimpleTypeReference) {
 			return isInt(t.type)
 		}
 		return false
 	}
 	
-	def static boolean isInt(ConstrainedType t) {
+	def static boolean isInt(NamedType t) {
 		// FIXME we need to find better way to do this
 		return INT == t.name
 	}
 	
-	def static boolean isReal(HigherOrderType t) {
+	def static boolean isReal(ImlType t) {
 		if (t instanceof SimpleTypeReference) {
 			return isReal(t.type)
 		}
 		return false
 	}
 	
-	def static boolean isReal(ConstrainedType t) {
+	def static boolean isReal(NamedType t) {
 		return REAL == t.name
 	}
 	
-	def static boolean isBool(HigherOrderType t) {
+	def static boolean isBool(ImlType t) {
 		if (t instanceof SimpleTypeReference) {
 			return isBool(t.type)
 		}
 		return false
 	}
 	
-	def static boolean isBool(ConstrainedType t) {
+	def static boolean isBool(NamedType t) {
 		return BOOL == t.name
 	}
 	
-	def static boolean isString(HigherOrderType t) {
+	def static boolean isString(ImlType t) {
 		if (t instanceof SimpleTypeReference) {
 			return isString(t.type)
 		}
 		return false
 	}
 	
-	def static boolean isString(ConstrainedType t) {
+	def static boolean isString(NamedType t) {
 		return STRING == t.name
+	}
+	
+	def static createIntRef() {
+		return ImlCustomFactory.INST.createSimpleTypeReference(INT_TYPE);
+	}
+	
+	def static createRealRef() {
+		return ImlCustomFactory.INST.createSimpleTypeReference(REAL_TYPE);
+	}
+	
+	def static createBoolRef() {
+		return ImlCustomFactory.INST.createSimpleTypeReference(BOOL_TYPE);
+	}
+	
+	def static createStringRef() {
+		return ImlCustomFactory.INST.createSimpleTypeReference(STRING_TYPE);
+	}
+
+	def static createNullRef() {
+		return ImlCustomFactory.INST.createSimpleTypeReference(NULL_TYPE);
 	}
 }

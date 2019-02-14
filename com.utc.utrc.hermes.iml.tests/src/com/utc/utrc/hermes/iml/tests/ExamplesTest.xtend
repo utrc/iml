@@ -1,19 +1,13 @@
 package com.utc.utrc.hermes.iml.tests
 
-
 import com.google.inject.Inject
 import com.utc.utrc.hermes.iml.iml.Model
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.XtextRunner
 import org.eclipse.xtext.testing.util.ParseHelper
-import org.junit.Assert
+import org.eclipse.xtext.testing.validation.ValidationTestHelper
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.eclipse.xtext.testing.validation.ValidationTestHelper
-import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
-import com.utc.utrc.hermes.iml.iml.ConstrainedType
-import com.utc.utrc.hermes.iml.iml.SimpleTypeReference
-import static extension org.junit.Assert.*
 
 @RunWith(XtextRunner)
 @InjectWith(ImlInjectorProvider)
@@ -27,6 +21,7 @@ class ExamplesTest {
 	@Test
 	def void finiteAssertExampleTest(){
 		val model = '''
+			package p;
 			type Choice finite 4 ; 
 			assert "Choice 0 and 4 are the same" {Choice(0) = Choice(3)} ;
 		'''.parse
@@ -37,8 +32,9 @@ class ExamplesTest {
 	@Test
 	def void enumAssertExampleTest(){
 		val model = '''
+			package p;
 			type RGB enum {red , green , blue} ;
-			assert "Green and blue are different" {RGB.green != 3};
+			assert "Green and blue are different" {RGB.green != RGB.blue};
 		'''.parse
 		
 		model.assertNoErrors
@@ -47,14 +43,16 @@ class ExamplesTest {
 	@Test
 	def void typeIsExampleTest(){
 		val model = '''
+			package p;
 			type Int;
 			type Real;
 			type Bool;
 			type String;
 			type Queue<T>;
 			type Map<T,U>;
+			type A;
 			
-			type TestType1 is Queue<MyType> ;
+			type TestType1 is Queue<A> ;
 			type TestType2 is Map<Int, Real> ;
 			type TestType4 is Int->Real;
 			type TestType5 is Int->Int->Real;
@@ -156,12 +154,11 @@ class ExamplesTest {
 			} ;
 			
 			
-			s1: Stack<Int> := push1(push1(push1(e)(1))(2))(3) ;
+			s1: Stack<Int> := push1(push1(push1(e,1),2),3) ;
 			//Not sure what the syntax Stack<Int>.push(s)(n) means
-			//We don't support that
-			push2 := fun (s:Stack<Int>, n:Int){ s.push(n) };
-			
-			s2: Stack<Int> := push2(push2(push2(e, 1), 2), 3);
+			//We don't support symbol without type (no type inference)
+			//push2 := fun (s:Stack<Int>, n:Int){ s.push(n) };
+			//s2: Stack<Int> := push2(push2(push2(e, 1), 2), 3);
 		'''.parse
 
 		

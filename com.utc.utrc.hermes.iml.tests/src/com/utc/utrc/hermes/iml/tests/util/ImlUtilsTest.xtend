@@ -17,13 +17,12 @@ import com.utc.utrc.hermes.iml.tests.TestHelper
 import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
 import com.utc.utrc.hermes.iml.util.ImlUtil
 import com.utc.utrc.hermes.iml.iml.Assertion
-import com.utc.utrc.hermes.iml.iml.ConstrainedType
+import com.utc.utrc.hermes.iml.iml.NamedType
 import com.utc.utrc.hermes.iml.util.Phi
 import com.utc.utrc.hermes.iml.iml.SequenceTerm
 import com.utc.utrc.hermes.iml.custom.ImlCustomFactory
 import org.eclipse.xtext.resource.XtextResource
 import com.utc.utrc.hermes.iml.util.TermExtractor
-import com.utc.utrc.hermes.iml.util.HotUtil
 
 @RunWith(XtextRunner)
 @InjectWith(ImlInjectorProvider)
@@ -82,7 +81,7 @@ class ImlUtilsTest {
 		model.assertNoErrors
 		
 		val v1 = model.findSymbol("v1") as SymbolDeclaration
-		assertEquals(isSimpleHot, HotUtil.isSimpleHot(v1.type))
+		assertEquals(isSimpleHot, ImlUtil.isFirstOrderFunction(v1.type))
 	}
 	
 	@Test
@@ -101,7 +100,7 @@ class ImlUtilsTest {
 		}
 		'''.parse
 		model.assertNoErrors
-		val A = (model.findSymbol("A") as ConstrainedType)
+		val A = (model.findSymbol("A") as NamedType)
 		val a = A.findSymbol("a") as Assertion;
 		val f = Phi.toCNF((a.definition as SequenceTerm).^return);
 		val st = ImlCustomFactory.INST.createSequenceTerm
@@ -130,7 +129,7 @@ class ImlUtilsTest {
 		}
 		'''.parse
 		model.assertNoErrors
-		val A = (model.findSymbol("A") as ConstrainedType)
+		val A = (model.findSymbol("A") as NamedType)
 		val a = A.findSymbol("a") as Assertion;
 		val f = Phi.toCNF((a.definition as SequenceTerm).^return);
 		val st = ImlCustomFactory.INST.createSequenceTerm
@@ -160,7 +159,7 @@ class ImlUtilsTest {
 		}
 		'''.parse
 		model.assertNoErrors
-		val A = (model.findSymbol("A") as ConstrainedType)
+		val A = (model.findSymbol("A") as NamedType)
 		val a = A.findSymbol("a") as Assertion;
 		val tl = TermExtractor.extractFrom(a.definition);	
 		print(tl)
@@ -183,7 +182,7 @@ class ImlUtilsTest {
 		}
 		'''.parse
 		model.assertNoErrors
-		val A = (model.findSymbol("A") as ConstrainedType)
+		val A = (model.findSymbol("A") as NamedType)
 		val a = A.findSymbol("a") as Assertion;
 		val tl = TermExtractor.extractFrom(a.definition);	
 		print(tl)
