@@ -49,6 +49,8 @@ import com.utc.utrc.hermes.iml.iml.Model
 import com.utc.utrc.hermes.iml.iml.ExpressionTail
 import com.utc.utrc.hermes.iml.iml.FunctionType
 import com.utc.utrc.hermes.iml.iml.TailedExpression
+import com.utc.utrc.hermes.iml.iml.StringLiteral
+import com.utc.utrc.hermes.iml.iml.CharLiteral
 
 public class ImlTypeProvider {
 
@@ -143,6 +145,14 @@ public class ImlTypeProvider {
 				return createRealRef;
 
 			}
+			StringLiteral :{
+				return createStringRef;
+			}
+			
+			CharLiteral : {
+				return createCharRef;
+			}
+			
 			IteTermExpression: {
 				return termExpressionType(t.left, context)
 			}
