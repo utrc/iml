@@ -16,6 +16,7 @@ class ImlStdLib {
 	public static val REAL = "Real";
 	public static val BOOL = "Bool";
 	public static val STRING = "String";
+	public static val CHAR = "Char" ;
 	public static val NULL = "Null";
 	
 	// TODO maybe we need to add these types automatically to the global scope
@@ -23,10 +24,11 @@ class ImlStdLib {
 	public static val REAL_TYPE = ImlCustomFactory.INST.createNamedType(REAL)
 	public static val BOOL_TYPE = ImlCustomFactory.INST.createNamedType(BOOL)
 	public static val STRING_TYPE = ImlCustomFactory.INST.createNamedType(STRING)
+	public static val CHAR_TYPE = ImlCustomFactory.INST.createNamedType(CHAR)
 	public static val NULL_TYPE = ImlCustomFactory.INST.createNamedType(NULL)
 	
 	def static boolean isPrimitive(ImlType t) {
-		return t.isInt || t.isReal || t.isBool || t.isString
+		return t.isInt || t.isReal || t.isBool || t.isString || t.isChar
 	}
 
 	def static boolean isNumeric(ImlType t) {
@@ -34,7 +36,7 @@ class ImlStdLib {
 	}
 	
 	def static boolean isPrimitive(NamedType t) {
-		return t.isInt || t.isReal || t.isBool || t.isString
+		return t.isInt || t.isReal || t.isBool || t.isString || t.isChar
 	}
 
 	def static boolean isNumeric(NamedType t) {
@@ -86,6 +88,17 @@ class ImlStdLib {
 		return STRING == t.name
 	}
 	
+	def static boolean isChar(ImlType t) {
+		if (t instanceof SimpleTypeReference) {
+			return isChar(t.type)
+		}
+		return false
+	}
+	
+	def static boolean isChar(NamedType t) {
+		return CHAR == t.name
+	}
+	
 	def static createIntRef() {
 		return ImlCustomFactory.INST.createSimpleTypeReference(INT_TYPE);
 	}
@@ -100,6 +113,10 @@ class ImlStdLib {
 	
 	def static createStringRef() {
 		return ImlCustomFactory.INST.createSimpleTypeReference(STRING_TYPE);
+	}
+	
+	def static createCharRef() {
+		return ImlCustomFactory.INST.createSimpleTypeReference(CHAR_TYPE);
 	}
 
 	def static createNullRef() {

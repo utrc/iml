@@ -214,7 +214,8 @@ ExpressionTail:
 TerminalTerm returns TermExpression:
 	{NumberLiteral} neg?=('-')? value=INT |
 	{FloatNumberLiteral} neg?=('-')? value = FLOAT |
-	{String} value = STRING |
+	{StringLiteral} value = STRING |
+	{CharLiteral} value = CHAR |
 	SymbolReferenceTerm |
 	TupleOrFormulaConstructor | 
 	TruthValue |
@@ -273,3 +274,6 @@ SequenceTerm returns TermExpression:
 
 terminal EXT_INT: INT ('e'|'E')('-'|'+') INT;
 terminal FLOAT returns ecore::EFloat : ('0'..'9')+ '.' ('0'..'9')+;
+terminal CHAR returns ecore::EString:
+			"'"."'"
+		;
