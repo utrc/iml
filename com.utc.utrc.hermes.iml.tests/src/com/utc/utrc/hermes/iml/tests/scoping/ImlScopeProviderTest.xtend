@@ -154,7 +154,7 @@ class ImlScopeProviderTest {
 		model.assertNoErrors;
 		
 		(((model.symbols.last as NamedType).symbols.last.definition.left 
-		   as TailedExpression).tails.get(0) as ArrayAccess).index.left => [
+		   as TailedExpression).tail as ArrayAccess).index.left => [
 			assertScope(ImlPackage::eINSTANCE.symbolReferenceTerm_Symbol, 
 				Arrays.asList("e1", "e2"))
 		];
@@ -175,7 +175,7 @@ class ImlScopeProviderTest {
 		model.assertNoErrors;
 		
 		(((model.symbols.last as NamedType).symbols.last.definition.left 
-		   as TailedExpression).tails.get(1) as ArrayAccess).index.left => [
+		   as TailedExpression).tail as ArrayAccess).index.left => [
 			assertScope(ImlPackage::eINSTANCE.symbolReferenceTerm_Symbol, 
 				Arrays.asList("e1", "e2"))
 		];
@@ -202,7 +202,7 @@ class ImlScopeProviderTest {
 		model.assertNoErrors;
 		
 		((((model.symbols.last as NamedType).symbols.last.definition.left 
-		   as TailedExpression)).tails.get(1) as ArrayAccess).index.left => [
+		   as TailedExpression)).tail as ArrayAccess).index.left => [
 			assertScope(ImlPackage::eINSTANCE.symbolReferenceTerm_Symbol, 
 				Arrays.asList("e1", "e2"))
 		];
@@ -232,7 +232,7 @@ class ImlScopeProviderTest {
 		model.assertNoErrors;
 		
 		((((model.symbols.last as NamedType).symbols.last.definition.left 
-		   as TailedExpression)).tails.get(2) as ArrayAccess).index.left => [
+		   as TailedExpression)).tail as ArrayAccess).index.left => [
 			assertScope(ImlPackage::eINSTANCE.symbolReferenceTerm_Symbol, 
 				Arrays.asList("e3", "e4"))
 		];

@@ -304,12 +304,10 @@ public abstract class AbstractModelAcceptor implements IModelAcceptor {
 		}else if (e instanceof SymbolReferenceTerm) {
 			visitor.visit((SymbolReferenceTerm)e);
 		} else if (e instanceof TailedExpression) {
-			for(ExpressionTail tail : ((TailedExpression)e).getTails()) {
-				if (tail instanceof TupleConstructor) {
-					accept((TupleConstructor) tail, visitor);
-				} else {
-					accept(((ArrayAccess)tail).getIndex(),visitor );
-				}
+			if (((TailedExpression)e).getTail() instanceof TupleConstructor) {
+				accept((TupleConstructor) ((TailedExpression)e).getTail(), visitor);
+			} else {
+				accept(((ArrayAccess)((TailedExpression)e).getTail()).getIndex(),visitor );
 			}
 			visitor.visit((TailedExpression) e);
 		} else if (e instanceof ImplicitInstanceConstructor) {

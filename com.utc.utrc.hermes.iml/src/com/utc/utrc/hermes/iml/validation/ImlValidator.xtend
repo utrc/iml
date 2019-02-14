@@ -240,7 +240,7 @@ class ImlValidator extends AbstractImlValidator {
 	@Check
 	def checkTailedExpression(TailedExpression expr) {
 		val leftType = TypingServices.resolveAliases(ImlTypeProvider.termExpressionType(expr.left))
-		checkTypeAgainstTails(leftType, expr.tails)
+		checkTypeAgainstTail(leftType, expr.tail)
 		
 //		if (symbol instanceof Assertion) { 
 //			if (!symbolRef.tails.isNullOrEmpty) {
@@ -269,20 +269,19 @@ class ImlValidator extends AbstractImlValidator {
 		type.restrictions.filter[it instanceof CardinalityRestriction].size > 0
 	}
 	
-	def checkTypeAgainstTails(ImlType type, List<ExpressionTail> tails) {
-		var tmpType = type
-		if (!tails.nullOrEmpty) {
-			for (var i=0, var stop=false ; i < tails.length ; i++) {
-				val tail = tails.get(i)
-				if (checkTypeAgainstTail(tmpType, tail)) {
-					tmpType = ImlTypeProvider.accessTail(tmpType, tail)
-				} else { // There was a validation error, no need to continue check
-					stop=true;
-				}
-			}
-		}	
-	}
-		
+//	def checkTypeAgainstTails(ImlType type, List<ExpressionTail> tails) {
+//		var tmpType = type
+//		if (!tails.nullOrEmpty) {
+//			for (var i=0, var stop=false ; i < tails.length ; i++) {
+//				val tail = tails.get(i)
+//				if (checkTypeAgainstTail(tmpType, tail)) {
+//					tmpType = ImlTypeProvider.accessTail(tmpType, tail)
+//				} else { // There was a validation error, no need to continue check
+//					stop=true;
+//				}
+//			}
+//		}	
+//	}
 	
 	def checkTypeAgainstTail(ImlType type, ExpressionTail tail) {
 		val typeAsString = getTypeName(type, qnp)
@@ -293,7 +292,7 @@ class ImlValidator extends AbstractImlValidator {
 				// FIXME check for the correct finite access
 				if (!(symbol instanceof NamedType && (symbol as NamedType).isFinite)) {
 					error('''Method invocation and array access are not applicable on the simple type '«typeAsString»' ''',
-						ImlPackage.eINSTANCE.tailedExpression_Tails,
+						ImlPackage.eINSTANCE.tailedExpression_Tail,
 						METHOD_INVOCATION_ON_NAMEDTYPE
 					)
 				}
@@ -303,7 +302,7 @@ class ImlValidator extends AbstractImlValidator {
 		} else if (type instanceof ArrayType) {
 			if (tail instanceof TupleConstructor) {
 				error('''Method invocation is not applicable over Array type '«typeAsString»' ''',
-					ImlPackage.eINSTANCE.tailedExpression_Tails,
+					ImlPackage.eINSTANCE.tailedExpression_Tail,
 					METHOD_INVOCATION_ON_ARRAY
 				)
 				return false
@@ -311,7 +310,7 @@ class ImlValidator extends AbstractImlValidator {
 		} else if (type instanceof TupleType) {
 			if (tail instanceof TupleConstructor) {
 				error('''Method invocation is not applicable over tuple type '«typeAsString»' ''',
-					ImlPackage.eINSTANCE.tailedExpression_Tails,
+					ImlPackage.eINSTANCE.tailedExpression_Tail,
 					METHOD_INVOCATION_ON_TUPLE
 				)
 				return false
@@ -321,7 +320,7 @@ class ImlValidator extends AbstractImlValidator {
 					if (index.value >= type.symbols.size || index.neg) {
 						error('''Tuple access index must be within the declare tuple elements size of '«typeAsString»'. Expected <
 						«type.symbols.size» but got «if (index.neg) '-'»«index.value» ''',
-							ImlPackage.eINSTANCE.tailedExpression_Tails,
+							ImlPackage.eINSTANCE.tailedExpression_Tail,
 							INVALID_INDEX_ACCESS
 						)
 						return false
@@ -333,7 +332,7 @@ class ImlValidator extends AbstractImlValidator {
 		} else if (type instanceof FunctionType) { 
 			if (tail instanceof ArrayAccess) {
 				error('''Array access is not applicatble over Higher Order Type of: '«typeAsString»' ''',
-							ImlPackage.eINSTANCE.tailedExpression_Tails,
+							ImlPackage.eINSTANCE.tailedExpression_Tail,
 							ARRAY_ACCESS_ON_HOT
 						)
 				return false
@@ -361,7 +360,7 @@ class ImlValidator extends AbstractImlValidator {
 		if (domainList.size != tupleTail.elements.size) {
 			error('''Number of parameters provided don't match the declared parameters in: '«getTypeName(domain, qnp)»'. 
 			Expected «domainList.size» but got «tupleTail.elements.size» ''',
-					ImlPackage.eINSTANCE.tailedExpression_Tails,
+					ImlPackage.eINSTANCE.tailedExpression_Tail,
 					INVALID_PARAMETER_LIST
 				)
 			return false;
@@ -373,7 +372,7 @@ class ImlValidator extends AbstractImlValidator {
 			if (!TypingServices.isCompatible(domainList.get(i), paramType)) {
 				error('''Invalid argument type. Expecting: «ImlUtil.getTypeName(domainList.get(i), qnp)» but got 
 							«ImlUtil.getTypeName(paramType, qnp)»''',
-					ImlPackage.eINSTANCE.tailedExpression_Tails,
+					ImlPackage.eINSTANCE.tailedExpression_Tail,
 					INVALID_PARAMETER_LIST
 				)
 			}

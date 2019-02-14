@@ -715,7 +715,7 @@ class ImlTypeProviderTest {
 		
 		e : Stack<Int> := <Int>emptyStack ;
 		
-		s : Stack<Int> := e.push(1); //.push(2).push(3) ;
+		s : Stack<Int> := e.push(1).push(2).push(3) ;
 		'''.parse
 		
 		model.assertNoErrors

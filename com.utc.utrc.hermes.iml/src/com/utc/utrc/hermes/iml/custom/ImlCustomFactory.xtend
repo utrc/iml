@@ -11,6 +11,7 @@ import java.util.List
 import com.utc.utrc.hermes.iml.iml.SymbolReferenceTerm
 import com.utc.utrc.hermes.iml.iml.NamedType
 import com.utc.utrc.hermes.iml.iml.ImlType
+import com.utc.utrc.hermes.iml.iml.ExpressionTail
 
 public class ImlCustomFactory extends ImlFactoryImpl {
 	
@@ -120,6 +121,13 @@ public class ImlCustomFactory extends ImlFactoryImpl {
 		createTailedExpression(retval, args)
 	}
 	
+	def createTailedExpression(TermExpression left, ExpressionTail tail) {
+		createTailedExpression => [
+			it.left = left
+			it.tail = tail
+		]
+	}
+	
 	def createTailedExpression(TermExpression left, List<TermExpression> args) {
 		val retval = createTailedExpression
 		retval.left = left
@@ -129,7 +137,7 @@ public class ImlCustomFactory extends ImlFactoryImpl {
 			f.left = te
 			tail.elements.add(f)
 		}
-		retval.tails.add(tail)
+		retval.tail = tail
 		return retval
 	}
 	

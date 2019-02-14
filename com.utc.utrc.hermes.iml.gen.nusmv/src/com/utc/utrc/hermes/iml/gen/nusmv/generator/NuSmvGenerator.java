@@ -227,8 +227,8 @@ public class NuSmvGenerator {
 					NuSmvSymbol toadd = new NuSmvSymbol("") ;
 					FolFormula def = 
 							Phi.eq(
-									EcoreUtil.copy((TermExpression) ((TupleConstructor) ((TailedExpression)sd.getDefinition().getLeft()).getTails().get(0)).getElements().get(0).getLeft()), 
-									EcoreUtil.copy((TermExpression) ((TupleConstructor) ((TailedExpression)sd.getDefinition().getLeft()).getTails().get(0)).getElements().get(1).getLeft())
+									EcoreUtil.copy((TermExpression) ((TupleConstructor) ((TailedExpression)sd.getDefinition().getLeft()).getTail()).getElements().get(0).getLeft()), 
+									EcoreUtil.copy((TermExpression) ((TupleConstructor) ((TailedExpression)sd.getDefinition().getLeft()).getTail()).getElements().get(1).getLeft())
 									) ;
 					toadd.setName(m.getContainer().newSymbolName());
 					toadd.setElementType(NuSmvElementType.INVAR);
@@ -283,9 +283,9 @@ public class NuSmvGenerator {
 			if (f1 instanceof TailedExpression) {
 				TailedExpression connect = (TailedExpression) f1;
 				// get the source and destination
-				if (connect.getTails().size() >= 1) {
-					FolFormula sourcef = ((TupleConstructor) connect.getTails().get(0)).getElements().get(0).getLeft();
-					FolFormula destf = ((TupleConstructor) connect.getTails().get(0)).getElements().get(1).getLeft();
+				if (connect.getTail() != null) {
+					FolFormula sourcef = ((TupleConstructor) connect.getTail()).getElements().get(0).getLeft();
+					FolFormula destf = ((TupleConstructor) connect.getTail()).getElements().get(1).getLeft();
 					retval.source = serialize(sourcef,ctx);
 					String dest_tmp = serialize(destf,ctx);
 					int lastindex = dest_tmp.lastIndexOf('.');

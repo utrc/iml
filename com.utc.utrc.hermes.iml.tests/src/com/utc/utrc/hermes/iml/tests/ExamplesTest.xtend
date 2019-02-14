@@ -154,12 +154,11 @@ class ExamplesTest {
 			} ;
 			
 			
-			s1: Stack<Int> := push1(push1(push1(e)(1))(2))(3) ;
+			s1: Stack<Int> := push1(push1(push1(e,1),2),3) ;
 			//Not sure what the syntax Stack<Int>.push(s)(n) means
-			//We don't support that
-			push2 := fun (s:Stack<Int>, n:Int){ s.push(n) };
-			
-			s2: Stack<Int> := push2(push2(push2(e, 1), 2), 3);
+			//We don't support symbol without type (no type inference)
+			//push2 := fun (s:Stack<Int>, n:Int){ s.push(n) };
+			//s2: Stack<Int> := push2(push2(push2(e, 1), 2), 3);
 		'''.parse
 
 		

@@ -201,10 +201,18 @@ Addition returns TermExpression:
 Multiplication returns TermExpression:
 	TailedExpression ({Multiplication.left=current} sign=('*' | '/' | '%' | 'mod')
 	right=TailedExpression)*;
-	
+
+
 TailedExpression returns TermExpression:
-	TermSelectionExpression ({TailedExpression.left=current} tails+=ExpressionTail+)?
+	TerminalTerm (
+		({TermMemberSelection.receiver=current} '.' member=SymbolReferenceTerm) |
+		({TailedExpression.left=current} tail=ExpressionTail)
+	) *
 ;
+
+//TailedExpression returns TermExpression:
+//	TermSelectionExpression ({TailedExpression.left=current} tails+=ExpressionTail+)*
+//;
 
 ExpressionTail:
 	TupleConstructor |
@@ -218,7 +226,7 @@ ExpressionTail:
  */
 TermSelectionExpression returns TermExpression:
 	TerminalTerm ({TermMemberSelection.receiver=current} '.' member=SymbolReferenceTerm)*
-	;
+;
 
 /*A terminal term can be a number, a reference to symbol defined in the scope
  * of the term, a reference to a constant of a finite type, an if-then-else term

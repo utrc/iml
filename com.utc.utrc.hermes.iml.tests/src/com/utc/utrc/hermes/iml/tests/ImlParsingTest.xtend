@@ -162,4 +162,62 @@ class ImlParsingTest {
 		model.assertNoErrors
 		model.eResource.save(System.out, newHashMap)
 	}	
+	
+	@Test
+	def testParsingCascadedMemeberSelection() {
+		val model = '''
+		package p;
+		type Int;
+		
+		type T1 {
+			f : T2;
+		}
+		
+		type T2 {
+			x : Int;
+		}
+		
+		v1 : T1;
+		v2 : Int := v1.f.x;
+		
+		'''.parse
+		
+		model.assertNoErrors
+	}
+	
+	@Test
+	def testParsingCascadedFunctionCalls() {
+		val model = '''
+		package p;
+		type Int;
+		
+		type T1 {
+			f : Int -> T1;
+		}
+		
+		v1 : T1;
+		v2 : T1 := v1.f(5).f(6).f(7);
+		
+		'''.parse
+		
+		model.assertNoErrors
+	}
+	
+	@Test
+	def testParsingMultipleTails() {
+		val model = '''
+		package p;
+		type Int;
+		
+		type T1 {
+			f : (Int -> T1[][]);
+		}
+		
+		v1 : T1;
+		v2 : T1 := v1.f(5)[10][20];
+		
+		'''.parse
+		
+		model.assertNoErrors
+	}
 }

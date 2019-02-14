@@ -166,20 +166,24 @@ class ImlScopeProvider extends AbstractDeclarativeScopeProvider {
 	def getScopeOfTupleAccess(ArrayAccess arrayAccess) {
 		val tailedExpr = arrayAccess.eContainer as TailedExpression
 		var type = termExpressionType(tailedExpr.left)
-		var break = false;
-		for (ExpressionTail tail : tailedExpr.tails) {
-			if (!break) {
-				if (tail === arrayAccess) {
-					if (type instanceof TupleType) {
-						return Scopes::scopeFor(type.symbols);
-					} else { // It is just normal array access not tuple
-						break = true;
-					}
-				} else {
-					type = ImlTypeProvider.accessTail(type, tail)
-				}
-			}
+		if (type instanceof TupleType) {
+			return Scopes::scopeFor(type.symbols);
 		}
+
+//		var break = false;
+//		for (ExpressionTail tail : tailedExpr.tails) {
+//			if (!break) {
+//				if (tail === arrayAccess) {
+//					if (type instanceof TupleType) {
+//						return Scopes::scopeFor(type.symbols);
+//					} else { // It is just normal array access not tuple
+//						break = true;
+//					}
+//				} else {
+//					type = ImlTypeProvider.accessTail(type, tail)
+//				}
+//			}
+//		}
 	}
 
 	def getTypeWithoutTail(SymbolReferenceTerm term) {

@@ -129,10 +129,7 @@ public class ImlTypeProvider {
 			}
 			TailedExpression: {
 				var leftType = termExpressionType(t.left)
-				for (tail : t.tails) {
-					leftType = accessTail(leftType, tail)
-				}
-				return leftType
+				return accessTail(leftType, t.tail)
 			}
 			SymbolReferenceTerm: {
 				return getSymbolReferenceType(t, context)
