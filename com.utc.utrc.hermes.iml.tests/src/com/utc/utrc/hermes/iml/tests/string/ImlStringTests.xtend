@@ -61,20 +61,47 @@ class ImlStringTests {
 		y : String ;
 		z : Char := 'a' ;
 		assert a { x = y };
+		assert b { x.length = 6} ;
+		assert c { x.charAt(0) = 'h' } ;
 		'''.parse(stdlib.eResource.resourceSet).assertNoErrors
 	
 	}
 	
+	
+	@Test
+	def testStdLib(){
+		val model = loadStdLib ;
+		model.assertNoErrors ;
+	}
+	
 	def loadStdLib() {
-	'''
+	val model  = '''
 	package iml.lang;
 	
 	type Int;
 	type Real;
 	type Bool;
-	type String;
 	type Char ;
-	'''.parse
+	type String { 
+		concat : String -> String ;
+		length : Int ;
+		contains : String -> Bool ;
+		indexOf : (String,Int) -> Int ;
+		replace : (String,String) -> String ;
+		replaceAll : (String,String) -> String ;
+		charAt : Int -> Char ;
+		subStr : (Int,Int) -> String ;
+		prefixOf : String -> Bool ;
+		suffixOf : String -> Bool ;
+		int2str : Int -> String ;
+		re2str : Real -> String ; 
+	};
+	str2int : String -> Int ;
+	str2re : String->Real ;
+	emptyString : String  ; 
+	'''.parse ;
+	
+	return model ;
 	}
 	
 		
