@@ -407,4 +407,22 @@
 			type="text">
 		</fileTypes>
 	</extension>
+	
+	
+	<extension
+		point="org.eclipse.ui.newWizards">
+		
+		 <category
+	         id="com.utc.utrc.hermes.iml.ui.wizards"
+	         name="IML">
+         </category>
+		
+		<wizard
+			category="com.utc.utrc.hermes.iml.ui.wizards"
+			class="com.utc.utrc.hermes.iml.ui.ImlExecutableExtensionFactory:com.utc.utrc.hermes.iml.ui.wizard.ImlNewProjectWizard"
+			id="com.utc.utrc.hermes.iml.ui.wizard.ImlNewProjectWizard"
+			name="Iml Project"
+				project="true">
+		</wizard>
+	</extension>
 </plugin>

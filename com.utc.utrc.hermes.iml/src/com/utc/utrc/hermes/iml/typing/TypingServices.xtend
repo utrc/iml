@@ -17,17 +17,23 @@ import java.util.ArrayList
 import java.util.List
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.util.EcoreUtil
-
-import static extension com.utc.utrc.hermes.iml.lib.ImlStdLib.*
+import com.google.inject.Inject
+import com.utc.utrc.hermes.iml.lib.ImlStdLib
 
 public class TypingServices {
+	
+	@Inject
+	extension private ImlStdLib
+	
+	@Inject
+	private ImlTypeProvider typeProvider
 
-	def static <T extends EObject> T clone(T eObject) {
+	def <T extends EObject> T clone(T eObject) {
 	  	return EcoreUtil.copy(eObject)
 	}
 
 
-	def static ImlType accessArray(ArrayType type, int dim) {
+	def ImlType accessArray(ArrayType type, int dim) {
 		if (dim == type.dimensions.size) {
 			return type.type
 		} else {
@@ -45,7 +51,7 @@ public class TypingServices {
 		}
 	}
 	
-	def static boolean isEqual(ImlType left, ImlType right) {
+	def boolean isEqual(ImlType left, ImlType right) {
 		// We almost always wants to resolve aliases
 		return isEqual(resolveAliases(left), resolveAliases(right), false);
 	}
@@ -53,7 +59,7 @@ public class TypingServices {
 	/**
 	 * Check whether two type are the same or at least are compatible if compatiblityCheck was true
 	 */
-	def static boolean isEqual(ImlType left, ImlType right, boolean compatibilityCheck) {
+	def boolean isEqual(ImlType left, ImlType right, boolean compatibilityCheck) {
 		if (left === null && right === null) {
 			return true
 		} else if (left === null || right === null) {
@@ -105,7 +111,7 @@ public class TypingServices {
 	}
 
 	/* Check whether two type references are the same */
-	def static boolean isEqual(ArrayType left, ArrayType right, boolean compatibilityCheck) {
+	def boolean isEqual(ArrayType left, ArrayType right, boolean compatibilityCheck) {
 		if (left === null && right === null) {
 			return true
 		} else if (left === null || right === null) {
@@ -123,7 +129,7 @@ public class TypingServices {
 		return true
 	}
 
-	def static boolean isEqual(TupleType left, TupleType right, boolean compatibilityCheck) {
+	def boolean isEqual(TupleType left, TupleType right, boolean compatibilityCheck) {
 		if (left.symbols.length != right.symbols.length) {
 			return false
 		} else {
@@ -137,7 +143,7 @@ public class TypingServices {
 	}
 
 	//TODO Equal means that the definitions are also equal
-	def static boolean isEqual(PropertyList left, PropertyList right, boolean compatibilityCheck) {
+	def boolean isEqual(PropertyList left, PropertyList right, boolean compatibilityCheck) {
 		if (left.properties.size != right.properties.size) {
 			return false;
 		}
@@ -152,7 +158,7 @@ public class TypingServices {
 	}
 
 	/* Check whether two type references are the same */
-	def static boolean isEqual(SimpleTypeReference left, SimpleTypeReference right, boolean compatibilityCheck) {
+	def boolean isEqual(SimpleTypeReference left, SimpleTypeReference right, boolean compatibilityCheck) {
 		// Check pre condition for primitives
 		if (compatibilityCheck) {
 			if (left.isNumeric && right.isNumeric) {
@@ -184,14 +190,14 @@ public class TypingServices {
 	}
 
 	// Checks whether two types are equal
-	def static boolean isEqual(NamedType left, NamedType right) {
+	def boolean isEqual(NamedType left, NamedType right) {
 		if (left == right)
 			return true;
 		return false;
 	}
 
 	// TODO 
-	def static getAllDeclarations(ImlType ctx) {
+	def getAllDeclarations(ImlType ctx) {
 		var List<SymbolDeclaration> tlist = <SymbolDeclaration>newArrayList()
 		var List<List<SimpleTypeReference>> hierarchy = ctx.allSuperTypes;
 		for (level : hierarchy) {
@@ -208,12 +214,12 @@ public class TypingServices {
 	}
 
 	/* Compute all super types of a ContrainedType  */
-	def static getAllSuperTypes(NamedType ct) {
+	def getAllSuperTypes(NamedType ct) {
 		getSuperTypes(ImlCustomFactory.INST.createSimpleTypeReference(ct)).map[it.map[it.type]]
 	}
 
 	/* Compute all super type references of a TypeReference */
-	def static getAllSuperTypes(ImlType hot) {
+	def getAllSuperTypes(ImlType hot) {
 		if (hot instanceof SimpleTypeReference) {
 			return getSuperTypes(hot)
 		} else {
@@ -221,7 +227,7 @@ public class TypingServices {
 		}
 	}
 
-	def static getSuperTypes(SimpleTypeReference tf) {
+	def getSuperTypes(SimpleTypeReference tf) {
 		val closed = <NamedType>newArrayList()
 		val retVal = new ArrayList<List<SimpleTypeReference>>()
 		retVal.add(new ArrayList<SimpleTypeReference>());
@@ -275,53 +281,53 @@ public class TypingServices {
 
 	/* Check if two types are compatible or not
 	 * */
-	def static boolean isCompatible(ImlType expected, ImlType actual) {
+	def boolean isCompatible(ImlType expected, ImlType actual) {
 		return isEqual(resolveAliases(expected), resolveAliases(actual), true)
 	}
 
-	def static isSingleElementTuple(ImlType type) {
+	def isSingleElementTuple(ImlType type) {
 		return type instanceof TupleType && (type as TupleType).symbols.size == 0
 	}
 
 	/* A non-template type without stereotype is a pure type */
-	def static boolean isPureType(ImlType t) {
+	def boolean isPureType(ImlType t) {
 		if (t instanceof SimpleTypeReference && (t as SimpleTypeReference).typeBinding.size == 0) {
 			return true;
 		}
 		return false;
 	}
 	
-	def static boolean isAlias(NamedType t) {
+	def boolean isAlias(NamedType t) {
 		if (t.relations.filter(Alias).size > 0) {
 			return true
 		}
 		return false
 	}
-	def static boolean isAlias(SimpleTypeReference r){
+	def boolean isAlias(SimpleTypeReference r){
 		return r.type.isAlias
 	}
-	def static getAliasType(NamedType type) {
-		TypingServices.getAliasType(ImlCustomFactory.INST.createSimpleTypeReference(type))
+	def getAliasType(NamedType type) {
+		getAliasType(ImlCustomFactory.INST.createSimpleTypeReference(type))
 	}
-	def static ImlType getAliasType(SimpleTypeReference r){
+	def ImlType getAliasType(SimpleTypeReference r){
 		if (r.isAlias){
 			var alias = r.type.relations.filter(Alias).get(0).type.type
-			return ImlTypeProvider.bind(alias,r)
+			return typeProvider.bind(alias,r)
 		}
 		return r // if it is not alias return the original type
 	}
 	
-	def static ImlType resolveAliases(ImlType type) {
+	def ImlType resolveAliases(ImlType type) {
 		if (type instanceof SimpleTypeReference) {
 			if (type.isAlias) {
-				return TypingServices.resolveAliases(TypingServices.getAliasType(type))
+				return resolveAliases(getAliasType(type))
 			} else {
 				return type
 			}
 		}
 		if (type instanceof TupleType) {
 			return ImlCustomFactory.INST.createTupleType(type.symbols.map[
-				ImlCustomFactory.INST.createSymbolDeclaration(it.name, clone(TypingServices.resolveAliases(it.type)))	
+				ImlCustomFactory.INST.createSymbolDeclaration(it.name, clone(resolveAliases(it.type)))	
 			])
 		}
 		if (type instanceof ArrayType) {
@@ -339,11 +345,11 @@ public class TypingServices {
 	}
 	
 	/* Check whether a constrained type is a template  */
-	def static boolean isTemplate(NamedType ct) {
+	def boolean isTemplate(NamedType ct) {
 		return ct.template;
 	}
 
-//	def static boolean isTermExpressionLiteralPosInt(TermExpression te) {
+//	def boolean isTermExpressionLiteralPosInt(TermExpression te) {
 //		switch (te) {
 //			NumberLiteral: {
 //				return !te.neg
@@ -353,7 +359,7 @@ public class TypingServices {
 //		}
 //	}
 //
-//	def static boolean isTermExpressionLiteralPosNum(TermExpression te) {
+//	def boolean isTermExpressionLiteralPosNum(TermExpression te) {
 //		switch (te) {
 //			NumberLiteral: {
 //				return !te.neg
@@ -366,7 +372,7 @@ public class TypingServices {
 //		}
 //	}
 //
-//	def static qualifiedName(Symbol elem) {
+//	def qualifiedName(Symbol elem) {
 //		var EObject e = elem.eContainer;
 //		var StringBuffer s = new StringBuffer()
 //		s.append(elem.name);
@@ -381,7 +387,7 @@ public class TypingServices {
 //		return s.toString
 //	}
 //
-//	def static isExtension(NamedType t, String qname) {
+//	def isExtension(NamedType t, String qname) {
 //		if (qualifiedName(t).equals(qname)) {
 //			return true;
 //		}
@@ -396,11 +402,11 @@ public class TypingServices {
 //		return false;
 //	}
 
-	def static isSimpleTR(ImlType hot) {
+	def isSimpleTR(ImlType hot) {
 		return hot instanceof SimpleTypeReference
 	}
 
-	def static asSimpleTR(ImlType hot) {
+	def asSimpleTR(ImlType hot) {
 		if (isSimpleTR(hot)) {
 			return hot as SimpleTypeReference
 		}

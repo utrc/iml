@@ -23,11 +23,12 @@ import com.utc.utrc.hermes.iml.iml.SequenceTerm
 import com.utc.utrc.hermes.iml.custom.ImlCustomFactory
 import org.eclipse.xtext.resource.XtextResource
 import com.utc.utrc.hermes.iml.util.TermExtractor
+import com.utc.utrc.hermes.iml.ImlParseHelper
 
 @RunWith(XtextRunner)
 @InjectWith(ImlInjectorProvider)
 class ImlUtilsTest {
-	@Inject extension ParseHelper<Model> 
+	@Inject extension ImlParseHelper
 	
 	@Inject extension ValidationTestHelper
 	
@@ -45,8 +46,6 @@ class ImlUtilsTest {
 	def void testGetTypeNameManually(String typeDeclaration, String typeGenerated) {
 		val model = '''
 			package p;
-			type Int;
-			type Real;
 			v1 :«typeDeclaration»;
 		'''.parse
 		model.assertNoErrors
@@ -74,8 +73,6 @@ class ImlUtilsTest {
 	def void testIsSimpleHot(String typeDeclaration, boolean isSimpleHot) {
 		val model = '''
 			package p;
-			type Int;
-			type Real;
 			v1 :«typeDeclaration»;
 		'''.parse
 		model.assertNoErrors
@@ -88,8 +85,6 @@ class ImlUtilsTest {
 	def void testToCNF() {
 		val model = '''
 		package p ;
-		type Bool ;
-		type Int ;
 		type A {
 			v1 : Bool ;
 			v2 : Bool ;
@@ -117,8 +112,6 @@ class ImlUtilsTest {
 	def void testToCNF1() {
 		val model = '''
 		package p ;
-		type Bool ;
-		type Int ;
 		type A {
 			v1 : Int-> Bool ;
 			v2 : Bool ;
@@ -146,8 +139,6 @@ class ImlUtilsTest {
 	def void testTermExtractor() {
 		val model = '''
 		package p ;
-		type Bool ;
-		type Int ;
 		type A {
 			v1 : Int-> Bool ;
 			v2 : Bool ;
@@ -170,8 +161,6 @@ class ImlUtilsTest {
 	def void testTermExtractorWithTermMemberSelection() {
 		val model = '''
 		package p ;
-		type Bool ;
-		type Int ;
 		type A {
 			v1 : B ;
 			assert a { v1 = v1 && v1.vx;};

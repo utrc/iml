@@ -34,7 +34,7 @@ public class FileUtil {
 		}
 		return allFiles;
 	}
-
+	
 	public static String readFileContent(String filepath) {
 		return readFileContent(new File(filepath));
 	}

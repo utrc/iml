@@ -24,19 +24,17 @@ import java.util.HashSet
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
 import org.eclipse.xtext.naming.IQualifiedNameConverter
-import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.resource.IEObjectDescription
 import org.eclipse.xtext.scoping.IScope
 import org.eclipse.xtext.scoping.Scopes
 import org.eclipse.xtext.scoping.impl.AbstractDeclarativeScopeProvider
 import org.eclipse.xtext.scoping.impl.FilteringScope
 
-import static extension com.utc.utrc.hermes.iml.typing.ImlTypeProvider.*
-import static extension com.utc.utrc.hermes.iml.typing.TypingServices.*
 import static extension org.eclipse.xtext.EcoreUtil2.*
 import com.utc.utrc.hermes.iml.iml.NamedType
 import com.utc.utrc.hermes.iml.iml.TailedExpression
-import com.utc.utrc.hermes.iml.iml.ExpressionTail
+import com.utc.utrc.hermes.iml.typing.ImlTypeProvider
+import com.utc.utrc.hermes.iml.typing.TypingServices
 
 /**
  * This class contains custom scoping description.
@@ -50,10 +48,16 @@ import com.utc.utrc.hermes.iml.iml.ExpressionTail
  */
 class ImlScopeProvider extends AbstractDeclarativeScopeProvider {
 
-	@Inject extension IQualifiedNameProvider
-
 	@Inject
 	private IQualifiedNameConverter qualifiedNameConverter;
+	
+	@Inject
+	private ImlStdLib stdLib
+
+	@Inject extension ImlTypeProvider
+	
+	@Inject extension TypingServices
+	
 
 	override getScope(EObject context, EReference reference) {
 		super.getScope(context, reference)
@@ -218,7 +222,7 @@ class ImlScopeProvider extends AbstractDeclarativeScopeProvider {
 
 		var receiverType = receiver.termExpressionType
 
-		if (receiverType === null || ImlStdLib.isPrimitive(receiverType)) {
+		if (receiverType === null) {
 			return parentScope
 		}
 
