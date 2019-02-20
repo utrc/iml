@@ -3,6 +3,7 @@
 
 <product name="IML IDE" uid="com.utc.utrc.hermes.iml.rcp.product" id="com.utc.utrc.hermes.rcp.IML" application="org.eclipse.ui.ide.workbench" version="1.0.0.qualifier" useFeatures="true" includeLaunchers="true">
 
+
    <configIni use="default">
    </configIni>
 
@@ -16,14 +17,17 @@
 
    <windowImages/>
 
+
    <launcher>
       <win useIco="false">
          <bmp/>
       </win>
    </launcher>
 
+
    <vm>
    </vm>
+
 
    <plugins>
    </plugins>
@@ -46,6 +50,20 @@
       <feature id="org.eclipse.ecf.core.ssl.feature"/>
       <feature id="org.eclipse.ecf.filetransfer.ssl.feature"/>
       <feature id="org.eclipse.e4.rcp"/>
+      <feature id="org.eclipse.xtext.sdk" version="2.12.0.v20170519-1412"/>
+      <feature id="org.eclipse.xtext.redist"/>
+      <feature id="org.eclipse.emf.mwe2.language.sdk"/>
+      <feature id="org.eclipse.xtext.xtext.ui"/>
+      <feature id="org.eclipse.xtext.xbase.lib"/>
+      <feature id="org.eclipse.emf.mwe2.runtime.sdk"/>
+      <feature id="org.eclipse.xtend.sdk"/>
+      <feature id="org.eclipse.emf.mwe2.launcher"/>
+      <feature id="org.eclipse.emf.mwe2.launcher.source"/>
+      <feature id="org.eclipse.xtext.runtime"/>
+      <feature id="org.eclipse.xtext.xbase"/>
+      <feature id="org.eclipse.xtext.examples"/>
+      <feature id="org.eclipse.xtext.ui"/>
+      <feature id="org.eclipse.xtext.docs"/>
    </features>
 
    <configurations>

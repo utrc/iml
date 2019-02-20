@@ -25,5 +25,4 @@ class ImlImportedNamespaceAwareLocalScopeProvider extends ImportedNamespaceAware
 		newArrayList(new ImportNormalizer(QualifiedName.create("iml","lang"),true,ignoreCase))
 	}
 	
-	
 }

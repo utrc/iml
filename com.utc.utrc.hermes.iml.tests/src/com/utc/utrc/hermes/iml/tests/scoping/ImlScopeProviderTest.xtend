@@ -24,6 +24,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 import static org.junit.Assert.*
+import com.utc.utrc.hermes.iml.ImlParseHelper
 
 /**
  * 
@@ -33,7 +34,7 @@ import static org.junit.Assert.*
 @InjectWith(ImlInjectorProvider)
 class ImlScopeProviderTest {
 	
-	@Inject extension ParseHelper<Model>
+	@Inject extension ImlParseHelper
 	
 	@Inject extension ValidationTestHelper
 	
@@ -46,7 +47,6 @@ class ImlScopeProviderTest {
 	def scopeForMemberSelection() {
 		val model = '''
 			package p;
-			type Int;
 			type t1 {
 				var1 : Int;
 			};
@@ -67,7 +67,6 @@ class ImlScopeProviderTest {
 	def scopeForMemberSelection_WithExtension() {
 		val model = '''
 			package p;
-			type Int;
 			type Parent {
 				varp : Int;
 			};
@@ -99,7 +98,7 @@ class ImlScopeProviderTest {
 				var1 : Int;
 				varx : Int := varp;
 			};
-		'''.parse;
+		'''.parse(false);
 		
 		((model.symbols.last as NamedType).symbols.last.definition.left as SymbolReferenceTerm) => [
 			assertScope(ImlPackage::eINSTANCE.symbolReferenceTerm_Symbol, 
@@ -114,7 +113,7 @@ class ImlScopeProviderTest {
 		var model = '''
 			package p1;
 			type P1T1;
-		'''.parse;
+		'''.parse(false);
 		
 		model = '''
 			package p2;
@@ -138,8 +137,6 @@ class ImlScopeProviderTest {
 	def scopeForTupleAccess() {
 		val model = '''
 			package p;
-			type Int;
-			type Real;
 			type t1 {
 				var1 : (e1: Int, e2:Real);
 				varx : Real := var1[e2];
@@ -159,8 +156,6 @@ class ImlScopeProviderTest {
 	def scopeForTupleAccess_ComplexTail() {
 		val model = '''
 			package p;
-			type Int;
-			type Real;
 			type t1 {
 				var1 : (Int, (e1: Int, e2:Real));
 				varx : Real := var1[1][e2];
@@ -180,8 +175,6 @@ class ImlScopeProviderTest {
 	def scopeForTupleAccess_ComplexTailWithTemplates() {
 		val model = '''
 			package p;
-			type Int;
-			type Real;
 			
 			type t2 <T> {
 				vT : T;
@@ -207,8 +200,6 @@ class ImlScopeProviderTest {
 	def scopeForTupleAccess_ComplexTailWithTemplates2() {
 		val model = '''
 			package p;
-			type Int;
-			type Real;
 			
 			type t3 <P>{
 				vP : P;
@@ -237,8 +228,6 @@ class ImlScopeProviderTest {
 	def scopeForTupleAccess_ComplexTail_Invalid() {
 		val model = '''
 			package p;
-			type Int;
-			type Real;
 			type t1 {
 				var1 : (Int, (e1: Int, e2:Real));
 				varx : Int := var1[e1][1];
@@ -254,9 +243,6 @@ class ImlScopeProviderTest {
 	def scopeInsideProgram() {
 		val model = '''
 			package p;
-			type Int;
-			type Real;
-			type Bool;
 			
 			type T1 {
 				var1 : Int;
@@ -276,9 +262,6 @@ class ImlScopeProviderTest {
 	def scopeForTypeConstructor() {
 		val model = '''
 			package p;
-			type Int;
-			type Real;
-			type Bool;
 			
 			type T1 {
 				var1 : Int;
@@ -301,9 +284,6 @@ class ImlScopeProviderTest {
 	def scopeForTypeConstructor_WithTemplate() {
 		val model = '''
 			package p;
-			type Int;
-			type Real;
-			type Bool;
 			
 			type T1 <T> {
 				var1 : Int;
@@ -326,7 +306,6 @@ class ImlScopeProviderTest {
 	def scopeInsidePrograms() {
 		val model = '''
 			package p;
-			type Int;
 			type A {
 				b: Int;
 			}
@@ -361,7 +340,6 @@ class ImlScopeProviderTest {
 	def scopeForInstanceConstructor() {
 		val model = '''
 		package iml.notes ;
-		type Int ;
 		type Date ;
 		type Employee {
 			level : Int;
@@ -376,11 +354,6 @@ class ImlScopeProviderTest {
 		model.assertNoErrors
 		return
 	}
-	
-	
-	
-	
-	
 	
 	def private assertScope(EObject context, EReference ref, List<String> expected) {
 		context.assertNoErrors

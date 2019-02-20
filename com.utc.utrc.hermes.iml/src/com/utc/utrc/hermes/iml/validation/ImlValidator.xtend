@@ -27,9 +27,6 @@ import org.eclipse.xtext.validation.AbstractDeclarativeValidator
 import org.eclipse.xtext.validation.Check
 import org.eclipse.xtext.validation.EValidatorRegistrar
 
-import static extension com.utc.utrc.hermes.iml.typing.ImlTypeProvider.*
-import static extension com.utc.utrc.hermes.iml.typing.TypingServices.*
-import static extension com.utc.utrc.hermes.iml.lib.ImlStdLib.*
 import static extension com.utc.utrc.hermes.iml.util.ImlUtil.getTypeName
 
 import com.utc.utrc.hermes.iml.iml.Alias
@@ -45,10 +42,10 @@ import com.utc.utrc.hermes.iml.util.ImlUtil
 import com.utc.utrc.hermes.iml.iml.SignedAtomicFormula
 import com.utc.utrc.hermes.iml.iml.RelationKind
 import com.utc.utrc.hermes.iml.iml.CardinalityRestriction
-import com.utc.utrc.hermes.iml.iml.TermExpression
 import com.utc.utrc.hermes.iml.iml.TailedExpression
 import com.utc.utrc.hermes.iml.iml.FunctionType
 import com.utc.utrc.hermes.iml.iml.ExpressionTail
+import com.utc.utrc.hermes.iml.lib.ImlStdLib
 
 /**
  * This class contains custom validation rules. 
@@ -58,6 +55,12 @@ import com.utc.utrc.hermes.iml.iml.ExpressionTail
 class ImlValidator extends AbstractImlValidator {
 	
 	@Inject IQualifiedNameProvider qnp ;
+	
+	@Inject extension ImlTypeProvider
+	
+	@Inject extension TypingServices
+	
+	@Inject extension ImlStdLib
 
 	private static final String DOMAIN_EXTENSION_ID = 
       "com.utc.utrc.hermes.iml.validation.domaindefinition";
@@ -83,6 +86,8 @@ class ImlValidator extends AbstractImlValidator {
 	public static val INVALID_SYMBOL_DECLARATION = 'com.utc.utrc.hermes.iml.validation.InvalidSymbolDeclaration';
 	public static val INVALID_INDEX_ACCESS = 'com.utc.utrc.hermes.iml.validation.InvalidIndexAccess';
 	public static val ARRAY_ACCESS_ON_HOT = 'com.utc.utrc.hermes.iml.validation.ArrayAccessOnHot';
+	public static val INCOMPATIBLE_TYPES = 'com.utc.utrc.hermes.iml.validation.IncompatibleTypes';
+	
 	
 	@Inject
 	override void register(EValidatorRegistrar registrar) {
@@ -224,7 +229,7 @@ class ImlValidator extends AbstractImlValidator {
 			var lt = e.left.termExpressionType
 			if (! rt.isCompatible(lt) || ! lt.isCompatible(rt)) {
 				error('''Type «ImlUtil.getTypeName(lt, qnp)» and «ImlUtil.getTypeName(rt, qnp)» are not compatible''',
-					ImlPackage::eINSTANCE.atomicExpression_Rel, INVALID_TYPE_PARAMETER)
+					ImlPackage::eINSTANCE.atomicExpression_Rel, INCOMPATIBLE_TYPES)
 			}
 		} else {
 			var rt = e.right.termExpressionType
@@ -239,49 +244,13 @@ class ImlValidator extends AbstractImlValidator {
 
 	@Check
 	def checkTailedExpression(TailedExpression expr) {
-		val leftType = TypingServices.resolveAliases(ImlTypeProvider.termExpressionType(expr.left))
+		val leftType = resolveAliases(termExpressionType(expr.left))
 		checkTypeAgainstTail(leftType, expr.tail)
-		
-//		if (symbol instanceof Assertion) { 
-//			if (!symbolRef.tails.isNullOrEmpty) {
-//				error('''Method invocatin and array access are not applicable on assertion '«symbol.name»' ''',
-//				ImlPackage.eINSTANCE.symbolReferenceTerm_Tails,
-//				METHOD_INVOCATION_ON_ASSERTION
-//			)
-//			}
-//		} else if (symbol instanceof SymbolDeclaration) {
-//			var symbolType = TypingServices.resolveAliases(ImlTypeProvider.getSymbolRefSegmentType(symbolRef)) // Get the type of symbol without tail
-//			checkTypeAgainstTails(symbolType, symbolRef.tails, symbol)
-//		} else if (symbol instanceof NamedType) {
-//			if (!symbolRef.tails.nullOrEmpty) {
-//				// We can only use array access 1 level in case of finite type
-//				if (symbolRef.tails.size != 1 || !symbol.isFinite) {
-//					error('''You can only use single array access on a finite type: '«symbol.name»' ''',
-//						ImlPackage.eINSTANCE.symbolReferenceTerm_Tails,
-//						METHOD_INVOCATION_ON_CONSTRAINEDTYPE
-//					)
-//				}
-//			}
-//		}
 	}
 	
 	def boolean isFinite(NamedType type) {
 		type.restrictions.filter[it instanceof CardinalityRestriction].size > 0
 	}
-	
-//	def checkTypeAgainstTails(ImlType type, List<ExpressionTail> tails) {
-//		var tmpType = type
-//		if (!tails.nullOrEmpty) {
-//			for (var i=0, var stop=false ; i < tails.length ; i++) {
-//				val tail = tails.get(i)
-//				if (checkTypeAgainstTail(tmpType, tail)) {
-//					tmpType = ImlTypeProvider.accessTail(tmpType, tail)
-//				} else { // There was a validation error, no need to continue check
-//					stop=true;
-//				}
-//			}
-//		}	
-//	}
 	
 	def checkTypeAgainstTail(ImlType type, ExpressionTail tail) {
 		val typeAsString = getTypeName(type, qnp)
@@ -352,7 +321,7 @@ class ImlValidator extends AbstractImlValidator {
 		}
 		
 		if (tupleTail.elements.size == 1) { // Special case to handle alias
-			if (TypingServices.isCompatible(domain, ImlTypeProvider.termExpressionType(tupleTail.elements.get(0)))) {
+			if (isCompatible(domain, termExpressionType(tupleTail.elements.get(0)))) {
 				return true;
 			}
 		}
@@ -368,8 +337,8 @@ class ImlValidator extends AbstractImlValidator {
 		
 		// TODO check type matching of parameter provided v.s declared
 		for (i : 0 ..< domainList.size) {
-			val paramType = ImlTypeProvider.termExpressionType(tupleTail.elements.get(i))
-			if (!TypingServices.isCompatible(domainList.get(i), paramType)) {
+			val paramType = termExpressionType(tupleTail.elements.get(i))
+			if (!isCompatible(domainList.get(i), paramType)) {
 				error('''Invalid argument type. Expecting: «ImlUtil.getTypeName(domainList.get(i), qnp)» but got 
 							«ImlUtil.getTypeName(paramType, qnp)»''',
 					ImlPackage.eINSTANCE.tailedExpression_Tail,
@@ -416,8 +385,8 @@ class ImlValidator extends AbstractImlValidator {
 	@Check
 	def checkCompatibleDeclarationAndDefinition(SymbolDeclaration symbol) {
 		if (symbol.type !== null && symbol.definition !== null) {
-			val defType = ImlTypeProvider.termExpressionType(symbol.definition)
-			if (!TypingServices.isCompatible(symbol.type, defType)) {
+			val defType = termExpressionType(symbol.definition)
+			if (!isCompatible(symbol.type, defType)) {
 				error('''Incompatible types, expected  «ImlUtil.getTypeName(symbol.type, qnp)» but actual was «ImlUtil.getTypeName(defType, qnp)»''',
 					ImlPackage.eINSTANCE.symbolDeclaration_Definition,
 					TYPE_MISMATCH_IN_TERM_EXPRESSION
@@ -455,9 +424,9 @@ class ImlValidator extends AbstractImlValidator {
 	
 	@Check
 	def checkAliasDeclaration(Alias alias) {
-		val aliasType = TypingServices.resolveAliases(alias.type.type)
+		val aliasType = resolveAliases(alias.type.type)
 		
-		if (!TypingServices.isEqual(aliasType, alias.type.type, false)) {
+		if (!isEqual(aliasType, alias.type.type, false)) {
 			val mainType = EcoreUtil2.getContainerOfType(alias, NamedType);
 			error('''Type «mainType.name» alias shouldn't include any further aliases''',
 				ImlPackage.eINSTANCE.alias_Type,

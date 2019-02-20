@@ -48,6 +48,11 @@ Workflow {
 				debugGrammar = true
 			}
 			fragment = exporting.QualifiedNamesFragment2 auto-inject {}
+			
+			newProjectWizardForEclipse = {
+				generate = true
+			}
 		}
+		
 	}
 }
