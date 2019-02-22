@@ -5,4 +5,4 @@ xtend-gen/
 model/
 .settings/
 target/
-
+plugin.xml_gen

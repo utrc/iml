@@ -9,9 +9,13 @@ import com.utc.utrc.hermes.iml.iml.Symbol
 import com.utc.utrc.hermes.iml.iml.Model
 import org.eclipse.emf.ecore.resource.ResourceSet
 import com.google.inject.Singleton
+import com.google.inject.Inject
+import org.eclipse.xtext.naming.IQualifiedNameProvider
 
 @Singleton
 class ImlStdLib {
+	
+	@Inject extension private IQualifiedNameProvider qnp ;
 
 	private Map<String, Map<String, Symbol>> imlStdSymbols = newHashMap;
 	
@@ -72,7 +76,7 @@ class ImlStdLib {
 	}
 	
 	def boolean isInt(NamedType t) {
-		return intType == t
+		return intType == t || (t !== null && intType.fullyQualifiedName.equals(t.fullyQualifiedName))
 	}
 	
 	def boolean isReal(ImlType t) {
@@ -83,7 +87,7 @@ class ImlStdLib {
 	}
 	
 	def boolean isReal(NamedType t) {
-		return realType == t
+		return realType == t || (t !== null && realType.fullyQualifiedName.equals(t.fullyQualifiedName))
 	}
 	
 	def boolean isBool(ImlType t) {
@@ -94,7 +98,7 @@ class ImlStdLib {
 	}
 	
 	def boolean isBool(NamedType t) {
-		return boolType == t
+		return boolType == t || (t !== null && boolType.fullyQualifiedName.equals(t.fullyQualifiedName))
 	}
 	
 	def boolean isString(ImlType t) {
@@ -105,7 +109,7 @@ class ImlStdLib {
 	}
 	
 	def boolean isString(NamedType t) {
-		return stringType == t
+		return stringType == t || (t !== null && stringType.fullyQualifiedName.equals(t.fullyQualifiedName))
 	}
 	
 	def boolean isChar(ImlType t) {
@@ -116,7 +120,7 @@ class ImlStdLib {
 	}
 	
 	def boolean isChar(NamedType t) {
-		return charType == t
+		return charType == t || (t !== null && charType.fullyQualifiedName.equals(t.fullyQualifiedName))
 	}
 	
 	def createIntRef() {

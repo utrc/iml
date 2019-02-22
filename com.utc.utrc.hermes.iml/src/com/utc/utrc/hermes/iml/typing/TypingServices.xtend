@@ -19,6 +19,7 @@ import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.util.EcoreUtil
 import com.google.inject.Inject
 import com.utc.utrc.hermes.iml.lib.ImlStdLib
+import com.utc.utrc.hermes.iml.iml.SelfType
 
 public class TypingServices {
 	
@@ -325,6 +326,9 @@ public class TypingServices {
 				return type
 			}
 		}
+		if (type instanceof SelfType) {
+			return type
+		}
 		if (type instanceof TupleType) {
 			return ImlCustomFactory.INST.createTupleType(type.symbols.map[
 				ImlCustomFactory.INST.createSymbolDeclaration(it.name, clone(resolveAliases(it.type)))	
@@ -348,59 +352,6 @@ public class TypingServices {
 	def boolean isTemplate(NamedType ct) {
 		return ct.template;
 	}
-
-//	def boolean isTermExpressionLiteralPosInt(TermExpression te) {
-//		switch (te) {
-//			NumberLiteral: {
-//				return !te.neg
-//			}
-//			default:
-//				return false
-//		}
-//	}
-//
-//	def boolean isTermExpressionLiteralPosNum(TermExpression te) {
-//		switch (te) {
-//			NumberLiteral: {
-//				return !te.neg
-//			}
-//			FloatNumberLiteral: {
-//				return !te.neg
-//			}
-//			default:
-//				return false
-//		}
-//	}
-//
-//	def qualifiedName(Symbol elem) {
-//		var EObject e = elem.eContainer;
-//		var StringBuffer s = new StringBuffer()
-//		s.append(elem.name);
-//		while (e !== null) {
-//			if (e instanceof Model) {
-//				s.insert(0, e.name.replace('.', '::') + '::');
-//			} else if (e instanceof NamedType) {
-//				s.insert(0, e.name + '::');
-//			}
-//			e = e.eContainer;
-//		}
-//		return s.toString
-//	}
-//
-//	def isExtension(NamedType t, String qname) {
-//		if (qualifiedName(t).equals(qname)) {
-//			return true;
-//		}
-//		var extensions = getAllSuperTypes(t);
-//		for (l : extensions) {
-//			for (sup : l) {
-//				if (sup.qualifiedName.equals(qname)) {
-//					return true;
-//				}
-//			}
-//		}
-//		return false;
-//	}
 
 	def isSimpleTR(ImlType hot) {
 		return hot instanceof SimpleTypeReference

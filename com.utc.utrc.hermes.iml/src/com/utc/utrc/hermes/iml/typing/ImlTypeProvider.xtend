@@ -355,15 +355,18 @@ public class ImlTypeProvider {
 		
 		if (ctx === null || ctx.type === null) {
 			if ( s.symbol instanceof SymbolDeclaration) {
-				if (! (s.symbol as SymbolDeclaration).isPolymorphic) {
-					return EcoreUtil.copy( (s.symbol as SymbolDeclaration).type)
+				val symbolDecl = s.symbol as SymbolDeclaration
+				if (! symbolDecl.isPolymorphic) {
+					return EcoreUtil.copy(symbolDecl.type)
 				}
 				//TODO take care of type binding here
-				var retval = EcoreUtil.copy((s.symbol as SymbolDeclaration).type)
+				var retval = EcoreUtil.copy(symbolDecl.type)
+				if (symbolDecl.typeParameter.size != s.typeBinding.size) return retval; // Precondition
+				
 				//replace all type parameters with the new ones
-				var ctmap = new HashMap<NamedType,ImlType>()	
-				for(var i = 0; i < (s.symbol as SymbolDeclaration).typeParameter.size();i++){
-					ctmap.put((s.symbol as SymbolDeclaration).typeParameter.get(i),s.typeBinding.get(i))
+				var ctmap = new HashMap<NamedType,ImlType>()
+				for(var i = 0; i < symbolDecl.typeParameter.size();i++){
+					ctmap.put(symbolDecl.typeParameter.get(i),s.typeBinding.get(i))
 				}
 				return remap(retval,ctmap);
 			}
