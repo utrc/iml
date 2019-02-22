@@ -873,4 +873,61 @@ class ImlValidatorTest {
 	 	model.assertNoErrors
 	 }
 	 
+	 @Test
+	 def issue39_TraitSelfBug() {
+	 	val model = '''
+	 	package p;
+	 	trait Equatable {
+	 	  eq: Self -> Bool;
+	 	  // Reflexivity of eq
+	 	  assert {
+	 	       self.eq(self)
+	 	  };
+«««	 	  // Symmetry of eq
+«««	 	  assert {
+«««	 	       forall (x:Self) {self.eq(x) => x.eq(self)}
+«««	 	  };
+«««	 	  // Associativity of eq
+«««	 	  assert {
+«««	 	       forall (x:Self,y:Self) { 
+«««	 	             self.eq(x) && x.eq(y) => self.leq(y) 
+«««	 	       };
+«««	 	  };
+	 	};
+	 	'''.parse
+	 	model.assertNoErrors
+	 }
+	 
+	 @Test
+	 def tesValidatorOverPolymorphicSymbol_Error() {
+	 	val model = '''
+	 		package test02;
+	 		
+	 		type ArrayList<T> ;
+	 		
+	 		<T>empty_list: ArrayList<T>;
+	 		
+	 		l: ArrayList<Int> := empty_list;
+	 		
+	 	'''.parse
+	 	
+	 	model.assertError(ImlPackage.eINSTANCE.symbolDeclaration, TYPE_MISMATCH_IN_TERM_EXPRESSION)
+	 }
+	 
+	 @Test
+	 def tesValidatorOverPolymorphicSymbol_NoError() {
+	 	val model = '''
+	 		package test02;
+	 		
+	 		type ArrayList<T> ;
+	 		
+	 		<T>empty_list: ArrayList<T>;
+	 		
+	 		l: ArrayList<Int> := <Int>empty_list;
+	 		
+	 	'''.parse
+	 	
+	 	model.assertNoErrors
+	 }
+	 
 }

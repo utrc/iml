@@ -9,6 +9,7 @@ import com.utc.utrc.hermes.iml.scoping.ImlImportedNamespaceAwareLocalScopeProvid
 import org.eclipse.xtext.validation.CompositeEValidator
 import com.google.inject.name.Names
 import com.utc.utrc.hermes.iml.custom.ImlCustomLinker
+import org.eclipse.xtext.linking.ILinker
 
 /**
  * Use this class to register components to be used at runtime / without the Equinox extension registry.
@@ -25,18 +26,9 @@ class ImlRuntimeModule extends AbstractImlRuntimeModule {
 		binder.bind(boolean).annotatedWith(Names.named((CompositeEValidator.USE_EOBJECT_VALIDATOR))).toInstance(false)
 	}
 	
-//	override bindIGlobalScopeProvider() {
-//		return ImlImportUriGlobalScopeProvider
-//	}
-	
-	override Class<? extends org.eclipse.xtext.linking.ILinker> bindILinker() {
+	override Class<? extends ILinker> bindILinker() {
 		ImlCustomLinker
 	}
 	
-	
-//	@SingletonBinding
-//	def Class<? extends ImlStdLib> bindStandardLib() {
-//		ImlStdLib
-//	}
 	
 }

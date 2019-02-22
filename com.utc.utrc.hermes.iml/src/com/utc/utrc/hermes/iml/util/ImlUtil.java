@@ -2,6 +2,7 @@ package com.utc.utrc.hermes.iml.util;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.eclipse.emf.common.util.EList;
@@ -23,6 +24,7 @@ import com.utc.utrc.hermes.iml.iml.Model;
 import com.utc.utrc.hermes.iml.iml.ParenthesizedTerm;
 import com.utc.utrc.hermes.iml.iml.Property;
 import com.utc.utrc.hermes.iml.iml.Relation;
+import com.utc.utrc.hermes.iml.iml.SelfType;
 import com.utc.utrc.hermes.iml.iml.SignedAtomicFormula;
 import com.utc.utrc.hermes.iml.iml.SimpleTypeReference;
 import com.utc.utrc.hermes.iml.iml.Symbol;
@@ -130,12 +132,16 @@ public class ImlUtil {
 					.map(dim -> "[]")
 					.reduce((accum, current) -> accum + current).get();
 		} else if (hot instanceof TupleType) {
-			return "(" + ((TupleType) hot).getSymbols().stream()
-				.map(symbol -> getTypeName(symbol.getType(), qnp))
-				.reduce((accum, current) -> accum + ", " + current).get() + ")";
+			Optional<String> elements = ((TupleType) hot).getSymbols().stream()
+			.map(symbol -> getTypeName(symbol.getType(), qnp))
+			.reduce((accum, current) -> accum + ", " + current);
+			return "(" + (elements.isPresent()? elements.get() : "") + ")";
 		} else if (hot instanceof FunctionType){
 			return getTypeName(((FunctionType)hot).getDomain(), qnp) + "->" + getTypeName(((FunctionType)hot).getRange(), qnp);
-		} else if (hot == null) {
+		} else if (hot instanceof SelfType) {
+			return "Self";
+		}
+		else if (hot == null) {
 			return "NULL";
 		}
 		return "UNKNOWN_IML_TYPE";

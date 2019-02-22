@@ -136,7 +136,7 @@ class ImlTypeProviderTest {
 		
 		val exprType = typeProvider.termExpressionType(folForm)
 		
-		assertEquals((exprType as SimpleTypeReference).type, intType)
+		assertTrue(typingServices.isEqual((exprType as SimpleTypeReference).type, intType))
 	}
 	
 	@Test
@@ -163,7 +163,7 @@ class ImlTypeProviderTest {
 		
 		val exprType = typeProvider.termExpressionType(folForm)
 		
-		assertEquals((exprType as SimpleTypeReference).type, intType)
+		assertTrue(typingServices.isEqual((exprType as SimpleTypeReference).type, intType))
 	}
 	
 	@Test
