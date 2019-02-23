@@ -883,17 +883,21 @@ class ImlValidatorTest {
 	 	  assert {
 	 	       self.eq(self)
 	 	  };
-«««	 	  // Symmetry of eq
-«««	 	  assert {
-«««	 	       forall (x:Self) {self.eq(x) => x.eq(self)}
-«««	 	  };
-«««	 	  // Associativity of eq
-«««	 	  assert {
-«««	 	       forall (x:Self,y:Self) { 
-«««	 	             self.eq(x) && x.eq(y) => self.leq(y) 
-«««	 	       };
-«««	 	  };
+	 	  // Symmetry of eq
+	 	  assert {
+	 	       forall (x:Self) {self.eq(x) => x.eq(self)}
+	 	  };
+	 	  // Associativity of eq
+	 	  assert {
+	 	       forall (x:Self,y:Self) { 
+	 	             self.eq(x) && x.eq(y) => self.eq(y) 
+	 	       };
+	 	  };
 	 	};
+	 	
+	 	type T exhibits(Equatable) {
+	 		x : Bool := eq(self);
+	 	}
 	 	'''.parse
 	 	model.assertNoErrors
 	 }

@@ -6,6 +6,7 @@ import com.utc.utrc.hermes.iml.iml.AtomicExpression;
 import com.utc.utrc.hermes.iml.iml.CardinalityRestriction;
 import com.utc.utrc.hermes.iml.iml.CaseTermExpression;
 import com.utc.utrc.hermes.iml.iml.NamedType;
+import com.utc.utrc.hermes.iml.iml.OptionalTermExpr;
 import com.utc.utrc.hermes.iml.iml.EnumRestriction;
 import com.utc.utrc.hermes.iml.iml.FolFormula;
 import com.utc.utrc.hermes.iml.iml.ImlType;
@@ -167,6 +168,11 @@ public abstract class AbstractModelVisitor implements IModelVisitor {
 
 	@Override
 	public void visit(CaseTermExpression e) {
+		// TODO Auto-generated method stub
+	}
+	
+	@Override
+	public void visit(OptionalTermExpr e) {
 		// TODO Auto-generated method stub
 	}
 

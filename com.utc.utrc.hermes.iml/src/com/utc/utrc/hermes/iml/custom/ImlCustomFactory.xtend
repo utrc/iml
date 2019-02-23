@@ -12,6 +12,7 @@ import com.utc.utrc.hermes.iml.iml.SymbolReferenceTerm
 import com.utc.utrc.hermes.iml.iml.NamedType
 import com.utc.utrc.hermes.iml.iml.ImlType
 import com.utc.utrc.hermes.iml.iml.ExpressionTail
+import com.utc.utrc.hermes.iml.iml.OptionalTermExpr
 
 public class ImlCustomFactory extends ImlFactoryImpl {
 	
@@ -253,6 +254,13 @@ public class ImlCustomFactory extends ImlFactoryImpl {
 		createSymbolDeclaration => [
 			it.name = name
 			it.type = type
+		]
+	}
+	
+	def createArrayType(ImlType type, List<OptionalTermExpr> dim) {
+		createArrayType =>[
+			it.type = type
+			it.dimensions.addAll(dim)
 		]
 	}
 	
