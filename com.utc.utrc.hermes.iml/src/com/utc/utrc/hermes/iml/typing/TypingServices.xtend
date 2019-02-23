@@ -319,31 +319,40 @@ public class TypingServices {
 	}
 	
 	def ImlType resolveAliases(ImlType type) {
+		normalizeType(type, null)
+	}
+	
+	
+	def ImlType normalizeType(ImlType type, NamedType container) {
 		if (type instanceof SimpleTypeReference) {
 			if (type.isAlias) {
-				return resolveAliases(getAliasType(type))
+				return normalizeType(getAliasType(type), container)
 			} else {
 				return type
 			}
 		}
 		if (type instanceof SelfType) {
-			return type
+			if (container !== null) {
+				return ImlCustomFactory.INST.createSimpleTypeReference(container)
+			} else {
+				return type
+			}
 		}
 		if (type instanceof TupleType) {
 			return ImlCustomFactory.INST.createTupleType(type.symbols.map[
-				ImlCustomFactory.INST.createSymbolDeclaration(it.name, clone(resolveAliases(it.type)))	
+				ImlCustomFactory.INST.createSymbolDeclaration(it.name, clone(normalizeType(it.type, container)))	
 			])
 		}
 		if (type instanceof ArrayType) {
 			return ImlCustomFactory.INST.createArrayType => [
-				it.type = clone(resolveAliases(type.type))
+				it.type = clone(normalizeType(type.type, container))
 				it.dimensions.addAll(type.dimensions.map[ImlCustomFactory.INST.createOptionalTermExpr])
 			]
 		}
 		if (type instanceof FunctionType) {
 			return ImlCustomFactory.INST.createFunctionType => [
-				domain = clone(resolveAliases(type.domain))
-				range = clone(resolveAliases(type.range))
+				domain = clone(normalizeType(type.domain, container))
+				range = clone(normalizeType(type.range, container))
 			]
 		}
 	}

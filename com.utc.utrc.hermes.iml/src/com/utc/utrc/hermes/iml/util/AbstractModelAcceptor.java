@@ -4,15 +4,18 @@ import com.utc.utrc.hermes.iml.iml.Addition;
 import com.utc.utrc.hermes.iml.iml.Alias;
 import com.utc.utrc.hermes.iml.iml.Annotation;
 import com.utc.utrc.hermes.iml.iml.ArrayAccess;
+import com.utc.utrc.hermes.iml.iml.ArrayType;
 import com.utc.utrc.hermes.iml.iml.Assertion;
 import com.utc.utrc.hermes.iml.iml.AtomicExpression;
 import com.utc.utrc.hermes.iml.iml.CardinalityRestriction;
 import com.utc.utrc.hermes.iml.iml.CaseTermExpression;
 import com.utc.utrc.hermes.iml.iml.NamedType;
+import com.utc.utrc.hermes.iml.iml.OptionalTermExpr;
 import com.utc.utrc.hermes.iml.iml.EnumRestriction;
 import com.utc.utrc.hermes.iml.iml.ExpressionTail;
 import com.utc.utrc.hermes.iml.iml.Extension;
 import com.utc.utrc.hermes.iml.iml.FolFormula;
+import com.utc.utrc.hermes.iml.iml.FunctionType;
 import com.utc.utrc.hermes.iml.iml.ImlType;
 import com.utc.utrc.hermes.iml.iml.Import;
 import com.utc.utrc.hermes.iml.iml.IteTermExpression;
@@ -23,6 +26,7 @@ import com.utc.utrc.hermes.iml.iml.Property;
 import com.utc.utrc.hermes.iml.iml.PropertyList;
 import com.utc.utrc.hermes.iml.iml.QuantifiedFormula;
 import com.utc.utrc.hermes.iml.iml.Relation;
+import com.utc.utrc.hermes.iml.iml.SelfType;
 import com.utc.utrc.hermes.iml.iml.SequenceTerm;
 import com.utc.utrc.hermes.iml.iml.SignedAtomicFormula;
 import com.utc.utrc.hermes.iml.iml.SimpleTypeReference;
@@ -34,10 +38,11 @@ import com.utc.utrc.hermes.iml.iml.TermMemberSelection;
 import com.utc.utrc.hermes.iml.iml.Trait;
 import com.utc.utrc.hermes.iml.iml.TraitExhibition;
 import com.utc.utrc.hermes.iml.iml.TupleConstructor;
+import com.utc.utrc.hermes.iml.iml.TupleType;
 import com.utc.utrc.hermes.iml.iml.TypeRestriction;
 import com.utc.utrc.hermes.iml.iml.TypeWithProperties;
 
-public abstract class AbstractModelAcceptor implements IModelAcceptor {
+public class AbstractModelAcceptor implements IModelAcceptor {
 
 	@Override
 	public void accept(Model m, IModelVisitor visitor) {
@@ -270,8 +275,55 @@ public abstract class AbstractModelAcceptor implements IModelAcceptor {
 
 	@Override
 	public void accept(ImlType e, IModelVisitor visitor) {
-		//TODO Accept
+		if (e instanceof SimpleTypeReference) {
+			accept((SimpleTypeReference) e, visitor);
+		} else if (e instanceof ArrayType) {
+			accept((ArrayType) e, visitor);
+		} else if (e instanceof TupleType) {
+			accept((TupleType) e, visitor);
+		} else if (e instanceof FunctionType) {
+			accept((FunctionType) e, visitor);
+		} else if (e instanceof SelfType) {
+			accept((SelfType) e, visitor);
+		}
+//		visitor.visit(e); // Visit one of the concrete class instead
+	}
+	
+	@Override
+	public void accept(ArrayType e, IModelVisitor visitor) {
+		accept(e.getType(), visitor);
+		for (OptionalTermExpr term : e.getDimensions()) {
+			accept(term, visitor);
+		}
 		visitor.visit(e);
+	}
+	
+	@Override
+	public void accept(FunctionType e, IModelVisitor visitor) {
+		accept(e.getDomain(), visitor);
+		accept(e.getRange(), visitor);
+		visitor.visit(e);
+	}
+	
+	@Override
+	public void accept(SelfType e, IModelVisitor visitor) {
+		visitor.visit(e);
+	}
+	
+	@Override
+	public void accept(TupleType e, IModelVisitor visitor) {
+		for (SymbolDeclaration s : e.getSymbols()) {
+			accept(s, visitor);
+		}
+		visitor.visit(e);
+	}
+	
+	@Override
+	public void accept(OptionalTermExpr t, IModelVisitor visitor) {
+		if (t.getTerm() != null) {
+			accept(t.getTerm(), visitor);
+		}
+		visitor.visit(t);
 	}
 
 	@Override

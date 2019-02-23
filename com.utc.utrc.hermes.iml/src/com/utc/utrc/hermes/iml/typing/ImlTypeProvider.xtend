@@ -77,7 +77,7 @@ public class ImlTypeProvider {
 	}
 	
 		def ImlType termExpressionType(TermExpression t, SimpleTypeReference context) {
-			return copy(resolveAliases(termExpressionType(t, context, false)))
+			return copy(resolveAliases(expressionType(t, context)))
 		}
 	
 
@@ -87,7 +87,7 @@ public class ImlTypeProvider {
 	 * that contains stereotypes, type and type binding information
 	 * for the term. 
 	 * */
-	def ImlType termExpressionType(TermExpression t, SimpleTypeReference context, boolean normalizeAliases) {
+	def ImlType expressionType(TermExpression t, SimpleTypeReference context) {
 
 		switch (t) {
 			// If the expression is "self", then its type is 
@@ -137,7 +137,7 @@ public class ImlTypeProvider {
 				return accessTail(leftType, t.tail)
 			}
 			SymbolReferenceTerm: {
-				return getSymbolReferenceType(t, context)
+				return normalizeType(getSymbolReferenceType(t, context), t.getContainerOfType(NamedType))
 
 			}
 			// A number literal is always an integer
