@@ -238,7 +238,7 @@ public class TypingServices {
 			val toAdd = <SimpleTypeReference>newArrayList();
 			for (current : retVal.get(index)) {
 				val ctype = current.type
-				if (ctype.relations != null) {
+				if (ctype.relations !== null) {
 					for (rel : ctype.relations.filter(Extension)) {
 							for(twp : rel.extensions){
 							if (twp.type instanceof SimpleTypeReference) {

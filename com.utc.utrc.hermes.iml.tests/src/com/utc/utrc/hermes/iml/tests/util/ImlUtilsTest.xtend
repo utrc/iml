@@ -118,7 +118,7 @@ class ImlUtilsTest {
 			v3 : Int-> Bool ;
 			v4 : Bool ;
 			//assert a { (v1(0) || v2) && (v3(2) || v4) && (v1(1) || v4) };
-			assert a { ( v1(0) && v2 && (v1 => v3(2)) ) || ! ( v4 => v1(1) ) };
+			assert a { ( v1(0) && v2 && (v1(0) => v3(2)) ) || ! ( v4 => v1(1) ) };
 		}
 		'''.parse
 		model.assertNoErrors
@@ -146,7 +146,7 @@ class ImlUtilsTest {
 			v4 : Bool ;
 			v5 : Int ;
 			//assert a { (v1(0) || v2) && (v3(2) || v4) && (v1(1) || v4) };
-			assert a { ( v1(v5) && v2 && (v1 => v3(2)) ) || ! ( v4 => v1(1) ) };
+			assert a { ( v1(v5) && v2 && (v1(0) => v3(2)) ) || ! ( v4 => v1(1) ) };
 		}
 		'''.parse
 		model.assertNoErrors

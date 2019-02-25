@@ -18,7 +18,6 @@ import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
 import com.utc.utrc.hermes.iml.iml.SymbolReferenceTerm
 import com.utc.utrc.hermes.iml.iml.TermMemberSelection
 import com.utc.utrc.hermes.iml.iml.TupleType
-import com.utc.utrc.hermes.iml.lib.ImlStdLib
 import java.util.Arrays
 import java.util.HashSet
 import org.eclipse.emf.ecore.EObject
@@ -50,13 +49,12 @@ class ImlScopeProvider extends AbstractDeclarativeScopeProvider {
 
 	@Inject
 	private IQualifiedNameConverter qualifiedNameConverter;
-	
-	@Inject
-	private ImlStdLib stdLib
 
 	@Inject extension ImlTypeProvider
 	
 	@Inject extension TypingServices
+	
+	@Inject ImlImportedNamespaceAwareLocalScopeProvider importedScopeProvider;
 	
 
 	override getScope(EObject context, EReference reference) {
@@ -69,8 +67,13 @@ class ImlScopeProvider extends AbstractDeclarativeScopeProvider {
 		if (qn.startsWith(mqn) && ! iod.name.startsWith(mqn)) {
 			return true;
 		}
-		for (imp : context.imports) {
-			var iqn = qualifiedNameConverter.toQualifiedName(imp.importedNamespace)
+		
+		val allImports = newArrayList
+		allImports.addAll(importedScopeProvider.getImplicitImports(false).map[it.toString()])
+		allImports.addAll(context.imports.map[it.importedNamespace]);
+		
+		for (imp : allImports) {
+			var iqn = qualifiedNameConverter.toQualifiedName(imp)
 			var hasW = false;
 			if (iqn.lastSegment.equals('*')) {
 				hasW = true;
@@ -90,26 +93,6 @@ class ImlScopeProvider extends AbstractDeclarativeScopeProvider {
 		return false;
 	}
 
-	def boolean shareSameContainer(EObject o1, EObject o2) {
-		if (o1 === null)
-			return false
-		var containersOfO1 = new HashSet<EObject>()
-		var cont = o1.eContainer
-		while (cont !== null) {
-			containersOfO1.add(cont)
-			cont = cont.eContainer
-		}
-		var containersOfO2 = new HashSet<EObject>()
-		cont = o2
-		while (cont !== null) {
-			containersOfO2.add(cont)
-			cont = cont.eContainer
-		}
-
-		containersOfO1.retainAll(containersOfO2)
-		return !containersOfO1.empty
-	}
-
 	def IScope getGlobalScope(EObject context, EReference r) {
 		var global = delegateGetScope(context, r)
 
@@ -126,9 +109,6 @@ class ImlScopeProvider extends AbstractDeclarativeScopeProvider {
 			// scope of the ID 
 			if (container.member === context) {
 				return scope_SymbolReferenceTerm_symbol(container, r)
-			} else {
-				val retval = buildNestedScope(context)
-				return retval
 			}
 		} else if (container instanceof SignedAtomicFormula && container.eContainer instanceof ArrayAccess) {
 			// Scope provider for Tuple array access
@@ -136,22 +116,8 @@ class ImlScopeProvider extends AbstractDeclarativeScopeProvider {
 			if (tupleScope !== null) {
 				return tupleScope;
 			}
-		} else {
-			return buildNestedScope(context)
-		}
-
-		var scope = getGlobalScope(context, r)
-
-		val typeConstructor = getTypeConstructorType(context)
-		if (typeConstructor !== null) { // Include type symbols inside a type constructor term
-			scope = scopeOfNamedType(typeConstructor, scope)
-		}
-
-		if (context.getContainerOfType(NamedType) === null) {
-			return scope;
-		}
-
-		return scopeOfNamedType(context.getContainerOfType(NamedType), scope)
+		} 
+		return buildNestedScope(context)
 	}
 
 	protected def scopeOfNamedType(NamedType type, IScope scope) {
@@ -171,21 +137,6 @@ class ImlScopeProvider extends AbstractDeclarativeScopeProvider {
 		if (type instanceof TupleType) {
 			return Scopes::scopeFor(type.symbols);
 		}
-
-//		var break = false;
-//		for (ExpressionTail tail : tailedExpr.tails) {
-//			if (!break) {
-//				if (tail === arrayAccess) {
-//					if (type instanceof TupleType) {
-//						return Scopes::scopeFor(type.symbols);
-//					} else { // It is just normal array access not tuple
-//						break = true;
-//					}
-//				} else {
-//					type = ImlTypeProvider.accessTail(type, tail)
-//				}
-//			}
-//		}
 	}
 
 	def getTypeWithoutTail(SymbolReferenceTerm term) {

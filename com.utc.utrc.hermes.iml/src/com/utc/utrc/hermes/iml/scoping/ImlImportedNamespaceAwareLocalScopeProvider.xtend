@@ -21,7 +21,7 @@ class ImlImportedNamespaceAwareLocalScopeProvider extends ImportedNamespaceAware
 		return super.internalGetImportedNamespaceResolvers(context, ignoreCase);
 	}
 	
-	override getImplicitImports(boolean ignoreCase){
+	override public getImplicitImports(boolean ignoreCase) {
 		newArrayList(new ImportNormalizer(QualifiedName.create("iml","lang"),true,ignoreCase))
 	}
 	

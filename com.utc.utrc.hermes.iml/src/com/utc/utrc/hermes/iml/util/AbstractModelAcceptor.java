@@ -12,7 +12,6 @@ import com.utc.utrc.hermes.iml.iml.CaseTermExpression;
 import com.utc.utrc.hermes.iml.iml.NamedType;
 import com.utc.utrc.hermes.iml.iml.OptionalTermExpr;
 import com.utc.utrc.hermes.iml.iml.EnumRestriction;
-import com.utc.utrc.hermes.iml.iml.ExpressionTail;
 import com.utc.utrc.hermes.iml.iml.Extension;
 import com.utc.utrc.hermes.iml.iml.FolFormula;
 import com.utc.utrc.hermes.iml.iml.FunctionType;
