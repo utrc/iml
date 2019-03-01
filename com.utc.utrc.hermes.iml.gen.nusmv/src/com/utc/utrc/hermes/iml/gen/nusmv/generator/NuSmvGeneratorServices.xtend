@@ -35,9 +35,9 @@ class NuSmvGeneratorServices {
 			'''«FOR b : tr.typeBinding BEFORE '<' SEPARATOR ',' AFTER '>'» «b.nameFor» «ENDFOR»'''
 	}
 
-	def static String getNameFor(ImlType hot) {
-		if (hot instanceof SimpleTypeReference) {
-			return (hot as SimpleTypeReference).nameFor
+	def static String getNameFor(ImlType imlType) {
+		if (imlType instanceof SimpleTypeReference) {
+			return (imlType as SimpleTypeReference).nameFor
 		}
 		return "__NOT__SUPPORTED"
 	}

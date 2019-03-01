@@ -61,7 +61,7 @@ class ImlParsingTest {
 	
 		
 	@Test
-	def void testParsingArrayOfHot() {
+	def void testParsingArrayOfFunctions() {
 		val model = '''
 			package p;
 			type t {

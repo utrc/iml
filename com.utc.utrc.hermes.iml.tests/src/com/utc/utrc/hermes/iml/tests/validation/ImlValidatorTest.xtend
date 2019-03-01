@@ -377,7 +377,7 @@ class ImlValidatorTest {
 	}
 	
 	@Test
-	def testCheckParameterList_ArrayOverHot() {
+	def testCheckParameterList_ArrayOverFunction() {
 		val model = '''
 			package p;
 			type x {
@@ -385,11 +385,11 @@ class ImlValidatorTest {
 				var2 : Real := var1[10];
 			}
 		'''.parse
-		model.assertError(ImlPackage.eINSTANCE.tailedExpression, ARRAY_ACCESS_ON_HOT)
+		model.assertError(ImlPackage.eINSTANCE.tailedExpression, ARRAY_ACCESS_ON_FUNCTIONTYPE)
 	}
 	
 	@Test
-	def testCheckParameterList_WrongListSizeHot_More() {
+	def testCheckParameterList_WrongListSizeFunction_More() {
 		val model = '''
 			package p;
 			type x {
@@ -401,7 +401,7 @@ class ImlValidatorTest {
 	}
 	
 	@Test
-	def testCheckParameterList_WrongListSizeHot_Less() {
+	def testCheckParameterList_WrongListSizeFunction_Less() {
 		val model = '''
 			package p;
 			type x {
@@ -413,7 +413,7 @@ class ImlValidatorTest {
 	}
 	
 	@Test
-	def testCheckParameterList_TailOnCt() {
+	def testCheckParameterList_TailOnNamedType() {
 		val model = '''
 			package p;
 			type x {
@@ -424,7 +424,7 @@ class ImlValidatorTest {
 	}
 	
 	@Test
-	def testCheckParameterList_TailOnCt_Method() {
+	def testCheckParameterList_TailOnNamedType_Method() {
 		val model = '''
 			package p;
 			type x {

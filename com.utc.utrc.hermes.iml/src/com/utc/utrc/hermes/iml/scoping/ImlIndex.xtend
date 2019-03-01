@@ -28,7 +28,7 @@ class ImlIndex {
 		].flatten
 	}
 
-	def getVisibleConstrainedTypeDescriptions(EObject o) {
+	def getVisibleNamedTypeDescriptions(EObject o) {
 		o.getVisibleEObjectDescriptions(ImlPackage::eINSTANCE.namedType)
 	}
 	

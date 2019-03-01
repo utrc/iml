@@ -107,41 +107,41 @@ public class ImlUtil {
 	/**
 	 * Get the type declaration as a string
 	 */
-	public static String getTypeName(ImlType hot, IQualifiedNameProvider qnp) {
-		return getTypeNameManually(hot, qnp);
+	public static String getTypeName(ImlType imlType, IQualifiedNameProvider qnp) {
+		return getTypeNameManually(imlType, qnp);
 	}
 	
-	public static String getTypeNameManually(ImlType hot, IQualifiedNameProvider qnp) {
-		if (hot instanceof SimpleTypeReference) {
+	public static String getTypeNameManually(ImlType imlType, IQualifiedNameProvider qnp) {
+		if (imlType instanceof SimpleTypeReference) {
 			String name = "";
 			if (qnp != null) {
-				name = qnp.getFullyQualifiedName(((SimpleTypeReference) hot).getType()).toString();
+				name = qnp.getFullyQualifiedName(((SimpleTypeReference) imlType).getType()).toString();
 			} else {
-				name = ((SimpleTypeReference) hot).getType().getName();
+				name = ((SimpleTypeReference) imlType).getType().getName();
 			}
-			if (((SimpleTypeReference) hot).getTypeBinding().isEmpty()) {
+			if (((SimpleTypeReference) imlType).getTypeBinding().isEmpty()) {
 				return name;
 			} else {
-				return name + "<" + ((SimpleTypeReference) hot).getTypeBinding().stream()
+				return name + "<" + ((SimpleTypeReference) imlType).getTypeBinding().stream()
 						.map(binding -> getTypeName(binding, qnp))
 						.reduce((acc, current) -> acc + ", " + current).get() + ">";
 			}
-		} else if (hot instanceof ArrayType) {
-			String name =  getTypeName(((ArrayType) hot).getType(), qnp);
-			return name + ((ArrayType) hot).getDimensions().stream()
+		} else if (imlType instanceof ArrayType) {
+			String name =  getTypeName(((ArrayType) imlType).getType(), qnp);
+			return name + ((ArrayType) imlType).getDimensions().stream()
 					.map(dim -> "[]")
 					.reduce((accum, current) -> accum + current).get();
-		} else if (hot instanceof TupleType) {
-			Optional<String> elements = ((TupleType) hot).getSymbols().stream()
+		} else if (imlType instanceof TupleType) {
+			Optional<String> elements = ((TupleType) imlType).getSymbols().stream()
 			.map(symbol -> getTypeName(symbol.getType(), qnp))
 			.reduce((accum, current) -> accum + ", " + current);
 			return "(" + (elements.isPresent()? elements.get() : "") + ")";
-		} else if (hot instanceof FunctionType){
-			return getTypeName(((FunctionType)hot).getDomain(), qnp) + "->" + getTypeName(((FunctionType)hot).getRange(), qnp);
-		} else if (hot instanceof SelfType) {
+		} else if (imlType instanceof FunctionType){
+			return getTypeName(((FunctionType)imlType).getDomain(), qnp) + "->" + getTypeName(((FunctionType)imlType).getRange(), qnp);
+		} else if (imlType instanceof SelfType) {
 			return "Self";
 		}
-		else if (hot == null) {
+		else if (imlType == null) {
 			return "NULL";
 		}
 		return "UNKNOWN_IML_TYPE";

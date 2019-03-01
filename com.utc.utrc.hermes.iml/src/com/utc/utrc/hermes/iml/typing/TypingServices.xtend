@@ -215,14 +215,14 @@ public class TypingServices {
 	}
 
 	/* Compute all super types of a ContrainedType  */
-	def getAllSuperTypes(NamedType ct) {
-		getSuperTypes(ImlCustomFactory.INST.createSimpleTypeReference(ct)).map[it.map[it.type]]
+	def getAllSuperTypes(NamedType nt) {
+		getSuperTypes(ImlCustomFactory.INST.createSimpleTypeReference(nt)).map[it.map[it.type]]
 	}
 
 	/* Compute all super type references of a TypeReference */
-	def getAllSuperTypes(ImlType hot) {
-		if (hot instanceof SimpleTypeReference) {
-			return getSuperTypes(hot)
+	def getAllSuperTypes(ImlType imlType) {
+		if (imlType instanceof SimpleTypeReference) {
+			return getSuperTypes(imlType)
 		} else {
 			return new ArrayList<List<SimpleTypeReference>>()
 		}
@@ -358,17 +358,17 @@ public class TypingServices {
 	}
 	
 	/* Check whether a constrained type is a template  */
-	def boolean isTemplate(NamedType ct) {
-		return ct.template;
+	def boolean isTemplate(NamedType nt) {
+		return nt.template;
 	}
 
-	def isSimpleTR(ImlType hot) {
-		return hot instanceof SimpleTypeReference
+	def isSimpleTR(ImlType imlType) {
+		return imlType instanceof SimpleTypeReference
 	}
 
-	def asSimpleTR(ImlType hot) {
-		if (isSimpleTR(hot)) {
-			return hot as SimpleTypeReference
+	def asSimpleTR(ImlType imlType) {
+		if (isSimpleTR(imlType)) {
+			return imlType as SimpleTypeReference
 		}
 		return null;
 	}

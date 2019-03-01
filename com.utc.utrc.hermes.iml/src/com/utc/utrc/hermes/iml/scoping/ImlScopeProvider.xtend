@@ -161,9 +161,9 @@ class ImlScopeProvider extends AbstractDeclarativeScopeProvider {
 			if (symb instanceof NamedType) {
 				// The receiver is a constrained type
 				// This is a reference to an enum
-				val ct = (receiver as SymbolReferenceTerm).symbol as NamedType
-				if (! ct.restrictions.isEmpty) {
-					val res = ct.restrictions.filter(EnumRestriction)
+				val nt = (receiver as SymbolReferenceTerm).symbol as NamedType
+				if (! nt.restrictions.isEmpty) {
+					val res = nt.restrictions.filter(EnumRestriction)
 					if (! res.isEmpty) {
 						return Scopes::scopeFor(res.get(0).literals);
 					}
