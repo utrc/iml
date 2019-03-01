@@ -15,7 +15,7 @@ import com.utc.utrc.hermes.iml.iml.SymbolDeclaration;
 public interface ImlEncoder {
 	public void encode(NamedType type);
 	
-	public void encode(ImlType hot);
+	public void encode(ImlType imlType);
 	
 	public void encode(Symbol symbol);
 	

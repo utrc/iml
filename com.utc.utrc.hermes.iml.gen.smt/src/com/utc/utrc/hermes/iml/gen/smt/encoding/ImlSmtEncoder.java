@@ -157,8 +157,8 @@ public class ImlSmtEncoder<SortT extends AbstractSort, FuncDeclT, FormulaT> impl
 	}
 	
 	@Override
-	public void encode(ImlType hot) {
-		encodeType(hot);
+	public void encode(ImlType imlType) {
+		encodeType(imlType);
 	}
 	
 	private void encodeType(EObject type) {

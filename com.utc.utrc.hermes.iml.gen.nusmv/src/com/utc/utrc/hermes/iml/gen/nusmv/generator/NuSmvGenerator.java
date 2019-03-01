@@ -345,8 +345,8 @@ public class NuSmvGenerator {
 		return ( st.getType() == libs.getImlType("iml.ports.delay"));
 	}
 
-	public boolean isSimpleTypeReference(ImlType hot) {
-		return (hot instanceof SimpleTypeReference);
+	public boolean isSimpleTypeReference(ImlType imlType) {
+		return (imlType instanceof SimpleTypeReference);
 	}
 
 }

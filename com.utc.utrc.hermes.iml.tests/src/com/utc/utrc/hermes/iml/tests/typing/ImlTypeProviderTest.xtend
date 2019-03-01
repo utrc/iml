@@ -167,7 +167,7 @@ class ImlTypeProviderTest {
 	}
 	
 	@Test
-	def testTermExpressionType_HOTWithTail() {
+	def testTermExpressionType_FunctionWithTail() {
 		val model = '''
 			package p;
 			type t1 {
@@ -187,7 +187,7 @@ class ImlTypeProviderTest {
 	}
 	
 	@Test
-	def testTermExpressionType_HOTWithoutTail() {
+	def testTermExpressionType_FunctionWithoutTail() {
 		val model = '''
 			package p;
 			type t1 {
@@ -261,7 +261,7 @@ class ImlTypeProviderTest {
 	}
 	
 	@Test
-	def testTermExpressionType_BindingWithHOTTemplate() {
+	def testTermExpressionType_BindingWithFunctionTemplate() {
 		val model = '''
 			package p;
 			type List <T>;

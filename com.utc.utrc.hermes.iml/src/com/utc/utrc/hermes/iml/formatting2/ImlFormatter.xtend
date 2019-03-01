@@ -28,12 +28,12 @@ class ImlFormatter extends AbstractFormatter2 {
 		model.allRegionsFor.keywords(";").forEach[it.append[newLine]]
 	}
 
-	def dispatch void format(NamedType constrainedType, extension IFormattableDocument document) {
-		constrainedType.regionFor.keyword("{").append[newLine]
-		constrainedType.regionFor.keyword("}").prepend[newLine].append[newLine]
+	def dispatch void format(NamedType type, extension IFormattableDocument document) {
+		type.regionFor.keyword("{").append[newLine]
+		type.regionFor.keyword("}").prepend[newLine].append[newLine]
 		interior(
-			constrainedType.regionFor.keyword(("{")), 
-			constrainedType.regionFor.keyword(("}"))
+			type.regionFor.keyword(("{")), 
+			type.regionFor.keyword(("}"))
 		)[indent]
 	}
 	

@@ -55,22 +55,22 @@ class ImlUtilsTest {
 	}
 	
 	@Test
-	def void testIsSimpleHot() {
-		testIsSimpleHot("Int", true)
-		testIsSimpleHot("Int[]", true)
-		testIsSimpleHot("(Int)", true)
-		testIsSimpleHot("(Int, Real)", true)
-		testIsSimpleHot("Int[][][]", true)
-		testIsSimpleHot("Int->Real", true)
-		testIsSimpleHot("Int[]->Real", true)
-		testIsSimpleHot("(Int, Real) -> (Real, Int)", true)
-		testIsSimpleHot("(Int->Real)->Int", false)
-		testIsSimpleHot("Int->(Int->Real)", false)
-		testIsSimpleHot("(Int->Real)[]", false)
-		testIsSimpleHot("(Int->Real, Int)", false)
+	def void testIsSimpleFunctionType() {
+		testIsSimpleFunctionType("Int", true)
+		testIsSimpleFunctionType("Int[]", true)
+		testIsSimpleFunctionType("(Int)", true)
+		testIsSimpleFunctionType("(Int, Real)", true)
+		testIsSimpleFunctionType("Int[][][]", true)
+		testIsSimpleFunctionType("Int->Real", true)
+		testIsSimpleFunctionType("Int[]->Real", true)
+		testIsSimpleFunctionType("(Int, Real) -> (Real, Int)", true)
+		testIsSimpleFunctionType("(Int->Real)->Int", false)
+		testIsSimpleFunctionType("Int->(Int->Real)", false)
+		testIsSimpleFunctionType("(Int->Real)[]", false)
+		testIsSimpleFunctionType("(Int->Real, Int)", false)
 	}
 	
-	def void testIsSimpleHot(String typeDeclaration, boolean isSimpleHot) {
+	def void testIsSimpleFunctionType(String typeDeclaration, boolean isSimpleFunctionType) {
 		val model = '''
 			package p;
 			v1 :«typeDeclaration»;
@@ -78,7 +78,7 @@ class ImlUtilsTest {
 		model.assertNoErrors
 		
 		val v1 = model.findSymbol("v1") as SymbolDeclaration
-		assertEquals(isSimpleHot, ImlUtil.isFirstOrderFunction(v1.type))
+		assertEquals(isSimpleFunctionType, ImlUtil.isFirstOrderFunction(v1.type))
 	}
 	
 	@Test

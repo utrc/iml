@@ -85,7 +85,7 @@ class ImlValidator extends AbstractImlValidator {
 	public static val INVALID_RELATION = 'com.utc.utrc.hermes.iml.validation.InvalidRelation';
 	public static val INVALID_SYMBOL_DECLARATION = 'com.utc.utrc.hermes.iml.validation.InvalidSymbolDeclaration';
 	public static val INVALID_INDEX_ACCESS = 'com.utc.utrc.hermes.iml.validation.InvalidIndexAccess';
-	public static val ARRAY_ACCESS_ON_HOT = 'com.utc.utrc.hermes.iml.validation.ArrayAccessOnHot';
+	public static val ARRAY_ACCESS_ON_FUNCTIONTYPE = 'com.utc.utrc.hermes.iml.validation.ArrayAccessOnFunctionType';
 	public static val INCOMPATIBLE_TYPES = 'com.utc.utrc.hermes.iml.validation.IncompatibleTypes';
 	
 	
@@ -147,14 +147,14 @@ class ImlValidator extends AbstractImlValidator {
 	}
 
 	@Check
-	def checkNoCycleInNamedTypeHierarchy(NamedType ct) {
-		val extensions = getExtensions(ct) 
+	def checkNoCycleInNamedTypeHierarchy(NamedType nt) {
+		val extensions = getExtensions(nt) 
 		if (extensions.empty)
 			return
 		val visited = <NamedType>newArrayList()
 		val superTypeHierarchy = new ArrayList<List<NamedType>>()
 		superTypeHierarchy.add(new ArrayList<NamedType>())
-		superTypeHierarchy.get(0).add(ct)
+		superTypeHierarchy.get(0).add(nt)
 		var index = 0
 		while (superTypeHierarchy.get(index).size() > 0) {
 			val toAdd = <NamedType>newArrayList()
@@ -302,7 +302,7 @@ class ImlValidator extends AbstractImlValidator {
 			if (tail instanceof ArrayAccess) {
 				error('''Array access is not applicatble over Higher Order Type of: '«typeAsString»' ''',
 							ImlPackage.eINSTANCE.tailedExpression_Tail,
-							ARRAY_ACCESS_ON_HOT
+							ARRAY_ACCESS_ON_FUNCTIONTYPE
 						)
 				return false
 			} else if (tail instanceof TupleConstructor) {

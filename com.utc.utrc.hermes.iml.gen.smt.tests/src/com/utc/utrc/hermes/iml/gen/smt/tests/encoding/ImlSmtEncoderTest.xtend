@@ -42,6 +42,10 @@ class ImlSmtEncoderTest {
 	
 	@Inject ImlSmtEncoder<SimpleSort, SimpleFunDeclaration, SimpleSmtFormula> encoder
 	
+	@Inject TypingServices typingServices;
+	
+	@Inject ImlTypeProvider imlTypeProvider;
+	
 	@Test
 	def void testSimpleNamedTypeEncoder() {
 		val model = 
@@ -114,7 +118,7 @@ class ImlSmtEncoderTest {
 	}
 	
 	@Test
-	def void testHotEncoder() {
+	def void testFunctionTypeEncoder() {
 		val model = 
 		encode('''
 			package p1;
@@ -132,13 +136,13 @@ class ImlSmtEncoderTest {
 		val intSort =  assertAndGetSort(model.findSymbol("Int"))
 		val realSort =  assertAndGetSort(model.findSymbol("Real"))
 		val var1 = (model.findSymbol("T1") as NamedType).findSymbol("var1") as SymbolDeclaration;
-		val hotSort = assertAndGetSort(var1.type)
+		val funSort = assertAndGetSort(var1.type)
 		
-		assertEquals(intSort, hotSort.domain)
-		assertEquals(realSort, hotSort.range)
+		assertEquals(intSort, funSort.domain)
+		assertEquals(realSort, funSort.range)
 		
 		val var1Fun = assertAndGetFuncDecl(
-			var1, #[t1Sort], hotSort 
+			var1, #[t1Sort], funSort 
 		)
 	}
 	
@@ -158,14 +162,14 @@ class ImlSmtEncoderTest {
 		val intSort =  assertAndGetSort(model.findSymbol("Int"))
 		val var1 = (model.findSymbol("T1") as NamedType).findSymbol("var1") as SymbolDeclaration;
 		val int2Sort = assertAndGetSort(var1.type)
-		val int1Sort = assertAndGetSort(TypingServices.accessArray(var1.type as ArrayType, 1))
+		val int1Sort = assertAndGetSort(typingServices.accessArray(var1.type as ArrayType, 1))
 		
 		val int2Access = assertAndGetFuncDecl(
 			var1.type, #[int2Sort, intSort], int1Sort
 		)
 		
 		val int1Access = assertAndGetFuncDecl(
-			TypingServices.accessArray(var1.type as ArrayType, 1),
+			typingServices.accessArray(var1.type as ArrayType, 1),
 			#[int1Sort, intSort], intSort
 		)
 		
@@ -221,12 +225,12 @@ class ImlSmtEncoderTest {
 		assertSame(t1IntReal, t1IntReal2)  // Same sort for same binding
 		
 		// Make sure we create concurrent sorts for T -> P
-		val intToRealType = ImlTypeProvider.getType(
+		val intToRealType = imlTypeProvider.getType(
 			(model.findSymbol("T1") as NamedType).findSymbol("vart") as SymbolDeclaration,
 			model.getSymbolType("T2", "var1") as SimpleTypeReference
 		)
 		
-		val intToIntType = ImlTypeProvider.getType(
+		val intToIntType = imlTypeProvider.getType(
 			(model.findSymbol("T1") as NamedType).findSymbol("vart") as SymbolDeclaration,
 			model.getSymbolType("T2", "var2") as SimpleTypeReference
 		)
