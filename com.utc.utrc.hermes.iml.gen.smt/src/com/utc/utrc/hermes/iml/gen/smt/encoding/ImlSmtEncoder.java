@@ -44,6 +44,7 @@ import com.utc.utrc.hermes.iml.iml.SimpleTypeReference;
 import com.utc.utrc.hermes.iml.iml.Symbol;
 import com.utc.utrc.hermes.iml.iml.SymbolDeclaration;
 import com.utc.utrc.hermes.iml.iml.SymbolReferenceTerm;
+import com.utc.utrc.hermes.iml.iml.TailedExpression;
 import com.utc.utrc.hermes.iml.iml.TermExpression;
 import com.utc.utrc.hermes.iml.iml.TermMemberSelection;
 import com.utc.utrc.hermes.iml.iml.TraitExhibition;
@@ -600,7 +601,15 @@ public class ImlSmtEncoder<SortT extends AbstractSort, FuncDeclT, FormulaT> impl
 				
 			}
 			
-		} else if (formula instanceof SymbolReferenceTerm) {
+//		}else if (formula instanceof TailedExpression) {
+//			TailedExpression tailedExpr = (TailedExpression) formula;
+//			System.out.println(tailedExpr.toString());
+		
+		}else if (formula instanceof SymbolReferenceTerm) {
+			SymbolReferenceTerm symbolRef = (SymbolReferenceTerm) formula;		
+			FormulaT symbolRefFormula = getSymbolAccessFormula(symbolRef, context, inst, scope);
+			return symbolRefFormula;
+			
 			/*****************
 			 *  FIXME Need to be refactored and use TailedExpression
 			 ***************** /
