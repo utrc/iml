@@ -53,7 +53,7 @@ public class ImlCustomFactory extends ImlFactoryImpl {
 		]
 	}
 	def createOrExpression(FolFormula left, FolFormula right) {
-		createAndExpression => [
+		createOrExpression => [
 			it.left = left;
 			it.right = right;
 			it.op = "||"; // FIXME is there an enum better to use?
@@ -240,7 +240,9 @@ public class ImlCustomFactory extends ImlFactoryImpl {
 		createIteTermExpression => [
 			it.condition = condition
 			it.left = createSequenceTerm(left)
-			it.right = createSequenceTerm(right)
+			if (right !== null) {
+				it.right = createSequenceTerm(right)
+			}
 		]
 	}
 	
