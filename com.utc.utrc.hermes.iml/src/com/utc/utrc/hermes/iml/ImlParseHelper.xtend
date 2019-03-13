@@ -15,6 +15,10 @@ import org.eclipse.xtext.validation.Issue
 import java.util.ArrayList
 import org.eclipse.xtext.diagnostics.Severity
 import com.utc.utrc.hermes.iml.util.FileUtil
+import org.eclipse.core.runtime.Platform
+import org.eclipse.core.runtime.FileLocator
+import java.net.URISyntaxException
+import java.io.IOException
 
 class ImlParseHelper {
 
@@ -51,17 +55,41 @@ class ImlParseHelper {
 	
 	def private ResourceSet loadStdLibs() {
 		if (stdRs === null) {
+			val imlLibUrl = getImlLibUrl();
 			stdRs = rsp.get
-			if (this.getClass().classLoader.getResource("./iml/") !== null) {
-				val imlLibUrl = this.getClass().classLoader.getResource("./iml/").path
-				Files.walk(Paths.get(imlLibUrl)).filter[Files.isRegularFile(it) && it.toFile().getName().endsWith(".iml")]
-						.forEach[
-							stdRs.createResource(URI.createFileURI(it.toFile.absolutePath)).load(stdRs.loadOptions)
-						]
-			}
+			Files.walk(Paths.get(imlLibUrl)).filter[Files.isRegularFile(it) && it.toFile().getName().endsWith(".iml")]
+					.forEach[
+						stdRs.createResource(URI.createFileURI(it.toFile.absolutePath)).load(stdRs.loadOptions)
+					]
 			stdLib.populateLibrary(stdRs)
 		}
 		return stdRs;
+	}
+	
+	def private getImlLibUrl() {
+		var String imlLibUrl = null;
+		if (this.getClass().classLoader.getResource("./iml/") !== null) {
+			imlLibUrl = this.getClass().classLoader.getResource("./iml/").path
+		} else {
+			// Get lib folder for plugin
+			val bundle = Platform.getBundle("com.utc.utrc.hermes.iml");
+			val fileURL = bundle.getEntry("imllib/");
+			try {
+				val resolvedFileURL = FileLocator.toFileURL(fileURL);
+			   // We need to use the 3-arg constructor of URI in order to properly escape file system chars
+			   val resolvedURI = new java.net.URI(resolvedFileURL.getProtocol(), resolvedFileURL.getPath(), null);
+			   imlLibUrl = resolvedURI.getPath();
+			} catch (URISyntaxException e1) {
+			    e1.printStackTrace();
+			} catch (IOException e1) {
+			    e1.printStackTrace();
+			}
+		}
+		if (imlLibUrl === null) {
+			throw new IllegalStateException("Couldn't retrieve the standard library path")
+		} else {
+			return imlLibUrl
+		}
 	}
 	
 	/**
