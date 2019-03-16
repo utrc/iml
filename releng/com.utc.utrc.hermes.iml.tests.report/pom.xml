@@ -1,0 +1,66 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.utc.utrc.hermes.iml</groupId>
+  	<artifactId>com.utc.utrc.hermes.iml.parent</artifactId>
+  	<version>1.0.0-SNAPSHOT</version>
+  	<relativePath>../com.utc.utrc.hermes.iml.parent</relativePath>
+  </parent>
+
+  <artifactId>com.utc.utrc.hermes.iml.tests.report</artifactId>
+  <packaging>pom</packaging>
+
+  <profiles>
+    <profile>
+      <id>jacoco</id>
+      <activation>
+        <activeByDefault>false</activeByDefault>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.jacoco</groupId>
+            <artifactId>jacoco-maven-plugin</artifactId>
+            <version>${jacoco-version}</version>
+            <executions>
+              <execution>
+                <phase>verify</phase>
+                <goals>
+                  <goal>report-aggregate</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+
+  <dependencies>
+    <dependency>
+      <groupId>com.utc.utrc.hermes.iml</groupId>
+      <artifactId>com.utc.utrc.hermes.iml</artifactId>
+      <version>${project.version}</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.utc.utrc.hermes.iml</groupId>
+      <artifactId>com.utc.utrc.hermes.iml.ui</artifactId>
+      <version>${project.version}</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.utc.utrc.hermes.iml</groupId>
+      <artifactId>com.utc.utrc.hermes.iml.tests</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.utc.utrc.hermes.iml</groupId>
+      <artifactId>com.utc.utrc.hermes.iml.ui.tests</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+</project>

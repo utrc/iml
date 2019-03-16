@@ -24,4 +24,3 @@ To modify or contribute to IML:
 * Change Eclipse workspace encoding to `UTF-8`: From `Window` > `Preferences` > `General` > `Workspace`: Select Text file encoding as `Other`>`UTF-8`
 * Import all IML plugins inside that eclipse instance.
 
-
