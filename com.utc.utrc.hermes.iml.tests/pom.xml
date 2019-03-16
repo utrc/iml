@@ -10,22 +10,24 @@
 		<relativePath>../releng/com.utc.utrc.hermes.iml.parent</relativePath>
 	</parent>
 
+	
 	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.eclipse.xtend</groupId>
-				<artifactId>xtend-maven-plugin</artifactId>
-			</plugin>
-			<plugin>
-				<groupId>org.eclipse.tycho</groupId>
-				<artifactId>tycho-surefire-plugin</artifactId>
-				<version>${tycho-version}</version>
-				<configuration>
-					<failIfNoTests>false</failIfNoTests>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
+    <plugins>
+      <plugin>
+        <groupId>org.eclipse.tycho</groupId>
+        <artifactId>tycho-surefire-plugin</artifactId>
+        <version>${tycho-version}</version>
+        <configuration>
+          <!-- additionalTestArgLine is set in the parent project with the 
+            Jacoco agent when the jacoco profile is active (and it will be empty when 
+            jacoco profile is not active). This way, you can customize argLine without 
+            overwriting the jacoco agent set by jacoco:prepare-agent. -->
+          <argLine>${additionalTestArgLine} -DbuildingWithTycho=true</argLine>
+          <failIfNoTests>false</failIfNoTests>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 
 
 </project>

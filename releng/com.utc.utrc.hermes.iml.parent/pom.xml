@@ -8,12 +8,36 @@
 	<packaging>pom</packaging>
 
 	<properties>
-		<tycho-version>1.0.0</tycho-version>
+		<tycho-version>1.3.0</tycho-version>
 		<xtextVersion>2.12.0</xtextVersion>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
+		    <!-- this will be overridden in jacoco profile with tycho.testArgLine, 
+		which, in turn, will be set by Jacoco prepare-agent goal. This property can 
+		then be used in argLine for custom tycho-surefire configuration, both when 
+		Jacoco is used and when it is not used. -->
+		<additionalTestArgLine></additionalTestArgLine>
+		<jacoco-version>0.8.3</jacoco-version>
+		<sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
+
+		<!-- Workaround for https://bugs.eclipse.org/bugs/show_bug.cgi?id=397015 
+		<sonar.sources></sonar.sources>
+		<sonar.tests></sonar.tests>-->
+		<!-- Always refer to the corresponding tests project (if it exists) otherwise 
+			Sonarqube won't be able to collect code coverage. For example, when analyzing 
+			project foo it wouldn't find code coverage information if it doesn't use 
+			foo.tests jacoco.exec. -->
+		<sonar.jacoco.reportPaths>
+			../com.utc.utrc.hermes.iml.tests.report/target/jacoco.exec
+		</sonar.jacoco.reportPaths>
+		<sonar.test.inclusions>**/*Test*/**</sonar.test.inclusions>
+		<sonar.exclusions>**/*Test*/**, **/iml/impl/**, **/src-gen/**, **/tests/**</sonar.exclusions>
+		<jacoco.destFile>../com.utc.utrc.hermes.iml.tests.report/target/jacoco.exec</jacoco.destFile>
+		<sonar.junit.reportPaths>../../com.utc.utrc.hermes.iml.tests/target/surefire-reports/,
+		../../com.utc.utrc.hermes.iml.ui.tests/target/surefire-reports/</sonar.junit.reportPaths>
 	</properties>
+
 
 
 	<build>
@@ -111,6 +135,16 @@
 		<pluginManagement>
 			<plugins>
 				<plugin>
+					<groupId>org.eluder.coveralls</groupId>
+					<artifactId>coveralls-maven-plugin</artifactId>
+					<version>4.3.0</version>
+					<configuration>
+						<jacocoReports>
+							<jacocoReport>../com.utc.utrc.hermes.iml.tests.report/target/site/jacoco-aggregate/jacoco.xml</jacocoReport>
+						</jacocoReports>
+					</configuration>
+				</plugin>
+				<plugin>
 					<groupId>org.eclipse.xtend</groupId>
 					<artifactId>xtend-maven-plugin</artifactId>
 					<version>${xtextVersion}</version>
@@ -135,7 +169,7 @@
 							<artifactId>org.eclipse.equinox.common</artifactId>
 							<version>3.10.0</version>
 						</dependency>
-			
+
 						<!-- Workaround for https://github.com/eclipse/xtext/issues/1231 -->
 						<!-- Remove with upgrade to Xtext 2.15 -->
 						<dependency>
@@ -285,6 +319,8 @@
 			</plugins>
 		</pluginManagement>
 	</build>
+
+
 	<repositories>
 		<repository>
 			<id>codehaus-snapshots</id>
@@ -312,18 +348,73 @@
 		</pluginRepository>
 	</pluginRepositories>
 
+	  <profiles>
+    <profile>
+      <id>jacoco</id>
+      <activation>
+        <activeByDefault>false</activeByDefault>
+      </activation>
+      <properties>
+        <!-- This will be set by Jacoco prepare-agent goal -->
+        <additionalTestArgLine>${tycho.testArgLine}</additionalTestArgLine>
+      </properties>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.jacoco</groupId>
+            <artifactId>jacoco-maven-plugin</artifactId>
+            <version>${jacoco-version}</version>
+            <configuration>
+              <excludes>
+                <exclude>**/plugin1/Main.class</exclude>
+              </excludes>
+            </configuration>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>prepare-agent</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+	  <!--Override the repository (and pluginRepository) "central" from the Maven Super POM -->
+      <repositories>
+        <repository>
+          <id>central</id>
+          <url>http://repo1.maven.org/maven2</url>
+          <releases>
+            <enabled>true</enabled>
+          </releases>
+        </repository>
+      </repositories>
+      <pluginRepositories>
+        <pluginRepository>
+          <id>central</id>
+          <url>http://repo1.maven.org/maven2</url>
+          <releases>
+            <enabled>true</enabled>
+          </releases>
+        </pluginRepository>
+      </pluginRepositories>
+    </profile>
+
+  </profiles>
+
 	<dependencies>
 	</dependencies>
 
 	<modules>
+		<module>../com.utc.utrc.hermes.iml.tests.report</module>
 		<module>../../com.utc.utrc.hermes.iml</module>
 		<module>../../com.utc.utrc.hermes.iml.ide</module>
 		<module>../../com.utc.utrc.hermes.iml.tests</module>
 		<module>../../com.utc.utrc.hermes.iml.ui</module>
 		<module>../../com.utc.utrc.hermes.iml.ui.tests</module>
-	    
-  		
-		
+
+
+
 		<module>../com.utc.utrc.hermes.iml.target</module>
 		<module>../com.utc.utrc.hermes.iml.feature</module>
 		<module>../com.utc.utrc.hermes.iml.repository</module>
