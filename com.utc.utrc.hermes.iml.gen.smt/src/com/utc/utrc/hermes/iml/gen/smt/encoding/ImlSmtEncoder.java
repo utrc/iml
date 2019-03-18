@@ -23,6 +23,7 @@ import com.utc.utrc.hermes.iml.iml.Assertion;
 import com.utc.utrc.hermes.iml.iml.AtomicExpression;
 import com.utc.utrc.hermes.iml.iml.NamedType;
 import com.utc.utrc.hermes.iml.iml.EnumRestriction;
+import com.utc.utrc.hermes.iml.iml.ExpressionTail;
 import com.utc.utrc.hermes.iml.iml.Extension;
 import com.utc.utrc.hermes.iml.iml.FloatNumberLiteral;
 import com.utc.utrc.hermes.iml.iml.FolFormula;
@@ -599,11 +600,30 @@ public class ImlSmtEncoder<SortT extends AbstractSort, FuncDeclT, FormulaT> impl
 				SortT sort = getSort(tupleType);
 				List<FormulaT> tupleFormulas = encodeTupleElements((TupleConstructor) formula, context, inst, scope);
 				
+				return smtModelProvider.createFormula(tupleFormulas);
 			}
 			
-//		}else if (formula instanceof TailedExpression) {
-//			TailedExpression tailedExpr = (TailedExpression) formula;
-//			System.out.println(tailedExpr.toString());
+		}else if (formula instanceof TailedExpression) {
+			TailedExpression tailedExpr = (TailedExpression) formula;
+			
+			FolFormula leftFol = tailedExpr.getLeft();
+			
+			FormulaT leftFormular = encodeFormula(leftFol, context, inst, scope);
+			
+			ExpressionTail tail = tailedExpr.getTail();
+			if (tail == null) {	// can this really happen? cannot really catch the test case, should the validator rule it out????
+				if (leftFol instanceof SymbolDeclaration && ((SymbolDeclaration) leftFol).getType() instanceof FunctionType) {
+					throw new SMTEncodingException(((SymbolDeclaration) leftFol).getName() + " function can't be used as a variable");
+				}				
+			}
+			FormulaT tailFormular = null;
+			if (tail instanceof TupleConstructor) {
+				tailFormular = encodeFormula((TupleConstructor) tailedExpr.getTail(), context, inst, scope);
+				List<FormulaT> paramFormulas = new ArrayList<>();
+				paramFormulas.add(leftFormular);
+				paramFormulas.add(tailFormular);
+				return smtModelProvider.createFormula((OperatorType) null, paramFormulas);
+			}
 		
 		}else if (formula instanceof SymbolReferenceTerm) {
 			SymbolReferenceTerm symbolRef = (SymbolReferenceTerm) formula;		

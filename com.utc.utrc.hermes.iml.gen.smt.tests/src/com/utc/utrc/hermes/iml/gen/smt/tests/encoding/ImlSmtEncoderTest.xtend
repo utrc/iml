@@ -585,7 +585,9 @@ class ImlSmtEncoderTest {
 			val definition = ((model.findSymbol("T1") as NamedType).findSymbol("var2") as SymbolDeclaration).definition
 			val formulaEncoding = encoder.encodeFormula(definition, varT, new SimpleSmtFormula("inst"), null);
 			
-			assertTrue(false);
+			println(encoder.toString)
+			println(formulaEncoding);
+//			assertTrue(false);
 		} catch (SMTEncodingException e) {
 		}
 	}
