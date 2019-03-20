@@ -138,7 +138,7 @@ class ExamplesTest {
 			//We support the syntax Stack<Int> -> Int -> Stack<Int>
 			//but type checking at the moment does not interpret this as 
 			//being the same as (Stack<Int> , Int) -> Stack<Int>
-			push1 : (Stack<Int> , Int) -> Stack<Int> := fun(x:Stack<Int>,y:Int){
+			push1 : (Stack<Int> , Int) -> Stack<Int> := fun(x:Stack<Int>,y:Int):Stack<Int>{
 				x.push(y)
 			} ;
 			
