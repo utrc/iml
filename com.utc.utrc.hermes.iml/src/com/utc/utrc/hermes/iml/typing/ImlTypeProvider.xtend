@@ -49,6 +49,7 @@ import com.utc.utrc.hermes.iml.iml.StringLiteral
 import com.utc.utrc.hermes.iml.iml.CharLiteral
 import com.google.inject.Inject
 import com.utc.utrc.hermes.iml.lib.ImlStdLib
+import com.utc.utrc.hermes.iml.iml.RecordType
 
 public class ImlTypeProvider {
 	
@@ -168,14 +169,12 @@ public class ImlTypeProvider {
 				return createBoolRef;
 			}
 			LambdaExpression: {
-				var ImlType d = null
-				if (t.signature instanceof TupleType && (t.signature as TupleType).symbols.size === 1){
-					d = (t.signature as TupleType).symbols.get(0).type
-				} else {
-					d = t.signature
-				}
 				var retval = ImlFactory.eINSTANCE.createFunctionType
-				retval.domain =  clone(d);
+				if (t.parameters !== null && t.parameters.size === 1){
+					retval.domain = clone(t.parameters.get(0).type)
+				} else {
+					retval.domain = ImlCustomFactory.INST.createTupleType(t.parameters.map[clone(type)])
+				}
 				retval.range = (t.definition as SequenceTerm).^return.termExpressionType(context)
 				return retval
 			}
@@ -184,9 +183,7 @@ public class ImlTypeProvider {
 			}
 			TupleConstructor: {
 				return ImlFactory.eINSTANCE.createTupleType => [
-					symbols.addAll(t.elements.map [
-						 ImlCustomFactory.INST.createSymbolDeclaration(null, it.termExpressionType(context));
-					]);
+					types.addAll(t.elements.map[it.termExpressionType(context)]);
 				]
 			}
 			SequenceTerm: {
@@ -262,11 +259,14 @@ public class ImlTypeProvider {
 			} else if (type instanceof TupleType) {
 				return accessTuple(type as TupleType, tail as ArrayAccess)
 			}
-
-		} else { // Method invocation using Tuple
+		} else if (tail instanceof TupleConstructor) { // Method invocation using Tuple
 			if (type instanceof FunctionType) {
 				return type.range
+			}  else if (type instanceof RecordType) {
+				return accessRecord(type as RecordType, tail as TupleConstructor)
 			}
+		} else {
+			throw new IllegalArgumentException("Unknown tail type: " + tail.class)
 		}
 		return type
 	}
@@ -284,20 +284,31 @@ public class ImlTypeProvider {
 		val index = arrayAccessTail.index // It should be integer or symbol a[0] or a[symbolName]
 		if (index.left !== null) {
 			val indexAtomic = index.left
-			if (indexAtomic instanceof SymbolReferenceTerm) { // Specific symbol
-				for (symbol : type.symbols) {
-					if (symbol.name !== null && symbol.name == indexAtomic.symbol.name) {
-						return symbol.type
-					}
-				}
-			} else if (indexAtomic instanceof NumberLiteral) { // Specific index
+			if (indexAtomic instanceof NumberLiteral) { // Specific index
 				val indexValue = indexAtomic.value * (if(indexAtomic.neg) -1 else 1)
-				if (indexValue >= 0 && indexValue < type.symbols.size) {
-					return type.symbols.get(indexValue).type
+				if (indexValue >= 0 && indexValue < type.types.size) {
+					return type.types.get(indexValue)
 				}
 			}
 		}
 		return type
+	}
+	
+	def accessRecord(RecordType type, TupleConstructor accessTail) {
+		if (accessTail.elements.size === 1) {
+			val element = accessTail.elements.get(0)
+			if (element.left !== null) {
+				val atomic = element.left
+				if (atomic instanceof SymbolReferenceTerm) { // Specific symbol
+					for (symbol : type.symbols) {
+						if (symbol.name !== null && symbol.name == atomic.symbol.name) {
+							return symbol.type
+						}
+					}
+				}
+			}
+		}
+			return type
 	}
 	
 	def accessSymbolTail(SymbolReferenceTerm symbolRef, ExpressionTail tail, SimpleTypeReference ctx) {
@@ -441,8 +452,8 @@ public class ImlTypeProvider {
 	 * Check if symbol declaration is defined inside a lambda signature
 	 */
 	def symbolInsideLambda(SymbolDeclaration symbol) {
-		return symbol.eContainer instanceof TupleType && symbol.eContainer.eContainer instanceof LambdaExpression &&
-			(symbol.eContainer.eContainer as LambdaExpression).signature == symbol.eContainer
+		return symbol.eContainer instanceof LambdaExpression &&
+			(symbol.eContainer as LambdaExpression).parameters.contains(symbol)
 	}
 
 	def getTypeConstructorType(TermExpression term) {
@@ -539,6 +550,13 @@ public class ImlTypeProvider {
 			}
 			TupleType: {
 				var retval = ImlFactory.eINSTANCE.createTupleType;
+				for (s : t.types) {
+					retval.types.add(remap(s, map))
+				}
+				return retval;
+			}
+			RecordType: {
+				var retval = ImlFactory.eINSTANCE.createRecordType;
 				for (s : t.symbols) {
 					val ss = ImlFactory.eINSTANCE.createSymbolDeclaration
 					ss.name = s.name

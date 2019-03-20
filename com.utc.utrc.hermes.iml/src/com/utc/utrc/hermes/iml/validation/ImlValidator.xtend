@@ -46,6 +46,7 @@ import com.utc.utrc.hermes.iml.iml.TailedExpression
 import com.utc.utrc.hermes.iml.iml.FunctionType
 import com.utc.utrc.hermes.iml.iml.ExpressionTail
 import com.utc.utrc.hermes.iml.lib.ImlStdLib
+import com.utc.utrc.hermes.iml.iml.RecordType
 
 /**
  * This class contains custom validation rules. 
@@ -64,7 +65,7 @@ class ImlValidator extends AbstractImlValidator {
 
 	private static final String DOMAIN_EXTENSION_ID = 
       "com.utc.utrc.hermes.iml.validation.domaindefinition";
-
+	// FIXME these constants need to be moved to another class and their names and usage need to be reviewed
 	public static val INVALID_PARAMETER_LIST = 'com.utc.utrc.hermes.iml.validation.InvalidParameterList'
 	public static val METHOD_INVOCATION_ON_VARIABLE = 'com.utc.utrc.hermes.iml.validation.MethodInvocationOnVariable'
 	public static val METHOD_INVOCATION_ON_ASSERTION= 'com.utc.utrc.hermes.iml.validation.MethodInvocationOnAssertion'
@@ -87,6 +88,7 @@ class ImlValidator extends AbstractImlValidator {
 	public static val INVALID_INDEX_ACCESS = 'com.utc.utrc.hermes.iml.validation.InvalidIndexAccess';
 	public static val ARRAY_ACCESS_ON_FUNCTIONTYPE = 'com.utc.utrc.hermes.iml.validation.ArrayAccessOnFunctionType';
 	public static val INCOMPATIBLE_TYPES = 'com.utc.utrc.hermes.iml.validation.IncompatibleTypes';
+	public static val INVALID_RECORD_ACCESS = 'com.utc.utrc.hermes.iml.validation.InvalidRecordAccess'
 	
 	
 	@Inject
@@ -278,11 +280,33 @@ class ImlValidator extends AbstractImlValidator {
 			}
 		} else if (type instanceof TupleType) {
 			if (tail instanceof TupleConstructor) {
-				error('''Method invocation is not applicable over tuple type '«typeAsString»' ''',
+				error('''Method invocation is not applicable over Tuple type '«typeAsString»' ''',
 					ImlPackage.eINSTANCE.tailedExpression_Tail,
 					METHOD_INVOCATION_ON_TUPLE
 				)
 				return false
+			} else if (tail instanceof ArrayAccess) { 
+				val index = tail.index.left
+				if (index instanceof NumberLiteral) {
+					if (index.value >= type.types.size || index.neg) {
+						error('''Tuple access index must be within the declared tuple elements size of '«typeAsString»
+						'. Expected <«type.types.size» but got «if (index.neg) '-'»«index.value» ''',
+							ImlPackage.eINSTANCE.tailedExpression_Tail,
+							INVALID_INDEX_ACCESS
+						)
+						return false
+					}
+				}
+			}
+		} else if (type instanceof RecordType) {
+			if (tail instanceof TupleConstructor) {
+				if (tail.elements.size !== 1 || !(tail.elements.get(0).left instanceof SymbolReferenceTerm)) {
+					error('''Invalid Record type symbol access. Expected one symbol reference.''',
+						ImlPackage.eINSTANCE.tailedExpression_Tail,
+						INVALID_RECORD_ACCESS
+					)
+					return false
+				}
 			} else if (tail instanceof ArrayAccess) { 
 				val index = tail.index.left
 				if (index instanceof NumberLiteral) {
@@ -294,8 +318,6 @@ class ImlValidator extends AbstractImlValidator {
 						)
 						return false
 					}
-				} else if (index instanceof SymbolReferenceTerm) {
-					// TODO Check if this symbol declared inside the tuple
 				}
 			}
 		} else if (type instanceof FunctionType) { 
@@ -315,7 +337,9 @@ class ImlValidator extends AbstractImlValidator {
 	def checkFunctionCallParameters(ImlType domain, TupleConstructor tupleTail) {
 		var List<ImlType> domainList = null;
 		if (domain instanceof TupleType) {
-			domainList = domain.symbols.map[it.type]
+			domainList = domain.types
+		} else if (domain instanceof RecordType) {
+			domainList = domain.symbols.map[type]
 		} else {
 			domainList = newArrayList(domain)
 		}

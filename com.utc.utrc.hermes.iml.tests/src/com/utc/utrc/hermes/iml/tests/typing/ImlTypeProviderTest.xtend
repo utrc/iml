@@ -192,7 +192,7 @@ class ImlTypeProviderTest {
 			package p;
 			type t1 {
 				var1 : (Int, Real)->Int := var2;
-				var2 : (p1 : Int, p2 : Real) -> Int;
+				var2 : (Int, Real) -> Int;
 			}			
 		'''.parse
 		model.assertNoErrors
@@ -217,7 +217,7 @@ class ImlTypeProviderTest {
 			}
 			
 			type t2 <T, P> {
-				varx : (p : T) -> P;
+				varx : (T) -> P;
 			}		
 		'''.parse
 		model.assertNoErrors
@@ -228,8 +228,7 @@ class ImlTypeProviderTest {
 		val exprType = typeProvider.termExpressionType(folForm)
 
 		assertTrue(exprType instanceof FunctionType)
-		val domain = (exprType as FunctionType).domain as TupleType
-		assertEquals(intType, (domain.symbols.get(0).type as SimpleTypeReference).type)
+		assertEquals(intType,((exprType as FunctionType).domain as SimpleTypeReference).type)
 		assertEquals(realType, ((exprType as FunctionType).range as SimpleTypeReference).type)
 	}
 	
@@ -438,7 +437,7 @@ class ImlTypeProviderTest {
 			package p;
 			type t1 {
 				varx : Real := var1[1];
-				var1 : (e1: Int, e2:Real);
+				var1 : (Int, Real);
 			}
 		'''.parse
 		
@@ -450,11 +449,11 @@ class ImlTypeProviderTest {
 	}
 	
 	@Test
-	def testTermExpressionType_ArrayAccessWithTupleUsingName() {
+	def testTermExpressionType_AccessSymbolOfRecord() {
 		val model = '''
 			package p;
 			type t1 {
-				varx : Real := var1[e2];
+				varx : Real := var1(e2);
 				var1 : (e1: Int, e2:Real);
 			}
 		'''.parse
@@ -481,10 +480,10 @@ class ImlTypeProviderTest {
 		val exprType = typeProvider.termExpressionType(t1.findSymbol("varx").definition)
 		
 		assertTrue(exprType instanceof TupleType)
-		assertEquals(3, (exprType as TupleType).symbols.size)
-		assertTrue(typingServices.isEqual(createIntRef, (exprType as TupleType).symbols.get(0).type))
-		assertTrue(typingServices.isEqual(createBoolRef, (exprType as TupleType).symbols.get(1).type))
-		assertTrue(typingServices.isEqual(createRealRef, (exprType as TupleType).symbols.get(2).type))
+		assertEquals(3, (exprType as TupleType).types.size)
+		assertTrue(typingServices.isEqual(createIntRef, (exprType as TupleType).types.get(0)))
+		assertTrue(typingServices.isEqual(createBoolRef, (exprType as TupleType).types.get(1)))
+		assertTrue(typingServices.isEqual(createRealRef, (exprType as TupleType).types.get(2)))
 	}
 	
 	@Test
@@ -565,14 +564,15 @@ class ImlTypeProviderTest {
 		    package p;
 		    type t1 {
 		    	vx: (Int, Real -> (size: Int, matrix: Real[10][20]));
-		    	v1: (Int, Real -> (Int, Real[10][20])) := vx;
-		    	v2: Int := vx[0];
-		    	v3: Real -> (Int, Real[0][0]) := vx[1];
-		    	v4: (Int, Real[0][0]) := vx[1](100);
-		    	v5: Int := vx[1](100)[0];
-		    	v6: Real[0][0] := vx[1](100)[matrix];
-		    	v7: Real[0] := vx[1](100)[1][5];
-		    	v8: Real := vx[1](100)[matrix][5][50];
+		    	vxx: (Int, Real -> (Int, Real[10][20]));
+		    	v1: (Int, Real -> (matrix: Real[10][20], size: Int)) := vx;
+		    	v2: Int := vxx[0];
+		    	v3: Real -> (Int, Real[0][0]) := vxx[1];
+		    	v4: (Int, Real[0][0]) := vxx[1](100);
+		    	v5: Int := vxx[1](100)[0];
+		    	v6: Real[0][0] := vx[1](100)(matrix);
+		    	v7: Real[0] := vxx[1](100)[1][5];
+		    	v8: Real := vx[1](100)(matrix)[5][50];
 		    }
 		'''.parse
 		

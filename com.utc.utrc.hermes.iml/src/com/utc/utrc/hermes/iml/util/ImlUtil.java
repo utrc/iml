@@ -23,6 +23,7 @@ import com.utc.utrc.hermes.iml.iml.ImlType;
 import com.utc.utrc.hermes.iml.iml.Model;
 import com.utc.utrc.hermes.iml.iml.ParenthesizedTerm;
 import com.utc.utrc.hermes.iml.iml.Property;
+import com.utc.utrc.hermes.iml.iml.RecordType;
 import com.utc.utrc.hermes.iml.iml.Relation;
 import com.utc.utrc.hermes.iml.iml.SelfType;
 import com.utc.utrc.hermes.iml.iml.SignedAtomicFormula;
@@ -132,9 +133,14 @@ public class ImlUtil {
 					.map(dim -> "[]")
 					.reduce((accum, current) -> accum + current).get();
 		} else if (imlType instanceof TupleType) {
-			Optional<String> elements = ((TupleType) imlType).getSymbols().stream()
-			.map(symbol -> getTypeName(symbol.getType(), qnp))
-			.reduce((accum, current) -> accum + ", " + current);
+			Optional<String> elements = ((TupleType) imlType).getTypes().stream()
+				.map(symbol -> getTypeName(symbol, qnp))
+				.reduce((accum, current) -> accum + ", " + current);
+			return "(" + (elements.isPresent()? elements.get() : "") + ")";
+		} else if (imlType instanceof RecordType) {
+			Optional<String> elements = ((RecordType) imlType).getSymbols().stream()
+				.map(symbol -> symbol.getName() + " : " + getTypeName(symbol.getType(), qnp))
+				.reduce((accum, current) -> accum + ", " + current);
 			return "(" + (elements.isPresent()? elements.get() : "") + ")";
 		} else if (imlType instanceof FunctionType){
 			return getTypeName(((FunctionType)imlType).getDomain(), qnp) + "->" + getTypeName(((FunctionType)imlType).getRange(), qnp);
@@ -291,7 +297,15 @@ public class ImlUtil {
 			return true;
 		}
 		if (type instanceof TupleType) {
-			for (SymbolDeclaration tupleElement : ((TupleType) type).getSymbols()) {
+			for (ImlType tupleElement : ((TupleType) type).getTypes()) {
+				if (containsFunctionType(tupleElement)) {
+					return true;
+				}
+			}
+		}
+		
+		if (type instanceof RecordType) {
+			for (SymbolDeclaration tupleElement : ((RecordType) type).getSymbols()) {
 				if (containsFunctionType(tupleElement.getType())) {
 					return true;
 				}

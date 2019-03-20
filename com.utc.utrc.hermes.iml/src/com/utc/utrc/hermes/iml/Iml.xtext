@@ -103,32 +103,31 @@ ImlType:
 ;
 
 ArrayType returns ImlType:
-	(SimpleTypeReference|TupleOrExpressionType) 
-	   ({ArrayType.type=current} (('['dimensions+=OptionalTermExpr']'))+)?
+	(SimpleTypeReference | TupleOrExpressionType | =>RecordType) 
+	   ({ArrayType.type=current} ('['dimensions+=OptionalTermExpr']')+)?
 ;
 
 TupleOrExpressionType returns ImlType :
 	ExplicitTupleType |
 	ParenthesizedTypeExpression	
-	
+;
+
+RecordType returns ImlType :
+	{RecordType} '(' (symbols+=NonParametricTypedSymbolDeclaration (',' symbols+=NonParametricTypedSymbolDeclaration)*)?  ')'
 ;
 
 ExplicitTupleType returns ImlType :
-	{TupleType} 'Tuple' '(' symbols+=TupleSymbol (',' symbols+=TupleSymbol)* ')'  
+	{TupleType} 'Tuple' '(' types+=ImlType (',' types+=ImlType)* ')'  
 ;
 
 ParenthesizedTypeExpression returns ImlType :
 	//=>({EmptyTupleType}'('')') |
 	=>('(' ImlType  ')') |
-	 {TupleType}('(' (symbols+=TupleSymbol (',' symbols+=TupleSymbol)*)?  ')') 
+	 {TupleType}('(' (types+=ImlType (',' types+=ImlType)*)?  ')') 
 ;
 	
 OptionalTermExpr:
 	{OptionalTermExpr} term=TermExpression?
-;
-
-TupleSymbol returns SymbolDeclaration:
-	(name=ID ':')? type=ImlType
 ;
 
 SimpleTypeReference returns ImlType:
@@ -224,12 +223,13 @@ TerminalTerm returns TermExpression:
 	CaseTermExpression |
 	{SelfTerm} 'self' |
 	SequenceTerm |
-	{LambdaExpression}'fun' signature=TupleOrExpressionType (':' returnType=ImlType)?  definition=SequenceTerm |
+	{LambdaExpression}'fun' '(' parameters+=NonParametricTypedSymbolDeclaration (',' parameters+=NonParametricTypedSymbolDeclaration)* ')' 
+		(':' returnType=ImlType)?  definition=SequenceTerm |
 	QuantifiedFormula
 	 ;
 	
 InstanceConstructor returns TermExpression:
-	{InstanceConstructor} 'some' '(' ref=TupleSymbol ')' definition=SequenceTerm
+	{InstanceConstructor} 'some' '(' ref=NonParametricTypedSymbolDeclaration ')' definition=SequenceTerm
 ;
 
 TupleOrFormulaConstructor returns TermExpression:

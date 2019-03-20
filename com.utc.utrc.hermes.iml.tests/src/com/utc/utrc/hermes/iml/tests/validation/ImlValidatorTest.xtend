@@ -342,7 +342,7 @@ class ImlValidatorTest {
 		val model = '''
 			package p;
 			type x {
-				var1 : (a: Int, b:Real);
+				var1 : (Int, Real);
 				var2 : Real := var1(1);
 			}
 		'''.parse
@@ -369,7 +369,7 @@ class ImlValidatorTest {
 		val model = '''
 			package p;
 			type x {
-				var1 : (a: Int, b:Real);
+				var1 : (Int, Real);
 				var2 : Real := var1[1];
 			}
 		'''.parse
@@ -929,6 +929,36 @@ class ImlValidatorTest {
 	 		
 	 		l: ArrayList<Int> := <Int>empty_list;
 	 		
+	 	'''.parse
+	 	
+	 	model.assertNoErrors
+	 }
+	 
+	 @Test
+	 def testTupleConstructorForRecord() {
+	 	val model = '''
+	 		package p;
+	 		
+	 		type T {
+	 			v1 : (a: Int, b: Real) := (5, 0.5);
+	 		}
+	 	'''.parse
+	 	
+	 	model.assertError(ImlPackage.eINSTANCE.symbolDeclaration, 
+	 		TYPE_MISMATCH_IN_TERM_EXPRESSION
+	 	)
+	 }
+	 
+	 @Test
+	 def testRecordConstructor() {
+	 	val model = '''
+	 		package p;
+	 		
+	 		type T {
+	 			v1 : (a: Int, b: Real) := some(x: (a: Int, b: Real)) {
+	 				x(a)=5 && x(b)=0.5;
+	 			};
+	 		}
 	 	'''.parse
 	 	
 	 	model.assertNoErrors

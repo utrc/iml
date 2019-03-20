@@ -17,7 +17,6 @@ import com.utc.utrc.hermes.iml.iml.SimpleTypeReference
 import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
 import com.utc.utrc.hermes.iml.iml.SymbolReferenceTerm
 import com.utc.utrc.hermes.iml.iml.TermMemberSelection
-import com.utc.utrc.hermes.iml.iml.TupleType
 import java.util.Arrays
 import java.util.HashSet
 import org.eclipse.emf.ecore.EObject
@@ -34,6 +33,8 @@ import com.utc.utrc.hermes.iml.iml.NamedType
 import com.utc.utrc.hermes.iml.iml.TailedExpression
 import com.utc.utrc.hermes.iml.typing.ImlTypeProvider
 import com.utc.utrc.hermes.iml.typing.TypingServices
+import com.utc.utrc.hermes.iml.iml.RecordType
+import com.utc.utrc.hermes.iml.iml.TupleConstructor
 
 /**
  * This class contains custom scoping description.
@@ -110,9 +111,9 @@ class ImlScopeProvider extends AbstractDeclarativeScopeProvider {
 			if (container.member === context) {
 				return scope_SymbolReferenceTerm_symbol(container, r)
 			}
-		} else if (container instanceof SignedAtomicFormula && container.eContainer instanceof ArrayAccess) {
+		} else if (container instanceof SignedAtomicFormula && container.eContainer instanceof TupleConstructor) {
 			// Scope provider for Tuple array access
-			val tupleScope = getScopeOfTupleAccess(container.eContainer as ArrayAccess)
+			val tupleScope = getScopeOfRecordAccess(container.eContainer as TupleConstructor)
 			if (tupleScope !== null) {
 				return tupleScope;
 			}
@@ -131,10 +132,10 @@ class ImlScopeProvider extends AbstractDeclarativeScopeProvider {
 		return Scopes::scopeFor(features, scope)
 	}
 
-	def getScopeOfTupleAccess(ArrayAccess arrayAccess) {
-		val tailedExpr = arrayAccess.eContainer as TailedExpression
+	def getScopeOfRecordAccess(TupleConstructor recordAccess) {
+		val tailedExpr = recordAccess.eContainer as TailedExpression
 		var type = termExpressionType(tailedExpr.left)
-		if (type instanceof TupleType) {
+		if (type instanceof RecordType) {
 			return Scopes::scopeFor(type.symbols);
 		}
 	}
@@ -193,8 +194,8 @@ class ImlScopeProvider extends AbstractDeclarativeScopeProvider {
 		return parentScope
 	}
 
-	def scope_SymbolReferenceTerm_symbol(ArrayAccess context, EReference r) {
-		val tupleScope = getScopeOfTupleAccess(context)
+	def scope_SymbolReferenceTerm_symbol(TupleConstructor context, EReference r) {
+		val tupleScope = getScopeOfRecordAccess(context)
 		if (tupleScope !== null) {
 			return tupleScope
 		} else {
@@ -212,11 +213,7 @@ class ImlScopeProvider extends AbstractDeclarativeScopeProvider {
 			InstanceConstructor:
 				return Scopes::scopeFor(Arrays.asList(o.ref), buildNestedScope(o.eContainer))
 			LambdaExpression:
-				if (o.signature instanceof TupleType) {
-					return Scopes::scopeFor((o.signature as TupleType).symbols, buildNestedScope(o.eContainer));
-
-				} else
-					return buildNestedScope(o.eContainer)
+				return Scopes::scopeFor(o.parameters, buildNestedScope(o.eContainer))
 			QuantifiedFormula:
 				return Scopes::scopeFor(o.scope, buildNestedScope(o.eContainer))
 			SequenceTerm:

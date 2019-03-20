@@ -246,9 +246,9 @@ public class ImlCustomFactory extends ImlFactoryImpl {
 		]
 	}
 	
-	def createTupleType(List<SymbolDeclaration> symbols) {
+	def createTupleType(List<ImlType> types) {
 		createTupleType => [
-			it.symbols.addAll(symbols)
+			it.types.addAll(types)
 		]
 	}
 	

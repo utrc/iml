@@ -25,6 +25,7 @@ import org.junit.runner.RunWith
 
 import static org.junit.Assert.*
 import com.utc.utrc.hermes.iml.ImlParseHelper
+import com.utc.utrc.hermes.iml.iml.TupleConstructor
 
 /**
  * 
@@ -139,13 +140,13 @@ class ImlScopeProviderTest {
 			package p;
 			type t1 {
 				var1 : (e1: Int, e2:Real);
-				varx : Real := var1[e2];
+				varx : Real := var1(e2);
 			}
 		'''.parse
 		model.assertNoErrors;
 		
 		(((model.symbols.last as NamedType).symbols.last.definition.left 
-		   as TailedExpression).tail as ArrayAccess).index.left => [
+		   as TailedExpression).tail as TupleConstructor).elements.get(0).left => [
 			assertScope(ImlPackage::eINSTANCE.symbolReferenceTerm_Symbol, 
 				Arrays.asList("e1", "e2"))
 		];
@@ -158,13 +159,13 @@ class ImlScopeProviderTest {
 			package p;
 			type t1 {
 				var1 : (Int, (e1: Int, e2:Real));
-				varx : Real := var1[1][e2];
+				varx : Real := var1[1](e2);
 			}
 		'''.parse
 		model.assertNoErrors;
 		
 		(((model.symbols.last as NamedType).symbols.last.definition.left 
-		   as TailedExpression).tail as ArrayAccess).index.left => [
+		   as TailedExpression).tail as TupleConstructor).elements.get(0).left => [
 			assertScope(ImlPackage::eINSTANCE.symbolReferenceTerm_Symbol, 
 				Arrays.asList("e1", "e2"))
 		];
@@ -183,13 +184,13 @@ class ImlScopeProviderTest {
 			type t1 {
 				var1 : t2<(Int, (e1: Int, e2:Real))>;
 				// varx : Real := var1.vT[1][e2]; // We won't support named access
-				varx : Real := var1.vT[1][1];
+				varx : Real := var1.vT[1](e2);
 			}
 		'''.parse
 		model.assertNoErrors;
 		
 		((((model.symbols.last as NamedType).symbols.last.definition.left 
-		   as TailedExpression)).tail as ArrayAccess).index.left => [
+		   as TailedExpression)).tail as TupleConstructor).elements.get(0).left => [
 			assertScope(ImlPackage::eINSTANCE.symbolReferenceTerm_Symbol, 
 				Arrays.asList("e1", "e2"))
 		];
@@ -211,13 +212,13 @@ class ImlScopeProviderTest {
 			
 			type t1 {
 				var1 : t2<(e3: Real, e4: Int)>;
-				varx : Int := var1.vT.vP[1][1][1];
+				varx : Int := var1.vT.vP[1](e2)(e4);
 			}
 		'''.parse
 		model.assertNoErrors;
 		
 		((((model.symbols.last as NamedType).symbols.last.definition.left 
-		   as TailedExpression)).tail as ArrayAccess).index.left => [
+		   as TailedExpression)).tail as TupleConstructor).elements.get(0).left => [
 			assertScope(ImlPackage::eINSTANCE.symbolReferenceTerm_Symbol, 
 				Arrays.asList("e3", "e4"))
 		];
