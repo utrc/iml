@@ -27,27 +27,31 @@ import com.utc.utrc.hermes.iml.iml.RelationKind
 import com.utc.utrc.hermes.iml.iml.TermExpression
 import com.utc.utrc.hermes.iml.typing.ImlTypeProvider
 import com.utc.utrc.hermes.iml.iml.Assertion
+import com.google.inject.Inject
 
 class NuSmvGeneratorServices {
+	
+	@Inject
+	private ImlTypeProvider typeProvider;
 
-	def static String getNameFor(SimpleTypeReference tr) {
+	def String getNameFor(SimpleTypeReference tr) {
 		return qualifiedName(tr.getType()) +
 			'''«FOR b : tr.typeBinding BEFORE '<' SEPARATOR ',' AFTER '>'» «b.nameFor» «ENDFOR»'''
 	}
 
-	def static String getNameFor(ImlType imlType) {
+	def String getNameFor(ImlType imlType) {
 		if (imlType instanceof SimpleTypeReference) {
 			return (imlType as SimpleTypeReference).nameFor
 		}
 		return "__NOT__SUPPORTED"
 	}
 
-	def static String qualifiedName(NamedType t) {
+	def String qualifiedName(NamedType t) {
 		var typename = t.getName();
 		return ( ( t.eContainer() as Model ).getName() + "." + typename);
 	}
 
-	def static String getNameFor(FolFormula f) {
+	def String getNameFor(FolFormula f) {
 		if (f instanceof TermMemberSelection) {
 			return getNameFor(f as TermMemberSelection);
 		}
@@ -58,7 +62,7 @@ class NuSmvGeneratorServices {
 
 	}
 
-	def static String getNameFor(TermMemberSelection ts) {
+	def String getNameFor(TermMemberSelection ts) {
 		var String rec;
 		var String mem;
 		if (ts.getReceiver() instanceof SymbolReferenceTerm) {
@@ -74,15 +78,15 @@ class NuSmvGeneratorServices {
 		return rec + "." + mem;
 	}
 
-	def static String getNameFor(SymbolReferenceTerm s) {
+	def String getNameFor(SymbolReferenceTerm s) {
 		return s.getSymbol().getName();
 	}
 
-	def static String serialize(NuSmvModel m) {
+	def String serialize(NuSmvModel m) {
 		'''«FOR mod : m.modules.values AFTER '\n'»«serialize(mod)»«ENDFOR»'''
 	}
 
-	def static String serialize(NuSmvModule m) {
+	def String serialize(NuSmvModule m) {
 		if(m.name.equals("iml.lang.Bool") || m.name.equals("iml.lang.Int")) return "";
 		if(m.isEnum()) return "";
 		'''
@@ -95,7 +99,7 @@ class NuSmvGeneratorServices {
 		'''
 	}
 
-	def static String serialize(NuSmvSymbol s) {
+	def String serialize(NuSmvSymbol s) {
 		switch (s.elementType) {
 			case VAR: '''
 				VAR «s.name» : «serialize(s.type)» «FOR p : s.type.params BEFORE '(' SEPARATOR ',' AFTER ')'»«p.name»«ENDFOR» ;
@@ -117,7 +121,7 @@ class NuSmvGeneratorServices {
 		}
 	}
 
-	def static List<String> suffix(NuSmvSymbol s) {
+	def List<String> suffix(NuSmvSymbol s) {
 		var retval = new ArrayList<String>();
 		for (field : s.type.type.variables.keySet) {
 			if (s.type.type.variables.get(field).type.type.name.equals("iml.lang.Bool") ||
@@ -133,7 +137,7 @@ class NuSmvGeneratorServices {
 		return retval;
 	}
 
-	def static List<String> suffix(NuSmvTypeInstance s) {
+	def List<String> suffix(NuSmvTypeInstance s) {
 		var retval = new ArrayList<String>();
 		for (field : s.type.variables.keySet) {
 			if (s.type.variables.get(field).type.type.name.equals("iml.lang.Bool") ||
@@ -149,14 +153,14 @@ class NuSmvGeneratorServices {
 		return retval;
 	}
 
-	def static String serialize(NuSmvTypeInstance i) {
+	def String serialize(NuSmvTypeInstance i) {
 		if (! i.type.enum) {
 			return toNuSmvName(i.type);
 		}
 		'''«FOR l : i.type.literals BEFORE '{' SEPARATOR ',' AFTER '}'»«toNuSmvName(i.type,l)»«ENDFOR»'''
 	}
 
-	def static String serialize(FolFormula e, SimpleTypeReference ctx) {
+	def String serialize(FolFormula e, SimpleTypeReference ctx) {
 		var String retval = "";
 		if (e.getOp() !== null &&
 			(e.getOp().equals("=>") || e.getOp().equals("<=>") || e.getOp().equals("&&") || e.getOp().equals("||"))) {
@@ -231,7 +235,7 @@ class NuSmvGeneratorServices {
 		return retval;
 	}
 
-	def static String convertOp(String op) {
+	def String convertOp(String op) {
 		switch (op) {
 			case "&&": "&"
 			case "||": "|"
@@ -240,7 +244,7 @@ class NuSmvGeneratorServices {
 		}
 	}
 
-	def static String toNuSmvName(NuSmvModule m) {
+	def String toNuSmvName(NuSmvModule m) {
 		if (m == NuSmvModel.Bool) {
 			return "boolean"
 		}
@@ -250,11 +254,11 @@ class NuSmvGeneratorServices {
 		return '''"«m.name»"'''
 	}
 
-	def static String toNuSmvName(NuSmvModule m, String literal) {
+	def String toNuSmvName(NuSmvModule m, String literal) {
 		'''"«m.name».«literal»"'''
 	}
 
-	def static List<String> getSuffix(FolFormula e,SimpleTypeReference ctx) {
+	def List<String> getSuffix(FolFormula e,SimpleTypeReference ctx) {
 		if (e instanceof TermExpression){
 			return getSuffix(e as TermExpression,ctx) ;
 		} else {
@@ -264,9 +268,9 @@ class NuSmvGeneratorServices {
 		}
 	}
 
-	def static List<String> getSuffix(TermExpression e, SimpleTypeReference ctx) {
+	def List<String> getSuffix(TermExpression e, SimpleTypeReference ctx) {
 		var retval = new ArrayList<String>();
-		var t = ImlTypeProvider.termExpressionType(e,ctx);
+		var t = typeProvider.termExpressionType(e,ctx);
 		if (qualifiedName((t as SimpleTypeReference).type).equals("iml.fsm.PrimedVar")){
 				retval.add("") ;
 				return retval;
@@ -275,13 +279,13 @@ class NuSmvGeneratorServices {
 		return retval;
 	}
 
-	def static List<String> getSuffix(String sofar, ImlType t, SimpleTypeReference ctx) {
+	def List<String> getSuffix(String sofar, ImlType t, SimpleTypeReference ctx) {
 		var retval = new ArrayList<String>();
 		if (t instanceof SimpleTypeReference) {
 			
 			for (s : t.type.symbols) {
 				if (! (s instanceof Assertion)) {
-					var boundtype = ImlTypeProvider.bind(s.type,t) ;
+					var boundtype = typeProvider.bind(s.type,t) ;
 					if ( qualifiedName( (boundtype as SimpleTypeReference).type).equals("iml.lang.Bool") || 
 						qualifiedName((boundtype as SimpleTypeReference).type).equals("iml.lang.Int") )
 							
