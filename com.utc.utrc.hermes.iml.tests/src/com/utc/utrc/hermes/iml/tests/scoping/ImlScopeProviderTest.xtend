@@ -139,14 +139,14 @@ class ImlScopeProviderTest {
 		val model = '''
 			package p;
 			type t1 {
-				var1 : (e1: Int, e2:Real);
-				varx : Real := var1(e2);
+				var1 : {e1: Int, e2:Real};
+				varx : Real := var1.e2;
 			}
 		'''.parse
 		model.assertNoErrors;
 		
-		(((model.symbols.last as NamedType).symbols.last.definition.left 
-		   as TailedExpression).tail as TupleConstructor).elements.get(0).left => [
+		((model.symbols.last as NamedType).symbols.last.definition.left 
+		   as TermMemberSelection).member => [
 			assertScope(ImlPackage::eINSTANCE.symbolReferenceTerm_Symbol, 
 				Arrays.asList("e1", "e2"))
 		];
@@ -158,14 +158,14 @@ class ImlScopeProviderTest {
 		val model = '''
 			package p;
 			type t1 {
-				var1 : (Int, (e1: Int, e2:Real));
-				varx : Real := var1[1](e2);
+				var1 : (Int, {e1: Int, e2:Real});
+				varx : Real := var1[1].e2;
 			}
 		'''.parse
 		model.assertNoErrors;
 		
-		(((model.symbols.last as NamedType).symbols.last.definition.left 
-		   as TailedExpression).tail as TupleConstructor).elements.get(0).left => [
+		((model.symbols.last as NamedType).symbols.last.definition.left 
+		   as TermMemberSelection).member => [
 			assertScope(ImlPackage::eINSTANCE.symbolReferenceTerm_Symbol, 
 				Arrays.asList("e1", "e2"))
 		];
@@ -182,15 +182,14 @@ class ImlScopeProviderTest {
 			}
 			
 			type t1 {
-				var1 : t2<(Int, (e1: Int, e2:Real))>;
-				// varx : Real := var1.vT[1][e2]; // We won't support named access
-				varx : Real := var1.vT[1](e2);
+				var1 : t2<(Int, {e1: Int, e2:Real})>;
+				varx : Real := var1.vT[1].e2;
 			}
 		'''.parse
 		model.assertNoErrors;
 		
-		((((model.symbols.last as NamedType).symbols.last.definition.left 
-		   as TailedExpression)).tail as TupleConstructor).elements.get(0).left => [
+		((model.symbols.last as NamedType).symbols.last.definition.left 
+		   as TermMemberSelection).member => [
 			assertScope(ImlPackage::eINSTANCE.symbolReferenceTerm_Symbol, 
 				Arrays.asList("e1", "e2"))
 		];
@@ -207,18 +206,18 @@ class ImlScopeProviderTest {
 			}
 			
 			type t2 <T> {
-				vT : t3<(Int, (e1: Int, e2: T))>;
+				vT : t3<(Int, {e1: Int, e2: T})>;
 			}
 			
 			type t1 {
-				var1 : t2<(e3: Real, e4: Int)>;
-				varx : Int := var1.vT.vP[1](e2)(e4);
+				var1 : t2<{e3: Real, e4: Int}>;
+				varx : Int := var1.vT.vP[1].e2.e4;
 			}
 		'''.parse
 		model.assertNoErrors;
 		
-		((((model.symbols.last as NamedType).symbols.last.definition.left 
-		   as TailedExpression)).tail as TupleConstructor).elements.get(0).left => [
+		((model.symbols.last as NamedType).symbols.last.definition.left 
+		   as TermMemberSelection).member => [
 			assertScope(ImlPackage::eINSTANCE.symbolReferenceTerm_Symbol, 
 				Arrays.asList("e3", "e4"))
 		];
@@ -230,7 +229,7 @@ class ImlScopeProviderTest {
 		val model = '''
 			package p;
 			type t1 {
-				var1 : (Int, (e1: Int, e2:Real));
+				var1 : (Int, {e1: Int, e2:Real});
 				varx : Int := var1[e1][1];
 			}
 		'''.parse

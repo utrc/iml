@@ -272,7 +272,7 @@ class ImlValidatorTest {
 		val model = '''
 			package p;
 			type x {
-				var1 : (p1 : Int, p2 : Real) -> Int;
+				var1 : {p1 : Int, p2 : Real} -> Int;
 				var2 : Int := var1(5,10.5);
 			}
 		'''.parse
@@ -287,7 +287,7 @@ class ImlValidatorTest {
 			type T1 extends (T2);
 			type T2;
 			type x {
-				var1: (p1 : T2, p2 : Real) -> Int;
+				var1: {p1 : T2, p2 : Real} -> Int;
 				varT : T1;
 				var2 : Int := var1(varT,10.5);
 			}
@@ -301,7 +301,7 @@ class ImlValidatorTest {
 		val model = '''
 			package p;
 			type x {
-				var1 : (p1 : Int, p2 : Real) -> Int;
+				var1 : {p1 : Int, p2 : Real} -> Int;
 				var2 : Int := var1(5,10.0);
 			}
 		'''.parse
@@ -356,7 +356,7 @@ class ImlValidatorTest {
 		val model = '''
 			package p;
 			type x {
-				var1 : (a: Int, b:Real);
+				var1 : (Int, Real);
 				var2 : Real := var1[2];
 			}
 		'''.parse
@@ -374,6 +374,30 @@ class ImlValidatorTest {
 			}
 		'''.parse
 		model.assertNoErrors
+	}
+	
+	@Test
+	def testCheckParameterList_ArrayAccessOverRecord() {
+		val model = '''
+			package p;
+			type x {
+				var1 : {a: Int, b: Real};
+				var2 : Real := var1[1];
+			}
+		'''.parse
+		model.assertError(ImlPackage.eINSTANCE.tailedExpression, METHOD_INVOCATION_ON_RECORD)
+	}
+	
+	@Test
+	def testCheckParameterList_MethodInvocationOverRecord() {
+		val model = '''
+			package p;
+			type x {
+				var1 : {a: Int, b: Real};
+				var2 : Real := var1(1);
+			}
+		'''.parse
+		model.assertError(ImlPackage.eINSTANCE.tailedExpression, METHOD_INVOCATION_ON_RECORD)
 	}
 	
 	@Test
@@ -827,7 +851,7 @@ class ImlValidatorTest {
 	 	
 	 	type Vertex ;
 	 	
-	 	type Edge is (v1:Vertex,v2:Vertex);
+	 	type Edge is {v1:Vertex,v2:Vertex};
 	 	
 	 	type Graph {
 	 	    edges : List<Edge> ;
@@ -940,7 +964,7 @@ class ImlValidatorTest {
 	 		package p;
 	 		
 	 		type T {
-	 			v1 : (a: Int, b: Real) := (5, 0.5);
+	 			v1 : {a: Int, b: Real} := (5, 0.5);
 	 		}
 	 	'''.parse
 	 	
@@ -955,8 +979,8 @@ class ImlValidatorTest {
 	 		package p;
 	 		
 	 		type T {
-	 			v1 : (a: Int, b: Real) := some(x: (a: Int, b: Real)) {
-	 				x(a)=5 && x(b)=0.5;
+	 			v1 : {a: Int, b: Real} := some(x: {a: Int, b: Real}) {
+	 				x.a=5 && x.b=0.5;
 	 			};
 	 		}
 	 	'''.parse

@@ -172,7 +172,7 @@ class ImlTypeProviderTest {
 			package p;
 			type t1 {
 				var1 : Int := var2 (5, 6);
-				var2 : (p1 : Int, p2 : Real) -> Int;
+				var2 : {p1 : Int, p2 : Real} -> Int;
 			}			
 		'''.parse
 		model.assertNoErrors
@@ -453,8 +453,8 @@ class ImlTypeProviderTest {
 		val model = '''
 			package p;
 			type t1 {
-				varx : Real := var1(e2);
-				var1 : (e1: Int, e2:Real);
+				varx : Real := var1.e2;
+				var1 : {e1: Int, e2:Real};
 			}
 		'''.parse
 		
@@ -563,16 +563,16 @@ class ImlTypeProviderTest {
 		val model = '''
 		    package p;
 		    type t1 {
-		    	vx: (Int, Real -> (size: Int, matrix: Real[10][20]));
+		    	vx: (Int, Real -> {size: Int, matrix: Real[10][20]});
 		    	vxx: (Int, Real -> (Int, Real[10][20]));
-		    	v1: (Int, Real -> (matrix: Real[10][20], size: Int)) := vx;
+		    	v1: (Int, Real -> {matrix: Real[10][20], size: Int}) := vx;
 		    	v2: Int := vxx[0];
 		    	v3: Real -> (Int, Real[0][0]) := vxx[1];
 		    	v4: (Int, Real[0][0]) := vxx[1](100);
 		    	v5: Int := vxx[1](100)[0];
-		    	v6: Real[0][0] := vx[1](100)(matrix);
+		    	v6: Real[0][0] := vx[1](100).matrix;
 		    	v7: Real[0] := vxx[1](100)[1][5];
-		    	v8: Real := vx[1](100)(matrix)[5][50];
+		    	v8: Real := vx[1](100).matrix[5][50];
 		    }
 		'''.parse
 		

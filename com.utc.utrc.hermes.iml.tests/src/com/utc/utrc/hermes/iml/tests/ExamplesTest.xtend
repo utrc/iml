@@ -62,7 +62,7 @@ class ExamplesTest {
 			type TestType12 is (Int,Real) ;
 			type TestType13 is (A,A) ;
 			type TestType14 is (Int,String,Int) ;
-			type TestType15 is (age:Int,weight:Real) ;
+			type TestType15 is {age:Int,weight:Real} ;
 			type TestType16 is (Real->Int)[10] ;
 		'''.parse
 		

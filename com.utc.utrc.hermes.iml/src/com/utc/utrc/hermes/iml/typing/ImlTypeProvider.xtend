@@ -130,8 +130,11 @@ public class ImlTypeProvider {
 				val receiverType = termExpressionType(t.receiver, context)
 				if (receiverType instanceof SimpleTypeReference) {
 					return termExpressionType(t.member, receiverType)
-				} else
-					return null // TODO Should we raise an exception better?
+				} else if (receiverType instanceof RecordType) {
+					return termExpressionType(t.member, context)
+				} else {
+					throw new IllegalArgumentException("TermMemberSelection receiver should be simple type or record type only.")	
+				}
 			}
 			TailedExpression: {
 				var leftType = termExpressionType(t.left)

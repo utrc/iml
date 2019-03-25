@@ -113,7 +113,7 @@ TupleOrExpressionType returns ImlType :
 ;
 
 RecordType returns ImlType :
-	{RecordType} '(' (symbols+=NonParametricTypedSymbolDeclaration (',' symbols+=NonParametricTypedSymbolDeclaration)*)?  ')'
+	{RecordType} '{' (symbols+=NonParametricTypedSymbolDeclaration (',' symbols+=NonParametricTypedSymbolDeclaration)*)?  '}'
 ;
 
 ExplicitTupleType returns ImlType :
