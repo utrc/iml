@@ -72,6 +72,7 @@ class ImlValidator extends AbstractImlValidator {
 	public static val METHOD_INVOCATION_ON_NAMEDTYPE= 'com.utc.utrc.hermes.iml.validation.MethodInvocationOnNamedType'
 	public static val METHOD_INVOCATION_ON_ARRAY = 'com.utc.utrc.hermes.iml.validation.MethodInvocationOnArray'
 	public static val METHOD_INVOCATION_ON_TUPLE = 'com.utc.utrc.hermes.iml.validation.MethodInvocationOnTuple'
+	public static val METHOD_INVOCATION_ON_RECORD = 'com.utc.utrc.hermes.iml.validation.MethodInvocationOnRecord'
 	public static val MISSING_METHOD_INVOCATION = 'com.utc.utrc.hermes.iml.validation.MissingMethodInvocation'
 	public static val TYPE_MISMATCH_IN_TERM_EXPRESSION = 'com.utc.utrc.hermes.iml.validation.TypeMismatchInTermExpression'
 	public static val TYPE_MISMATCH_IN_TERM_RELATION = 'com.utc.utrc.hermes.iml.validation.TypeMismatchInTermRelation'
@@ -299,27 +300,10 @@ class ImlValidator extends AbstractImlValidator {
 				}
 			}
 		} else if (type instanceof RecordType) {
-			if (tail instanceof TupleConstructor) {
-				if (tail.elements.size !== 1 || !(tail.elements.get(0).left instanceof SymbolReferenceTerm)) {
-					error('''Invalid Record type symbol access. Expected one symbol reference.''',
+			error('''Method invocation and array access are not applicable on the record type '«typeAsString»' ''',
 						ImlPackage.eINSTANCE.tailedExpression_Tail,
-						INVALID_RECORD_ACCESS
+						METHOD_INVOCATION_ON_RECORD
 					)
-					return false
-				}
-			} else if (tail instanceof ArrayAccess) { 
-				val index = tail.index.left
-				if (index instanceof NumberLiteral) {
-					if (index.value >= type.symbols.size || index.neg) {
-						error('''Tuple access index must be within the declare tuple elements size of '«typeAsString»'. Expected <
-						«type.symbols.size» but got «if (index.neg) '-'»«index.value» ''',
-							ImlPackage.eINSTANCE.tailedExpression_Tail,
-							INVALID_INDEX_ACCESS
-						)
-						return false
-					}
-				}
-			}
 		} else if (type instanceof FunctionType) { 
 			if (tail instanceof ArrayAccess) {
 				error('''Array access is not applicatble over Higher Order Type of: '«typeAsString»' ''',

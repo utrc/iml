@@ -74,27 +74,27 @@ class TypingServicesTest {
 	
 	@Test
 	def testIsEqual_ImlType_WithRecord() {
-		assertEqualTypes("(p1: Int, p2: Bool)", "(p1: Int, p2: Bool)", true)
+		assertEqualTypes("{p1: Int, p2: Bool}", "{p1: Int, p2: Bool}", true)
 	}
 	
 	@Test
 	def testIsEqual_ImlType_WithRecord_DifferentLocation() {
-		assertEqualTypes("(p1: Int, p2: Bool)", "(p2: Bool, p1: Int)", true)
+		assertEqualTypes("{p1: Int, p2: Bool}", "{p2: Bool, p1: Int}", true)
 	}
 	
 	@Test
 	def testIsEqual_ImlType_WithRecord_DifferentNames() {
-		assertEqualTypes("(p1: Int, p2: Bool)", "(p1: Int, p10: Bool)", false)
+		assertEqualTypes("{p1: Int, p2: Bool}", "{p1: Int, p10: Bool}", false)
 	}
 	
 	@Test
 	def testIsEqual_ImlType_WithRecord_DifferentTypes() {
-		assertEqualTypes("(p1: Int, p2: Bool)", "(p1: Int, p2: Real)", false)
+		assertEqualTypes("{p1: Int, p2: Bool}", "{p1: Int, p2: Real}", false)
 	}
 	
 	@Test
 	def testIsEqual_ImlType_WithRecord_DifferentSize() {
-		assertEqualTypes("(p1: Int)", "(p1: Int, p2: Bool)", false)
+		assertEqualTypes("{p1: Int}", "{p1: Int, p2: Bool}", false)
 	}
 	
 	@Test
@@ -129,7 +129,7 @@ class TypingServicesTest {
 	
 	@Test
 	def testIsEqual_ImlType_RecordAndTuple() {
-		assertEqualTypes("(Int, Bool)", "(a: Int, b: Bool)", false)
+		assertEqualTypes("(Int, Bool)", "{a: Int, b: Bool}", false)
 	}
 	
 	@Test
@@ -139,7 +139,7 @@ class TypingServicesTest {
 	
 	@Test
 	def testIsEqual_ImlType_Domain_Record() {
-		assertEqualTypes("(a: Int, b: Bool) -> Int", "(b: Bool, a: Int) -> Int", true)
+		assertEqualTypes("{a: Int, b: Bool} -> Int", "{b: Bool, a: Int} -> Int", true)
 	}
 	
 	def assertEqualTypes(String type1, String type2, boolean isEqual) {
@@ -252,8 +252,8 @@ class TypingServicesTest {
 		val model = '''
 			package p;
 			type T1 {
-				var1 : (a: Int, b: Int)[10];
-				var2 : (a: Int, b: Int)[] := var1;
+				var1 : {a: Int, b: Int}[10];
+				var2 : {a: Int, b: Int}[] := var1;
 			}
 		'''.parse
 		
