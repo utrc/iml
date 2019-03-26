@@ -15,6 +15,7 @@ import static com.utc.utrc.hermes.iml.validation.ImlValidator.*
 import com.utc.utrc.hermes.iml.iml.NamedType
 import com.utc.utrc.hermes.iml.iml.SimpleTypeReference
 import static extension org.junit.Assert.*
+import com.utc.utrc.hermes.iml.ImlParseHelper
 
 /**
  * Test related helper methods
@@ -24,7 +25,7 @@ import static extension org.junit.Assert.*
 @InjectWith(ImlInjectorProvider)
 class ImlValidatorTest {
 	
-	@Inject extension ParseHelper<Model>
+	@Inject extension ImlParseHelper
 	
 	@Inject extension ValidationTestHelper
 	
@@ -127,7 +128,6 @@ class ImlValidatorTest {
 	def testCheckNoDuplicateElement_symbolDeclaration_noDuplicates() {
 		val model = '''
 			package p;
-			type Int;
 			type T1 {
 				var1 : Int;
 				var2 : Int;
@@ -141,7 +141,6 @@ class ImlValidatorTest {
 	def testCheckNoDuplicateElement_symbolDeclaration_duplicates() {
 		val model = '''
 			package p;
-			type Int;
 			type T1 {
 				var1 : Int;
 				var2 : Int;
@@ -272,10 +271,8 @@ class ImlValidatorTest {
 	def testCheckParameterList_Valid() {
 		val model = '''
 			package p;
-			type Int;
-			type Real;
 			type x {
-				var1 : (p1 : Int, p2 : Real) -> Int;
+				var1 : {p1 : Int, p2 : Real} -> Int;
 				var2 : Int := var1(5,10.5);
 			}
 		'''.parse
@@ -287,12 +284,10 @@ class ImlValidatorTest {
 	def testCheckParameterList_ValidParameterCompatible() {
 		val model = '''
 			package p;
-			type Int;
-			type Real;
 			type T1 extends (T2);
 			type T2;
 			type x {
-				var1: (p1 : T2, p2 : Real) -> Int;
+				var1: {p1 : T2, p2 : Real} -> Int;
 				varT : T1;
 				var2 : Int := var1(varT,10.5);
 			}
@@ -305,10 +300,8 @@ class ImlValidatorTest {
 	def testCheckParameterList_() {
 		val model = '''
 			package p;
-			type Int;
-			type Real;
 			type x {
-				var1 : (p1 : Int, p2 : Real) -> Int;
+				var1 : {p1 : Int, p2 : Real} -> Int;
 				var2 : Int := var1(5,10.0);
 			}
 		'''.parse
@@ -335,8 +328,6 @@ class ImlValidatorTest {
 	def testCheckParameterList_NotFunctionCall_Array() {
 		val model = '''
 			package p;
-			type Int;
-			type Real;
 			type x {
 				var1 : Int[][];
 				var2 : Int := var1(5);
@@ -350,10 +341,8 @@ class ImlValidatorTest {
 	def testCheckParameterList_NotFunctionCall_Tuple() {
 		val model = '''
 			package p;
-			type Int;
-			type Real;
 			type x {
-				var1 : (a: Int, b:Real);
+				var1 : (Int, Real);
 				var2 : Real := var1(1);
 			}
 		'''.parse
@@ -366,10 +355,8 @@ class ImlValidatorTest {
 	def testCheckParameterList_TupleAccessWrongIndex() {
 		val model = '''
 			package p;
-			type Int;
-			type Real;
 			type x {
-				var1 : (a: Int, b:Real);
+				var1 : (Int, Real);
 				var2 : Real := var1[2];
 			}
 		'''.parse
@@ -381,10 +368,8 @@ class ImlValidatorTest {
 	def testCheckParameterList_TupleAccessRight() {
 		val model = '''
 			package p;
-			type Int;
-			type Real;
 			type x {
-				var1 : (a: Int, b:Real);
+				var1 : (Int, Real);
 				var2 : Real := var1[1];
 			}
 		'''.parse
@@ -392,25 +377,45 @@ class ImlValidatorTest {
 	}
 	
 	@Test
-	def testCheckParameterList_ArrayOverHot() {
+	def testCheckParameterList_ArrayAccessOverRecord() {
 		val model = '''
 			package p;
-			type Int;
-			type Real;
+			type x {
+				var1 : {a: Int, b: Real};
+				var2 : Real := var1[1];
+			}
+		'''.parse
+		model.assertError(ImlPackage.eINSTANCE.tailedExpression, METHOD_INVOCATION_ON_RECORD)
+	}
+	
+	@Test
+	def testCheckParameterList_MethodInvocationOverRecord() {
+		val model = '''
+			package p;
+			type x {
+				var1 : {a: Int, b: Real};
+				var2 : Real := var1(1);
+			}
+		'''.parse
+		model.assertError(ImlPackage.eINSTANCE.tailedExpression, METHOD_INVOCATION_ON_RECORD)
+	}
+	
+	@Test
+	def testCheckParameterList_ArrayOverFunction() {
+		val model = '''
+			package p;
 			type x {
 				var1 : Int -> Real;
 				var2 : Real := var1[10];
 			}
 		'''.parse
-		model.assertError(ImlPackage.eINSTANCE.tailedExpression, ARRAY_ACCESS_ON_HOT)
+		model.assertError(ImlPackage.eINSTANCE.tailedExpression, ARRAY_ACCESS_ON_FUNCTIONTYPE)
 	}
 	
 	@Test
-	def testCheckParameterList_WrongListSizeHot_More() {
+	def testCheckParameterList_WrongListSizeFunction_More() {
 		val model = '''
 			package p;
-			type Int;
-			type Real;
 			type x {
 				var1 : Int -> Real;
 				var2 : Real := var1(5, 6);
@@ -420,11 +425,9 @@ class ImlValidatorTest {
 	}
 	
 	@Test
-	def testCheckParameterList_WrongListSizeHot_Less() {
+	def testCheckParameterList_WrongListSizeFunction_Less() {
 		val model = '''
 			package p;
-			type Int;
-			type Real;
 			type x {
 				var1 : (Int, Real) -> Real;
 				var2 : Real := var1(5);
@@ -434,11 +437,9 @@ class ImlValidatorTest {
 	}
 	
 	@Test
-	def testCheckParameterList_TailOnCt() {
+	def testCheckParameterList_TailOnNamedType() {
 		val model = '''
 			package p;
-			type Int;
-			type Real;
 			type x {
 				var1 : Real := Real[10];
 			}
@@ -447,11 +448,9 @@ class ImlValidatorTest {
 	}
 	
 	@Test
-	def testCheckParameterList_TailOnCt_Method() {
+	def testCheckParameterList_TailOnNamedType_Method() {
 		val model = '''
 			package p;
-			type Int;
-			type Real;
 			type x {
 				var1 : Real := Real(10);
 			}
@@ -463,8 +462,6 @@ class ImlValidatorTest {
 	def testCheckParameterList_WithTemplate() {
 		val model = '''
 			package p;
-			type Int;
-			type Real;
 			type Tx<T> {
 				 varx : T;
 			}
@@ -480,8 +477,6 @@ class ImlValidatorTest {
 	def testCheckParameterList_CompatibleTypes_Valid() {
 		val model = '''
 			package p;
-			type Int;
-			type Real;
 			type x {
 				f1 : (Real, Int) -> Int;
 				v1 : Int := f1(5.5, 10);
@@ -494,8 +489,6 @@ class ImlValidatorTest {
 	def testCheckParameterList_CompatibleTypes_Invalid() {
 		val model = '''
 			package p;
-			type Int;
-			type Real;
 			type x {
 				f1 : (Real, Int) -> Int;
 				v1 : Int := f1(10, 5.5);
@@ -511,7 +504,6 @@ class ImlValidatorTest {
 	 def testCompatibleDeclarationAndDefinition() {
 		val model = '''
 			package p;
-			type Int;
 			type x {
 				var1 : Int := 5;
 			}
@@ -524,7 +516,6 @@ class ImlValidatorTest {
 	 def testCompatibleDeclarationAndDefinition_ReatToInt() {
 		val model = '''
 			package p;
-			type Int;
 			type x {
 				var1 : Int := 5.5;
 			}
@@ -537,7 +528,6 @@ class ImlValidatorTest {
 	 def testCompatibleDeclarationAndDefinition_Tuple() {
 	 	val model = '''
 			package p;
-			type Int;
 			type x {
 				var1 : (Int, Int) := (5, 3);
 			}
@@ -549,7 +539,6 @@ class ImlValidatorTest {
 	 def testCompatibleDeclarationAndDefinition_TupleMismatch() {
 	 	val model = '''
 			package p;
-			type Int;
 			type x {
 				var1 : (Int, Int) := (5, 3.5);
 			}
@@ -587,7 +576,6 @@ class ImlValidatorTest {
 	 def testProgramSymbolDeclarationMustHaveType() {
 	 	val model = '''
 			package p;
-			type Int;
 			type x {
 				var1 : Int := {
 					var var2;
@@ -601,7 +589,6 @@ class ImlValidatorTest {
 	 def testCTLiteralsNoError() {
 	 	val model = '''
 			package p;
-			type Int;
 			type X enum {a, b};
 		'''.parse
 		model.assertNoErrors
@@ -671,8 +658,6 @@ class ImlValidatorTest {
 	 	val model = '''
 			package p;
 			
-			type Int;
-			type Bool;
 			type T1 {
 				var0 : Bool;
 				var1 : Bool := forall (a : Int) {a > 10 && var0};
@@ -687,8 +672,6 @@ class ImlValidatorTest {
 	 	val model = '''
 			package p;
 			
-			type Int;
-			type Bool;
 			type T1 {
 				var1 : Bool := forall (a : Int) {10};
 			}
@@ -702,8 +685,6 @@ class ImlValidatorTest {
 	 	val model = '''
 			package p;
 			
-			type Int;
-			type Bool;
 			type T1 {
 				var1 : Bool := 5 > 2 && true;
 			}
@@ -717,8 +698,6 @@ class ImlValidatorTest {
 	 	val model = '''
 			package p;
 			
-			type Int;
-			type Bool;
 			type T1 {
 				var1 : Bool := 5-2 && true;
 			}
@@ -732,8 +711,6 @@ class ImlValidatorTest {
 	 	val model = '''
 			package p;
 			
-			type Int;
-			type Bool;
 			type T1 {
 				var1 : Bool := !true;
 			}
@@ -747,8 +724,6 @@ class ImlValidatorTest {
 	 	val model = '''
 			package p;
 			
-			type Int;
-			type Bool;
 			type T1 {
 				var1 : Bool := 5-2 && true;
 			}
@@ -762,8 +737,6 @@ class ImlValidatorTest {
 	 	val model = '''
 			package p;
 			
-			type Int;
-			type Bool;
 			type T1 {
 				var0: Int;
 				var1 : Bool := 5 = var0;
@@ -778,15 +751,13 @@ class ImlValidatorTest {
 	 	val model = '''
 			package p;
 			
-			type Int;
-			type Bool;
 			type T1 {
 				var0 : Int;
 				var1 : Bool := var0 = 5.5;
 			}
 		'''.parse
 		
-		model.assertError(ImlPackage.eINSTANCE.folFormula, INVALID_TYPE_PARAMETER)
+		model.assertError(ImlPackage.eINSTANCE.folFormula, INCOMPATIBLE_TYPES)
 	 }	
 	 
 	 @Test
@@ -794,8 +765,6 @@ class ImlValidatorTest {
 	 	val model = '''
 			package p;
 			
-			type Int;
-			type Bool;
 			type T1 {
 				var0: Int;
 				var1 : Bool := 5.5 > var0;
@@ -810,8 +779,6 @@ class ImlValidatorTest {
 	 	val model = '''
 			package p;
 			
-			type Int;
-			type Bool;
 			type T1 {
 				var0 : Int;
 				var1 : Bool := var0 < true;
@@ -826,8 +793,6 @@ class ImlValidatorTest {
 	 	val model = '''
 			package p;
 			
-			type Int;
-			type Bool;
 			type T1 {
 				var1 : Int := 5 mod 3;
 			}
@@ -841,8 +806,6 @@ class ImlValidatorTest {
 	 	val model = '''
 			package p;
 			
-			type Int;
-			type Bool;
 			type T1 {
 				var1 : Int := 5.5 mod 2;
 			}
@@ -856,8 +819,6 @@ class ImlValidatorTest {
 	 	val model = '''
 			package p;
 			
-			type Int;
-			type Bool;
 			type T1 <T, P>;
 			
 			type T2 {
@@ -873,8 +834,6 @@ class ImlValidatorTest {
 	 	val model = '''
 			package p;
 						
-			type Int;
-			type Bool;
 			type T1 <T, P>;
 			
 			type T2 {
@@ -890,11 +849,9 @@ class ImlValidatorTest {
 	 	val model = '''
 	 	package iml.graphs;
 	 	
-	 	type Bool;
-	 	
 	 	type Vertex ;
 	 	
-	 	type Edge is (v1:Vertex,v2:Vertex);
+	 	type Edge is {v1:Vertex,v2:Vertex};
 	 	
 	 	type Graph {
 	 	    edges : List<Edge> ;
@@ -924,9 +881,6 @@ class ImlValidatorTest {
 	 	val model = '''
 	 	package test;
 	 	
-	 	type Int;
-	 	type Real;
-	 	
 	 	type IntPair is (Int, Int);
 	 	
 	 	type T1 {
@@ -938,6 +892,97 @@ class ImlValidatorTest {
 	 		var3 : Real := fun2(pair);
 	 		var4 : Real := fun2(1, 2);	 		
 	 	}
+	 	'''.parse
+	 	
+	 	model.assertNoErrors
+	 }
+	 
+	 @Test
+	 def issue39_TraitSelfBug() {
+	 	val model = '''
+	 	package p;
+	 	trait Equatable {
+	 	  eq: Self -> Bool;
+	 	  // Reflexivity of eq
+	 	  assert {
+	 	       self.eq(self)
+	 	  };
+	 	  // Symmetry of eq
+	 	  assert {
+	 	       forall (x:Self) {self.eq(x) => x.eq(self)}
+	 	  };
+	 	  // Associativity of eq
+	 	  assert {
+	 	       forall (x:Self,y:Self) { 
+	 	             self.eq(x) && x.eq(y) => self.eq(y) 
+	 	       };
+	 	  };
+	 	};
+	 	
+	 	type T exhibits(Equatable) {
+	 		x : Bool := eq(self);
+	 	}
+	 	'''.parse
+	 	model.assertNoErrors
+	 }
+	 
+	 @Test
+	 def tesValidatorOverPolymorphicSymbol_Error() {
+	 	val model = '''
+	 		package test02;
+	 		
+	 		type ArrayList<T> ;
+	 		
+	 		<T>empty_list: ArrayList<T>;
+	 		
+	 		l: ArrayList<Int> := empty_list;
+	 		
+	 	'''.parse
+	 	
+	 	model.assertError(ImlPackage.eINSTANCE.symbolDeclaration, TYPE_MISMATCH_IN_TERM_EXPRESSION)
+	 }
+	 
+	 @Test
+	 def tesValidatorOverPolymorphicSymbol_NoError() {
+	 	val model = '''
+	 		package test02;
+	 		
+	 		type ArrayList<T> ;
+	 		
+	 		<T>empty_list: ArrayList<T>;
+	 		
+	 		l: ArrayList<Int> := <Int>empty_list;
+	 		
+	 	'''.parse
+	 	
+	 	model.assertNoErrors
+	 }
+	 
+	 @Test
+	 def testTupleConstructorForRecord() {
+	 	val model = '''
+	 		package p;
+	 		
+	 		type T {
+	 			v1 : {a: Int, b: Real} := (5, 0.5);
+	 		}
+	 	'''.parse
+	 	
+	 	model.assertError(ImlPackage.eINSTANCE.symbolDeclaration, 
+	 		TYPE_MISMATCH_IN_TERM_EXPRESSION
+	 	)
+	 }
+	 
+	 @Test
+	 def testRecordConstructor() {
+	 	val model = '''
+	 		package p;
+	 		
+	 		type T {
+	 			v1 : {a: Int, b: Real} := some(x: {a: Int, b: Real}) {
+	 				x.a=5 && x.b=0.5;
+	 			};
+	 		}
 	 	'''.parse
 	 	
 	 	model.assertNoErrors

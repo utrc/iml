@@ -5,6 +5,8 @@ import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.junit.Test;
+
+import com.google.inject.Injector;
 import com.utc.utrc.hermes.iml.ImlStandaloneSetup;
 import com.utc.utrc.hermes.iml.custom.ImlCustomFactory;
 import com.utc.utrc.hermes.iml.gen.nusmv.generator.Configuration;
@@ -21,7 +23,9 @@ public class FsmTranslationTest {
 
 	@Test
 	public void test() {
-		ImlStandaloneSetup.getInjector();
+		Injector injector = ImlStandaloneSetup.getInjector();
+		
+		ImlTypeProvider typeprovider = injector.getInstance(ImlTypeProvider.class);
 
 		ResourceSet resourceSet = new ResourceSetImpl();
 
@@ -43,8 +47,9 @@ public class FsmTranslationTest {
 		StandardLibProvider standard_libs = new StandardLibProvider(resourceSet);
 		Configuration conf = new Configuration.Builder().BypassDelay(false).build();
 		
-		
-		NuSmvGenerator gen = new NuSmvGenerator(standard_libs,conf);
+		NuSmvGenerator gen = injector.getInstance(NuSmvGenerator.class);
+		gen.setLibs(standard_libs);
+		gen.setConf(conf);
 
 		Model m = (Model) translationunit.getContents().get(0);
 		NuSmvModel nm = new NuSmvModel();
@@ -55,7 +60,8 @@ public class FsmTranslationTest {
 			}
 		}
 
-		String serialized = NuSmvGeneratorServices.serialize(nm);
+		NuSmvGeneratorServices generatorServices = injector.getInstance(NuSmvGeneratorServices.class);
+		String serialized = generatorServices.serialize(nm);
 		System.out.println(serialized);
 
 	}

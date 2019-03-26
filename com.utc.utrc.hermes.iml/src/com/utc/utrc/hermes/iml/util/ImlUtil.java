@@ -2,6 +2,7 @@ package com.utc.utrc.hermes.iml.util;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.eclipse.emf.common.util.EList;
@@ -22,7 +23,9 @@ import com.utc.utrc.hermes.iml.iml.ImlType;
 import com.utc.utrc.hermes.iml.iml.Model;
 import com.utc.utrc.hermes.iml.iml.ParenthesizedTerm;
 import com.utc.utrc.hermes.iml.iml.Property;
+import com.utc.utrc.hermes.iml.iml.RecordType;
 import com.utc.utrc.hermes.iml.iml.Relation;
+import com.utc.utrc.hermes.iml.iml.SelfType;
 import com.utc.utrc.hermes.iml.iml.SignedAtomicFormula;
 import com.utc.utrc.hermes.iml.iml.SimpleTypeReference;
 import com.utc.utrc.hermes.iml.iml.Symbol;
@@ -105,37 +108,46 @@ public class ImlUtil {
 	/**
 	 * Get the type declaration as a string
 	 */
-	public static String getTypeName(ImlType hot, IQualifiedNameProvider qnp) {
-		return getTypeNameManually(hot, qnp);
+	public static String getTypeName(ImlType imlType, IQualifiedNameProvider qnp) {
+		return getTypeNameManually(imlType, qnp);
 	}
 	
-	public static String getTypeNameManually(ImlType hot, IQualifiedNameProvider qnp) {
-		if (hot instanceof SimpleTypeReference) {
+	public static String getTypeNameManually(ImlType imlType, IQualifiedNameProvider qnp) {
+		if (imlType instanceof SimpleTypeReference) {
 			String name = "";
 			if (qnp != null) {
-				name = qnp.getFullyQualifiedName(((SimpleTypeReference) hot).getType()).toString();
+				name = qnp.getFullyQualifiedName(((SimpleTypeReference) imlType).getType()).toString();
 			} else {
-				name = ((SimpleTypeReference) hot).getType().getName();
+				name = ((SimpleTypeReference) imlType).getType().getName();
 			}
-			if (((SimpleTypeReference) hot).getTypeBinding().isEmpty()) {
+			if (((SimpleTypeReference) imlType).getTypeBinding().isEmpty()) {
 				return name;
 			} else {
-				return name + "<" + ((SimpleTypeReference) hot).getTypeBinding().stream()
+				return name + "<" + ((SimpleTypeReference) imlType).getTypeBinding().stream()
 						.map(binding -> getTypeName(binding, qnp))
 						.reduce((acc, current) -> acc + ", " + current).get() + ">";
 			}
-		} else if (hot instanceof ArrayType) {
-			String name =  getTypeName(((ArrayType) hot).getType(), qnp);
-			return name + ((ArrayType) hot).getDimensions().stream()
+		} else if (imlType instanceof ArrayType) {
+			String name =  getTypeName(((ArrayType) imlType).getType(), qnp);
+			return name + ((ArrayType) imlType).getDimensions().stream()
 					.map(dim -> "[]")
 					.reduce((accum, current) -> accum + current).get();
-		} else if (hot instanceof TupleType) {
-			return "(" + ((TupleType) hot).getSymbols().stream()
-				.map(symbol -> getTypeName(symbol.getType(), qnp))
-				.reduce((accum, current) -> accum + ", " + current).get() + ")";
-		} else if (hot instanceof FunctionType){
-			return getTypeName(((FunctionType)hot).getDomain(), qnp) + "->" + getTypeName(((FunctionType)hot).getRange(), qnp);
-		} else if (hot == null) {
+		} else if (imlType instanceof TupleType) {
+			Optional<String> elements = ((TupleType) imlType).getTypes().stream()
+				.map(symbol -> getTypeName(symbol, qnp))
+				.reduce((accum, current) -> accum + ", " + current);
+			return "(" + (elements.isPresent()? elements.get() : "") + ")";
+		} else if (imlType instanceof RecordType) {
+			Optional<String> elements = ((RecordType) imlType).getSymbols().stream()
+				.map(symbol -> symbol.getName() + " : " + getTypeName(symbol.getType(), qnp))
+				.reduce((accum, current) -> accum + ", " + current);
+			return "(" + (elements.isPresent()? elements.get() : "") + ")";
+		} else if (imlType instanceof FunctionType){
+			return getTypeName(((FunctionType)imlType).getDomain(), qnp) + "->" + getTypeName(((FunctionType)imlType).getRange(), qnp);
+		} else if (imlType instanceof SelfType) {
+			return "Self";
+		}
+		else if (imlType == null) {
 			return "NULL";
 		}
 		return "UNKNOWN_IML_TYPE";
@@ -285,7 +297,15 @@ public class ImlUtil {
 			return true;
 		}
 		if (type instanceof TupleType) {
-			for (SymbolDeclaration tupleElement : ((TupleType) type).getSymbols()) {
+			for (ImlType tupleElement : ((TupleType) type).getTypes()) {
+				if (containsFunctionType(tupleElement)) {
+					return true;
+				}
+			}
+		}
+		
+		if (type instanceof RecordType) {
+			for (SymbolDeclaration tupleElement : ((RecordType) type).getSymbols()) {
 				if (containsFunctionType(tupleElement.getType())) {
 					return true;
 				}

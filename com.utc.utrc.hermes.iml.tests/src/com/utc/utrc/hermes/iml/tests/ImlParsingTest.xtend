@@ -14,22 +14,23 @@ import org.junit.Assert
 import org.junit.Test
 import org.junit.runner.RunWith
 import com.utc.utrc.hermes.iml.iml.NamedType
+import com.utc.utrc.hermes.iml.ImlParseHelper
 
 @RunWith(XtextRunner)
 @InjectWith(ImlInjectorProvider)
 class ImlParsingTest {
-	@Inject extension ParseHelper<Model> 
+
+	@Inject extension ImlParseHelper
 	
 	@Inject extension ValidationTestHelper
 	
 	@Inject extension TestHelper
 	
-	
 	@Test
 	def void loadModel() {
 		val result = '''
 			package p;
-		'''.parse
+		'''.parse(true)
 		Assert.assertNotNull(result)
 		Assert.assertTrue(result.eResource.errors.isEmpty)
 	}
@@ -38,11 +39,10 @@ class ImlParsingTest {
 	def void parsingImlType() {
 		val model = '''
 			package p;
-			type Int;
 			type t {
 				var1 : Int -> (Int -> Int);
 			}
-		'''.parse
+		'''.parse(true)
 		
 		model.assertNoErrors
 	}
@@ -51,25 +51,23 @@ class ImlParsingTest {
 	def void testParsingArrayOfTuple() {
 		val model = '''
 			package p;
-			type Int;
 			type t {
 				var1 : (Int, Int)[];
 			}
-		'''.parse
+		'''.parse(true)
 		
 		model.assertNoErrors
 	}
 	
 		
 	@Test
-	def void testParsingArrayOfHot() {
+	def void testParsingArrayOfFunctions() {
 		val model = '''
 			package p;
-			type Int;
 			type t {
 				var1 : (Int -> Int)[];
 			}
-		'''.parse
+		'''.parse(true)
 		
 		model.assertNoErrors
 	}
@@ -79,11 +77,10 @@ class ImlParsingTest {
 	def void testParsingArrayOfSimpleType() {
 		val model = '''
 			package p;
-			type Int;
 			type t {
 				var1 : Int[];
 			}
-		'''.parse
+		'''.parse(true)
 		
 		model.assertNoErrors
 	}
@@ -95,7 +92,7 @@ class ImlParsingTest {
 			type t {
 				assert x {true};
 			}
-		'''.parse
+		'''.parse(true)
 		
 		model.assertNoErrors
 	}
@@ -105,11 +102,10 @@ class ImlParsingTest {
 		val model = '''
 			package p;
 			type myassertion;
-			type Bool;
 			type t {
 				[myassertion] a1 : Bool := true;
 			}
-		'''.parse
+		'''.parse(true)
 		
 		model.assertNoErrors
 	}
@@ -118,13 +114,11 @@ class ImlParsingTest {
 	def void testParseParentheizedType() {
 		val model = '''
 			package p;
-			type Int;
-			type Real;
 			type T {
 				x : Int -> Real [10];
 				y : (Int -> Real) [10];				
 			}
-		'''.parse
+		'''.parse(true)
 		
 		model.assertNoErrors
 	}
@@ -137,7 +131,7 @@ class ImlParsingTest {
 			type Real;
 			type T {
 			} 
-		'''.parse
+		'''.parse(false)
 		
 		val intType = model.findSymbol("Int") as NamedType;
 		val realType = model.findSymbol("Real") as NamedType;
@@ -167,7 +161,6 @@ class ImlParsingTest {
 	def testParsingCascadedMemeberSelection() {
 		val model = '''
 		package p;
-		type Int;
 		
 		type T1 {
 			f : T2;
@@ -180,7 +173,7 @@ class ImlParsingTest {
 		v1 : T1;
 		v2 : Int := v1.f.x;
 		
-		'''.parse
+		'''.parse(true)
 		
 		model.assertNoErrors
 	}
@@ -189,8 +182,6 @@ class ImlParsingTest {
 	def testParsingCascadedFunctionCalls() {
 		val model = '''
 		package p;
-		type Int;
-		
 		type T1 {
 			f : Int -> T1;
 		}
@@ -198,7 +189,7 @@ class ImlParsingTest {
 		v1 : T1;
 		v2 : T1 := v1.f(5).f(6).f(7);
 		
-		'''.parse
+		'''.parse(true)
 		
 		model.assertNoErrors
 	}
@@ -207,7 +198,6 @@ class ImlParsingTest {
 	def testParsingMultipleTails() {
 		val model = '''
 		package p;
-		type Int;
 		
 		type T1 {
 			f : (Int -> T1[][]);
@@ -216,8 +206,23 @@ class ImlParsingTest {
 		v1 : T1;
 		v2 : T1 := v1.f(5)[10][20];
 		
-		'''.parse
+		'''.parse(true)
 		
 		model.assertNoErrors
 	}
+	
+	@Test
+	def void testParsingWithImplicitImportOfStdLibrary() {
+		val model = '''
+		package p;
+		type T1 {
+			v1: Int;
+			v2: String;
+			v3: Bool := v2.length = v1;
+		}
+		'''.parse(true)
+		model.assertNoErrors
+		model.eResource()
+	}
+	
 }

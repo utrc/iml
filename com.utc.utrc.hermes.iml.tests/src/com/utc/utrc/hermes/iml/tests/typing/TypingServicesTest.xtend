@@ -15,10 +15,10 @@ import com.utc.utrc.hermes.iml.typing.TypingServices
 import com.utc.utrc.hermes.iml.iml.NamedType
 import java.util.Arrays
 import java.util.List
-import java.util.ArrayList
 import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
 import com.utc.utrc.hermes.iml.typing.ImlTypeProvider
-import com.google.common.reflect.TypeToken.TypeSet
+import com.utc.utrc.hermes.iml.ImlParseHelper
+import com.utc.utrc.hermes.iml.iml.ImlType
 
 /**
  * @author Ayman Elkfrawy
@@ -27,234 +27,128 @@ import com.google.common.reflect.TypeToken.TypeSet
 @InjectWith(ImlInjectorProvider)
 class TypingServicesTest {
 	
-	@Inject extension ParseHelper<Model>
+	@Inject extension ImlParseHelper
 	
 	@Inject extension ValidationTestHelper
 	
 	@Inject extension TestHelper
 	
+	@Inject ImlTypeProvider typeProvider
+	
+	@Inject TypingServices typingServices
+	
 	
 	/**************************
 	 * Testing isEqual methods 
 	 * ************************/
+	 
 	@Test
 	def testIsEqual_ImlType() {
-		val model = '''
-			package p;
-			type Int;
-			type t1 {
-				var1 : Int;
-				var2 : Int;
-			}
-		'''.parse
-		
-		model.assertNoErrors
-		val var1 = (model.findSymbol("t1") as NamedType).findSymbol("var1")
-		val var2 = (model.findSymbol("t1") as NamedType).findSymbol("var2")
-		
-		assertTrue(TypingServices.isEqual(var1.type, var2.type))
+	 	assertEqualTypes("Int", "Int", true)
 	}
 	
 	@Test
 	def testIsEqual_ImlType_WithTemplate() {
-		val model = '''
-			package p;
-			type TemType<T, P>;
-			type Int;
-			type Float;
-			type t1 {
-				var1 : TemType<Int, Float>;
-				var2 : TemType<Int, Float>;
-			}
-		'''.parse
-		
-		model.assertNoErrors
-		val var1 = (model.findSymbol("t1") as NamedType).findSymbol("var1")
-		val var2 = (model.findSymbol("t1") as NamedType).findSymbol("var2")
-		
-		assertTrue(TypingServices.isEqual(var1.type, var2.type))
+		assertEqualTypes("TemType<Int, Real>", " TemType<Int, Real>", true)
 	}
 	
 	@Test
 	def testIsEqual_ImlType_WithTemplate_DifferentTypes() {
-		val model = '''
-			package p;
-			type TemType<T, P>;
-			type Int;
-			type Float;
-			type t1 {
-				var1 : TemType<Float, Int>;
-				var2 : TemType<Int, Float>;
-			}
-		'''.parse
-		
-		model.assertNoErrors
-		val var1 = (model.findSymbol("t1") as NamedType).findSymbol("var1")
-		val var2 = (model.findSymbol("t1") as NamedType).findSymbol("var2")
-		
-		assertFalse(TypingServices.isEqual(var1.type, var2.type))
+		assertEqualTypes("TemType<Real, Int>", "TemType<Int, Real>", false)
 	}
 	
 	@Test
 	def testIsEqual_ImlType_WithArray() {
-		val model = '''
-			package p;
-			type Int;
-			type t1 {
-				var1 : Int[10];
-				var2 : Int[20];
-			}
-		'''.parse
-		
-		model.assertNoErrors
-		val var1 = (model.findSymbol("t1") as NamedType).findSymbol("var1")
-		val var2 = (model.findSymbol("t1") as NamedType).findSymbol("var2")
-		
-		assertTrue(TypingServices.isEqual(var1.type, var2.type))
+		assertEqualTypes("Int[10]", "Int[20]", true)
 	}
 	
 	@Test
 	def testIsEqual_ImlType_WithArray_DifferentTypes() {
-		val model = '''
-			package p;
-			type Int;
-			type Boolean;
-			type t1 {
-				var1 : Boolean[10];
-				var2 : Int[20];
-			}
-		'''.parse
-		
-		model.assertNoErrors
-		val var1 = (model.findSymbol("t1") as NamedType).findSymbol("var1")
-		val var2 = (model.findSymbol("t1") as NamedType).findSymbol("var2")
-		
-		assertFalse(TypingServices.isEqual(var1.type, var2.type))
+		assertEqualTypes("Bool[10]", "Int[10]", false)
 	}
 	
 	@Test
 	def testIsEqual_ImlType_WithArray_DifferentDiminsions() {
-		val model = '''
-			package p;
-			type Int;
-			type Boolean;
-			type t1 {
-				var1 : Int[10][20];
-				var2 : Int[20];
-			}
-		'''.parse
-		
-		model.assertNoErrors
-		val var1 = (model.findSymbol("t1") as NamedType).findSymbol("var1")
-		val var2 = (model.findSymbol("t1") as NamedType).findSymbol("var2")
-		
-		assertFalse(TypingServices.isEqual(var1.type, var2.type))
+		assertEqualTypes("Int[10][20]", "Int[20]", false)
+	}
+	
+	@Test
+	def testIsEqual_ImlType_WithRecord() {
+		assertEqualTypes("{p1: Int, p2: Bool}", "{p1: Int, p2: Bool}", true)
+	}
+	
+	@Test
+	def testIsEqual_ImlType_WithRecord_DifferentLocation() {
+		assertEqualTypes("{p1: Int, p2: Bool}", "{p2: Bool, p1: Int}", true)
+	}
+	
+	@Test
+	def testIsEqual_ImlType_WithRecord_DifferentNames() {
+		assertEqualTypes("{p1: Int, p2: Bool}", "{p1: Int, p10: Bool}", false)
+	}
+	
+	@Test
+	def testIsEqual_ImlType_WithRecord_DifferentTypes() {
+		assertEqualTypes("{p1: Int, p2: Bool}", "{p1: Int, p2: Real}", false)
+	}
+	
+	@Test
+	def testIsEqual_ImlType_WithRecord_DifferentSize() {
+		assertEqualTypes("{p1: Int}", "{p1: Int, p2: Bool}", false)
 	}
 	
 	@Test
 	def testIsEqual_ImlType_WithTuples() {
-		val model = '''
-			package p;
-			type Int;
-			type Boolean;
-			type t1 {
-				var1 : (p1: Int, p2: Boolean);
-				var2 : (p1: Int, p3: Boolean);
-			}
-		'''.parse
-		
-		model.assertNoErrors
-		val var1 = (model.findSymbol("t1") as NamedType).findSymbol("var1")
-		val var2 = (model.findSymbol("t1") as NamedType).findSymbol("var2")
-		
-		assertTrue(TypingServices.isEqual(var1.type, var2.type))
-	}
-	
-	@Test
-	def testIsEqual_ImlType_WithTuples_DifferentTypes() {
-		val model = '''
-			package p;
-			type Int;
-			type Boolean;
-			type t1 {
-				var1 : (p1: Boolean, p2: Int);
-				var2 : (p1: Int, p3: Boolean);
-			}
-		'''.parse
-		
-		model.assertNoErrors
-		val var1 = (model.findSymbol("t1") as NamedType).findSymbol("var1")
-		val var2 = (model.findSymbol("t1") as NamedType).findSymbol("var2")
-		
-		assertFalse(TypingServices.isEqual(var1.type, var2.type))
+		assertEqualTypes("(Int, Bool)", "(Int, Bool)", true)
 	}
 	
 	@Test
 	def testIsEqual_ImlType_WithTuples_DifferentSize() {
-		val model = '''
-			package p;
-			type Int;
-			type Boolean;
-			type t1 {
-				var1 : (p1: Int, p2: Boolean, p3: Boolean);
-				var2 : (p3: Int, p4: Boolean);
-			}
-		'''.parse
-		
-		model.assertNoErrors
-		val var1 = (model.findSymbol("t1") as NamedType).findSymbol("var1")
-		val var2 = (model.findSymbol("t1") as NamedType).findSymbol("var2")
-		
-		assertFalse(TypingServices.isEqual(var1.type, var2.type))
+		assertEqualTypes("(Int, Bool, Bool)", "(Int, Bool)", false)
+	}
+	
+	@Test
+	def testIsEqual_ImlType_WithTuples_DifferentOrder() {
+		assertEqualTypes("(Int, Bool)", "(Bool, Int)", false)
 	}
 	
 	@Test
 	def testIsEqual_ImlType_Range() {
-		val model = '''
-			package p;
-			type Int;
-			type Boolean;
-			type t1 {
-				var1 : (p1: Int, p2: Boolean) -> Int;
-				var2 : (p1: Int, p3: Boolean) -> Int;
-			}
-		'''.parse
-		
-		model.assertNoErrors
-		val var1 = (model.findSymbol("t1") as NamedType).findSymbol("var1")
-		val var2 = (model.findSymbol("t1") as NamedType).findSymbol("var2")
-		
-		assertTrue(TypingServices.isEqual(var1.type, var2.type))
+		assertEqualTypes("(Int, Bool) -> Int", "(Int, Bool) -> Int", true)
 	}
 	
 	@Test
 	def testIsEqual_ImlType_RangeAndNoRange() {
-		val model = '''
-			package p;
-			type Int;
-			type Boolean;
-			type t1 {
-				var1 : (p1: Int, p2: Boolean) -> Int;
-				var2 : (p1: Int, p3: Boolean);
-			}
-		'''.parse
-		
-		model.assertNoErrors
-		val var1 = (model.findSymbol("t1") as NamedType).findSymbol("var1")
-		val var2 = (model.findSymbol("t1") as NamedType).findSymbol("var2")
-		
-		assertFalse(TypingServices.isEqual(var1.type, var2.type))
+		assertEqualTypes("(Int, Bool) -> Int", "(Int, Bool)", false)
 	}
 	
 	@Test
 	def testIsEqual_ImlType_Range_DifferentTypes() {
+		assertEqualTypes("(Int, Bool) -> Int", "(Int, Bool) -> Bool", false)
+	}
+	
+	@Test
+	def testIsEqual_ImlType_RecordAndTuple() {
+		assertEqualTypes("(Int, Bool)", "{a: Int, b: Bool}", false)
+	}
+	
+	@Test
+	def testIsEqual_ImlType_Domain_Tuples() {
+		assertEqualTypes("(Int, Bool) -> Int", "(Bool, Int) -> Int", false)
+	}
+	
+	@Test
+	def testIsEqual_ImlType_Domain_Record() {
+		assertEqualTypes("{a: Int, b: Bool} -> Int", "{b: Bool, a: Int} -> Int", true)
+	}
+	
+	def assertEqualTypes(String type1, String type2, boolean isEqual) {
 		val model = '''
 			package p;
-			type Int;
-			type Boolean;
+			type TemType<T, P>;
 			type t1 {
-				var1 : (p1: Int, p2: Boolean) -> Int;
-				var2 : (p1: Int, p2: Boolean) -> Boolean;
+				var1 : «type1»;
+				var2 : «type2»;
 			}
 		'''.parse
 		
@@ -262,7 +156,7 @@ class TypingServicesTest {
 		val var1 = (model.findSymbol("t1") as NamedType).findSymbol("var1")
 		val var2 = (model.findSymbol("t1") as NamedType).findSymbol("var2")
 		
-		assertFalse(TypingServices.isEqual(var1.type, var2.type))
+		assertEquals(isEqual, typingServices.isEqual(var1.type, var2.type))
 	}
 	/***********************************
 	 * Testing GetAllSuperTypes methods 
@@ -271,7 +165,6 @@ class TypingServicesTest {
 	def testGetAllSuperTypes_NoParent() {
 		val model = '''
 			package p;
-			type Int;
 			type t1 {
 				
 			}
@@ -280,14 +173,13 @@ class TypingServicesTest {
 		model.assertNoErrors
 		val t1 = model.findSymbol("t1") as NamedType
 		
-		assertParents(TypingServices.getAllSuperTypes(t1), Arrays.asList("t1"))
+		assertParents(typingServices.getAllSuperTypes(t1), Arrays.asList("t1"))
 	}
 	
 	@Test
 	def testGetAllSuperTypes_WitParent() {
 		val model = '''
 			package p;
-			type Int;
 			type Parent;
 			type t1 extends (Parent) {
 				
@@ -297,14 +189,13 @@ class TypingServicesTest {
 		model.assertNoErrors
 		val t1 = model.findSymbol("t1") as NamedType
 		
-		assertParents(TypingServices.getAllSuperTypes(t1), Arrays.asList("t1", "Parent"))
+		assertParents(typingServices.getAllSuperTypes(t1), Arrays.asList("t1", "Parent"))
 	}
 
 	@Test
 	def testGetAllSuperTypes_MultipleParents() {
 		val model = '''
 			package p;
-			type Int;
 			type Parent;
 			type t1 extends (Parent, Int) {
 				
@@ -314,14 +205,13 @@ class TypingServicesTest {
 		model.assertNoErrors
 		val t1 = model.findSymbol("t1") as NamedType
 		
-		assertParents(TypingServices.getAllSuperTypes(t1), Arrays.asList("t1", "Parent", "Int"))
+		assertParents(typingServices.getAllSuperTypes(t1), Arrays.asList("t1", "Parent", "Int"))
 	}
 	
 	@Test
 	def testGetAllSuperTypes_MultipleParentsMultipleLevels() {
 		val model = '''
 			package p;
-			type Int;
 			type Parent33;
 			type Parent3 is Parent33;
 			type Parent2 extends (Parent3, Int);
@@ -334,7 +224,7 @@ class TypingServicesTest {
 		model.assertNoErrors
 		val t1 = model.findSymbol("t1") as NamedType
 		
-		assertParents(TypingServices.getAllSuperTypes(t1), Arrays.asList("t1", "Parent", "Parent2", "Parent3", "Int", "Parent33"))
+		assertParents(typingServices.getAllSuperTypes(t1), Arrays.asList("t1", "Parent", "Parent2", "Parent3", "Int", "Parent33"))
 	}
 	
 	def assertParents(List<List<NamedType>> parents, List<String> types) {
@@ -348,10 +238,22 @@ class TypingServicesTest {
 	def testTypeProviderForArrayOfTuple() {
 		val model = '''
 			package p;
-			type Int;
 			type T1 {
-				var1 : (a: Int, b: Int)[10];
+				var1 : (Int, Int)[10];
 				var2 : (Int, Int)[] := var1;
+			}
+		'''.parse
+		
+		model.assertNoErrors
+	}
+	
+	@Test
+	def testTypeProviderForArrayOfRecords() {
+		val model = '''
+			package p;
+			type T1 {
+				var1 : {a: Int, b: Int}[10];
+				var2 : {a: Int, b: Int}[] := var1;
 			}
 		'''.parse
 		
@@ -362,7 +264,6 @@ class TypingServicesTest {
 	def testAliasWithTypeParameters() {
 		val model = '''
 			package p;
-			type Int;
 			type Connector<T> is (T,T);
 			type S {
 				p1 : Int ;
@@ -373,8 +274,8 @@ class TypingServicesTest {
 		
 		val c = (model.symbols.last as NamedType).symbols.last as SymbolDeclaration
 		val decltype = c.type
-		val deftype = ImlTypeProvider.termExpressionType(c.definition)
-		val eq = TypingServices.isCompatible(decltype,deftype)
+		val deftype = typeProvider.termExpressionType(c.definition)
+		val eq = typingServices.isCompatible(decltype,deftype)
 		assertTrue(eq)
 		model.assertNoErrors
 	}
@@ -404,7 +305,7 @@ class TypingServicesTest {
 		
 		val var1Type = ((model.findSymbol("Tx") as NamedType).findSymbol("var1") as SymbolDeclaration).type
 		val var2Type = ((model.findSymbol("Tx") as NamedType).findSymbol("var2") as SymbolDeclaration).type
-		return TypingServices.isEqual(var2Type, TypingServices.resolveAliases(var1Type))
+		return typingServices.isEqual(var2Type, typingServices.resolveAliases(var1Type))
 		
 	}
 	

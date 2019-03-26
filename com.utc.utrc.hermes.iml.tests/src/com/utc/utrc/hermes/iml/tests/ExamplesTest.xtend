@@ -8,11 +8,12 @@ import org.eclipse.xtext.testing.util.ParseHelper
 import org.eclipse.xtext.testing.validation.ValidationTestHelper
 import org.junit.Test
 import org.junit.runner.RunWith
+import com.utc.utrc.hermes.iml.ImlParseHelper
 
 @RunWith(XtextRunner)
 @InjectWith(ImlInjectorProvider)
 class ExamplesTest {
-	@Inject extension ParseHelper<Model> 
+	@Inject extension ImlParseHelper
 	
 	@Inject extension ValidationTestHelper
 	
@@ -44,10 +45,6 @@ class ExamplesTest {
 	def void typeIsExampleTest(){
 		val model = '''
 			package p;
-			type Int;
-			type Real;
-			type Bool;
-			type String;
 			type Queue<T>;
 			type Map<T,U>;
 			type A;
@@ -65,7 +62,7 @@ class ExamplesTest {
 			type TestType12 is (Int,Real) ;
 			type TestType13 is (A,A) ;
 			type TestType14 is (Int,String,Int) ;
-			type TestType15 is (age:Int,weight:Real) ;
+			type TestType15 is {age:Int,weight:Real} ;
 			type TestType16 is (Real->Int)[10] ;
 		'''.parse
 		
@@ -76,9 +73,6 @@ class ExamplesTest {
 	def void variableDeclarationExampleTest(){
 		val model = '''
 			package p;
-			type Int;
-			type Real;
-			type Bool;
 			type Map<T,U>;
 			v : Int;
 			v1 : Int;
@@ -98,7 +92,6 @@ class ExamplesTest {
 	def void someOneOfExampleTest(){
 		val model = '''
 			package iml.notes ;
-			type Int ;
 			type Date ;
 			type Employee {
 				level : Int;
@@ -118,10 +111,6 @@ class ExamplesTest {
 	def void stackModelTest() {
 		val model = '''
 			package iml.notes.stackmodel ;
-			
-			type Int;
-			type Real;
-			type Bool;
 						
 			type Stack<T> {
 			  top: T;
@@ -149,7 +138,7 @@ class ExamplesTest {
 			//We support the syntax Stack<Int> -> Int -> Stack<Int>
 			//but type checking at the moment does not interpret this as 
 			//being the same as (Stack<Int> , Int) -> Stack<Int>
-			push1 : (Stack<Int> , Int) -> Stack<Int> := fun(x:Stack<Int>,y:Int){
+			push1 : (Stack<Int> , Int) -> Stack<Int> := fun(x:Stack<Int>,y:Int):Stack<Int>{
 				x.push(y)
 			} ;
 			

@@ -79,6 +79,8 @@ public class ImlSmtEncoder<SortT extends AbstractSort, FuncDeclT, FormulaT> impl
 	@Inject SmtSymbolTable<SortT, FuncDeclT, FormulaT> symbolTable;
 	@Inject SmtModelProvider<SortT, FuncDeclT, FormulaT> smtModelProvider;
 	@Inject IQualifiedNameProvider qnp ;
+	@Inject ImlTypeProvider typeProvider;	
+	@Inject TypingServices typingServices;
 	
 	Map<NamedType, ImlType> aliases = new HashMap<>();
 	
@@ -157,8 +159,8 @@ public class ImlSmtEncoder<SortT extends AbstractSort, FuncDeclT, FormulaT> impl
 	}
 	
 	@Override
-	public void encode(ImlType hot) {
-		encodeType(hot);
+	public void encode(ImlType imlType) {
+		encodeType(imlType);
 	}
 	
 	private void encodeType(EObject type) {
@@ -315,7 +317,7 @@ public class ImlSmtEncoder<SortT extends AbstractSort, FuncDeclT, FormulaT> impl
 			ArrayType arrType = (ArrayType) type;
 			// Create new type for each dimension beside the main type
 			for (int dim = 0; dim < arrType.getDimensions().size() ; dim++) {
-				ImlType currentDim = TypingServices.accessArray(arrType, dim);
+				ImlType currentDim = typingServices.accessArray(arrType, dim);
 				addTypeSort(currentDim);
 			}
 			defineTypes(arrType.getType());
@@ -395,7 +397,7 @@ public class ImlSmtEncoder<SortT extends AbstractSort, FuncDeclT, FormulaT> impl
 		if (context == null) {
 			return symbol.getType();
 		} else {
-			return ImlTypeProvider.getType(symbol, context);
+			return typeProvider.getType(symbol, context);
 		}
 	}
 
@@ -504,7 +506,7 @@ public class ImlSmtEncoder<SortT extends AbstractSort, FuncDeclT, FormulaT> impl
 		// TODO what if Int wasn't ever encoded? Need to make sure we encode all primitive sorts
 		FuncDeclT arraySelectFunc = smtModelProvider.createFuncDecl(
 				funName, Arrays.asList(symbolTable.getSort(type), symbolTable.getPrimitiveSort("Int")), 
-				symbolTable.getSort(TypingServices.accessArray(type, 1)));
+				symbolTable.getSort(typingServices.accessArray(type, 1)));
 		symbolTable.addFunDecl(type, type, arraySelectFunc);
 	}
 
@@ -575,7 +577,7 @@ public class ImlSmtEncoder<SortT extends AbstractSort, FuncDeclT, FormulaT> impl
 			TermExpression member = ((TermMemberSelection) formula).getMember();
 			
 			FormulaT receiverFormula = encodeFormula(receiver, context, inst, scope);
-			ImlType receiverType = ImlTypeProvider.termExpressionType(receiver, context);
+			ImlType receiverType = typeProvider.termExpressionType(receiver, context);
 			if (receiverType instanceof SimpleTypeReference) {
 				return encodeFormula(member, (SimpleTypeReference) receiverType, receiverFormula, scope);
 			}
@@ -595,7 +597,7 @@ public class ImlSmtEncoder<SortT extends AbstractSort, FuncDeclT, FormulaT> impl
 			}
 		} else if (formula instanceof TupleConstructor) {
 			// TODO
-			ImlType tupleType = ImlTypeProvider.termExpressionType(formula, context);
+			ImlType tupleType = typeProvider.termExpressionType(formula, context);
 			if (tupleType instanceof TupleType) {
 				SortT sort = getSort(tupleType);
 				List<FormulaT> tupleFormulas = encodeTupleElements((TupleConstructor) formula, context, inst, scope);

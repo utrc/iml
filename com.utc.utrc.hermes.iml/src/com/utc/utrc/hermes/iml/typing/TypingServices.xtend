@@ -17,17 +17,25 @@ import java.util.ArrayList
 import java.util.List
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.util.EcoreUtil
-
-import static extension com.utc.utrc.hermes.iml.lib.ImlStdLib.*
+import com.google.inject.Inject
+import com.utc.utrc.hermes.iml.lib.ImlStdLib
+import com.utc.utrc.hermes.iml.iml.SelfType
+import com.utc.utrc.hermes.iml.iml.RecordType
 
 public class TypingServices {
+	
+	@Inject
+	extension private ImlStdLib
+	
+	@Inject
+	private ImlTypeProvider typeProvider
 
-	def static <T extends EObject> T clone(T eObject) {
+	def <T extends EObject> T clone(T eObject) {
 	  	return EcoreUtil.copy(eObject)
 	}
 
 
-	def static ImlType accessArray(ArrayType type, int dim) {
+	def ImlType accessArray(ArrayType type, int dim) {
 		if (dim == type.dimensions.size) {
 			return type.type
 		} else {
@@ -45,7 +53,7 @@ public class TypingServices {
 		}
 	}
 	
-	def static boolean isEqual(ImlType left, ImlType right) {
+	def boolean isEqual(ImlType left, ImlType right) {
 		// We almost always wants to resolve aliases
 		return isEqual(resolveAliases(left), resolveAliases(right), false);
 	}
@@ -53,23 +61,29 @@ public class TypingServices {
 	/**
 	 * Check whether two type are the same or at least are compatible if compatiblityCheck was true
 	 */
-	def static boolean isEqual(ImlType left, ImlType right, boolean compatibilityCheck) {
+	def boolean isEqual(ImlType left, ImlType right, boolean compatibilityCheck) {
 		if (left === null && right === null) {
 			return true
 		} else if (left === null || right === null) {
 			return false
 		}
 				
-		if (left instanceof TupleType && (left as TupleType).symbols.size == 1) {
-			return isEqual((left as TupleType).symbols.get(0).type, right, compatibilityCheck)
+		if (left instanceof TupleType && (left as TupleType).types.size == 1) {
+			return isEqual((left as TupleType).types.get(0), right, compatibilityCheck)
 		}
 		
-		if (right instanceof TupleType && (right as TupleType).symbols.size == 1) {
-			return isEqual(left, (right as TupleType).symbols.get(0).type, compatibilityCheck)
+		if (right instanceof TupleType && (right as TupleType).types.size == 1) {
+			return isEqual(left, (right as TupleType).types.get(0), compatibilityCheck)
 		}
 		
 		if (left.class != right.class) {
 			return false
+		}
+		
+		if (left instanceof RecordType) {
+			if (!isEqual(left as RecordType, right as RecordType, compatibilityCheck)) {
+				return false
+			}
 		}
 
 		if (left instanceof SimpleTypeReference) {
@@ -99,13 +113,12 @@ public class TypingServices {
 				return false
 			}
 		}
-		
 
 		return true
 	}
 
 	/* Check whether two type references are the same */
-	def static boolean isEqual(ArrayType left, ArrayType right, boolean compatibilityCheck) {
+	def boolean isEqual(ArrayType left, ArrayType right, boolean compatibilityCheck) {
 		if (left === null && right === null) {
 			return true
 		} else if (left === null || right === null) {
@@ -123,13 +136,32 @@ public class TypingServices {
 		return true
 	}
 
-	def static boolean isEqual(TupleType left, TupleType right, boolean compatibilityCheck) {
+	def boolean isEqual(TupleType left, TupleType right, boolean compatibilityCheck) {
+		if (left.types.length != right.types.length) {
+			return false
+		} else {
+			for (i : 0 ..< left.types.length) {
+				if (!isEqual(left.types.get(i), right.types.get(i), compatibilityCheck)) {
+					return false
+				}
+			}
+		}
+		return true
+	}
+	
+	def boolean isEqual(RecordType left, RecordType right, boolean compatibilityCheck) {
 		if (left.symbols.length != right.symbols.length) {
 			return false
 		} else {
-			for (i : 0 ..< left.symbols.length) {
-				if (!isEqual(left.symbols.get(i).type, right.symbols.get(i).type, compatibilityCheck)) {
-					return false
+			for (leftSymbol : left.symbols) {
+				var found = false
+				for (rightSymbol : right.symbols) {
+					if (leftSymbol.name == rightSymbol.name && isEqual(leftSymbol.type, rightSymbol.type, compatibilityCheck)) {
+						found = true
+					}
+				}
+				if (found == false) {
+					return false;
 				}
 			}
 		}
@@ -137,7 +169,7 @@ public class TypingServices {
 	}
 
 	//TODO Equal means that the definitions are also equal
-	def static boolean isEqual(PropertyList left, PropertyList right, boolean compatibilityCheck) {
+	def boolean isEqual(PropertyList left, PropertyList right, boolean compatibilityCheck) {
 		if (left.properties.size != right.properties.size) {
 			return false;
 		}
@@ -152,7 +184,7 @@ public class TypingServices {
 	}
 
 	/* Check whether two type references are the same */
-	def static boolean isEqual(SimpleTypeReference left, SimpleTypeReference right, boolean compatibilityCheck) {
+	def boolean isEqual(SimpleTypeReference left, SimpleTypeReference right, boolean compatibilityCheck) {
 		// Check pre condition for primitives
 		if (compatibilityCheck) {
 			if (left.isNumeric && right.isNumeric) {
@@ -184,14 +216,14 @@ public class TypingServices {
 	}
 
 	// Checks whether two types are equal
-	def static boolean isEqual(NamedType left, NamedType right) {
+	def boolean isEqual(NamedType left, NamedType right) {
 		if (left == right)
 			return true;
 		return false;
 	}
 
 	// TODO 
-	def static getAllDeclarations(ImlType ctx) {
+	def getAllDeclarations(ImlType ctx) {
 		var List<SymbolDeclaration> tlist = <SymbolDeclaration>newArrayList()
 		var List<List<SimpleTypeReference>> hierarchy = ctx.allSuperTypes;
 		for (level : hierarchy) {
@@ -208,20 +240,20 @@ public class TypingServices {
 	}
 
 	/* Compute all super types of a ContrainedType  */
-	def static getAllSuperTypes(NamedType ct) {
-		getSuperTypes(ImlCustomFactory.INST.createSimpleTypeReference(ct)).map[it.map[it.type]]
+	def getAllSuperTypes(NamedType nt) {
+		getSuperTypes(ImlCustomFactory.INST.createSimpleTypeReference(nt)).map[it.map[it.type]]
 	}
 
 	/* Compute all super type references of a TypeReference */
-	def static getAllSuperTypes(ImlType hot) {
-		if (hot instanceof SimpleTypeReference) {
-			return getSuperTypes(hot)
+	def getAllSuperTypes(ImlType imlType) {
+		if (imlType instanceof SimpleTypeReference) {
+			return getSuperTypes(imlType)
 		} else {
 			return new ArrayList<List<SimpleTypeReference>>()
 		}
 	}
 
-	def static getSuperTypes(SimpleTypeReference tf) {
+	def getSuperTypes(SimpleTypeReference tf) {
 		val closed = <NamedType>newArrayList()
 		val retVal = new ArrayList<List<SimpleTypeReference>>()
 		retVal.add(new ArrayList<SimpleTypeReference>());
@@ -231,32 +263,32 @@ public class TypingServices {
 			val toAdd = <SimpleTypeReference>newArrayList();
 			for (current : retVal.get(index)) {
 				val ctype = current.type
-				if (ctype.relations != null) {
+				if (ctype.relations !== null) {
 					for (rel : ctype.relations.filter(Extension)) {
-							for(twp : rel.extensions){
+						for(twp : rel.extensions){
 							if (twp.type instanceof SimpleTypeReference) {
 								if (! closed.contains((twp.type as SimpleTypeReference).type)) {
 									toAdd.add(twp.type as SimpleTypeReference)
 								}
 							}
-							}
+						}
 						
 					}
 					for (rel : ctype.relations.filter(Alias)) {
-							if (rel.type.type instanceof SimpleTypeReference) {
-								if (! closed.contains((rel.type.type as SimpleTypeReference).type)) {
-									toAdd.add(rel.type.type as SimpleTypeReference)
-								}
+						if (rel.type.type instanceof SimpleTypeReference) {
+							if (! closed.contains((rel.type.type as SimpleTypeReference).type)) {
+								toAdd.add(rel.type.type as SimpleTypeReference)
 							}
+						}
 					}
 					for (rel : ctype.relations.filter(TraitExhibition)) {
-							for(twp : rel.exhibitions){
+						for(twp : rel.exhibitions){
 							if (twp.type instanceof SimpleTypeReference) {
 								if (! closed.contains((twp.type as SimpleTypeReference).type)) {
 									toAdd.add(twp.type as SimpleTypeReference)
 								}
 							}
-							}
+						}
 						
 					}
 				}
@@ -275,134 +307,94 @@ public class TypingServices {
 
 	/* Check if two types are compatible or not
 	 * */
-	def static boolean isCompatible(ImlType expected, ImlType actual) {
+	def boolean isCompatible(ImlType expected, ImlType actual) {
 		return isEqual(resolveAliases(expected), resolveAliases(actual), true)
 	}
 
-	def static isSingleElementTuple(ImlType type) {
-		return type instanceof TupleType && (type as TupleType).symbols.size == 0
-	}
-
 	/* A non-template type without stereotype is a pure type */
-	def static boolean isPureType(ImlType t) {
+	def boolean isPureType(ImlType t) {
 		if (t instanceof SimpleTypeReference && (t as SimpleTypeReference).typeBinding.size == 0) {
 			return true;
 		}
 		return false;
 	}
 	
-	def static boolean isAlias(NamedType t) {
+	def boolean isAlias(NamedType t) {
 		if (t.relations.filter(Alias).size > 0) {
 			return true
 		}
 		return false
 	}
-	def static boolean isAlias(SimpleTypeReference r){
+	def boolean isAlias(SimpleTypeReference r){
 		return r.type.isAlias
 	}
-	def static getAliasType(NamedType type) {
-		TypingServices.getAliasType(ImlCustomFactory.INST.createSimpleTypeReference(type))
+	def getAliasType(NamedType type) {
+		getAliasType(ImlCustomFactory.INST.createSimpleTypeReference(type))
 	}
-	def static ImlType getAliasType(SimpleTypeReference r){
+	def ImlType getAliasType(SimpleTypeReference r){
 		if (r.isAlias){
 			var alias = r.type.relations.filter(Alias).get(0).type.type
-			return ImlTypeProvider.bind(alias,r)
+			return typeProvider.bind(alias,r)
 		}
 		return r // if it is not alias return the original type
 	}
 	
-	def static ImlType resolveAliases(ImlType type) {
+	def ImlType resolveAliases(ImlType type) {
+		normalizeType(type, null)
+	}
+	
+	
+	def ImlType normalizeType(ImlType type, NamedType container) {
 		if (type instanceof SimpleTypeReference) {
 			if (type.isAlias) {
-				return TypingServices.resolveAliases(TypingServices.getAliasType(type))
+				return normalizeType(getAliasType(type), container)
+			} else {
+				return type
+			}
+		}
+		if (type instanceof SelfType) {
+			if (container !== null) {
+				return ImlCustomFactory.INST.createSimpleTypeReference(container)
 			} else {
 				return type
 			}
 		}
 		if (type instanceof TupleType) {
-			return ImlCustomFactory.INST.createTupleType(type.symbols.map[
-				ImlCustomFactory.INST.createSymbolDeclaration(it.name, clone(TypingServices.resolveAliases(it.type)))	
-			])
+			return ImlCustomFactory.INST.createTupleType(type.types.map[clone(normalizeType(it, container))])
+		}
+		if (type instanceof RecordType) {
+			return ImlCustomFactory.INST.createRecordType => [
+				it.symbols.addAll(type.symbols.map[
+					ImlCustomFactory.INST.createSymbolDeclaration(it.name, clone(normalizeType(it.type, container)))	
+				])
+			]
 		}
 		if (type instanceof ArrayType) {
 			return ImlCustomFactory.INST.createArrayType => [
-				it.type = clone(resolveAliases(type.type))
+				it.type = clone(normalizeType(type.type, container))
 				it.dimensions.addAll(type.dimensions.map[ImlCustomFactory.INST.createOptionalTermExpr])
 			]
 		}
 		if (type instanceof FunctionType) {
 			return ImlCustomFactory.INST.createFunctionType => [
-				domain = clone(resolveAliases(type.domain))
-				range = clone(resolveAliases(type.range))
+				domain = clone(normalizeType(type.domain, container))
+				range = clone(normalizeType(type.range, container))
 			]
 		}
 	}
 	
 	/* Check whether a constrained type is a template  */
-	def static boolean isTemplate(NamedType ct) {
-		return ct.template;
+	def boolean isTemplate(NamedType nt) {
+		return nt.template;
 	}
 
-//	def static boolean isTermExpressionLiteralPosInt(TermExpression te) {
-//		switch (te) {
-//			NumberLiteral: {
-//				return !te.neg
-//			}
-//			default:
-//				return false
-//		}
-//	}
-//
-//	def static boolean isTermExpressionLiteralPosNum(TermExpression te) {
-//		switch (te) {
-//			NumberLiteral: {
-//				return !te.neg
-//			}
-//			FloatNumberLiteral: {
-//				return !te.neg
-//			}
-//			default:
-//				return false
-//		}
-//	}
-//
-//	def static qualifiedName(Symbol elem) {
-//		var EObject e = elem.eContainer;
-//		var StringBuffer s = new StringBuffer()
-//		s.append(elem.name);
-//		while (e !== null) {
-//			if (e instanceof Model) {
-//				s.insert(0, e.name.replace('.', '::') + '::');
-//			} else if (e instanceof NamedType) {
-//				s.insert(0, e.name + '::');
-//			}
-//			e = e.eContainer;
-//		}
-//		return s.toString
-//	}
-//
-//	def static isExtension(NamedType t, String qname) {
-//		if (qualifiedName(t).equals(qname)) {
-//			return true;
-//		}
-//		var extensions = getAllSuperTypes(t);
-//		for (l : extensions) {
-//			for (sup : l) {
-//				if (sup.qualifiedName.equals(qname)) {
-//					return true;
-//				}
-//			}
-//		}
-//		return false;
-//	}
-
-	def static isSimpleTR(ImlType hot) {
-		return hot instanceof SimpleTypeReference
+	def isSimpleTR(ImlType imlType) {
+		return imlType instanceof SimpleTypeReference
 	}
 
-	def static asSimpleTR(ImlType hot) {
-		if (isSimpleTR(hot)) {
-			return hot as SimpleTypeReference
+	def asSimpleTR(ImlType imlType) {
+		if (isSimpleTR(imlType)) {
+			return imlType as SimpleTypeReference
 		}
 		return null;
 	}

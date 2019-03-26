@@ -23,11 +23,12 @@ import com.utc.utrc.hermes.iml.iml.SequenceTerm
 import com.utc.utrc.hermes.iml.custom.ImlCustomFactory
 import org.eclipse.xtext.resource.XtextResource
 import com.utc.utrc.hermes.iml.util.TermExtractor
+import com.utc.utrc.hermes.iml.ImlParseHelper
 
 @RunWith(XtextRunner)
 @InjectWith(ImlInjectorProvider)
 class ImlUtilsTest {
-	@Inject extension ParseHelper<Model> 
+	@Inject extension ImlParseHelper
 	
 	@Inject extension ValidationTestHelper
 	
@@ -45,8 +46,6 @@ class ImlUtilsTest {
 	def void testGetTypeNameManually(String typeDeclaration, String typeGenerated) {
 		val model = '''
 			package p;
-			type Int;
-			type Real;
 			v1 :«typeDeclaration»;
 		'''.parse
 		model.assertNoErrors
@@ -56,40 +55,36 @@ class ImlUtilsTest {
 	}
 	
 	@Test
-	def void testIsSimpleHot() {
-		testIsSimpleHot("Int", true)
-		testIsSimpleHot("Int[]", true)
-		testIsSimpleHot("(Int)", true)
-		testIsSimpleHot("(Int, Real)", true)
-		testIsSimpleHot("Int[][][]", true)
-		testIsSimpleHot("Int->Real", true)
-		testIsSimpleHot("Int[]->Real", true)
-		testIsSimpleHot("(Int, Real) -> (Real, Int)", true)
-		testIsSimpleHot("(Int->Real)->Int", false)
-		testIsSimpleHot("Int->(Int->Real)", false)
-		testIsSimpleHot("(Int->Real)[]", false)
-		testIsSimpleHot("(Int->Real, Int)", false)
+	def void testIsSimpleFunctionType() {
+		testIsSimpleFunctionType("Int", true)
+		testIsSimpleFunctionType("Int[]", true)
+		testIsSimpleFunctionType("(Int)", true)
+		testIsSimpleFunctionType("(Int, Real)", true)
+		testIsSimpleFunctionType("Int[][][]", true)
+		testIsSimpleFunctionType("Int->Real", true)
+		testIsSimpleFunctionType("Int[]->Real", true)
+		testIsSimpleFunctionType("(Int, Real) -> (Real, Int)", true)
+		testIsSimpleFunctionType("(Int->Real)->Int", false)
+		testIsSimpleFunctionType("Int->(Int->Real)", false)
+		testIsSimpleFunctionType("(Int->Real)[]", false)
+		testIsSimpleFunctionType("(Int->Real, Int)", false)
 	}
 	
-	def void testIsSimpleHot(String typeDeclaration, boolean isSimpleHot) {
+	def void testIsSimpleFunctionType(String typeDeclaration, boolean isSimpleFunctionType) {
 		val model = '''
 			package p;
-			type Int;
-			type Real;
 			v1 :«typeDeclaration»;
 		'''.parse
 		model.assertNoErrors
 		
 		val v1 = model.findSymbol("v1") as SymbolDeclaration
-		assertEquals(isSimpleHot, ImlUtil.isFirstOrderFunction(v1.type))
+		assertEquals(isSimpleFunctionType, ImlUtil.isFirstOrderFunction(v1.type))
 	}
 	
 	@Test
 	def void testToCNF() {
 		val model = '''
 		package p ;
-		type Bool ;
-		type Int ;
 		type A {
 			v1 : Bool ;
 			v2 : Bool ;
@@ -117,15 +112,13 @@ class ImlUtilsTest {
 	def void testToCNF1() {
 		val model = '''
 		package p ;
-		type Bool ;
-		type Int ;
 		type A {
 			v1 : Int-> Bool ;
 			v2 : Bool ;
 			v3 : Int-> Bool ;
 			v4 : Bool ;
 			//assert a { (v1(0) || v2) && (v3(2) || v4) && (v1(1) || v4) };
-			assert a { ( v1(0) && v2 && (v1 => v3(2)) ) || ! ( v4 => v1(1) ) };
+			assert a { ( v1(0) && v2 && (v1(0) => v3(2)) ) || ! ( v4 => v1(1) ) };
 		}
 		'''.parse
 		model.assertNoErrors
@@ -146,8 +139,6 @@ class ImlUtilsTest {
 	def void testTermExtractor() {
 		val model = '''
 		package p ;
-		type Bool ;
-		type Int ;
 		type A {
 			v1 : Int-> Bool ;
 			v2 : Bool ;
@@ -155,7 +146,7 @@ class ImlUtilsTest {
 			v4 : Bool ;
 			v5 : Int ;
 			//assert a { (v1(0) || v2) && (v3(2) || v4) && (v1(1) || v4) };
-			assert a { ( v1(v5) && v2 && (v1 => v3(2)) ) || ! ( v4 => v1(1) ) };
+			assert a { ( v1(v5) && v2 && (v1(0) => v3(2)) ) || ! ( v4 => v1(1) ) };
 		}
 		'''.parse
 		model.assertNoErrors
@@ -170,8 +161,6 @@ class ImlUtilsTest {
 	def void testTermExtractorWithTermMemberSelection() {
 		val model = '''
 		package p ;
-		type Bool ;
-		type Int ;
 		type A {
 			v1 : B ;
 			assert a { v1 = v1 && v1.vx;};

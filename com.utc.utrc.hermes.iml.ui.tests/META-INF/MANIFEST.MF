@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: com.utc.utrc.hermes.iml.ui.tests
-Bundle-Vendor: My Company
+Bundle-Vendor: UTC
 Bundle-Version: 1.0.0.qualifier
 Bundle-SymbolicName: com.utc.utrc.hermes.iml.ui.tests; singleton:=true
 Bundle-ActivationPolicy: lazy

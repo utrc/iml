@@ -12,6 +12,7 @@ import com.utc.utrc.hermes.iml.iml.SymbolReferenceTerm
 import com.utc.utrc.hermes.iml.iml.NamedType
 import com.utc.utrc.hermes.iml.iml.ImlType
 import com.utc.utrc.hermes.iml.iml.ExpressionTail
+import com.utc.utrc.hermes.iml.iml.OptionalTermExpr
 
 public class ImlCustomFactory extends ImlFactoryImpl {
 	
@@ -52,7 +53,7 @@ public class ImlCustomFactory extends ImlFactoryImpl {
 		]
 	}
 	def createOrExpression(FolFormula left, FolFormula right) {
-		createAndExpression => [
+		createOrExpression => [
 			it.left = left;
 			it.right = right;
 			it.op = "||"; // FIXME is there an enum better to use?
@@ -239,13 +240,15 @@ public class ImlCustomFactory extends ImlFactoryImpl {
 		createIteTermExpression => [
 			it.condition = condition
 			it.left = createSequenceTerm(left)
-			it.right = createSequenceTerm(right)
+			if (right !== null) {
+				it.right = createSequenceTerm(right)
+			}
 		]
 	}
 	
-	def createTupleType(List<SymbolDeclaration> symbols) {
+	def createTupleType(List<ImlType> types) {
 		createTupleType => [
-			it.symbols.addAll(symbols)
+			it.types.addAll(types)
 		]
 	}
 	
@@ -253,6 +256,13 @@ public class ImlCustomFactory extends ImlFactoryImpl {
 		createSymbolDeclaration => [
 			it.name = name
 			it.type = type
+		]
+	}
+	
+	def createArrayType(ImlType type, List<OptionalTermExpr> dim) {
+		createArrayType =>[
+			it.type = type
+			it.dimensions.addAll(dim)
 		]
 	}
 	

@@ -8,6 +8,10 @@ import org.eclipse.xtext.scoping.impl.AbstractDeclarativeScopeProvider
 import com.utc.utrc.hermes.iml.scoping.ImlImportedNamespaceAwareLocalScopeProvider
 import org.eclipse.xtext.validation.CompositeEValidator
 import com.google.inject.name.Names
+import com.utc.utrc.hermes.iml.custom.ImlCustomLinker
+import org.eclipse.xtext.linking.ILinker
+import org.eclipse.xtext.resource.IDefaultResourceDescriptionStrategy
+import com.utc.utrc.hermes.iml.scoping.ImlResourceDescriptionsStrategy
 
 /**
  * Use this class to register components to be used at runtime / without the Equinox extension registry.
@@ -23,5 +27,14 @@ class ImlRuntimeModule extends AbstractImlRuntimeModule {
 				
 		binder.bind(boolean).annotatedWith(Names.named((CompositeEValidator.USE_EOBJECT_VALIDATOR))).toInstance(false)
 	}
+	
+	override Class<? extends ILinker> bindILinker() {
+		ImlCustomLinker
+	}
+	
+	def Class<? extends IDefaultResourceDescriptionStrategy> bindIDefaultResourceDescriptionStrategy() {
+		return ImlResourceDescriptionsStrategy
+	}
+	
 	
 }
