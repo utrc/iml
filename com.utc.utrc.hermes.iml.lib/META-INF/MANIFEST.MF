@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: Sdk
-Bundle-SymbolicName: com.utc.utrc.hermes.iml.sdk
+Bundle-Name: IML-Library
+Bundle-SymbolicName: com.utc.utrc.hermes.iml.lib
 Bundle-Version: 1.0.0.qualifier
 Bundle-Vendor: UTC
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8

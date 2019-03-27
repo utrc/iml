@@ -23,13 +23,13 @@ type FlowPath {
 
 flowpathspec : (FlowPoint,FlowPoint,Real,Real) -> FlowPath :=
 fun(x:FlowPoint,y:FlowPoint,l:Real,u:Real) {
-	oneof FlowPath { start = x ; end = y ; lowerBound = l ; upperBound = u }	
+	some(fp: FlowPath) { fp.start = x && fp.end = y && fp.lowerBound = l && fp.upperBound = u }	
 }  ;
 
 
 flowpath : (FlowPoint,FlowPoint) -> FlowPath :=
 fun(x:FlowPoint,y:FlowPoint) {
-	oneof FlowPath { start = x ; end = y }	
+	some(fp: FlowPath) { fp.start = x && fp.end = y }	
 }  ;
 
 
@@ -38,17 +38,17 @@ type EndToEndFlow {
 	end : FlowPoint ;
 	append : FlowPath -> EndToEndFlow := 
 	fun(x:FlowPath){
-		oneof EndToEndFlow{
-			start = self.start ; 
-			end.lowerBound = self.end.lowerBound + x.end.lowerBound ;
-			end.upperBound = self.end.upperBound + x.end.upperBound 
+		some(e: EndToEndFlow) {
+			e.start = self.start && 
+			e.end.lowerBound = self.end.lowerBound + x.end.lowerBound &&
+			e.end.upperBound = self.end.upperBound + x.end.upperBound 
 		} 
 	};
 }
 
 source : FlowPath -> EndToEndFlow :=
 	fun(x:FlowPath){
-		oneof EndToEndFlow{ start = x.start ; end = x.end}
+		some(e: EndToEndFlow) { e.start = x.start && e.end = x.end}
 	};
 
 	
@@ -75,7 +75,7 @@ type FlowConnector<T> {
 
 <T>flowconnect : (T,T)->FlowConnector<T> :=
 fun(x:T,y:T) {
-	oneof FlowConnector<T>{ connector.source = x ; connector.target = y}
+	some(fc: FlowConnector<T>) { fc.connector.source = x && fc.connector.target = y}
 } ;
 
 flowdelaybound : (EndToEndFlow,Real,Real) -> Bool :=
@@ -90,14 +90,14 @@ type [Fsm] delay {
 	[Input] n : Int ;
 	state : PrimedVar<DelayState>  ;
 	i : PrimedVar<Int> ;
-	[Init] state_i_init : Bool := (i = 1) && (state = DelayState.s0) ;
+	[Init] state_i_init : Bool := (i.current = 1) && (state.current = DelayState.s0) ;
 	[Transition] s_trans : Bool := {
 		state.next = 
 			case {
 				state.current = DelayState.s0 && f.end.event : DelayState.s2;
 				state.current = DelayState.s0 && f.start.event : DelayState.s1 ;
 				state.current = DelayState.s1 && f.end.event : DelayState.s0 ;
-				state.current = DelayState.s1 && i >= n : DelayState.s2 ;
+				state.current = DelayState.s1 && i.current >= n : DelayState.s2 ;
 				true : state.current ;
 			} 	
 	};

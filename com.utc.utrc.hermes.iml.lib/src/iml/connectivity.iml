@@ -47,6 +47,6 @@ type Connector<T> {
 
 <T>connect : (T,T)->Connector<T> :=
 fun(x:T,y:T) {
-	oneof Connector<T>{ source = x ; target = y}
+	some(c:Connector<T>) { c.source = x && c.target = y}
 } ;
 
