@@ -72,8 +72,8 @@ class ImlParseHelper {
 			imlLibUrl = this.getClass().classLoader.getResource("./iml/").toURI
 		} else {
 			// Get lib folder for plugin
-			val bundle = Platform.getBundle("com.utc.utrc.hermes.iml");
-			val fileURL = bundle.getEntry("imllib/");
+			val bundle = Platform.getBundle("com.utc.utrc.hermes.iml.sdk");
+			val fileURL = bundle.getEntry("iml/");
 			try {
 				val resolvedFileURL = FileLocator.toFileURL(fileURL);
 			   // We need to use the 3-arg constructor of URI in order to properly escape file system chars

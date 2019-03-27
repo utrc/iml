@@ -4,10 +4,16 @@
 package com.utc.utrc.hermes.iml.ui
 
 import org.eclipse.xtend.lib.annotations.FinalFieldsConstructor
+import com.utc.utrc.hermes.iml.ui.wizard.ImlNewProjectCreator
 
 /**
  * Use this class to register components to be used within the Eclipse IDE.
  */
 @FinalFieldsConstructor
 class ImlUiModule extends AbstractImlUiModule {
+	
+	override bindIProjectCreator() {
+		return ImlNewProjectCreator
+	}
+	
 }
