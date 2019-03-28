@@ -7,7 +7,7 @@ type List<T> {
 	head :T ;
 	tail : List<T>;
 	push : T -> List<T> := fun (x:T) {
-    	oneof List<T> { head = x ; tail = self ; isEmpty = false }  
+    	some(l:List<T>) { l.head = x && l.tail = self && l.isEmpty = false }  
   	} ;
 	
 }

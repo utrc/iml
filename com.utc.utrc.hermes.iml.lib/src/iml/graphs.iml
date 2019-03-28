@@ -11,7 +11,7 @@ type Edge is (Vertex,Vertex);
 type Graph {
 	edges : List<Edge> ;
 	add : Edge -> Graph := fun(x:Edge) {
-		oneof Graph{edges = self.edges.push(x)}
+		some(g : Graph) {g.edges = self.edges.push(x)}
 	} ;
 }
 

@@ -407,6 +407,7 @@
 
 	<modules>
 		<module>../com.utc.utrc.hermes.iml.tests.report</module>
+		<module>../../com.utc.utrc.hermes.iml.lib</module>
 		<module>../../com.utc.utrc.hermes.iml</module>
 		<module>../../com.utc.utrc.hermes.iml.ide</module>
 		<module>../../com.utc.utrc.hermes.iml.tests</module>
@@ -419,5 +420,6 @@
 		<module>../com.utc.utrc.hermes.iml.feature</module>
 		<module>../com.utc.utrc.hermes.iml.repository</module>
 		<module>../com.utc.utrc.hermes.iml.product</module>
+		
 	</modules>
 </project>
