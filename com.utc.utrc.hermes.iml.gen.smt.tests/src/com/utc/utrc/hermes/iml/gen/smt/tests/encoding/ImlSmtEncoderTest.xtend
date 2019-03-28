@@ -29,12 +29,13 @@ import com.utc.utrc.hermes.iml.iml.Extension
 import com.utc.utrc.hermes.iml.iml.Alias
 import com.utc.utrc.hermes.iml.gen.smt.encoding.SMTEncodingException
 import com.utc.utrc.hermes.iml.gen.smt.tests.SmtTestInjectorProvider
+import com.utc.utrc.hermes.iml.ImlParseHelper
 
 @RunWith(XtextRunner)
 @InjectWith(SmtTestInjectorProvider)
 class ImlSmtEncoderTest {
 	
-	@Inject extension ParseHelper<Model>
+	@Inject extension ImlParseHelper
 	
 	@Inject extension ValidationTestHelper
 	
@@ -62,14 +63,13 @@ class ImlSmtEncoderTest {
 		val model = 
 		encode('''
 			package p1;
-			type Int;
 			type T1 {
 				var1 : Int;
 				var2 : Int;
 			}
 		''', "T1")
 		val t1Sort = assertAndGetSort(model.findSymbol("T1"))
-		val intSort = assertAndGetSort(model.findSymbol("Int"))
+		val intSort = assertAndGetSort(model.eResource.resourceSet.findSymbol("Int"))
 		
 		val var1Fun = assertAndGetFuncDecl(
 			(model.findSymbol("T1") as NamedType).findSymbol("var1"), #[t1Sort], intSort
@@ -125,16 +125,14 @@ class ImlSmtEncoderTest {
 			type T1 {
 				var1: Int -> Real;
 			}
-			type Int;
-			type Real;
 		''', "T1")
 		
 		print(encoder.toString)
 		
 		
 		val t1Sort = assertAndGetSort(model.findSymbol("T1"))
-		val intSort =  assertAndGetSort(model.findSymbol("Int"))
-		val realSort =  assertAndGetSort(model.findSymbol("Real"))
+		val intSort =  assertAndGetSort(model.eResource.resourceSet.findSymbol("Int"))
+		val realSort =  assertAndGetSort(model.eResource.resourceSet.findSymbol("Real"))
 		val var1 = (model.findSymbol("T1") as NamedType).findSymbol("var1") as SymbolDeclaration;
 		val funSort = assertAndGetSort(var1.type)
 		
@@ -155,11 +153,10 @@ class ImlSmtEncoderTest {
 			type T1 {
 				var1: Int[10][];
 			}
-			type Int;
 		''', "T1")
 		
 		val t1Sort = assertAndGetSort(model.findSymbol("T1"))
-		val intSort =  assertAndGetSort(model.findSymbol("Int"))
+		val intSort =  assertAndGetSort(model.eResource.resourceSet.findSymbol("Int"))
 		val var1 = (model.findSymbol("T1") as NamedType).findSymbol("var1") as SymbolDeclaration;
 		val int2Sort = assertAndGetSort(var1.type)
 		val int1Sort = assertAndGetSort(typingServices.accessArray(var1.type as ArrayType, 1))
@@ -180,12 +177,10 @@ class ImlSmtEncoderTest {
 	def void testTupleTypeEncoder() {
 		val model = encode('''
 			package p1;
-			type Int;
-			type Real;
 			var1 : (Int, Real);
 		''', "var1")
-		val intSort = assertAndGetSort(model.findSymbol("Int"))
-		val realSort = assertAndGetSort(model.findSymbol("Real"))
+		val intSort = assertAndGetSort(model.eResource.resourceSet.findSymbol("Int"))
+		val realSort = assertAndGetSort(model.eResource.resourceSet.findSymbol("Real"))
 		val tupleSort = assertAndGetSort((model.findSymbol("var1") as SymbolDeclaration).type)
 		
 		assertEquals(intSort, tupleSort.tupleElements.get(0))
@@ -198,8 +193,6 @@ class ImlSmtEncoderTest {
 	def void testTemplateTypeEncoder() {
 		val model = encode('''
 			package p1;
-			type Int;
-			type Real;
 			type T1<T, P> {
 				vart: T -> P;
 			}
@@ -211,8 +204,8 @@ class ImlSmtEncoderTest {
 			}
 			
 		''', "T2")
-		val intSort = assertAndGetSort(model.findSymbol("Int"))
-		val realSort = assertAndGetSort(model.findSymbol("Real"))
+		val intSort = assertAndGetSort(model.eResource.resourceSet.findSymbol("Int"))
+		val realSort = assertAndGetSort(model.eResource.resourceSet.findSymbol("Real"))
 		assertNull(encoder.getSort(model.findSymbol("T1"))) // T<type T, type P> should not be encoded
 		val T2Sort = assertAndGetSort(model.findSymbol("T2"))
 		
@@ -325,7 +318,6 @@ class ImlSmtEncoderTest {
 		'''
 			package p;
 			
-			type Int;
 			type T1 {
 				a : Int;
 				b : T2;
@@ -345,8 +337,6 @@ class ImlSmtEncoderTest {
 		'''
 			package p;
 			
-			type Int;
-			type Real;
 			type T1 extends (T2) {
 				a : Int;
 				b : Int -> T2;
@@ -371,7 +361,6 @@ class ImlSmtEncoderTest {
 	def void testArrayOfParentheizedExpr() {
 		val model = '''
 			package p;
-			type Int;
 			type T1 {
 				a : (Int)[];
 			}
@@ -415,7 +404,6 @@ class ImlSmtEncoderTest {
 		'''
 			package p;
 			
-			type Int;
 			type T1<T> {
 				a : T;
 			}
@@ -435,7 +423,6 @@ class ImlSmtEncoderTest {
 		val model =
 		encode('''
 			package p;
-			type Int;
 			type T1 {
 				var2: Int;
 				var1 : Int := var2 * 5;
@@ -457,7 +444,6 @@ class ImlSmtEncoderTest {
 		val model =
 		encode('''
 			package p;
-			type Int;
 			type T1 {
 				var1 : Int;
 			}
@@ -482,7 +468,6 @@ class ImlSmtEncoderTest {
 		val model =
 		encode('''
 			package p;
-			type Int;
 			type T1 {
 				var1 : Int;
 			}
@@ -506,7 +491,6 @@ class ImlSmtEncoderTest {
 		val model =
 		encode('''
 			package p;
-			type Int;
 			type T1 {
 				assert var1 {if (true && false) {5}};
 			}
@@ -527,8 +511,6 @@ class ImlSmtEncoderTest {
 		val model =
 		encode('''
 			package p;
-			type Bool;
-			type Int;
 			type T1 {
 				var1 : Bool := forall (a : Int) {a > 5};
 				var2 : Bool := exists (a : Int) {a = 0};
@@ -554,7 +536,6 @@ class ImlSmtEncoderTest {
 		val model =
 		encode('''
 			package p;
-			type Int;
 			type T1 {
 				var1 : Int -> Int;
 				var2 : Int := var1(5);
@@ -577,7 +558,6 @@ class ImlSmtEncoderTest {
 		try {
 			val model = encode('''
 				package p;
-				type Int;
 				type T1 {
 					var1 : Int -> Int;
 					var2 : Int -> Int := var1;
@@ -600,7 +580,6 @@ class ImlSmtEncoderTest {
 	def void testEncodingWithAssertions() {
 		val model = encode('''
 			package p;
-			type Int;
 			type T1 {
 				var1 : Int;
 				assert {var1 > 0};
@@ -614,7 +593,6 @@ class ImlSmtEncoderTest {
 	def void testEncodingWithDefinition() {
 		val model = encode('''
 			package p;
-			type Int;
 			type T1 {
 				var1 : Int := 5;
 			}
@@ -627,7 +605,6 @@ class ImlSmtEncoderTest {
 	def void testEncodingWithFunction() {
 		val model = encode('''
 			package p;
-			type Int;
 			type T1 {
 				var1 : Int -> Int := fun(p:Int) { p * 5};
 			}
@@ -640,7 +617,6 @@ class ImlSmtEncoderTest {
 	def void testEncodingWithFunctionHavingVars() {
 		val model = encode('''
 			package p;
-			type Int;
 			type T1 {
 				var1 : Int -> Int := fun(p:Int) { var x : Int := 5; var y : Int := x * 2; x + y + p * 5};
 			}
@@ -654,8 +630,6 @@ class ImlSmtEncoderTest {
 	def void testEncodingWithFunctionMultipleParams() {
 		val model = encode('''
 			package p;
-			type Int;
-			type Real;
 			type T1 {
 				var1 : (Int, Real) -> Int := fun(p:Int, p2:Real) { p * 5};
 			}
