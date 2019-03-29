@@ -23,6 +23,7 @@ import com.utc.utrc.hermes.iml.iml.Assertion;
 import com.utc.utrc.hermes.iml.iml.AtomicExpression;
 import com.utc.utrc.hermes.iml.iml.NamedType;
 import com.utc.utrc.hermes.iml.iml.EnumRestriction;
+import com.utc.utrc.hermes.iml.iml.ExpressionTail;
 import com.utc.utrc.hermes.iml.iml.Extension;
 import com.utc.utrc.hermes.iml.iml.FloatNumberLiteral;
 import com.utc.utrc.hermes.iml.iml.FolFormula;
@@ -44,6 +45,7 @@ import com.utc.utrc.hermes.iml.iml.SimpleTypeReference;
 import com.utc.utrc.hermes.iml.iml.Symbol;
 import com.utc.utrc.hermes.iml.iml.SymbolDeclaration;
 import com.utc.utrc.hermes.iml.iml.SymbolReferenceTerm;
+import com.utc.utrc.hermes.iml.iml.TailedExpression;
 import com.utc.utrc.hermes.iml.iml.TermExpression;
 import com.utc.utrc.hermes.iml.iml.TermMemberSelection;
 import com.utc.utrc.hermes.iml.iml.TraitExhibition;
@@ -252,14 +254,11 @@ public class ImlSmtEncoder<SortT extends AbstractSort, FuncDeclT, FormulaT> impl
 		}
 		List<FormulaT> result = new ArrayList<>();
 		if (definition instanceof LambdaExpression) {
-			ImlType signature = ((LambdaExpression) definition).getSignature();
-			if (signature instanceof TupleType) { 
-				for (SymbolDeclaration param : ((TupleType) signature).getSymbols()) {
-					if (nameOnly) {
-						result.add(smtModelProvider.createFormula(param.getName()));
-					} else {
-						result.add(smtModelProvider.createFormula(param.getName(), getSort(param.getType())));
-					}
+			for (SymbolDeclaration param : ((LambdaExpression) definition).getParameters()) {
+				if (nameOnly) {
+					result.add(smtModelProvider.createFormula(param.getName()));
+				} else {
+					result.add(smtModelProvider.createFormula(param.getName(), getSort(param.getType())));
 				}
 			}
 		}
@@ -322,8 +321,8 @@ public class ImlSmtEncoder<SortT extends AbstractSort, FuncDeclT, FormulaT> impl
 		} else if (type instanceof TupleType) {
 			// TODO handle empty tuple!
 			TupleType tupleType = (TupleType) type;
-			for (SymbolDeclaration symbol : tupleType.getSymbols()) {
-				defineTypes(symbol.getType());
+			for (ImlType element : tupleType.getTypes()) {
+				defineTypes(element);
 			}
 			addTypeSort(tupleType);
 		} else if (type instanceof SimpleTypeReference) {
@@ -510,8 +509,8 @@ public class ImlSmtEncoder<SortT extends AbstractSort, FuncDeclT, FormulaT> impl
 
 	private List<SortT> getTupleSorts(TupleType type) {
 		List<SortT> sorts = new ArrayList<>();
-		for (SymbolDeclaration  symbol : type.getSymbols()) {
-			sorts.add(symbolTable.getSort(symbol.getType()));
+		for (ImlType  element : type.getTypes()) {
+			sorts.add(symbolTable.getSort(element));
 		}
 		return sorts;
 	}
@@ -600,9 +599,50 @@ public class ImlSmtEncoder<SortT extends AbstractSort, FuncDeclT, FormulaT> impl
 				SortT sort = getSort(tupleType);
 				List<FormulaT> tupleFormulas = encodeTupleElements((TupleConstructor) formula, context, inst, scope);
 				
+				return smtModelProvider.createFormula(tupleFormulas);
 			}
 			
+		} else if (formula instanceof TailedExpression) {
+			TailedExpression tailedExpr = (TailedExpression) formula;
+			ExpressionTail tail = tailedExpr.getTail();
+			
+			// Check if it is a connect FIXME remove this and do it in more generic way
+			if (formula.getLeft() instanceof SymbolReferenceTerm) {
+				SymbolReferenceTerm symbolRef = (SymbolReferenceTerm) formula.getLeft();
+				if (isConnect(symbolRef.getSymbol())) {
+					FolFormula connectLeft = ((TupleConstructor) tail).getElements().get(0);
+					FolFormula connectRight  = ((TupleConstructor) tail).getElements().get(1);
+					FormulaT connectLeftFormula = encodeFormula(connectLeft, context, inst, scope);
+					FormulaT connectRightFormula = encodeFormula(connectRight, context, inst, scope);
+					
+					return smtModelProvider.createFormula(OperatorType.EQ, Arrays.asList(connectLeftFormula, connectRightFormula));
+				}
+			}
+	
+			if (tail instanceof ArrayAccess) {
+				ImlType leftType = typeProvider.termExpressionType(formula.getLeft(), context);
+				FuncDeclT arrayAccessFun = getFuncDeclaration(leftType);
+				return smtModelProvider.createFormula(arrayAccessFun, Arrays.asList(leftFormula));
+			} else if (tail instanceof TupleConstructor) {
+				List<FormulaT> paramFormulas = new ArrayList<>();
+				paramFormulas.add(leftFormula);
+				((TupleConstructor) tail).getElements().forEach(element -> paramFormulas.add(null));
+				for (FolFormula element : ((TupleConstructor) tail).getElements()) {
+					paramFormulas.add(encodeFormula(element, context, inst, scope));
+				}
+				return smtModelProvider.createFormula((OperatorType) null, paramFormulas);
+			}
+		
 		} else if (formula instanceof SymbolReferenceTerm) {
+			SymbolReferenceTerm symbolRef = (SymbolReferenceTerm) formula;
+			if (symbolRef.getSymbol() instanceof SymbolDeclaration 
+					&& ((SymbolDeclaration) symbolRef.getSymbol()).getType() instanceof FunctionType
+					&& !(symbolRef.eContainer() instanceof TailedExpression)) { // Using function type without being inside tailed expression
+				throw new SMTEncodingException(((SymbolDeclaration) symbolRef.getSymbol()).getName() + " function can't be used as a variable");
+			}
+			FormulaT symbolRefFormula = getSymbolAccessFormula(symbolRef, context, inst, scope);
+			return symbolRefFormula;
+			
 			/*****************
 			 *  FIXME Need to be refactored and use TailedExpression
 			 ***************** /
@@ -707,7 +747,7 @@ public class ImlSmtEncoder<SortT extends AbstractSort, FuncDeclT, FormulaT> impl
 			}
 			return returnFormula;
 		} else if (formula instanceof LambdaExpression) {
-			scope.addAll(((TupleType) ((LambdaExpression) formula).getSignature()).getSymbols());
+			scope.addAll(((LambdaExpression) formula).getParameters());
 			return encodeFormula(((LambdaExpression) formula).getDefinition(), context, inst, scope);
 		} else {
 			throw new SMTEncodingException("Unsupported formula: " + formula);
