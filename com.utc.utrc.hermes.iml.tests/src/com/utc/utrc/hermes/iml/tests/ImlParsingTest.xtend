@@ -225,4 +225,17 @@ class ImlParsingTest {
 		model.eResource()
 	}
 	
+	@Test
+	def void testParsingDatatypes() {
+		val model = '''
+			package p;
+			
+			datatype T (nil, cons(T, Int));
+		'''.parse
+		
+		model.assertNoErrors
+	}
+	
+	
+	
 }

@@ -47,6 +47,7 @@ import com.utc.utrc.hermes.iml.iml.FunctionType
 import com.utc.utrc.hermes.iml.iml.ExpressionTail
 import com.utc.utrc.hermes.iml.lib.ImlStdLib
 import com.utc.utrc.hermes.iml.iml.RecordType
+import com.utc.utrc.hermes.iml.iml.Datatype
 
 /**
  * This class contains custom validation rules. 
@@ -90,7 +91,6 @@ class ImlValidator extends AbstractImlValidator {
 	public static val ARRAY_ACCESS_ON_FUNCTIONTYPE = 'com.utc.utrc.hermes.iml.validation.ArrayAccessOnFunctionType';
 	public static val INCOMPATIBLE_TYPES = 'com.utc.utrc.hermes.iml.validation.IncompatibleTypes';
 	public static val INVALID_RECORD_ACCESS = 'com.utc.utrc.hermes.iml.validation.InvalidRecordAccess'
-	
 	
 	@Inject
 	override void register(EValidatorRegistrar registrar) {
@@ -452,6 +452,21 @@ class ImlValidator extends AbstractImlValidator {
 					ImlPackage.eINSTANCE.namedType_Relations,
 					INVALID_TYPE_DECLARATION
 				)
+			}
+		}
+		if (type instanceof Datatype) {
+			if (type.constructors.isEmpty) {
+				error('''Datatype constructors are missing''',
+						ImlPackage.eINSTANCE.namedType_Constructors,
+						INVALID_TYPE_DECLARATION
+					)
+			}
+		} else {
+			if (!type.constructors.isEmpty) {
+				error('''Constructors allowed only for datatypes''',
+						ImlPackage.eINSTANCE.namedType_Constructors,
+						INVALID_TYPE_DECLARATION
+					)
 			}
 		}
 	}

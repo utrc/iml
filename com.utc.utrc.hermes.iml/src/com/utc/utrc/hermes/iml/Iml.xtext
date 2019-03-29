@@ -54,15 +54,20 @@ NamedType:
 	(
 		{Annotation} 'annotation' | 
 	 	{Trait} 'trait' | 
-	 	{NamedType} 'type'
+	 	{NamedType} 'type' |
+		{Datatype} 'datatype'	 	
 	)   
 	(propertylist=PropertyList)? 
 	name=ID 
 	(template?='<' typeParameter+=TypeParameter (',' typeParameter+=TypeParameter)* '>')? 
+	('(' constructors+= DatatypeConstructor (',' constructors+= DatatypeConstructor)* ')')?
 	( relations += Relation)*
 	( restrictions += TypeRestriction)*
 	(';' | ('{' (symbols+=(SymbolDeclaration|Assertion) ';')* '}' ";"?)) 
-	
+;
+
+DatatypeConstructor:
+	name=ID ('(' parameters+=ImlType (',' parameters+=ImlType)* ')')?
 ;
 
 TypeRestriction :

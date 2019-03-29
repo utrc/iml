@@ -988,4 +988,37 @@ class ImlValidatorTest {
 	 	model.assertNoErrors
 	 }
 	 
+	 /**
+	  * Datatypes validation
+	  */
+	 @Test
+	 def testValidDatatypeDeclaration() {
+	 	val model = '''
+	 		package p;
+	 		
+	 		datatype T (empty, cons(T, Int));
+	 	'''.parse
+	 	
+	 	model.assertNoErrors
+	 }
+	 
+	 @Test
+	 def testValidDatatypeDeclaration_Invalid_MissingConstructors() {
+	 	val model = '''
+	 		package p;
+	 		datatype T;
+	 	'''.parse
+	 	
+	 	model.assertError(ImlPackage.eINSTANCE.datatype, INVALID_TYPE_DECLARATION)
+	 }
+	 
+	 @Test
+	 def testValidDatatypeDeclaration_Invalid_NotDatatype() {
+	 	val model = '''
+	 		package p;
+	 		type T (empty);
+	 	'''.parse
+	 	
+	 	model.assertError(ImlPackage.eINSTANCE.namedType, INVALID_TYPE_DECLARATION)
+	 }
 }
