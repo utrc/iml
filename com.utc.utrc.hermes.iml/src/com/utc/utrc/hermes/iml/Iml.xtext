@@ -66,8 +66,8 @@ NamedType:
 	(';' | ('{' (symbols+=(SymbolDeclaration|Assertion) ';')* '}' ";"?)) 
 ;
 
-DatatypeConstructor:
-	name=ID ('(' parameters+=ImlType (',' parameters+=ImlType)* ')')?
+DatatypeConstructor returns Symbol:
+	{DatatypeConstructor} (propertylist=PropertyList)? name=ID ('(' parameters+=ImlType (',' parameters+=ImlType)* ')')?
 ;
 
 TypeRestriction :
@@ -86,9 +86,8 @@ TypeParameter returns NamedType:
 
 SymbolDeclaration:
 	(propertylist=PropertyList)?
-	 (template?='<' typeParameter+=TypeParameter 
-	 	            (',' typeParameter+=TypeParameter)* '>')? 
-     name=ID   (':' type=ImlType )?  (':=' definition=FolFormula)? 
+     name=ID  (template?='<' typeParameter+=TypeParameter 
+	 	            (',' typeParameter+=TypeParameter)* '>')? (':' type=ImlType )?  (':=' definition=FolFormula)? 
 ;
 
 Assertion returns SymbolDeclaration :
@@ -230,9 +229,10 @@ TerminalTerm returns TermExpression:
 	SequenceTerm |
 	{LambdaExpression}'fun' '(' parameters+=NonParametricTypedSymbolDeclaration (',' parameters+=NonParametricTypedSymbolDeclaration)* ')' 
 		(':' returnType=ImlType)?  definition=SequenceTerm |
-	QuantifiedFormula
+	QuantifiedFormula |
+	MatchExpression
 	 ;
-	
+
 InstanceConstructor returns TermExpression:
 	{InstanceConstructor} 'some' '(' ref=NonParametricTypedSymbolDeclaration ')' definition=SequenceTerm
 ;
@@ -257,9 +257,8 @@ TupleConstructor returns TermExpression:
 ;
 
 SymbolReferenceTerm returns TermExpression:
-{SymbolReferenceTerm}  ('<' typeBinding+=ImlType 
+{SymbolReferenceTerm}  symbol=[Symbol] =>('<' typeBinding+=ImlType 
 	                       (',' typeBinding+=ImlType)* '>')? 
-	                    symbol=[Symbol] 
 ;
 
 IteTermExpression returns TermExpression:
@@ -275,6 +274,17 @@ CaseTermExpression returns TermExpression:
 SequenceTerm returns TermExpression:
 	{SequenceTerm} '{' ('var' defs+= SymbolDeclaration ';')* 
 	         	   	   return=FolFormula ";"? '}' 
+;
+
+MatchExpression:
+	'match' '(' datatypeExpr=TermExpression ')' 
+		'{' matchStatements+=MatchStatement+ '}'	
+;
+
+MatchStatement:
+	constructor=[DatatypeConstructor] ('(' paramSymbols+=NonParametricUntypedSymbolDeclaration
+						(',' paramSymbols+=NonParametricUntypedSymbolDeclaration)* ')')?
+			':' return=FolFormula ';'
 ;
 
 terminal EXT_INT: INT ('e'|'E')('-'|'+') INT;

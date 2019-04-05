@@ -32,6 +32,8 @@ import org.eclipse.xtext.scoping.impl.AbstractDeclarativeScopeProvider
 import org.eclipse.xtext.scoping.impl.FilteringScope
 
 import static extension org.eclipse.xtext.EcoreUtil2.*
+import com.utc.utrc.hermes.iml.iml.MatchStatement
+import com.utc.utrc.hermes.iml.iml.Datatype
 
 /**
  * This class contains custom scoping description.
@@ -123,25 +125,15 @@ class ImlScopeProvider extends AbstractDeclarativeScopeProvider {
 		return Scopes::scopeFor(features, scope)
 	}
 
-	def getTypeWithoutTail(SymbolReferenceTerm term) {
-// 		To Handle template type access
-//		TODO : the problem here is we can't get the scope of in-memory symbols created by bind function
-		if (term.eContainer instanceof TermMemberSelection &&
-			(term.eContainer as TermMemberSelection).member === term) {
-			val tms = term.eContainer as TermMemberSelection
-			val receiverType = termExpressionType(tms.receiver)
-			return getType(term, receiverType as SimpleTypeReference)
-		} else {
-			return (term.symbol as SymbolDeclaration).type
-		}
-	}
-
 	def scope_SymbolReferenceTerm_symbol(TermMemberSelection context, EReference r) {
 		var parentScope = IScope::NULLSCOPE
 		val receiver = context.receiver
 
 		if (receiver instanceof SymbolReferenceTerm) {
 			val symb = (receiver as SymbolReferenceTerm).symbol
+			if (symb instanceof Datatype) { // Access constructor
+				return Scopes::scopeFor(symb.constructors)
+			}
 			if (symb instanceof NamedType) {
 				// The receiver is a constrained type
 				// This is a reference to an enum
@@ -190,8 +182,6 @@ class ImlScopeProvider extends AbstractDeclarativeScopeProvider {
 			return IScope::NULLSCOPE
 		}
 		switch (o) {
-			NamedType:
-				return scopeOfNamedType(o, buildNestedScope(o.eContainer))
 			InstanceConstructor:
 				return Scopes::scopeFor(Arrays.asList(o.ref), buildNestedScope(o.eContainer))
 			LambdaExpression:
@@ -200,6 +190,12 @@ class ImlScopeProvider extends AbstractDeclarativeScopeProvider {
 				return Scopes::scopeFor(o.scope, buildNestedScope(o.eContainer))
 			SequenceTerm:
 				return Scopes::scopeFor(o.defs, buildNestedScope(o.eContainer))
+			MatchStatement:
+				return Scopes::scopeFor(o.paramSymbols, buildNestedScope(o.eContainer))
+			Datatype:
+				return Scopes::scopeFor(o.constructors,scopeOfNamedType(o, buildNestedScope(o.eContainer)))
+			NamedType:
+				return scopeOfNamedType(o, buildNestedScope(o.eContainer))
 			Model:
 				return Scopes::scopeFor(o.symbols, getGlobalScope(o,ImlPackage::eINSTANCE.model_Symbols))
 			default:

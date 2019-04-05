@@ -79,10 +79,10 @@ class ExamplesTest {
 			v2 : Int[][];
 			v3 : (Int[][],Int,Int)->Int;
 			
-			<T>a : T[ ] ;
-			<S ,T>b : Map<S ,T> ;
-			<T>f : T -> T ;
-			<T>g : (T, T) -> Bool ;
+			a<T> : T[ ] ;
+			b<S ,T> : Map<S ,T> ;
+			f<T> : T -> T ;
+			g<T> : (T, T) -> Bool ;
 		'''.parse
 		
 		model.assertNoErrors
@@ -129,9 +129,9 @@ class ExamplesTest {
 			  } ;
 			} ;
 			
-			<T>emptyStack : Stack<T> := some(s1:Stack<T>) { s1.isEmpty = true };
+			emptyStack<T> : Stack<T> := some(s1:Stack<T>) { s1.isEmpty = true };
 			
-			e : Stack<Int> := <Int>emptyStack ;
+			e : Stack<Int> := emptyStack<Int> ;
 			
 			s : Stack<Int> := e.push(1).push(2).push(3) ;
 			
