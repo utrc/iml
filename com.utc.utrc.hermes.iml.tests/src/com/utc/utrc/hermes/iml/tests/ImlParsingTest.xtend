@@ -225,4 +225,68 @@ class ImlParsingTest {
 		model.eResource()
 	}
 	
+	@Test
+	def void testParsingDatatypes() {
+		val model = '''
+			package p;
+			
+			datatype T (nil, cons(T, Int));
+		'''.parse
+		
+		model.assertNoErrors
+	}
+	
+	@Test
+	def void testParsingDatatypesWithMatch() {
+		val model = '''
+			package p;
+			
+			datatype T (nil, cons(T, Int)) {
+				x : Int := match(self) {
+					nil: 0;
+					cons(t1, s): s+1;
+				};
+			}
+		'''.parse
+		
+		model.assertNoErrors
+	}
+	
+	@Test
+	def void testParsingDatatypesConstructor() {
+		val model = '''
+			package p;
+			
+			datatype T (nil, cons(T, Int)) {
+				x : Int := match(self) {
+					nil: 0;
+					cons(t1, s): s+1;
+				};
+			}
+			
+			l : T := T.nil;
+		'''.parse
+		
+		model.assertNoErrors
+	}
+	
+	@Test
+	def void testParsingDatatypesConstructorWithParameters() {
+		val model = '''
+			package p;
+			
+			datatype T (nil, cons(T, Int)) {
+				x : Int := match(self) {
+					nil: 0;
+					cons(t1, s): s+1;
+				};
+			}
+			
+			l : T := T.cons(T.nil, 10);
+		'''.parse
+		
+		model.assertNoErrors
+	}
+	
+	
 }

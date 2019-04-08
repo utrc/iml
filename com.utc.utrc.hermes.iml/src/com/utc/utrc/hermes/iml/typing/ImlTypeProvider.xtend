@@ -50,6 +50,8 @@ import com.utc.utrc.hermes.iml.iml.CharLiteral
 import com.google.inject.Inject
 import com.utc.utrc.hermes.iml.lib.ImlStdLib
 import com.utc.utrc.hermes.iml.iml.RecordType
+import com.utc.utrc.hermes.iml.iml.MatchExpression
+import com.utc.utrc.hermes.iml.iml.MatchStatement
 
 public class ImlTypeProvider {
 	
@@ -198,6 +200,9 @@ public class ImlTypeProvider {
 			QuantifiedFormula : {
 				return createBoolRef
 			}
+			MatchExpression : {
+				return t.matchStatements.get(0).^return.termExpressionType(context)
+			}
 			default: {
 				return createNullRef
 			}
@@ -223,30 +228,25 @@ public class ImlTypeProvider {
 		return false;
 	}
 	
-	def getSymbolRefSegmentType(SymbolReferenceTerm symbolRef) {
-		val symbolRefWithoutTail = ImlCustomFactory.INST.createSymbolReferenceTerm(symbolRef.symbol as SymbolDeclaration)
-		symbolRefWithoutTail.typeBinding.addAll(symbolRef.typeBinding.map[copy(it)])
-		
-		var TermExpression symbolRefTerm = symbolRefWithoutTail;
-		if (symbolRef.eContainer instanceof TermMemberSelection) {
-			symbolRefTerm = ImlCustomFactory.INST.createTermMemberSelection(
-				copy((symbolRef.eContainer as TermMemberSelection).receiver), symbolRefWithoutTail)
-		}
-		
-		return termExpressionType(symbolRefTerm, ImlCustomFactory.INST.createSimpleTypeReference(getContainerOfType(symbolRef, NamedType)))
-	}
-
 	def getSymbolReferenceType(SymbolReferenceTerm sr, SimpleTypeReference context) {
 		if (sr.symbol instanceof NamedType) {
 			if (isAlias(sr.symbol as NamedType)) {
 				return getAliasType(sr.symbol as NamedType)
 			} else {
-				// Reference to a literal
-				return ImlCustomFactory.INST.createSimpleTypeReference(sr.symbol as NamedType)
+				// FIXME some stuff here need to be refactor as it seems we have duplicate code
+				var SimpleTypeReference retType = ImlCustomFactory.INST.createSimpleTypeReference=>[type = sr.symbol as NamedType];
+				retType.typeBinding.addAll(sr.typeBinding.map[it.clone])
+				return bind(retType, context)
 			}
 		} else if (sr.symbol.isEnumLiteral) {
 			// Accessing specific literal
 			return ImlCustomFactory.INST.createSimpleTypeReference(EcoreUtil2.getContainerOfType(sr.symbol, NamedType))
+		} else if (sr.symbol.eContainer instanceof MatchStatement && 
+					(sr.symbol.eContainer as MatchStatement).paramSymbols.contains(sr.symbol)) { // Datatype constructor symbol
+			val matchStatment = sr.symbol.eContainer as MatchStatement
+			val constructor = matchStatment.constructor
+			val symbolType = constructor.parameters.get(matchStatment.paramSymbols.indexOf(sr.symbol))
+			return bind(symbolType, context)
 		} else {
 			// Reference to a symbol
 			//Change this call to include type parameters
@@ -479,7 +479,15 @@ public class ImlTypeProvider {
 		}
 		var partialbind = new HashMap<NamedType, ImlType>();
 		for(var i =0 ; i < s.typeBinding.size() ; i++){
-			partialbind.put(s.symbol.typeParameter.get(i),s.typeBinding.get(i))
+			var NamedType typeParameter = null;
+			if (s.symbol instanceof NamedType) {
+				typeParameter = (s.symbol as NamedType).typeParameter.get(i)
+			} else if (s.symbol instanceof SymbolDeclaration) {
+				typeParameter = (s.symbol as SymbolDeclaration).typeParameter.get(i)
+			} else {
+				throw new IllegalArgumentException("Type " + s.symbol.class + " doesn't support type parameters!")
+			}
+			partialbind.put(typeParameter, s.typeBinding.get(i))
 		}
 		if (s.symbol instanceof SymbolDeclaration) {
 			return bind((s.symbol as SymbolDeclaration).type, partialbind,ctx)

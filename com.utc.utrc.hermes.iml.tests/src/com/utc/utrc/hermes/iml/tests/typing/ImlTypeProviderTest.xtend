@@ -26,6 +26,8 @@ import org.junit.runner.RunWith
 import static org.junit.Assert.*
 import com.utc.utrc.hermes.iml.lib.ImlStdLib
 import com.utc.utrc.hermes.iml.ImlParseHelper
+import com.utc.utrc.hermes.iml.iml.ImlPackage
+import com.utc.utrc.hermes.iml.iml.Datatype
 
 /**
  * Test related helper methods
@@ -644,9 +646,9 @@ class ImlTypeProviderTest {
 		  } ;
 		} ;
 		
-		<T>emptyStack : Stack<T> := some (s: Stack<T>) { s.isEmpty = true };
+		emptyStack<T> : Stack<T> := some (s: Stack<T>) { s.isEmpty = true };
 		
-		e : Stack<Int> := <Int>emptyStack ;
+		e : Stack<Int> := emptyStack<Int> ;
 		
 		s : Stack<Int> := e.push(1).push(2).push(3) ;
 		'''.parse
@@ -689,9 +691,9 @@ class ImlTypeProviderTest {
 		  } ;
 		} ;
 		
-		<T>emptyStack : Stack<T> := some(Stack<T>) { isEmpty = true };
+		emptyStack<T> : Stack<T> := some(Stack<T>) { isEmpty = true };
 		
-		e : Stack<Int> := <Int>emptyStack ;
+		e : Stack<Int> := emptyStack<Int> ;
 		'''.parse
 		
 		val e = model.symbols.last as SymbolDeclaration
@@ -717,6 +719,66 @@ class ImlTypeProviderTest {
 		model.assertNoErrors
 	}
 	
+	@Test
+	def testDatatypes_MatchType_Valid() {
+		val model = '''
+		package p;
+		datatype T (empty) {
+			x : Bool := match(self) {empty : true;};
+		}		
+		'''.parse
+		
+		model.assertNoErrors
+		val exprType = typeProvider.termExpressionType(
+			(model.findSymbol("T") as Datatype).findSymbol("x").definition
+		)
+		assertTrue(typingServices.isEqual(createBoolRef, exprType))
+		
+	}
+	
+	@Test
+	def testDatatypes_MatchType_Valid2() {
+		val model = '''
+		package p;
+		datatype T (empty, something(Int, Real)) {
+			x : Int := match(self) {something(a, b) : a;};
+		}		
+		'''.parse
+		
+		model.assertNoErrors
+		val exprType = typeProvider.termExpressionType(
+			(model.findSymbol("T") as Datatype).findSymbol("x").definition
+		)
+		assertTrue(typingServices.isEqual(createIntRef, exprType))
+	}
+	
+	@Test
+	def testDatatypes_MatchType_Valid3() {
+		val model = '''
+		package p;
+		datatype T (empty, something(Int, Real)) {
+			x : Real := match(self) {something(a, b) : b;};
+		}		
+		'''.parse
+		
+		model.assertNoErrors
+		val exprType = typeProvider.termExpressionType(
+			(model.findSymbol("T") as Datatype).findSymbol("x").definition
+		)
+		assertTrue(typingServices.isEqual(createRealRef, exprType))
+	}
+	
+	@Test
+	def testSymbolRefTermType_WithBindings() {
+		val model = '''
+		package p;
+		type T1<T>;
+		
+		v1 : T1<Int> := T1<Int>;	
+		'''.parse
+		
+		model.assertNoErrors
+	}
 	
 	def assertTypeMatches(SymbolDeclaration symbol) {
 		assertTrue(typingServices.isEqual(symbol.type, typeProvider.termExpressionType(symbol.definition)))
