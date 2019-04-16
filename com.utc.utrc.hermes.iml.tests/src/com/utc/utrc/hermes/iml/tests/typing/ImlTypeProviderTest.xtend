@@ -784,4 +784,34 @@ class ImlTypeProviderTest {
 		assertTrue(typingServices.isEqual(symbol.type, typeProvider.termExpressionType(symbol.definition)))
 	}
 	
+	@Test
+	def testRecordConstructor_Type() {
+		val model = '''
+		package p;
+		type T1 {
+			v1 : {a:Int, b:Bool} := {a := 5, b := Bool};
+		}
+		'''.parse
+		model.assertNoErrors
+		
+		val v1 = (model.findSymbol("T1") as NamedType).findSymbol("v1") as SymbolDeclaration
+		
+		assertTrue(typingServices.isEqual(v1.type, typeProvider.termExpressionType(v1.definition)))
+	}
+	
+	@Test
+	def testRecordConstructor_Type2() {
+		val model = '''
+		package p;
+		type T1 {
+			v1 : {a:Int, b:Bool} := {b := Bool, a := Int};
+		}
+		'''.parse
+		model.assertNoErrors
+		
+		val v1 = (model.findSymbol("T1") as NamedType).findSymbol("v1") as SymbolDeclaration
+		
+		assertTrue(typingServices.isEqual(v1.type, typeProvider.termExpressionType(v1.definition)))
+	}
+	
 }

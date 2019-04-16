@@ -221,6 +221,7 @@ TerminalTerm returns TermExpression:
 	{CharLiteral} value = CHAR |
 	SymbolReferenceTerm |
 	TupleOrFormulaConstructor | 
+	RecordConstructor |
 	TruthValue |
 	InstanceConstructor |
 	IteTermExpression |
@@ -256,6 +257,15 @@ TupleConstructor returns TermExpression:
 	 {TupleConstructor} ('(' (elements+=FolFormula  (',' elements+=FolFormula)*)?  ')') 
 ;
 
+RecordConstructor returns TermExpression:
+	//=>({EmptyTuple}'('')') |
+	 {RecordConstructor} ('{' (elements+=RecordConstructorElement  (',' elements+=RecordConstructorElement)*)?  '}') 
+;
+
+RecordConstructorElement:
+	name=ID ":=" definition=FolFormula
+;
+
 SymbolReferenceTerm returns TermExpression:
 {SymbolReferenceTerm}  symbol=[Symbol] =>('<' typeBinding+=ImlType 
 	                       (',' typeBinding+=ImlType)* '>')? 
@@ -269,7 +279,7 @@ CaseTermExpression returns TermExpression:
 	{CaseTermExpression} 'case' '{'
 								(cases+=FolFormula ':' expressions+=TermExpression ';')+
 						  '}'
-								;	                                          
+;	                                          
 
 SequenceTerm returns TermExpression:
 	{SequenceTerm} '{' ('var' defs+= SymbolDeclaration ';')* 
