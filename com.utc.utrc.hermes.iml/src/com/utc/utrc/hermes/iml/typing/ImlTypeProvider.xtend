@@ -52,6 +52,7 @@ import com.utc.utrc.hermes.iml.lib.ImlStdLib
 import com.utc.utrc.hermes.iml.iml.RecordType
 import com.utc.utrc.hermes.iml.iml.MatchExpression
 import com.utc.utrc.hermes.iml.iml.MatchStatement
+import com.utc.utrc.hermes.iml.iml.RecordConstructor
 
 public class ImlTypeProvider {
 	
@@ -189,6 +190,13 @@ public class ImlTypeProvider {
 			TupleConstructor: {
 				return ImlFactory.eINSTANCE.createTupleType => [
 					types.addAll(t.elements.map[it.termExpressionType(context)]);
+				]
+			}
+			RecordConstructor: {
+				return ImlFactory.eINSTANCE.createRecordType => [
+					symbols.addAll(t.elements.map[
+						ImlCustomFactory.INST.createSymbolDeclaration(it.name, it.definition.termExpressionType(context))
+					])
 				]
 			}
 			SequenceTerm: {
