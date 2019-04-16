@@ -54,15 +54,20 @@ NamedType:
 	(
 		{Annotation} 'annotation' | 
 	 	{Trait} 'trait' | 
-	 	{NamedType} 'type'
+	 	{NamedType} 'type' |
+		{Datatype} 'datatype'	 	
 	)   
 	(propertylist=PropertyList)? 
 	name=ID 
 	(template?='<' typeParameter+=TypeParameter (',' typeParameter+=TypeParameter)* '>')? 
+	('(' constructors+= DatatypeConstructor (',' constructors+= DatatypeConstructor)* ')')?
 	( relations += Relation)*
 	( restrictions += TypeRestriction)*
 	(';' | ('{' (symbols+=(SymbolDeclaration|Assertion) ';')* '}' ";"?)) 
-	
+;
+
+DatatypeConstructor returns Symbol:
+	{DatatypeConstructor} (propertylist=PropertyList)? name=ID ('(' parameters+=ImlType (',' parameters+=ImlType)* ')')?
 ;
 
 TypeRestriction :
@@ -81,9 +86,8 @@ TypeParameter returns NamedType:
 
 SymbolDeclaration:
 	(propertylist=PropertyList)?
-	 (template?='<' typeParameter+=TypeParameter 
-	 	            (',' typeParameter+=TypeParameter)* '>')? 
-     name=ID   (':' type=ImlType )?  (':=' definition=FolFormula)? 
+     name=ID  (template?='<' typeParameter+=TypeParameter 
+	 	            (',' typeParameter+=TypeParameter)* '>')? (':' type=ImlType )?  (':=' definition=FolFormula)? 
 ;
 
 Assertion returns SymbolDeclaration :
@@ -103,32 +107,31 @@ ImlType:
 ;
 
 ArrayType returns ImlType:
-	(SimpleTypeReference|TupleOrExpressionType) 
-	   ({ArrayType.type=current} (('['dimensions+=OptionalTermExpr']'))+)?
+	(SimpleTypeReference | TupleOrExpressionType | =>RecordType) 
+	   ({ArrayType.type=current} ('['dimensions+=OptionalTermExpr']')+)?
 ;
 
 TupleOrExpressionType returns ImlType :
 	ExplicitTupleType |
 	ParenthesizedTypeExpression	
-	
+;
+
+RecordType returns ImlType :
+	{RecordType} '{' (symbols+=NonParametricTypedSymbolDeclaration (',' symbols+=NonParametricTypedSymbolDeclaration)*)?  '}'
 ;
 
 ExplicitTupleType returns ImlType :
-	{TupleType} 'Tuple' '(' symbols+=TupleSymbol (',' symbols+=TupleSymbol)* ')'  
+	{TupleType} 'Tuple' '(' types+=ImlType (',' types+=ImlType)* ')'  
 ;
 
 ParenthesizedTypeExpression returns ImlType :
 	//=>({EmptyTupleType}'('')') |
 	=>('(' ImlType  ')') |
-	 {TupleType}('(' (symbols+=TupleSymbol (',' symbols+=TupleSymbol)*)?  ')') 
+	 {TupleType}('(' (types+=ImlType (',' types+=ImlType)*)?  ')') 
 ;
 	
 OptionalTermExpr:
 	{OptionalTermExpr} term=TermExpression?
-;
-
-TupleSymbol returns SymbolDeclaration:
-	(name=ID ':')? type=ImlType
 ;
 
 SimpleTypeReference returns ImlType:
@@ -218,18 +221,21 @@ TerminalTerm returns TermExpression:
 	{CharLiteral} value = CHAR |
 	SymbolReferenceTerm |
 	TupleOrFormulaConstructor | 
+	RecordConstructor |
 	TruthValue |
 	InstanceConstructor |
 	IteTermExpression |
 	CaseTermExpression |
 	{SelfTerm} 'self' |
 	SequenceTerm |
-	{LambdaExpression}'fun' signature=TupleOrExpressionType (':' returnType=ImlType)?  definition=SequenceTerm |
-	QuantifiedFormula
+	{LambdaExpression}'fun' '(' parameters+=NonParametricTypedSymbolDeclaration (',' parameters+=NonParametricTypedSymbolDeclaration)* ')' 
+		(':' returnType=ImlType)?  definition=SequenceTerm |
+	QuantifiedFormula |
+	MatchExpression
 	 ;
-	
+
 InstanceConstructor returns TermExpression:
-	{InstanceConstructor} 'some' '(' ref=TupleSymbol ')' definition=SequenceTerm
+	{InstanceConstructor} 'some' '(' ref=NonParametricTypedSymbolDeclaration ')' definition=SequenceTerm
 ;
 
 TupleOrFormulaConstructor returns TermExpression:
@@ -251,10 +257,18 @@ TupleConstructor returns TermExpression:
 	 {TupleConstructor} ('(' (elements+=FolFormula  (',' elements+=FolFormula)*)?  ')') 
 ;
 
+RecordConstructor returns TermExpression:
+	//=>({EmptyTuple}'('')') |
+	 {RecordConstructor} ('{' (elements+=RecordConstructorElement  (',' elements+=RecordConstructorElement)*)?  '}') 
+;
+
+RecordConstructorElement:
+	name=ID ":=" definition=FolFormula
+;
+
 SymbolReferenceTerm returns TermExpression:
-{SymbolReferenceTerm}  ('<' typeBinding+=ImlType 
+{SymbolReferenceTerm}  symbol=[Symbol] =>('<' typeBinding+=ImlType 
 	                       (',' typeBinding+=ImlType)* '>')? 
-	                    symbol=[Symbol] 
 ;
 
 IteTermExpression returns TermExpression:
@@ -265,11 +279,22 @@ CaseTermExpression returns TermExpression:
 	{CaseTermExpression} 'case' '{'
 								(cases+=FolFormula ':' expressions+=TermExpression ';')+
 						  '}'
-								;	                                          
+;	                                          
 
 SequenceTerm returns TermExpression:
 	{SequenceTerm} '{' ('var' defs+= SymbolDeclaration ';')* 
 	         	   	   return=FolFormula ";"? '}' 
+;
+
+MatchExpression:
+	'match' '(' datatypeExpr=TermExpression ')' 
+		'{' matchStatements+=MatchStatement+ '}'	
+;
+
+MatchStatement:
+	constructor=[DatatypeConstructor] ('(' paramSymbols+=NonParametricUntypedSymbolDeclaration
+						(',' paramSymbols+=NonParametricUntypedSymbolDeclaration)* ')')?
+			':' return=FolFormula ';'
 ;
 
 terminal EXT_INT: INT ('e'|'E')('-'|'+') INT;

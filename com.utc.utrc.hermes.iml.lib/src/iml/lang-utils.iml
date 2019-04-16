@@ -1,0 +1,13 @@
+package iml.lang.utils ;
+import iml.lang.* ;
+
+
+type List<T> {
+	isEmpty : Bool ;
+	head :T ;
+	tail : List<T>;
+	push : T -> List<T> := fun (x:T) {
+    	some(l:List<T>) { l.head = x && l.tail = self && l.isEmpty = false }  
+  	} ;
+	
+}

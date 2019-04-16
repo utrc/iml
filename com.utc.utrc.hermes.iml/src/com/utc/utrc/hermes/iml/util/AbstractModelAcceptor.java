@@ -24,6 +24,7 @@ import com.utc.utrc.hermes.iml.iml.ParenthesizedTerm;
 import com.utc.utrc.hermes.iml.iml.Property;
 import com.utc.utrc.hermes.iml.iml.PropertyList;
 import com.utc.utrc.hermes.iml.iml.QuantifiedFormula;
+import com.utc.utrc.hermes.iml.iml.RecordType;
 import com.utc.utrc.hermes.iml.iml.Relation;
 import com.utc.utrc.hermes.iml.iml.SelfType;
 import com.utc.utrc.hermes.iml.iml.SequenceTerm;
@@ -282,6 +283,8 @@ public class AbstractModelAcceptor implements IModelAcceptor {
 			accept((TupleType) e, visitor);
 		} else if (e instanceof FunctionType) {
 			accept((FunctionType) e, visitor);
+		} else if (e instanceof RecordType) {
+			accept((RecordType) e, visitor);
 		} else if (e instanceof SelfType) {
 			accept((SelfType) e, visitor);
 		}
@@ -311,6 +314,14 @@ public class AbstractModelAcceptor implements IModelAcceptor {
 	
 	@Override
 	public void accept(TupleType e, IModelVisitor visitor) {
+		for (ImlType s : e.getTypes()) {
+			accept(s, visitor);
+		}
+		visitor.visit(e);
+	}
+	
+	@Override
+	public void accept(RecordType e, IModelVisitor visitor) {
 		for (SymbolDeclaration s : e.getSymbols()) {
 			accept(s, visitor);
 		}

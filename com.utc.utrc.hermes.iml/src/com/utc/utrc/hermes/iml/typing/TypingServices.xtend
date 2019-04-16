@@ -20,6 +20,7 @@ import org.eclipse.emf.ecore.util.EcoreUtil
 import com.google.inject.Inject
 import com.utc.utrc.hermes.iml.lib.ImlStdLib
 import com.utc.utrc.hermes.iml.iml.SelfType
+import com.utc.utrc.hermes.iml.iml.RecordType
 
 public class TypingServices {
 	
@@ -67,16 +68,22 @@ public class TypingServices {
 			return false
 		}
 				
-		if (left instanceof TupleType && (left as TupleType).symbols.size == 1) {
-			return isEqual((left as TupleType).symbols.get(0).type, right, compatibilityCheck)
+		if (left instanceof TupleType && (left as TupleType).types.size == 1) {
+			return isEqual((left as TupleType).types.get(0), right, compatibilityCheck)
 		}
 		
-		if (right instanceof TupleType && (right as TupleType).symbols.size == 1) {
-			return isEqual(left, (right as TupleType).symbols.get(0).type, compatibilityCheck)
+		if (right instanceof TupleType && (right as TupleType).types.size == 1) {
+			return isEqual(left, (right as TupleType).types.get(0), compatibilityCheck)
 		}
 		
 		if (left.class != right.class) {
 			return false
+		}
+		
+		if (left instanceof RecordType) {
+			if (!isEqual(left as RecordType, right as RecordType, compatibilityCheck)) {
+				return false
+			}
 		}
 
 		if (left instanceof SimpleTypeReference) {
@@ -106,7 +113,6 @@ public class TypingServices {
 				return false
 			}
 		}
-		
 
 		return true
 	}
@@ -131,12 +137,31 @@ public class TypingServices {
 	}
 
 	def boolean isEqual(TupleType left, TupleType right, boolean compatibilityCheck) {
+		if (left.types.length != right.types.length) {
+			return false
+		} else {
+			for (i : 0 ..< left.types.length) {
+				if (!isEqual(left.types.get(i), right.types.get(i), compatibilityCheck)) {
+					return false
+				}
+			}
+		}
+		return true
+	}
+	
+	def boolean isEqual(RecordType left, RecordType right, boolean compatibilityCheck) {
 		if (left.symbols.length != right.symbols.length) {
 			return false
 		} else {
-			for (i : 0 ..< left.symbols.length) {
-				if (!isEqual(left.symbols.get(i).type, right.symbols.get(i).type, compatibilityCheck)) {
-					return false
+			for (leftSymbol : left.symbols) {
+				var found = false
+				for (rightSymbol : right.symbols) {
+					if (leftSymbol.name == rightSymbol.name && isEqual(leftSymbol.type, rightSymbol.type, compatibilityCheck)) {
+						found = true
+					}
+				}
+				if (found == false) {
+					return false;
 				}
 			}
 		}
@@ -240,30 +265,30 @@ public class TypingServices {
 				val ctype = current.type
 				if (ctype.relations !== null) {
 					for (rel : ctype.relations.filter(Extension)) {
-							for(twp : rel.extensions){
+						for(twp : rel.extensions){
 							if (twp.type instanceof SimpleTypeReference) {
 								if (! closed.contains((twp.type as SimpleTypeReference).type)) {
 									toAdd.add(twp.type as SimpleTypeReference)
 								}
 							}
-							}
+						}
 						
 					}
 					for (rel : ctype.relations.filter(Alias)) {
-							if (rel.type.type instanceof SimpleTypeReference) {
-								if (! closed.contains((rel.type.type as SimpleTypeReference).type)) {
-									toAdd.add(rel.type.type as SimpleTypeReference)
-								}
+						if (rel.type.type instanceof SimpleTypeReference) {
+							if (! closed.contains((rel.type.type as SimpleTypeReference).type)) {
+								toAdd.add(rel.type.type as SimpleTypeReference)
 							}
+						}
 					}
 					for (rel : ctype.relations.filter(TraitExhibition)) {
-							for(twp : rel.exhibitions){
+						for(twp : rel.exhibitions){
 							if (twp.type instanceof SimpleTypeReference) {
 								if (! closed.contains((twp.type as SimpleTypeReference).type)) {
 									toAdd.add(twp.type as SimpleTypeReference)
 								}
 							}
-							}
+						}
 						
 					}
 				}
@@ -284,10 +309,6 @@ public class TypingServices {
 	 * */
 	def boolean isCompatible(ImlType expected, ImlType actual) {
 		return isEqual(resolveAliases(expected), resolveAliases(actual), true)
-	}
-
-	def isSingleElementTuple(ImlType type) {
-		return type instanceof TupleType && (type as TupleType).symbols.size == 0
 	}
 
 	/* A non-template type without stereotype is a pure type */
@@ -339,9 +360,14 @@ public class TypingServices {
 			}
 		}
 		if (type instanceof TupleType) {
-			return ImlCustomFactory.INST.createTupleType(type.symbols.map[
-				ImlCustomFactory.INST.createSymbolDeclaration(it.name, clone(normalizeType(it.type, container)))	
-			])
+			return ImlCustomFactory.INST.createTupleType(type.types.map[clone(normalizeType(it, container))])
+		}
+		if (type instanceof RecordType) {
+			return ImlCustomFactory.INST.createRecordType => [
+				it.symbols.addAll(type.symbols.map[
+					ImlCustomFactory.INST.createSymbolDeclaration(it.name, clone(normalizeType(it.type, container)))	
+				])
+			]
 		}
 		if (type instanceof ArrayType) {
 			return ImlCustomFactory.INST.createArrayType => [

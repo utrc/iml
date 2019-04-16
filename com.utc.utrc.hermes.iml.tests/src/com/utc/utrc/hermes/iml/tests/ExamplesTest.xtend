@@ -62,7 +62,7 @@ class ExamplesTest {
 			type TestType12 is (Int,Real) ;
 			type TestType13 is (A,A) ;
 			type TestType14 is (Int,String,Int) ;
-			type TestType15 is (age:Int,weight:Real) ;
+			type TestType15 is {age:Int,weight:Real} ;
 			type TestType16 is (Real->Int)[10] ;
 		'''.parse
 		
@@ -79,10 +79,10 @@ class ExamplesTest {
 			v2 : Int[][];
 			v3 : (Int[][],Int,Int)->Int;
 			
-			<T>a : T[ ] ;
-			<S ,T>b : Map<S ,T> ;
-			<T>f : T -> T ;
-			<T>g : (T, T) -> Bool ;
+			a<T> : T[ ] ;
+			b<S ,T> : Map<S ,T> ;
+			f<T> : T -> T ;
+			g<T> : (T, T) -> Bool ;
 		'''.parse
 		
 		model.assertNoErrors
@@ -129,16 +129,16 @@ class ExamplesTest {
 			  } ;
 			} ;
 			
-			<T>emptyStack : Stack<T> := some(s1:Stack<T>) { s1.isEmpty = true };
+			emptyStack<T> : Stack<T> := some(s1:Stack<T>) { s1.isEmpty = true };
 			
-			e : Stack<Int> := <Int>emptyStack ;
+			e : Stack<Int> := emptyStack<Int> ;
 			
 			s : Stack<Int> := e.push(1).push(2).push(3) ;
 			
 			//We support the syntax Stack<Int> -> Int -> Stack<Int>
 			//but type checking at the moment does not interpret this as 
 			//being the same as (Stack<Int> , Int) -> Stack<Int>
-			push1 : (Stack<Int> , Int) -> Stack<Int> := fun(x:Stack<Int>,y:Int){
+			push1 : (Stack<Int> , Int) -> Stack<Int> := fun(x:Stack<Int>,y:Int):Stack<Int>{
 				x.push(y)
 			} ;
 			

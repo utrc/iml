@@ -26,6 +26,8 @@ import org.junit.runner.RunWith
 import static org.junit.Assert.*
 import com.utc.utrc.hermes.iml.lib.ImlStdLib
 import com.utc.utrc.hermes.iml.ImlParseHelper
+import com.utc.utrc.hermes.iml.iml.ImlPackage
+import com.utc.utrc.hermes.iml.iml.Datatype
 
 /**
  * Test related helper methods
@@ -172,7 +174,7 @@ class ImlTypeProviderTest {
 			package p;
 			type t1 {
 				var1 : Int := var2 (5, 6);
-				var2 : (p1 : Int, p2 : Real) -> Int;
+				var2 : {p1 : Int, p2 : Real} -> Int;
 			}			
 		'''.parse
 		model.assertNoErrors
@@ -192,7 +194,7 @@ class ImlTypeProviderTest {
 			package p;
 			type t1 {
 				var1 : (Int, Real)->Int := var2;
-				var2 : (p1 : Int, p2 : Real) -> Int;
+				var2 : (Int, Real) -> Int;
 			}			
 		'''.parse
 		model.assertNoErrors
@@ -217,7 +219,7 @@ class ImlTypeProviderTest {
 			}
 			
 			type t2 <T, P> {
-				varx : (p : T) -> P;
+				varx : (T) -> P;
 			}		
 		'''.parse
 		model.assertNoErrors
@@ -228,8 +230,7 @@ class ImlTypeProviderTest {
 		val exprType = typeProvider.termExpressionType(folForm)
 
 		assertTrue(exprType instanceof FunctionType)
-		val domain = (exprType as FunctionType).domain as TupleType
-		assertEquals(intType, (domain.symbols.get(0).type as SimpleTypeReference).type)
+		assertEquals(intType,((exprType as FunctionType).domain as SimpleTypeReference).type)
 		assertEquals(realType, ((exprType as FunctionType).range as SimpleTypeReference).type)
 	}
 	
@@ -438,7 +439,7 @@ class ImlTypeProviderTest {
 			package p;
 			type t1 {
 				varx : Real := var1[1];
-				var1 : (e1: Int, e2:Real);
+				var1 : (Int, Real);
 			}
 		'''.parse
 		
@@ -450,12 +451,12 @@ class ImlTypeProviderTest {
 	}
 	
 	@Test
-	def testTermExpressionType_ArrayAccessWithTupleUsingName() {
+	def testTermExpressionType_AccessSymbolOfRecord() {
 		val model = '''
 			package p;
 			type t1 {
-				varx : Real := var1[e2];
-				var1 : (e1: Int, e2:Real);
+				varx : Real := var1.e2;
+				var1 : {e1: Int, e2:Real};
 			}
 		'''.parse
 		
@@ -481,10 +482,10 @@ class ImlTypeProviderTest {
 		val exprType = typeProvider.termExpressionType(t1.findSymbol("varx").definition)
 		
 		assertTrue(exprType instanceof TupleType)
-		assertEquals(3, (exprType as TupleType).symbols.size)
-		assertTrue(typingServices.isEqual(createIntRef, (exprType as TupleType).symbols.get(0).type))
-		assertTrue(typingServices.isEqual(createBoolRef, (exprType as TupleType).symbols.get(1).type))
-		assertTrue(typingServices.isEqual(createRealRef, (exprType as TupleType).symbols.get(2).type))
+		assertEquals(3, (exprType as TupleType).types.size)
+		assertTrue(typingServices.isEqual(createIntRef, (exprType as TupleType).types.get(0)))
+		assertTrue(typingServices.isEqual(createBoolRef, (exprType as TupleType).types.get(1)))
+		assertTrue(typingServices.isEqual(createRealRef, (exprType as TupleType).types.get(2)))
 	}
 	
 	@Test
@@ -564,15 +565,16 @@ class ImlTypeProviderTest {
 		val model = '''
 		    package p;
 		    type t1 {
-		    	vx: (Int, Real -> (size: Int, matrix: Real[10][20]));
-		    	v1: (Int, Real -> (Int, Real[10][20])) := vx;
-		    	v2: Int := vx[0];
-		    	v3: Real -> (Int, Real[0][0]) := vx[1];
-		    	v4: (Int, Real[0][0]) := vx[1](100);
-		    	v5: Int := vx[1](100)[0];
-		    	v6: Real[0][0] := vx[1](100)[matrix];
-		    	v7: Real[0] := vx[1](100)[1][5];
-		    	v8: Real := vx[1](100)[matrix][5][50];
+		    	vx: (Int, Real -> {size: Int, matrix: Real[10][20]});
+		    	vxx: (Int, Real -> (Int, Real[10][20]));
+		    	v1: (Int, Real -> {matrix: Real[10][20], size: Int}) := vx;
+		    	v2: Int := vxx[0];
+		    	v3: Real -> (Int, Real[0][0]) := vxx[1];
+		    	v4: (Int, Real[0][0]) := vxx[1](100);
+		    	v5: Int := vxx[1](100)[0];
+		    	v6: Real[0][0] := vx[1](100).matrix;
+		    	v7: Real[0] := vxx[1](100)[1][5];
+		    	v8: Real := vx[1](100).matrix[5][50];
 		    }
 		'''.parse
 		
@@ -644,9 +646,9 @@ class ImlTypeProviderTest {
 		  } ;
 		} ;
 		
-		<T>emptyStack : Stack<T> := some (s: Stack<T>) { s.isEmpty = true };
+		emptyStack<T> : Stack<T> := some (s: Stack<T>) { s.isEmpty = true };
 		
-		e : Stack<Int> := <Int>emptyStack ;
+		e : Stack<Int> := emptyStack<Int> ;
 		
 		s : Stack<Int> := e.push(1).push(2).push(3) ;
 		'''.parse
@@ -689,9 +691,9 @@ class ImlTypeProviderTest {
 		  } ;
 		} ;
 		
-		<T>emptyStack : Stack<T> := some(Stack<T>) { isEmpty = true };
+		emptyStack<T> : Stack<T> := some(Stack<T>) { isEmpty = true };
 		
-		e : Stack<Int> := <Int>emptyStack ;
+		e : Stack<Int> := emptyStack<Int> ;
 		'''.parse
 		
 		val e = model.symbols.last as SymbolDeclaration
@@ -717,9 +719,99 @@ class ImlTypeProviderTest {
 		model.assertNoErrors
 	}
 	
+	@Test
+	def testDatatypes_MatchType_Valid() {
+		val model = '''
+		package p;
+		datatype T (empty) {
+			x : Bool := match(self) {empty : true;};
+		}		
+		'''.parse
+		
+		model.assertNoErrors
+		val exprType = typeProvider.termExpressionType(
+			(model.findSymbol("T") as Datatype).findSymbol("x").definition
+		)
+		assertTrue(typingServices.isEqual(createBoolRef, exprType))
+		
+	}
+	
+	@Test
+	def testDatatypes_MatchType_Valid2() {
+		val model = '''
+		package p;
+		datatype T (empty, something(Int, Real)) {
+			x : Int := match(self) {something(a, b) : a;};
+		}		
+		'''.parse
+		
+		model.assertNoErrors
+		val exprType = typeProvider.termExpressionType(
+			(model.findSymbol("T") as Datatype).findSymbol("x").definition
+		)
+		assertTrue(typingServices.isEqual(createIntRef, exprType))
+	}
+	
+	@Test
+	def testDatatypes_MatchType_Valid3() {
+		val model = '''
+		package p;
+		datatype T (empty, something(Int, Real)) {
+			x : Real := match(self) {something(a, b) : b;};
+		}		
+		'''.parse
+		
+		model.assertNoErrors
+		val exprType = typeProvider.termExpressionType(
+			(model.findSymbol("T") as Datatype).findSymbol("x").definition
+		)
+		assertTrue(typingServices.isEqual(createRealRef, exprType))
+	}
+	
+	@Test
+	def testSymbolRefTermType_WithBindings() {
+		val model = '''
+		package p;
+		type T1<T>;
+		
+		v1 : T1<Int> := T1<Int>;	
+		'''.parse
+		
+		model.assertNoErrors
+	}
 	
 	def assertTypeMatches(SymbolDeclaration symbol) {
 		assertTrue(typingServices.isEqual(symbol.type, typeProvider.termExpressionType(symbol.definition)))
+	}
+	
+	@Test
+	def testRecordConstructor_Type() {
+		val model = '''
+		package p;
+		type T1 {
+			v1 : {a:Int, b:Bool} := {a := 5, b := Bool};
+		}
+		'''.parse
+		model.assertNoErrors
+		
+		val v1 = (model.findSymbol("T1") as NamedType).findSymbol("v1") as SymbolDeclaration
+		
+		assertTrue(typingServices.isEqual(v1.type, typeProvider.termExpressionType(v1.definition)))
+	}
+	
+	@Test
+	def testRecordConstructor_Type2() {
+		val model = '''
+		package p;
+		type T1 {
+			v1 : {a:Int, b:Bool} := {b := Bool, a := Int};
+		}
+		'''.parse
+		model.assertNoErrors
+		
+		val v1 = (model.findSymbol("T1") as NamedType).findSymbol("v1") as SymbolDeclaration
+		
+		assertTrue(typingServices.isEqual(v1.type, typeProvider.termExpressionType(v1.definition)))
 	}
 	
 }

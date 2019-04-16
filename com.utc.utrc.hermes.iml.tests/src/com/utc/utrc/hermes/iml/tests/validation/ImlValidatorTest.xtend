@@ -272,7 +272,7 @@ class ImlValidatorTest {
 		val model = '''
 			package p;
 			type x {
-				var1 : (p1 : Int, p2 : Real) -> Int;
+				var1 : {p1 : Int, p2 : Real} -> Int;
 				var2 : Int := var1(5,10.5);
 			}
 		'''.parse
@@ -287,7 +287,7 @@ class ImlValidatorTest {
 			type T1 extends (T2);
 			type T2;
 			type x {
-				var1: (p1 : T2, p2 : Real) -> Int;
+				var1: {p1 : T2, p2 : Real} -> Int;
 				varT : T1;
 				var2 : Int := var1(varT,10.5);
 			}
@@ -301,7 +301,7 @@ class ImlValidatorTest {
 		val model = '''
 			package p;
 			type x {
-				var1 : (p1 : Int, p2 : Real) -> Int;
+				var1 : {p1 : Int, p2 : Real} -> Int;
 				var2 : Int := var1(5,10.0);
 			}
 		'''.parse
@@ -342,7 +342,7 @@ class ImlValidatorTest {
 		val model = '''
 			package p;
 			type x {
-				var1 : (a: Int, b:Real);
+				var1 : (Int, Real);
 				var2 : Real := var1(1);
 			}
 		'''.parse
@@ -356,7 +356,7 @@ class ImlValidatorTest {
 		val model = '''
 			package p;
 			type x {
-				var1 : (a: Int, b:Real);
+				var1 : (Int, Real);
 				var2 : Real := var1[2];
 			}
 		'''.parse
@@ -369,11 +369,35 @@ class ImlValidatorTest {
 		val model = '''
 			package p;
 			type x {
-				var1 : (a: Int, b:Real);
+				var1 : (Int, Real);
 				var2 : Real := var1[1];
 			}
 		'''.parse
 		model.assertNoErrors
+	}
+	
+	@Test
+	def testCheckParameterList_ArrayAccessOverRecord() {
+		val model = '''
+			package p;
+			type x {
+				var1 : {a: Int, b: Real};
+				var2 : Real := var1[1];
+			}
+		'''.parse
+		model.assertError(ImlPackage.eINSTANCE.tailedExpression, METHOD_INVOCATION_ON_RECORD)
+	}
+	
+	@Test
+	def testCheckParameterList_MethodInvocationOverRecord() {
+		val model = '''
+			package p;
+			type x {
+				var1 : {a: Int, b: Real};
+				var2 : Real := var1(1);
+			}
+		'''.parse
+		model.assertError(ImlPackage.eINSTANCE.tailedExpression, METHOD_INVOCATION_ON_RECORD)
 	}
 	
 	@Test
@@ -827,7 +851,7 @@ class ImlValidatorTest {
 	 	
 	 	type Vertex ;
 	 	
-	 	type Edge is (v1:Vertex,v2:Vertex);
+	 	type Edge is {v1:Vertex,v2:Vertex};
 	 	
 	 	type Graph {
 	 	    edges : List<Edge> ;
@@ -909,7 +933,7 @@ class ImlValidatorTest {
 	 		
 	 		type ArrayList<T> ;
 	 		
-	 		<T>empty_list: ArrayList<T>;
+	 		empty_list<T>: ArrayList<T>;
 	 		
 	 		l: ArrayList<Int> := empty_list;
 	 		
@@ -925,13 +949,240 @@ class ImlValidatorTest {
 	 		
 	 		type ArrayList<T> ;
 	 		
-	 		<T>empty_list: ArrayList<T>;
+	 		empty_list<T>: ArrayList<T>;
 	 		
-	 		l: ArrayList<Int> := <Int>empty_list;
+	 		l: ArrayList<Int> := empty_list<Int>;
 	 		
 	 	'''.parse
 	 	
 	 	model.assertNoErrors
 	 }
 	 
+	 @Test
+	 def testTupleConstructorForRecord() {
+	 	val model = '''
+	 		package p;
+	 		
+	 		type T {
+	 			v1 : {a: Int, b: Real} := (5, 0.5);
+	 		}
+	 	'''.parse
+	 	
+	 	model.assertError(ImlPackage.eINSTANCE.symbolDeclaration, 
+	 		TYPE_MISMATCH_IN_TERM_EXPRESSION
+	 	)
+	 }
+	 
+	 @Test
+	 def testRecordConstructor() {
+	 	val model = '''
+	 		package p;
+	 		
+	 		type T {
+	 			v1 : {a: Int, b: Real} := some(x: {a: Int, b: Real}) {
+	 				x.a=5 && x.b=0.5;
+	 			};
+	 		}
+	 	'''.parse
+	 	
+	 	model.assertNoErrors
+	 }
+	 
+	 /**
+	  * Datatypes validation
+	  */
+	 @Test
+	 def testValidDatatypeDeclaration() {
+	 	val model = '''
+	 		package p;
+	 		
+	 		datatype T (empty, cons(T, Int));
+	 	'''.parse
+	 	
+	 	model.assertNoErrors
+	 }
+	 
+	 @Test
+	 def testValidDatatypeDeclaration_Invalid_MissingConstructors() {
+	 	val model = '''
+	 		package p;
+	 		datatype T;
+	 	'''.parse
+	 	
+	 	model.assertError(ImlPackage.eINSTANCE.datatype, INVALID_TYPE_DECLARATION)
+	 }
+	 
+	 @Test
+	 def testValidDatatypeDeclaration_Invalid_NotDatatype() {
+	 	val model = '''
+	 		package p;
+	 		type T (empty);
+	 	'''.parse
+	 	
+	 	model.assertError(ImlPackage.eINSTANCE.namedType, INVALID_TYPE_DECLARATION)
+	 }
+	 
+	 @Test
+	 def testValidMatchExpression_ValidDatatype() {
+	 	val model = '''
+	 		package p;
+	 		datatype T(empty) {
+	 			x : Int := match(self) {empty: 0;};
+	 		};
+	 	'''.parse
+	 	
+	 	model.assertNoErrors
+	 }
+	 
+	 @Test
+	 def testValidMatchExpression_NotDatatype() {
+	 	val model = '''
+	 		package p;
+	 		type T {
+	 			x : Int := match(self) {empty: 0;};
+	 		};
+	 	'''.parse
+	 	
+	 	model.assertError(ImlPackage.eINSTANCE.matchExpression, MATCH_NOT_DATATYPE)
+	 }
+	 
+	 @Test
+	 def testValidMatchStatment_ValidParamList_Zero() {
+	 	val model = '''
+	 		package p;
+	 		datatype T(empty, something(Int, Real)) {
+	 			x : Int := match(self) {empty: 0;};
+	 		};
+	 	'''.parse
+	 	
+	 	model.assertNoErrors
+	 }
+	 
+	 @Test
+	 def testValidMatchStatment_ValidParamList() {
+	 	val model = '''
+	 		package p;
+	 		datatype T(empty, something(Int, Real)) {
+	 			x : Int := match(self) {something(a, b): 0;};
+	 		};
+	 	'''.parse
+	 	
+	 	model.assertNoErrors
+	 }
+	 
+	 @Test
+	 def testValidMatchStatment_InvalidParamList() {
+	 	val model = '''
+	 		package p;
+	 		datatype T(empty, something(Int, Real)) {
+	 			x : Int := match(self) {something: 0;};
+	 		};
+	 	'''.parse
+	 	
+	 	model.assertError(ImlPackage.eINSTANCE.matchStatement, INVALID_PARAMETER_LIST)
+	 }
+	 
+	 @Test
+	 def testDatatypeInit_Valid_NoParams() {
+	 	val model = '''
+	 		package p;
+	 		datatype T(empty, something(Int, Real)) {
+	 		};
+	 		
+	 		d : T := T.empty;
+	 	'''.parse
+	 	
+	 	model.assertNoErrors
+	 }
+	 
+	 @Test
+	 def testDatatypeInit_Valid_WithParams() {
+	 	val model = '''
+	 		package p;
+	 		datatype T(empty, something(Int, Bool)) {
+	 		};
+	 		
+	 		d : T := T.something(5, false);
+	 	'''.parse
+	 	
+	 	model.assertNoErrors
+	 }
+	 
+	 @Test
+	 def testDatatypeInit_Invalid_ExtraParams() {
+	 	val model = '''
+	 		package p;
+	 		datatype T(empty, something(Int, Bool)) {
+	 		};
+	 		
+	 		d : T := T.empty(5, false);
+	 	'''.parse
+	 	
+	 	model.assertError(ImlPackage.eINSTANCE.termMemberSelection, INVALID_PARAMETER_LIST)
+	 }
+	 
+	 @Test
+	 def testDatatypeInit_Invalid_NoParams() {
+	 	val model = '''
+	 		package p;
+	 		datatype T(empty, something(Int, Bool)) {
+	 		};
+	 		
+	 		d : T := T.something;
+	 	'''.parse
+	 	
+	 	model.assertError(ImlPackage.eINSTANCE.termMemberSelection, INVALID_PARAMETER_LIST)
+	 }
+	 
+	 @Test
+	 def testDatatypeInit_Invalid_WrongSizeParams() {
+	 	val model = '''
+	 		package p;
+	 		datatype T(empty, something(Int, Bool)) {
+	 		};
+	 		
+	 		d : T := T.something(5);
+	 	'''.parse
+	 	
+	 	model.assertError(ImlPackage.eINSTANCE.termMemberSelection, INVALID_PARAMETER_LIST)
+	 }
+	 
+	 @Test
+	 def testDatatypeInit_Invalid_NotMatchingParams() {
+	 	val model = '''
+	 		package p;
+	 		datatype T(empty, something(Int, Bool)) {
+	 		};
+	 		
+	 		d : T := T.something(false, 5);
+	 	'''.parse
+	 	
+	 	model.assertError(ImlPackage.eINSTANCE.termMemberSelection, INVALID_PARAMETER_LIST)
+	 }
+	 
+	 @Test
+	 def testDatatypeInit_Valid_WithTemplates() {
+	 	val model = '''
+	 		package p;
+	 		datatype List<T> ( empty, cons(T, List<T>) ) {
+	 		};
+	 		
+	 		d : List<Int> := List<Int>.cons(5, List<Int>.empty);
+	 	'''.parse
+	 	
+	 	model.assertNoErrors
+	 }
+	 
+	 @Test
+	 def testDatatypeInit_Invalid_WithTemplates() {
+	 	val model = '''
+	 		package p;
+	 		datatype List<T> ( empty, cons(T, List<T>) ) {
+	 		};
+	 		
+	 		d : List<Int> := List<Int>.cons(5, List<Bool>.empty);
+	 	'''.parse
+	 	
+	 	model.assertError(ImlPackage.eINSTANCE.termMemberSelection, INVALID_PARAMETER_LIST)
+	 }
 }

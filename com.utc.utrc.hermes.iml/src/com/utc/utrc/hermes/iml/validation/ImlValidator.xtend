@@ -46,6 +46,12 @@ import com.utc.utrc.hermes.iml.iml.TailedExpression
 import com.utc.utrc.hermes.iml.iml.FunctionType
 import com.utc.utrc.hermes.iml.iml.ExpressionTail
 import com.utc.utrc.hermes.iml.lib.ImlStdLib
+import com.utc.utrc.hermes.iml.iml.RecordType
+import com.utc.utrc.hermes.iml.iml.Datatype
+import com.utc.utrc.hermes.iml.iml.MatchExpression
+import com.utc.utrc.hermes.iml.iml.MatchStatement
+import com.utc.utrc.hermes.iml.iml.TermMemberSelection
+import com.utc.utrc.hermes.iml.iml.DatatypeConstructor
 
 /**
  * This class contains custom validation rules. 
@@ -64,13 +70,14 @@ class ImlValidator extends AbstractImlValidator {
 
 	private static final String DOMAIN_EXTENSION_ID = 
       "com.utc.utrc.hermes.iml.validation.domaindefinition";
-
+	// FIXME these constants need to be moved to another class and their names and usage need to be reviewed
 	public static val INVALID_PARAMETER_LIST = 'com.utc.utrc.hermes.iml.validation.InvalidParameterList'
 	public static val METHOD_INVOCATION_ON_VARIABLE = 'com.utc.utrc.hermes.iml.validation.MethodInvocationOnVariable'
 	public static val METHOD_INVOCATION_ON_ASSERTION= 'com.utc.utrc.hermes.iml.validation.MethodInvocationOnAssertion'
 	public static val METHOD_INVOCATION_ON_NAMEDTYPE= 'com.utc.utrc.hermes.iml.validation.MethodInvocationOnNamedType'
 	public static val METHOD_INVOCATION_ON_ARRAY = 'com.utc.utrc.hermes.iml.validation.MethodInvocationOnArray'
 	public static val METHOD_INVOCATION_ON_TUPLE = 'com.utc.utrc.hermes.iml.validation.MethodInvocationOnTuple'
+	public static val METHOD_INVOCATION_ON_RECORD = 'com.utc.utrc.hermes.iml.validation.MethodInvocationOnRecord'
 	public static val MISSING_METHOD_INVOCATION = 'com.utc.utrc.hermes.iml.validation.MissingMethodInvocation'
 	public static val TYPE_MISMATCH_IN_TERM_EXPRESSION = 'com.utc.utrc.hermes.iml.validation.TypeMismatchInTermExpression'
 	public static val TYPE_MISMATCH_IN_TERM_RELATION = 'com.utc.utrc.hermes.iml.validation.TypeMismatchInTermRelation'
@@ -87,7 +94,8 @@ class ImlValidator extends AbstractImlValidator {
 	public static val INVALID_INDEX_ACCESS = 'com.utc.utrc.hermes.iml.validation.InvalidIndexAccess';
 	public static val ARRAY_ACCESS_ON_FUNCTIONTYPE = 'com.utc.utrc.hermes.iml.validation.ArrayAccessOnFunctionType';
 	public static val INCOMPATIBLE_TYPES = 'com.utc.utrc.hermes.iml.validation.IncompatibleTypes';
-	
+	public static val INVALID_RECORD_ACCESS = 'com.utc.utrc.hermes.iml.validation.InvalidRecordAccess'
+	public static val MATCH_NOT_DATATYPE = 'com.utc.utrc.hermes.iml.validation.MatchNotDatatype'
 	
 	@Inject
 	override void register(EValidatorRegistrar registrar) {
@@ -278,7 +286,7 @@ class ImlValidator extends AbstractImlValidator {
 			}
 		} else if (type instanceof TupleType) {
 			if (tail instanceof TupleConstructor) {
-				error('''Method invocation is not applicable over tuple type '«typeAsString»' ''',
+				error('''Method invocation is not applicable over Tuple type '«typeAsString»' ''',
 					ImlPackage.eINSTANCE.tailedExpression_Tail,
 					METHOD_INVOCATION_ON_TUPLE
 				)
@@ -286,18 +294,21 @@ class ImlValidator extends AbstractImlValidator {
 			} else if (tail instanceof ArrayAccess) { 
 				val index = tail.index.left
 				if (index instanceof NumberLiteral) {
-					if (index.value >= type.symbols.size || index.neg) {
-						error('''Tuple access index must be within the declare tuple elements size of '«typeAsString»'. Expected <
-						«type.symbols.size» but got «if (index.neg) '-'»«index.value» ''',
+					if (index.value >= type.types.size || index.neg) {
+						error('''Tuple access index must be within the declared tuple elements size of '«typeAsString»
+						'. Expected <«type.types.size» but got «if (index.neg) '-'»«index.value» ''',
 							ImlPackage.eINSTANCE.tailedExpression_Tail,
 							INVALID_INDEX_ACCESS
 						)
 						return false
 					}
-				} else if (index instanceof SymbolReferenceTerm) {
-					// TODO Check if this symbol declared inside the tuple
 				}
 			}
+		} else if (type instanceof RecordType) {
+			error('''Method invocation and array access are not applicable on the record type '«typeAsString»' ''',
+						ImlPackage.eINSTANCE.tailedExpression_Tail,
+						METHOD_INVOCATION_ON_RECORD
+					)
 		} else if (type instanceof FunctionType) { 
 			if (tail instanceof ArrayAccess) {
 				error('''Array access is not applicatble over Higher Order Type of: '«typeAsString»' ''',
@@ -315,7 +326,9 @@ class ImlValidator extends AbstractImlValidator {
 	def checkFunctionCallParameters(ImlType domain, TupleConstructor tupleTail) {
 		var List<ImlType> domainList = null;
 		if (domain instanceof TupleType) {
-			domainList = domain.symbols.map[it.type]
+			domainList = domain.types
+		} else if (domain instanceof RecordType) {
+			domainList = domain.symbols.map[type]
 		} else {
 			domainList = newArrayList(domain)
 		}
@@ -446,6 +459,99 @@ class ImlValidator extends AbstractImlValidator {
 				)
 			}
 		}
+		if (type instanceof Datatype) {
+			if (type.constructors.isEmpty) {
+				error('''Datatype constructors are missing''',
+						ImlPackage.eINSTANCE.namedType_Constructors,
+						INVALID_TYPE_DECLARATION
+					)
+			}
+		} else {
+			if (!type.constructors.isEmpty) {
+				error('''Constructors allowed only for datatypes''',
+						ImlPackage.eINSTANCE.namedType_Constructors,
+						INVALID_TYPE_DECLARATION
+					)
+			}
+		}
+	}
+	
+	@Check
+	def checkMatchDatatype(MatchExpression match) {
+		val matchType = termExpressionType(match.datatypeExpr)
+		if (!isDatatype(matchType)) {
+			error('''Match expression applies only on Datatypes''',
+						ImlPackage.eINSTANCE.matchExpression_DatatypeExpr,
+						MATCH_NOT_DATATYPE
+					)
+		} 
+	}
+	
+	@Check
+	def checkMatchStatementConstructor(MatchStatement matchstm) {
+		val constructor = matchstm.constructor
+		if (matchstm.paramSymbols.size !== constructor.parameters.size) {
+			error('''Match statement constructor parameters list size doesn't match the original constructor. ''' + 
+					'''Expected «constructor.parameters.size», but got «matchstm.paramSymbols.size».''',
+						ImlPackage.eINSTANCE.matchStatement_ParamSymbols,
+						INVALID_PARAMETER_LIST
+					)
+		}
+	}
+	
+	@Check
+	def checkDatatypeInit(TermMemberSelection tms) {
+		 val recType = termExpressionType(tms.receiver)
+		 if (recType.datatype) { // Constructor selection validation
+		 	if (!(tms.member instanceof SymbolReferenceTerm &&
+		 		(tms.member as SymbolReferenceTerm).symbol instanceof DatatypeConstructor)) return;
+		 	val constructor = (tms.member as SymbolReferenceTerm).symbol as DatatypeConstructor
+		 	if (!constructor.parameters.isEmpty) { // Check compatible param list
+		 		if (!(tms.eContainer instanceof TailedExpression && 
+		 			(tms.eContainer as TailedExpression).tail instanceof TupleConstructor
+		 		)) { // Missing param list
+		 			error('''Datatype constuctor instantiation is missing parameters list.''' + 
+					'''Expected «constructor.parameters.size» parameters.''',
+						ImlPackage.eINSTANCE.termMemberSelection_Member,
+						INVALID_PARAMETER_LIST
+					)
+					return	
+		 		}
+		 	 	val paramTuple = (tms.eContainer as TailedExpression).tail as TupleConstructor
+		 	 	if (constructor.parameters.size !== paramTuple.elements.size) {
+		 	 		error('''Datatype constuctor instantiation parameters list size doesn't match the declared one.''' + 
+					'''Expected «constructor.parameters.size», but got «paramTuple.elements.size».''',
+						ImlPackage.eINSTANCE.termMemberSelection_Member,
+						INVALID_PARAMETER_LIST
+					)
+					return
+		 	 	}
+		 	 	// Check maching types
+		 	 	for (i : 0 ..< constructor.parameters.size) {
+		 	 		val declaredType = bind(constructor.parameters.get(i), recType as SimpleTypeReference)
+		 	 		val definedType = termExpressionType(paramTuple.elements.get(i))
+		 	 		if (!isEqual(declaredType, definedType, true)) {
+		 	 			error('''Datatype constuctor instantiation parameter doesn't match the declared one.''' + 
+						'''Expected «getTypeName(declaredType, qnp)», but got «getTypeName(definedType, qnp)».''',
+						ImlPackage.eINSTANCE.termMemberSelection_Member,
+						INVALID_PARAMETER_LIST
+					)
+					return
+		 	 		}
+		 	 	}
+		 	} else { // Empty constructor doesn't need parameters
+		 		if (tms.eContainer instanceof TailedExpression) {
+		 			error('''Datatype constuctor instantiation contains extraneous tail.''',  
+						ImlPackage.eINSTANCE.termMemberSelection_Member,
+						INVALID_PARAMETER_LIST
+					)
+		 		}
+		 	}
+		 }
+	}
+	
+	def isDatatype(ImlType type) {
+		type instanceof SimpleTypeReference && (type as SimpleTypeReference).type instanceof Datatype
 	}
 
 }

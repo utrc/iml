@@ -53,7 +53,7 @@ class ImlParseHelper {
 		parseHelper.parse(modelText, rs)
 	}
 	
-	def private ResourceSet loadStdLibs() {
+	def ResourceSet loadStdLibs() {
 		if (stdRs === null) {
 			val imlLibUrl = getImlLibUrl();
 			stdRs = rsp.get
@@ -72,8 +72,11 @@ class ImlParseHelper {
 			imlLibUrl = this.getClass().classLoader.getResource("./iml/").toURI
 		} else {
 			// Get lib folder for plugin
-			val bundle = Platform.getBundle("com.utc.utrc.hermes.iml");
-			val fileURL = bundle.getEntry("imllib/");
+			val bundle = Platform.getBundle("com.utc.utrc.hermes.iml.lib");
+			var fileURL = bundle.getEntry("iml/");
+			if (fileURL === null) { // It might be in development environment
+				fileURL = bundle.getEntry("src/iml/")
+			}
 			try {
 				val resolvedFileURL = FileLocator.toFileURL(fileURL);
 			   // We need to use the 3-arg constructor of URI in order to properly escape file system chars
