@@ -73,7 +73,7 @@ type FlowConnector<T> {
 	flow:FlowPath ;
 }
 
-<T>flowconnect : (T,T)->FlowConnector<T> :=
+flowconnect<T> : (T,T)->FlowConnector<T> :=
 fun(x:T,y:T) {
 	some(fc: FlowConnector<T>) { fc.connector.source = x && fc.connector.target = y}
 } ;
