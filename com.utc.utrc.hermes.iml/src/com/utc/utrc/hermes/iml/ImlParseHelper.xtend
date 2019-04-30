@@ -1,3 +1,4 @@
+
 package com.utc.utrc.hermes.iml
 
 import org.eclipse.xtext.testing.util.ParseHelper
@@ -140,7 +141,7 @@ class ImlParseHelper {
 	}
 	
 	def void assertNoErrors(ResourceSet resourceSet) {
-		resourceSet.assertNoErrors
+		resourceSet.resources.forEach[validationTestHelper.assertNoErrors(it.contents.get(0))]
 	}
 	
 }
