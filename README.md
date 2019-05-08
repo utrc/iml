@@ -18,7 +18,7 @@ If you want to use IML inside your own Eclipse instance, you can follow the foll
 5. Now you can create projects to develop IML code as before or you can create eclipse plugins that depends on IML plugins
 
 
-# Contributing to IML
+# Development with IML
 To modify or contribute to IML: 
 * You need Eclipse for Java and DSL Developers (find it [here](https://www.eclipse.org/downloads/packages/release/oxygen/3a/eclipse-ide-java-and-dsl-developers)). 
 * Change Eclipse workspace encoding to `UTF-8`: From `Window` > `Preferences` > `General` > `Workspace`: Select Text file encoding as `Other`>`UTF-8`
