@@ -308,7 +308,7 @@ class TypingServicesTest {
 		
 		val var1Type = ((model.findSymbol("Tx") as NamedType).findSymbol("var1") as SymbolDeclaration).type
 		val var2Type = ((model.findSymbol("Tx") as NamedType).findSymbol("var2") as SymbolDeclaration).type
-		return typingServices.isEqual(var2Type, typingServices.resolveAliases(var1Type))
+		return typingServices.isEqual(var2Type, typingServices.normalizeType(var1Type))
 		
 	}
 	

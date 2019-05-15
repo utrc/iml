@@ -84,7 +84,7 @@ public class ImlTypeProvider {
 	}
 	
 		def ImlType termExpressionType(TermExpression t, SimpleTypeReference context) {
-			return copy(resolveAliases(expressionType(t, context)))
+			return normalizeType(expressionType(t, context))
 		}
 	
 
@@ -325,14 +325,6 @@ public class ImlTypeProvider {
 			return type
 	}
 	
-	def accessSymbolTail(SymbolReferenceTerm symbolRef, ExpressionTail tail, SimpleTypeReference ctx) {
-		val symbol = symbolRef.symbol;
-		if (symbol instanceof SymbolDeclaration) {
-//			val symbolType = getType(symbol.type, ctx)
-			
-		}
-	}
-	
 	// FIXME this is a temp implementation as we ignore SymbolDeclaration templates
 	// TODO do we need this? Why not getType(SymbolTermReference, SimpleTypeReference)?
 	def ImlType getType(SymbolDeclaration s, SimpleTypeReference ctx) {
@@ -468,20 +460,6 @@ public class ImlTypeProvider {
 	def symbolInsideLambda(SymbolDeclaration symbol) {
 		return symbol.eContainer instanceof LambdaExpression &&
 			(symbol.eContainer as LambdaExpression).parameters.contains(symbol)
-	}
-
-	def getTypeConstructorType(TermExpression term) {
-		val typeConstructor = EcoreUtil2.getContainerOfType(term, InstanceConstructor)
-		if (typeConstructor !== null) {
-			return (typeConstructor.ref as SimpleTypeReference).type
-		}
-//		val tupleParent = EcoreUtil2.getContainerOfType(term, TupleConstructor)
-//		if (tupleParent !== null) {
-//			val srt = EcoreUtil2.getContainerOfType(tupleParent, SymbolReferenceTerm)
-//			if (srt !== null && srt.symbol instanceof NamedType) {
-//				return srt.symbol as NamedType
-//			}
-//		}
 	}
 
 	def bind(SymbolReferenceTerm s, SimpleTypeReference ctx) {

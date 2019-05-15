@@ -58,7 +58,7 @@ public class TypingServices {
 	
 	def boolean isEqual(ImlType left, ImlType right) {
 		// We almost always wants to resolve aliases
-		return isEqual(resolveAliases(left), resolveAliases(right), false);
+		return isEqual(normalizeType(left), normalizeType(right), false);
 	}
 
 	/**
@@ -311,7 +311,7 @@ public class TypingServices {
 	/* Check if two types are compatible or not
 	 * */
 	def boolean isCompatible(ImlType expected, ImlType actual) {
-		return isEqual(resolveAliases(expected), resolveAliases(actual), true)
+		return isEqual(normalizeType(expected), normalizeType(actual), true)
 	}
 
 	/* A non-template type without stereotype is a pure type */
@@ -342,17 +342,20 @@ public class TypingServices {
 		return r // if it is not alias return the original type
 	}
 	
-	def ImlType resolveAliases(ImlType type) {
+	
+	def ImlType normalizeType(ImlType type) {
 		normalizeType(type, null)
 	}
 	
-	
+	/**
+	 * Normalize type by resolving aliases and Self type in case a container was provided
+	 */
 	def ImlType normalizeType(ImlType type, NamedType container) {
 		if (type instanceof SimpleTypeReference) {
 			if (type.isAlias) {
 				return normalizeType(getAliasType(type), container)
 			} else {
-				return type
+				return clone(type)
 			}
 		}
 		if (type instanceof SelfType) {
@@ -363,25 +366,25 @@ public class TypingServices {
 			}
 		}
 		if (type instanceof TupleType) {
-			return ImlCustomFactory.INST.createTupleType(type.types.map[clone(normalizeType(it, container))])
+			return ImlCustomFactory.INST.createTupleType(type.types.map[normalizeType(it, container)])
 		}
 		if (type instanceof RecordType) {
 			return ImlCustomFactory.INST.createRecordType => [
 				it.symbols.addAll(type.symbols.map[
-					ImlCustomFactory.INST.createSymbolDeclaration(it.name, clone(normalizeType(it.type, container)))	
+					ImlCustomFactory.INST.createSymbolDeclaration(it.name, normalizeType(it.type, container))	
 				])
 			]
 		}
 		if (type instanceof ArrayType) {
 			return ImlCustomFactory.INST.createArrayType => [
-				it.type = clone(normalizeType(type.type, container))
+				it.type = normalizeType(type.type, container)
 				it.dimensions.addAll(type.dimensions.map[ImlCustomFactory.INST.createOptionalTermExpr])
 			]
 		}
 		if (type instanceof FunctionType) {
 			return ImlCustomFactory.INST.createFunctionType => [
-				domain = clone(normalizeType(type.domain, container))
-				range = clone(normalizeType(type.range, container))
+				domain = normalizeType(type.domain, container)
+				range = normalizeType(type.range, container)
 			]
 		}
 	}

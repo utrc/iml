@@ -255,7 +255,7 @@ class ImlValidator extends AbstractImlValidator {
 
 	@Check
 	def checkTailedExpression(TailedExpression expr) {
-		val leftType = resolveAliases(termExpressionType(expr.left))
+		val leftType = normalizeType(termExpressionType(expr.left))
 		checkTypeAgainstTail(leftType, expr.tail)
 	}
 	
@@ -440,7 +440,7 @@ class ImlValidator extends AbstractImlValidator {
 	
 	@Check
 	def checkAliasDeclaration(Alias alias) {
-		val aliasType = resolveAliases(alias.type.type)
+		val aliasType = normalizeType(alias.type.type)
 		
 		if (!isEqual(aliasType, alias.type.type, false)) {
 			val mainType = EcoreUtil2.getContainerOfType(alias, NamedType);
