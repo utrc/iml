@@ -4,33 +4,30 @@
 package com.utc.utrc.hermes.iml.tests.typing
 
 import com.google.inject.Inject
+import com.utc.utrc.hermes.iml.ImlParseHelper
 import com.utc.utrc.hermes.iml.iml.ArrayType
+import com.utc.utrc.hermes.iml.iml.Datatype
 import com.utc.utrc.hermes.iml.iml.FunctionType
 import com.utc.utrc.hermes.iml.iml.ImlType
 import com.utc.utrc.hermes.iml.iml.IteTermExpression
 import com.utc.utrc.hermes.iml.iml.LambdaExpression
-import com.utc.utrc.hermes.iml.iml.Model
 import com.utc.utrc.hermes.iml.iml.NamedType
 import com.utc.utrc.hermes.iml.iml.SequenceTerm
 import com.utc.utrc.hermes.iml.iml.SimpleTypeReference
 import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
 import com.utc.utrc.hermes.iml.iml.TupleType
+import com.utc.utrc.hermes.iml.lib.ImlStdLib
 import com.utc.utrc.hermes.iml.tests.ImlInjectorProvider
 import com.utc.utrc.hermes.iml.tests.TestHelper
 import com.utc.utrc.hermes.iml.typing.ImlTypeProvider
 import com.utc.utrc.hermes.iml.typing.TypingServices
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.XtextRunner
-import org.eclipse.xtext.testing.util.ParseHelper
 import org.eclipse.xtext.testing.validation.ValidationTestHelper
 import org.junit.Test
 import org.junit.runner.RunWith
 
 import static org.junit.Assert.*
-import com.utc.utrc.hermes.iml.lib.ImlStdLib
-import com.utc.utrc.hermes.iml.ImlParseHelper
-import com.utc.utrc.hermes.iml.iml.ImlPackage
-import com.utc.utrc.hermes.iml.iml.Datatype
 
 /**
  * Test related helper methods

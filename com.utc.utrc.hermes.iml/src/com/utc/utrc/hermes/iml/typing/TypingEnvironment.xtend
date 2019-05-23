@@ -14,6 +14,7 @@ import com.utc.utrc.hermes.iml.iml.RecordType
 import com.utc.utrc.hermes.iml.iml.FunctionType
 import org.eclipse.emf.ecore.util.EcoreUtil
 import com.utc.utrc.hermes.iml.iml.SelfType
+import com.utc.utrc.hermes.iml.custom.ImlCustomFactory
 
 class TypingEnvironment {
 	Map<NamedType, ImlType> bindingMap
@@ -25,10 +26,17 @@ class TypingEnvironment {
 	new() {
 		bindingMap = newHashMap
 	}
+	
+	def TypingEnvironment addContext(NamedType ctx) {
+		if (ctx !== null) {
+			addContext(ImlCustomFactory.INST.createSimpleTypeReference(ctx))
+		}
+		return this
+	}
 
 	def TypingEnvironment addContext(SimpleTypeReference ctx) {
 		if (ctx === null) return this
-		typeContext = remap(ctx, bindingMap) as SimpleTypeReference
+		typeContext = remap(ctx) as SimpleTypeReference
 		if (!(ctx.getType() instanceof Trait)) {
 			selfContext = typeContext
 		}
@@ -42,7 +50,7 @@ class TypingEnvironment {
 	}
 
 	def TypingEnvironment addContext(SymbolReferenceTerm ctx) {
-		symbolRefContext = remap(ctx, bindingMap)
+		symbolRefContext = remap(ctx)
 		if (ctx.getSymbol() instanceof SymbolDeclaration) {
 			var SymbolDeclaration symbol = (ctx.getSymbol() as SymbolDeclaration)
 			if (!symbolRefContext.getTypeBinding().isEmpty() &&
@@ -55,14 +63,31 @@ class TypingEnvironment {
 		return this
 	}
 	
-	def ImlType remap(ImlType t, Map<NamedType, ImlType> map) {
-		if (map.isEmpty || t instanceof SelfType) { 
+	def bind(SymbolReferenceTerm s) {
+		if (typeContext.type === null){
+			return EcoreUtil.copy((s.symbol as SymbolDeclaration).type)
+		}
+		
+		if (s.symbol instanceof SymbolDeclaration) {
+			addContext(s)
+			bind((s.symbol as SymbolDeclaration).type)
+		} else {
+			return typeContext
+		}
+	}
+
+	def bind(ImlType t) {
+		return remap(t)
+	}
+	
+	def ImlType remap(ImlType t) {
+		if (bindingMap.isEmpty || t instanceof SelfType) { 
 			return EcoreUtil.copy(t)
 		}
 		switch (t) {
 			ArrayType: {
 				var retval = ImlFactory.eINSTANCE.createArrayType;
-				retval.type = remap(t.type, map)
+				retval.type = remap(t.type)
 				for (d : t.dimensions) {
 					// TODO : Should we TypingServices.clone the term expressions?
 					retval.dimensions.add(ImlFactory::eINSTANCE.createOptionalTermExpr => [
@@ -72,24 +97,24 @@ class TypingEnvironment {
 				return retval
 			}
 			SimpleTypeReference: {
-				if (map.containsKey(t.type)) {
-					return EcoreUtil.copy(map.get(t.type))					
+				if (bindingMap.containsKey(t.type)) {
+					return EcoreUtil.copy(bindingMap.get(t.type))					
 				}
 				var retval = ImlFactory.eINSTANCE.createSimpleTypeReference;
 				retval.type = t.type
 				for (h : t.typeBinding) {
 					if (h instanceof SimpleTypeReference) {
 						if ((h as SimpleTypeReference).typeBinding.size === 0) {
-							if (map.containsKey(h.type)) {
-								retval.typeBinding.add(EcoreUtil.copy(map.get(h.type)))
+							if (bindingMap.containsKey(h.type)) {
+								retval.typeBinding.add(EcoreUtil.copy(bindingMap.get(h.type)))
 							} else {
 								retval.typeBinding.add(EcoreUtil.copy(h))
 							}
 						} else {
-							retval.typeBinding.add(remap(h, map))
+							retval.typeBinding.add(remap(h))
 						}
 					} else {
-						retval.typeBinding.add(remap(h, map))
+						retval.typeBinding.add(remap(h))
 					}
 				}
 				return retval;
@@ -97,7 +122,7 @@ class TypingEnvironment {
 			TupleType: {
 				var retval = ImlFactory.eINSTANCE.createTupleType;
 				for (s : t.types) {
-					retval.types.add(remap(s, map))
+					retval.types.add(remap(s))
 				}
 				return retval;
 			}
@@ -106,26 +131,26 @@ class TypingEnvironment {
 				for (s : t.symbols) {
 					val ss = ImlFactory.eINSTANCE.createSymbolDeclaration
 					ss.name = s.name
-					ss.type = remap(s.type, map)
+					ss.type = remap(s.type)
 					retval.symbols.add(ss)
 				}
 				return retval;
 			}
 			FunctionType: { // Function type
 				var retval = ImlFactory.eINSTANCE.createFunctionType;
-				retval.domain = remap(t.domain, map)
+				retval.domain = remap(t.domain)
 				if (t.range !== null) {
-					retval.range = remap(t.range, map)
+					retval.range = remap(t.range)
 				}
 				return retval;
 			}
 		}
 	}
 	
-	def SymbolReferenceTerm remap(SymbolReferenceTerm t, Map<NamedType, ImlType> map) {
+	def SymbolReferenceTerm remap(SymbolReferenceTerm t) {
 		return ImlFactory.eINSTANCE.createSymbolReferenceTerm => [
 			symbol = t.symbol;
-			typeBinding.addAll(t.typeBinding.map[remap(map)])
+			typeBinding.addAll(t.typeBinding.map[remap])
 		]
 	}
 	

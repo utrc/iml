@@ -18,6 +18,7 @@ import org.eclipse.xtext.resource.XtextResource;
 
 import com.utc.utrc.hermes.iml.iml.Alias;
 import com.utc.utrc.hermes.iml.iml.ArrayType;
+import com.utc.utrc.hermes.iml.iml.EnumRestriction;
 import com.utc.utrc.hermes.iml.iml.NamedType;
 import com.utc.utrc.hermes.iml.iml.Extension;
 import com.utc.utrc.hermes.iml.iml.FolFormula;
@@ -37,6 +38,7 @@ import com.utc.utrc.hermes.iml.iml.SymbolReferenceTerm;
 import com.utc.utrc.hermes.iml.iml.TermExpression;
 import com.utc.utrc.hermes.iml.iml.TraitExhibition;
 import com.utc.utrc.hermes.iml.iml.TupleType;
+import com.utc.utrc.hermes.iml.iml.TypeRestriction;
 import com.utc.utrc.hermes.iml.iml.TypeWithProperties;
 
 public class ImlUtil {
@@ -321,6 +323,62 @@ public class ImlUtil {
 			}
 		}
 		
+		return false;
+	}
+	
+	/* Check whether a constrained type is a template  */
+	public static boolean isTemplate(NamedType nt) {
+		return nt.isTemplate();
+	}
+
+	public static boolean isSimpleTR(ImlType imlType) {
+		return (imlType instanceof SimpleTypeReference);
+	}
+
+	public static SimpleTypeReference asSimpleTR(ImlType imlType) {
+		if (isSimpleTR(imlType)) {
+			return (SimpleTypeReference) imlType;
+		}
+		return null;
+	}
+	
+	public static boolean isAlias(SimpleTypeReference r) {
+		return isAlias(r.getType());
+	}
+	
+	public static boolean isAlias(NamedType t) {
+		if (t.getRelations().stream().anyMatch(it -> it instanceof Alias)) {
+			return true;
+		}
+		return false;
+	}
+	
+	public static boolean isEnumLiteral(Symbol s) {
+		NamedType container = EcoreUtil2.getContainerOfType(s, NamedType.class);
+		if (container != null) {
+			return isLiteralOf(s, container);
+		}
+		return false;
+	}
+
+	public static boolean isLiteralOf(Symbol s, NamedType t) {
+		for (TypeRestriction r : t.getRestrictions()) {
+			if (r instanceof EnumRestriction) {
+				if (((EnumRestriction) r).getLiterals().contains(s)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
+	public static boolean isPolymorphic(Symbol s){
+		if (s instanceof NamedType) {
+			return !((NamedType) s).getTypeParameter().isEmpty();
+		}
+		if (s instanceof SymbolDeclaration) {
+			return !((SymbolDeclaration) s).getTypeParameter().isEmpty();
+		}
 		return false;
 	}
 }

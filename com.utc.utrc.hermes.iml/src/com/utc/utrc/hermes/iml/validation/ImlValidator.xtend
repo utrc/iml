@@ -30,7 +30,7 @@ import org.eclipse.xtext.validation.AbstractDeclarativeValidator
 import org.eclipse.xtext.validation.Check
 import org.eclipse.xtext.validation.EValidatorRegistrar
 
-import static extension com.utc.utrc.hermes.iml.util.ImlUtil.getTypeName
+import static extension com.utc.utrc.hermes.iml.util.ImlUtil.*
 
 import com.utc.utrc.hermes.iml.iml.Alias
 import org.eclipse.xtext.EcoreUtil2
@@ -72,8 +72,7 @@ class ImlValidator extends AbstractImlValidator {
 	
 	@Inject extension ImlStdLib
 
-	private static final String DOMAIN_EXTENSION_ID = 
-      "com.utc.utrc.hermes.iml.validation.domaindefinition";
+	static final String DOMAIN_EXTENSION_ID = "com.utc.utrc.hermes.iml.validation.domaindefinition";
 	// FIXME these constants need to be moved to another class and their names and usage need to be reviewed
 	public static val INVALID_PARAMETER_LIST = 'com.utc.utrc.hermes.iml.validation.InvalidParameterList'
 	public static val METHOD_INVOCATION_ON_VARIABLE = 'com.utc.utrc.hermes.iml.validation.MethodInvocationOnVariable'
@@ -532,7 +531,8 @@ class ImlValidator extends AbstractImlValidator {
 		 	 	}
 		 	 	// Check maching types
 		 	 	for (i : 0 ..< constructor.parameters.size) {
-		 	 		val declaredType = bind(constructor.parameters.get(i),  new TypingEnvironment().addContext(recType as SimpleTypeReference))
+		 	 		val env = new TypingEnvironment().addContext(recType as SimpleTypeReference)
+		 	 		val declaredType = env.bind(constructor.parameters.get(i))
 		 	 		val definedType = termExpressionType(paramTuple.elements.get(i))
 		 	 		if (!isEqual(declaredType, definedType, true)) {
 		 	 			error('''Datatype constuctor instantiation parameter doesn't match the declared one.''' + 

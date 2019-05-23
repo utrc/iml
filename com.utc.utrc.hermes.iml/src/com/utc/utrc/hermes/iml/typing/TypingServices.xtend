@@ -8,12 +8,10 @@ import com.utc.utrc.hermes.iml.iml.Alias
 import com.utc.utrc.hermes.iml.iml.ArrayType
 import com.utc.utrc.hermes.iml.iml.Extension
 import com.utc.utrc.hermes.iml.iml.FunctionType
-import com.utc.utrc.hermes.iml.iml.ImlFactory
 import com.utc.utrc.hermes.iml.iml.ImlType
 import com.utc.utrc.hermes.iml.iml.NamedType
 import com.utc.utrc.hermes.iml.iml.PropertyList
 import com.utc.utrc.hermes.iml.iml.SimpleTypeReference
-import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
 import com.utc.utrc.hermes.iml.iml.TraitExhibition
 import com.utc.utrc.hermes.iml.iml.TupleType
 import java.util.ArrayList
@@ -24,36 +22,15 @@ import com.google.inject.Inject
 import com.utc.utrc.hermes.iml.lib.ImlStdLib
 import com.utc.utrc.hermes.iml.iml.SelfType
 import com.utc.utrc.hermes.iml.iml.RecordType
+import com.utc.utrc.hermes.iml.util.ImlUtil
 
-public class TypingServices {
+class TypingServices {
 	
 	@Inject
-	extension private ImlStdLib
+	extension ImlStdLib
 	
-	@Inject
-	private ImlTypeProvider typeProvider
-
 	def <T extends EObject> T clone(T eObject) {
 	  	return EcoreUtil.copy(eObject)
-	}
-
-
-	def ImlType accessArray(ArrayType type, int dim) {
-		if (dim == type.dimensions.size) {
-			return type.type
-		} else {
-			var ret = ImlFactory::eINSTANCE.createArrayType();
-			// TODO We are not cloning the property list here
-			ret.type = clone(type.type);
-
-			for (i : 0 ..< (type.dimensions.size() - dim)) {
-				// TODO : Should we clone the term expressions?
-				ret.dimensions.add(ImlFactory::eINSTANCE.createOptionalTermExpr => [
-					term = ImlFactory::eINSTANCE.createNumberLiteral => [value = 0];
-				])
-			}
-			return ret
-		}
 	}
 	
 	def boolean isEqual(ImlType left, ImlType right) {
@@ -225,23 +202,6 @@ public class TypingServices {
 		return false;
 	}
 
-	// TODO 
-	def getAllDeclarations(ImlType ctx) {
-		var List<SymbolDeclaration> tlist = <SymbolDeclaration>newArrayList()
-		var List<List<SimpleTypeReference>> hierarchy = ctx.allSuperTypes;
-		for (level : hierarchy) {
-			for (st : level) {
-//				for (Element e : st.type.elements) {
-//					if (e instanceof TermSymbol) {
-//						tlist.add(e);
-//					}
-//				}
-			}
-		}
-		ImlFactory::eINSTANCE.createInstanceConstructor
-		return tlist;
-	}
-
 	/* Compute all super types of a ContrainedType  */
 	def getAllSuperTypes(NamedType nt) {
 		getSuperTypes(ImlCustomFactory.INST.createSimpleTypeReference(nt)).map[it.map[it.type]]
@@ -314,30 +274,15 @@ public class TypingServices {
 		return isEqual(normalizeType(expected), normalizeType(actual), true)
 	}
 
-	/* A non-template type without stereotype is a pure type */
-	def boolean isPureType(ImlType t) {
-		if (t instanceof SimpleTypeReference && (t as SimpleTypeReference).typeBinding.size == 0) {
-			return true;
-		}
-		return false;
-	}
-	
-	def boolean isAlias(NamedType t) {
-		if (t.relations.filter(Alias).size > 0) {
-			return true
-		}
-		return false
-	}
-	def boolean isAlias(SimpleTypeReference r){
-		return r.type.isAlias
-	}
 	def getAliasType(NamedType type) {
 		getAliasType(ImlCustomFactory.INST.createSimpleTypeReference(type))
 	}
-	def ImlType getAliasType(SimpleTypeReference r){
-		if (r.isAlias){
+	
+	def ImlType getAliasType(SimpleTypeReference r) {
+		if (ImlUtil.isAlias(r)){
 			var alias = r.type.relations.filter(Alias).get(0).type.type
-			return typeProvider.bind(alias, new TypingEnvironment().addContext(r))
+			val env = new TypingEnvironment().addContext(r)
+			return env.bind(alias)
 		}
 		return r // if it is not alias return the original type
 	}
@@ -352,7 +297,7 @@ public class TypingServices {
 	 */
 	def ImlType normalizeType(ImlType type, SimpleTypeReference selfActualType) {
 		if (type instanceof SimpleTypeReference) {
-			if (type.isAlias) {
+			if (ImlUtil.isAlias(type)) {
 				return normalizeType(getAliasType(type), selfActualType)
 			} else {
 				return clone(type)
@@ -389,20 +334,4 @@ public class TypingServices {
 		}
 	}
 	
-	/* Check whether a constrained type is a template  */
-	def boolean isTemplate(NamedType nt) {
-		return nt.template;
-	}
-
-	def isSimpleTR(ImlType imlType) {
-		return imlType instanceof SimpleTypeReference
-	}
-
-	def asSimpleTR(ImlType imlType) {
-		if (isSimpleTR(imlType)) {
-			return imlType as SimpleTypeReference
-		}
-		return null;
-	}
-
 }
