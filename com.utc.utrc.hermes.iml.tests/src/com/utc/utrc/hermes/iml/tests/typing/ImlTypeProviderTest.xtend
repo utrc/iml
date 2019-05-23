@@ -817,4 +817,132 @@ class ImlTypeProviderTest {
 		assertTrue(typingServices.isEqual(v1.type, typeProvider.termExpressionType(v1.definition)))
 	}
 	
+	@Test
+	def testNestedTemplates() {
+		val model = '''
+			package p;
+			type T1<T> {
+				v1 : T -> T := fun (a : T) { a ;};
+			}
+			
+			type T2<T> extends (T1<T>) {
+				
+			}
+			
+			v : T2<Int>;
+			vv : Int := v.v1(5);
+			
+		'''.parse
+		
+		model.assertNoErrors
+		
+		val vv = model.findSymbol("vv") as SymbolDeclaration;
+		assertTrue(typingServices.isEqual(vv.type, typeProvider.termExpressionType(vv.definition)))		
+	}
+	
+	@Test
+	def testNestedTemplates2() {
+		val model = '''
+			package p;
+			type T1<T> {
+				f1<P> : (T, P) -> (P, T) := fun (a : T, b : P) { (b, a);};
+			}
+			
+			type T2<T> extends (T1<T>) {
+				
+			}
+			
+			v : T2<Int>;
+			vv : (Real, Int) := v.f1<Real>(5, 0.5);
+			
+		'''.parse
+		
+//		model.assertNoErrors
+		
+		val vv = model.findSymbol("vv") as SymbolDeclaration;
+		assertTrue(typingServices.isEqual(vv.type, typeProvider.termExpressionType(vv.definition)))		
+	}
+	
+	
+	@Test
+	def testTraitSelfType() {
+		val model = '''
+			package p;
+			trait mT {
+				v : Int -> Self;
+			}
+			
+			type T1 exhibits(mT) {
+				vv : T1 := v(5);
+			}
+		'''.parse
+		
+		model.assertNoErrors
+		val vv = (model.findSymbol("T1") as NamedType).findSymbol("vv") as SymbolDeclaration
+		assertTrue(typingServices.isEqual(vv.type, typeProvider.termExpressionType(vv.definition)))		
+	}
+	
+	@Test
+	def testTraitSelfType2() {
+		val model = '''
+			package p;
+			trait mT {
+				v : Int -> Self;
+			}
+			
+			type T1 exhibits(mT) {
+			}
+			
+			type T2 {
+				x : T1;
+				vv : T1 := x.v(5);
+			}
+		'''.parse
+		
+		model.assertNoErrors
+		val vv = (model.findSymbol("T2") as NamedType).findSymbol("vv") as SymbolDeclaration
+		assertTrue(typingServices.isEqual(vv.type, typeProvider.termExpressionType(vv.definition)))		
+	}
+	
+	@Test
+	def testTraitSelfType3() {
+		val model = '''
+			package p;
+			trait mT {
+				v : Int -> Self;
+			}
+			
+			type T1 exhibits(mT) {
+			}
+			
+			type T2 extends (T1){
+				vv : T1 := v(5);
+			}
+		'''.parse
+		
+		model.assertNoErrors
+		val vv = (model.findSymbol("T2") as NamedType).findSymbol("vv") as SymbolDeclaration
+		assertTrue(typingServices.isEqual(vv.type, typeProvider.termExpressionType(vv.definition)))		
+	}
+	
+	@Test
+	def testTraitSelfType4() {
+		val model = '''
+			package p;
+			trait mT<T> {
+				v : T -> Self;
+			}
+			
+			type T1 exhibits(mT<Int>) {
+			}
+			
+			type T2 extends (T1){
+				vv : T1 := v(5);
+			}
+		'''.parse
+		
+//		model.assertNoErrors
+		val vv = (model.findSymbol("T2") as NamedType).findSymbol("vv") as SymbolDeclaration
+		assertTrue(typingServices.isEqual(vv.type, typeProvider.termExpressionType(vv.definition)))		
+	}
 }

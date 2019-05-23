@@ -55,6 +55,7 @@ import com.utc.utrc.hermes.iml.iml.MatchExpression
 import com.utc.utrc.hermes.iml.iml.MatchStatement
 import com.utc.utrc.hermes.iml.iml.TermMemberSelection
 import com.utc.utrc.hermes.iml.iml.DatatypeConstructor
+import com.utc.utrc.hermes.iml.typing.TypingEnvironment
 
 /**
  * This class contains custom validation rules. 
@@ -531,7 +532,7 @@ class ImlValidator extends AbstractImlValidator {
 		 	 	}
 		 	 	// Check maching types
 		 	 	for (i : 0 ..< constructor.parameters.size) {
-		 	 		val declaredType = bind(constructor.parameters.get(i), recType as SimpleTypeReference)
+		 	 		val declaredType = bind(constructor.parameters.get(i),  new TypingEnvironment().addContext(recType as SimpleTypeReference))
 		 	 		val definedType = termExpressionType(paramTuple.elements.get(i))
 		 	 		if (!isEqual(declaredType, definedType, true)) {
 		 	 			error('''Datatype constuctor instantiation parameter doesn't match the declared one.''' + 

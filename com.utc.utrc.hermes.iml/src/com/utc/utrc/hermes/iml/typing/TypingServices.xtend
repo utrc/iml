@@ -337,7 +337,7 @@ public class TypingServices {
 	def ImlType getAliasType(SimpleTypeReference r){
 		if (r.isAlias){
 			var alias = r.type.relations.filter(Alias).get(0).type.type
-			return typeProvider.bind(alias,r)
+			return typeProvider.bind(alias, new TypingEnvironment().addContext(r))
 		}
 		return r // if it is not alias return the original type
 	}
@@ -350,41 +350,41 @@ public class TypingServices {
 	/**
 	 * Normalize type by resolving aliases and Self type in case a container was provided
 	 */
-	def ImlType normalizeType(ImlType type, NamedType container) {
+	def ImlType normalizeType(ImlType type, SimpleTypeReference selfActualType) {
 		if (type instanceof SimpleTypeReference) {
 			if (type.isAlias) {
-				return normalizeType(getAliasType(type), container)
+				return normalizeType(getAliasType(type), selfActualType)
 			} else {
 				return clone(type)
 			}
 		}
 		if (type instanceof SelfType) {
-			if (container !== null) {
-				return ImlCustomFactory.INST.createSimpleTypeReference(container)
+			if (selfActualType !== null) {
+				return clone(selfActualType)
 			} else {
 				return type
 			}
 		}
 		if (type instanceof TupleType) {
-			return ImlCustomFactory.INST.createTupleType(type.types.map[normalizeType(it, container)])
+			return ImlCustomFactory.INST.createTupleType(type.types.map[normalizeType(it, selfActualType)])
 		}
 		if (type instanceof RecordType) {
 			return ImlCustomFactory.INST.createRecordType => [
 				it.symbols.addAll(type.symbols.map[
-					ImlCustomFactory.INST.createSymbolDeclaration(it.name, normalizeType(it.type, container))	
+					ImlCustomFactory.INST.createSymbolDeclaration(it.name, normalizeType(it.type, selfActualType))	
 				])
 			]
 		}
 		if (type instanceof ArrayType) {
 			return ImlCustomFactory.INST.createArrayType => [
-				it.type = normalizeType(type.type, container)
+				it.type = normalizeType(type.type, selfActualType)
 				it.dimensions.addAll(type.dimensions.map[ImlCustomFactory.INST.createOptionalTermExpr])
 			]
 		}
 		if (type instanceof FunctionType) {
 			return ImlCustomFactory.INST.createFunctionType => [
-				domain = normalizeType(type.domain, container)
-				range = normalizeType(type.range, container)
+				domain = normalizeType(type.domain, selfActualType)
+				range = normalizeType(type.range, selfActualType)
 			]
 		}
 	}

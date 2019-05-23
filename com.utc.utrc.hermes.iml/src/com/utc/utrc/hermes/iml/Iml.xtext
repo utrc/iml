@@ -147,10 +147,7 @@ SimpleTypeReference returns ImlType:
 /*Entry point for a first order logic formula.*/
 FolFormula:
 	/*Weakest operators are implication -> and double implication <->*/
-	 Formula ({FolFormula.left=current} op=('=>' | '<=>') right=Formula)?;
-
-Formula returns FolFormula:
-	OrExpression;
+	 OrExpression ({FolFormula.left=current} op=('=>' | '<=>') right=OrExpression)?;
 
 /*A quantified formula (universally or existentially quantified) has
  * a list of bound variables and a body defined over those variables.
