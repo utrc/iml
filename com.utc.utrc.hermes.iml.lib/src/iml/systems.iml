@@ -5,7 +5,10 @@ import iml.lang.* ;
 type Direction enum {IN, OUT, INOUT} ;
 
 trait Connectable {
-	connectTo<T> : Self -> Connector<T> ;
+	connectTo : Self -> Connector<Self> :=
+	fun(x:Self) : Connector<Self>{
+		some(c:Connector<Self>) { c.source = self && c.target = x}		  
+	}  ;
 }
 
 /*This is going to be reused in any definition of a port type.
@@ -18,12 +21,7 @@ trait Port extends (Connectable) {
 /*It might be useful to define a empty simple port that just has the
  * direction property
  */
-type SimplePort exhibits (Port){
-	connectTo<SimplePort> : SimplePort -> Connector<SimplePort> :=  
-	fun(x:SimplePort) : Connector<SimplePort>{
-		some(c:Connector<SimplePort>) { c.source = self && c.target = x}		  
-	}  ;
-}
+type SimplePort exhibits (Port);
 
 /*This is the trait of a type that carries and event */
 trait EventCarrier<EventType> {
@@ -42,10 +40,6 @@ trait EventDataPort<EventType,DataType> extends(Port,EventCarrier<EventType>,Dat
 
 type InEventPort<EventType> exhibits(EventPort<EventType>){
 	assert {direction = Direction.IN} ;
-	connectTo<EventType> : InEventPort<EventType> -> Connector<EventType> :=  
-	fun(x:InEventPort<EventType>) : Connector<EventType>{
-		some(c:Connector<EventType>) { c.source = event && c.target = x.event}		  
-	}  ;
 };
 type InDataPort<DateType> exhibits(DataPort<DateType>){
 	assert {direction = Direction.IN} ;
@@ -87,7 +81,6 @@ trait Component {
 	subComponents<T exhibits(Component)> : Int -> T ; 
 	ports<T exhibits(Port)> : Int -> T ;
 };
-
 
 /*A connection is a type of two elements of the same type.
  */

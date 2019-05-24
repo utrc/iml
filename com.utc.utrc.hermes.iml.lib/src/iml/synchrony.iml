@@ -48,6 +48,9 @@ type Counter exhibits(Component, Synchronous) {
 	r: InDataPort<BoolStream>;
 	n: OutDataPort<IntStream>;
 	
+	assert {ports<InDataPort<IntStream>>(0) = x0} ;
+	
+	
 	[Let] l:Stream<Bool> := 
 	{ 
 		n.data.eq( x0.data.then( ite<Int>(r.data, x0.data, n.data.pre.plus(d.data) ) ) ) ;
