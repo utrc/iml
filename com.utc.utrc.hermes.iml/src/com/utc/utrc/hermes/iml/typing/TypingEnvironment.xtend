@@ -27,6 +27,21 @@ class TypingEnvironment {
 		bindingMap = newHashMap
 	}
 	
+	new(NamedType ctx) {
+		this()
+		addContext(ctx)		
+	}
+	
+	new(SimpleTypeReference ctx) {
+		this()
+		addContext(ctx)		
+	}
+	
+	new(SymbolReferenceTerm ctx) {
+		this()
+		addContext(ctx)		
+	}
+	
 	def TypingEnvironment addContext(NamedType ctx) {
 		if (ctx !== null) {
 			addContext(ImlCustomFactory.INST.createSimpleTypeReference(ctx))

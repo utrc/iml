@@ -10,7 +10,6 @@ import com.google.inject.Inject
 import com.utc.utrc.hermes.iml.iml.Assertion
 import com.utc.utrc.hermes.iml.iml.AtomicExpression
 import com.utc.utrc.hermes.iml.iml.NamedType
-import com.utc.utrc.hermes.iml.iml.Extension
 import com.utc.utrc.hermes.iml.iml.FolFormula
 import com.utc.utrc.hermes.iml.iml.ImlType
 import com.utc.utrc.hermes.iml.iml.ImlPackage
@@ -56,6 +55,7 @@ import com.utc.utrc.hermes.iml.iml.MatchStatement
 import com.utc.utrc.hermes.iml.iml.TermMemberSelection
 import com.utc.utrc.hermes.iml.iml.DatatypeConstructor
 import com.utc.utrc.hermes.iml.typing.TypingEnvironment
+import com.utc.utrc.hermes.iml.iml.Inclusion
 
 /**
  * This class contains custom validation rules. 
@@ -148,18 +148,18 @@ class ImlValidator extends AbstractImlValidator {
 	}
 	
 	@Check
-	def checkExtendsRelation(Extension extendRelation) {
-		extendRelation.extensions.forEach[
+	def checkExtendsRelation(Inclusion extendRelation) {
+		extendRelation.inclusions.forEach[
 			if (! (it.type instanceof SimpleTypeReference)) {
 				error("Types can extend only simple types", 
-					ImlPackage::eINSTANCE.extension_Extensions, INVALID_RELATION)
+					ImlPackage::eINSTANCE.inclusion_Inclusions, INVALID_RELATION)
 			}
 		]
 	}
 
 	@Check
 	def checkNoCycleInNamedTypeHierarchy(NamedType nt) {
-		val extensions = getExtensions(nt) 
+		val extensions = getInclusions(nt) 
 		if (extensions.empty)
 			return
 		val visited = <NamedType>newArrayList()
@@ -170,8 +170,8 @@ class ImlValidator extends AbstractImlValidator {
 		while (superTypeHierarchy.get(index).size() > 0) {
 			val toAdd = <NamedType>newArrayList()
 			for (cur : superTypeHierarchy.get(index)) {
-				for (supType : getExtensions(cur)) {
-					for(tr : supType.extensions){
+				for (supType : getInclusions(cur)) {
+					for(tr : supType.inclusions){
 						if (!visited.contains(tr.type.asSimpleTR.type))
 							toAdd.add(tr.type.asSimpleTR.type)
 						else {
@@ -194,8 +194,8 @@ class ImlValidator extends AbstractImlValidator {
 		return
 	}
 	
-	def getExtensions(NamedType type) {
-		type.relations.filter[it instanceof Extension].map[it as Extension]
+	def getInclusions(NamedType type) {
+		type.relations.filter[it instanceof Inclusion].map[it as Inclusion]
 	}
 
 	@Check
@@ -531,7 +531,7 @@ class ImlValidator extends AbstractImlValidator {
 		 	 	}
 		 	 	// Check maching types
 		 	 	for (i : 0 ..< constructor.parameters.size) {
-		 	 		val env = new TypingEnvironment().addContext(recType as SimpleTypeReference)
+		 	 		val env = new TypingEnvironment(recType as SimpleTypeReference)
 		 	 		val declaredType = env.bind(constructor.parameters.get(i))
 		 	 		val definedType = termExpressionType(paramTuple.elements.get(i))
 		 	 		if (!isEqual(declaredType, definedType, true)) {

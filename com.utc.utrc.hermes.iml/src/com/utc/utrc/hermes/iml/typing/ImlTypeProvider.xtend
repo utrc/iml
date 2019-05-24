@@ -13,7 +13,6 @@ import com.utc.utrc.hermes.iml.iml.CaseTermExpression
 import com.utc.utrc.hermes.iml.iml.CharLiteral
 import com.utc.utrc.hermes.iml.iml.DatatypeConstructor
 import com.utc.utrc.hermes.iml.iml.ExpressionTail
-import com.utc.utrc.hermes.iml.iml.Extension
 import com.utc.utrc.hermes.iml.iml.FloatNumberLiteral
 import com.utc.utrc.hermes.iml.iml.FolFormula
 import com.utc.utrc.hermes.iml.iml.FunctionType
@@ -52,6 +51,8 @@ import org.eclipse.emf.ecore.util.EcoreUtil
 import org.eclipse.xtext.EcoreUtil2
 
 import static extension org.eclipse.xtext.EcoreUtil2.*
+import com.utc.utrc.hermes.iml.iml.Model
+import com.utc.utrc.hermes.iml.iml.Inclusion
 
 class ImlTypeProvider {
 	
@@ -62,12 +63,12 @@ class ImlTypeProvider {
 	extension TypingServices
 
 	def ImlType termExpressionType(FolFormula t) {
-		val env = new TypingEnvironment().addContext(t.getContainerOfType(NamedType))
+		val env = new TypingEnvironment(t.getContainerOfType(NamedType))
 		termExpressionType(t, env)
 	}
 
 	def ImlType termExpressionType(TermExpression t) {
-		val env = new TypingEnvironment().addContext(t.getContainerOfType(NamedType))
+		val env = new TypingEnvironment(t.getContainerOfType(NamedType))
 		termExpressionType(t, env)
 	}
 	
@@ -310,6 +311,10 @@ class ImlTypeProvider {
 		}
 		
 	}
+	
+	def ImlType getType(SymbolDeclaration s, TypingEnvironment env) {
+		return getType(ImlCustomFactory.INST.createSymbolReferenceTerm(s), env)
+	}
 
 	def ImlType getType(SymbolReferenceTerm s, TypingEnvironment env) {
 		if (env.typeContext === null || env.typeContext.type === null) {
@@ -336,6 +341,36 @@ class ImlTypeProvider {
 			
 			if (env.typeContext.type.symbols.contains(s.symbol as SymbolDeclaration) || isSymbolLocalScope(s.symbol as SymbolDeclaration)) {
 				return env.bind(s)
+			} else if (s.symbol.eContainer instanceof Model) { // public symbol
+				env.addContext(s)
+				return env.bind(s)
+			} else {
+				// Collect related types from relations
+				val relatedTypes = newArrayList
+				for (rel : env.typeContext.type.relations) {
+					switch (rel) {
+						Inclusion: {
+							for (twp : rel.inclusions) {
+								relatedTypes.add(twp.type)
+							}
+						}
+						TraitExhibition: {
+							for (twp : rel.exhibitions) {
+								relatedTypes.add(twp.type)
+							}
+						}
+					}
+				}
+				// Check if symbol referenced from one of the related types
+				for (target : relatedTypes) {
+					if (target instanceof SimpleTypeReference) {
+						var sup = env.bind(target) as SimpleTypeReference
+						var retval = getType(s, env.addContext(sup));
+						if (retval !== null) {
+							return retval;
+						}
+					}
+				}
 			}
 		}
 		
@@ -343,32 +378,6 @@ class ImlTypeProvider {
 			return env.typeContext
 		}
 		
-		// Collect related types from relations
-		val relatedTypes = newArrayList
-		for (rel : env.typeContext.type.relations) {
-			switch (rel) {
-				Extension: {
-					for (twp : rel.extensions) {
-						relatedTypes.add(twp.type)
-					}
-				}
-				TraitExhibition: {
-					for (twp : rel.exhibitions) {
-						relatedTypes.add(twp.type)
-					}
-				}
-			}
-		}
-		// Check if symbol referenced from one of the related types
-		for (target : relatedTypes) {
-			if (target instanceof SimpleTypeReference) {
-				var sup = env.bind(target) as SimpleTypeReference
-				var retval = getType(s, env.addContext(sup));
-				if (retval !== null) {
-					return retval;
-				}
-			}
-		}
 		return null;
 	}
 	

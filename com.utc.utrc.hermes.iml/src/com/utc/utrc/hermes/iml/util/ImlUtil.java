@@ -20,10 +20,10 @@ import com.utc.utrc.hermes.iml.iml.Alias;
 import com.utc.utrc.hermes.iml.iml.ArrayType;
 import com.utc.utrc.hermes.iml.iml.EnumRestriction;
 import com.utc.utrc.hermes.iml.iml.NamedType;
-import com.utc.utrc.hermes.iml.iml.Extension;
 import com.utc.utrc.hermes.iml.iml.FolFormula;
 import com.utc.utrc.hermes.iml.iml.FunctionType;
 import com.utc.utrc.hermes.iml.iml.ImlType;
+import com.utc.utrc.hermes.iml.iml.Inclusion;
 import com.utc.utrc.hermes.iml.iml.Model;
 import com.utc.utrc.hermes.iml.iml.ParenthesizedTerm;
 import com.utc.utrc.hermes.iml.iml.Property;
@@ -63,9 +63,9 @@ public class ImlUtil {
 		List<NamedType> retval = new ArrayList<>();
 		if (type.getRelations() != null) {
 			for(Relation rel : type.getRelations()) {
-				if(rel instanceof Extension) {
+				if(rel instanceof Inclusion) {
 					retval.addAll(
-							((Extension) rel).getExtensions().stream()
+							((Inclusion) rel).getInclusions().stream()
 							.map(it -> ((SimpleTypeReference) it.getType()).getType())
 							.collect(Collectors.toList())) ;
 				}
@@ -78,9 +78,9 @@ public class ImlUtil {
 		List<SimpleTypeReference> retval = new ArrayList<>();
 		if (type.getRelations() != null) {
 			for(Relation rel : type.getRelations()) {
-				if(rel instanceof Extension) {
+				if(rel instanceof Inclusion) {
 					retval.addAll(
-							((Extension) rel).getExtensions().stream()
+							((Inclusion) rel).getInclusions().stream()
 							.map(it -> ((SimpleTypeReference) it.getType()))
 							.collect(Collectors.toList())) ;
 				}
@@ -162,8 +162,8 @@ public class ImlUtil {
 		List<TypeWithProperties> types = new ArrayList<>();
 		EList<Relation> relations = type.getRelations();
 		for (Relation relation : relations) {
-			if (relation instanceof Extension) {
-				types.addAll(((Extension) relation).getExtensions());
+			if (relation instanceof Inclusion) {
+				types.addAll(((Inclusion) relation).getInclusions());
 			} else if (relation instanceof Alias) {
 				types.add(((Alias) relation).getType());
 			} else {
@@ -177,8 +177,8 @@ public class ImlUtil {
 		List<TypeWithProperties> types = new ArrayList<>();
 		for (Relation relation : type.getRelations()) {
 			if (relationType.isInstance(relation)) {
-				if (relation instanceof Extension) {
-					types.addAll(((Extension) relation).getExtensions());
+				if (relation instanceof Inclusion) {
+					types.addAll(((Inclusion) relation).getInclusions());
 				} else if (relation instanceof Alias) {
 					types.add(((Alias) relation).getType());
 				} else if (relation instanceof TraitExhibition){
@@ -216,7 +216,7 @@ public class ImlUtil {
 	}
 
 	public static boolean isSubTypeOf(NamedType type, String ParentTypeName) {
-		for (TypeWithProperties parent : getRelationTypes(type, Extension.class)) {
+		for (TypeWithProperties parent : getRelationTypes(type, Inclusion.class)) {
 			NamedType parentCt = ((SimpleTypeReference)parent.getType()).getType();
 			if (parentCt.getName().equals(ParentTypeName)) {
 				return true;

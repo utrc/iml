@@ -6,7 +6,6 @@ package com.utc.utrc.hermes.iml.typing
 import com.utc.utrc.hermes.iml.custom.ImlCustomFactory
 import com.utc.utrc.hermes.iml.iml.Alias
 import com.utc.utrc.hermes.iml.iml.ArrayType
-import com.utc.utrc.hermes.iml.iml.Extension
 import com.utc.utrc.hermes.iml.iml.FunctionType
 import com.utc.utrc.hermes.iml.iml.ImlType
 import com.utc.utrc.hermes.iml.iml.NamedType
@@ -23,6 +22,8 @@ import com.utc.utrc.hermes.iml.lib.ImlStdLib
 import com.utc.utrc.hermes.iml.iml.SelfType
 import com.utc.utrc.hermes.iml.iml.RecordType
 import com.utc.utrc.hermes.iml.util.ImlUtil
+import com.utc.utrc.hermes.iml.iml.ImlFactory
+import com.utc.utrc.hermes.iml.iml.Inclusion
 
 class TypingServices {
 	
@@ -227,8 +228,8 @@ class TypingServices {
 			for (current : retVal.get(index)) {
 				val ctype = current.type
 				if (ctype.relations !== null) {
-					for (rel : ctype.relations.filter(Extension)) {
-						for(twp : rel.extensions){
+					for (rel : ctype.relations.filter(Inclusion)) {
+						for(twp : rel.inclusions){
 							if (twp.type instanceof SimpleTypeReference) {
 								if (! closed.contains((twp.type as SimpleTypeReference).type)) {
 									toAdd.add(twp.type as SimpleTypeReference)
@@ -267,6 +268,25 @@ class TypingServices {
 		}
 		return retVal
 	}
+	
+	def ImlType accessArray(ArrayType type, int dim) {
+		if (dim == type.dimensions.size) {
+			return type.type
+		} else {
+			var ret = ImlFactory::eINSTANCE.createArrayType();
+			// TODO We are not cloning the property list here
+			ret.type = clone(type.type);
+
+			for (i : 0 ..< (type.dimensions.size() - dim)) {
+				// TODO : Should we clone the term expressions?
+				ret.dimensions.add(ImlFactory::eINSTANCE.createOptionalTermExpr => [
+					term = ImlFactory::eINSTANCE.createNumberLiteral => [value = 0];
+				])
+			}
+			return ret
+		}
+	}
+	
 
 	/* Check if two types are compatible or not
 	 * */
@@ -281,7 +301,7 @@ class TypingServices {
 	def ImlType getAliasType(SimpleTypeReference r) {
 		if (ImlUtil.isAlias(r)){
 			var alias = r.type.relations.filter(Alias).get(0).type.type
-			val env = new TypingEnvironment().addContext(r)
+			val env = new TypingEnvironment(r)
 			return env.bind(alias)
 		}
 		return r // if it is not alias return the original type

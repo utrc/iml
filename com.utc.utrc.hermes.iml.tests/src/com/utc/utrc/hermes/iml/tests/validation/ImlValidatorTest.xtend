@@ -182,39 +182,39 @@ class ImlValidatorTest {
 	 * ************************/	
 	
 	@Test
-	def testCheckExtendsSimpleType_Valid() {
+	def testCheckIncludesSimpleType_Valid() {
 		val model = '''
 			package p;
 			type Parent;
 			
-			type Child extends (Parent);
+			type Child includes (Parent);
 		'''.parse
 		
 		model.assertNoErrors
 	}
 	
 		@Test
-	def testCheckExtendsSimpleType_ValidMultipleExtends() {
+	def testCheckIncludesSimpleType_ValidMultipleIncludes() {
 		val model = '''
 			package p;
 			type Parent;
 			type Parent2;
 			
-			type Child extends (Parent, Parent2);
+			type Child includes (Parent, Parent2);
 		'''.parse
 		
 		model.assertNoErrors
 	}
 	
 	@Test
-	def testCheckExtendsSimpleType_Invalid() {
-		testInvalidExtends("extends ((Parent1, Parent2))")
-		testInvalidExtends("extends (Parent1->Parent1)")
-		testInvalidExtends("extends (Parent1[10])")
-		testInvalidExtends("extends (Parent1, Parent1[10])")
+	def testCheckIncludesSimpleType_Invalid() {
+		testInvalidIncludes("includes ((Parent1, Parent2))")
+		testInvalidIncludes("includes (Parent1->Parent1)")
+		testInvalidIncludes("includes (Parent1[10])")
+		testInvalidIncludes("includes (Parent1, Parent1[10])")
 	}
 	
-	def testInvalidExtends(String extensions) {
+	def testInvalidIncludes(String extensions) {
 		val model = '''
 			package p;
 			type Parent1;
@@ -235,7 +235,7 @@ class ImlValidatorTest {
 		val model = '''
 			package p;
 			type T1;
-			type T2 extends (T1);
+			type T2 includes (T1);
 		'''.parse
 		
 		model.assertNoErrors
@@ -245,8 +245,8 @@ class ImlValidatorTest {
 	def testNoCycle_IncludeDirectCycle() {
 		val model = '''
 			package p;
-			type T1 extends (T2);
-			type T2 extends (T1);
+			type T1 includes (T2);
+			type T2 includes (T1);
 		'''.parse
 		
 		model.assertError(ImlPackage.eINSTANCE.namedType, CYCLIC_NAMEDTYPE_HIERARCHY)
@@ -257,9 +257,9 @@ class ImlValidatorTest {
 		val model = '''
 			package p;
 			type Tx;
-			type T1 extends (T2);
-			type T2 extends (Tx, T3);
-			type T3 extends (T1);
+			type T1 includes (T2);
+			type T2 includes (Tx, T3);
+			type T3 includes (T1);
 		'''.parse
 		
 		model.assertError(ImlPackage.eINSTANCE.namedType, CYCLIC_NAMEDTYPE_HIERARCHY)
@@ -287,7 +287,7 @@ class ImlValidatorTest {
 	def testCheckParameterList_ValidParameterCompatible() {
 		val model = '''
 			package p;
-			type T1 extends (T2);
+			type T1 includes (T2);
 			type T2;
 			type x {
 				var1: {p1 : T2, p2 : Real} -> Int;

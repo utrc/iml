@@ -48,9 +48,9 @@ TypeWithProperties :
 ;
 
 Relation:
-	{Extension}( extends?='extends' '(' extensions+=TypeWithProperties (',' extensions+=TypeWithProperties)*')'   ) |
-	{Alias}( alias?='is' type=TypeWithProperties  ) |
-	{TraitExhibition}( exhibits?='exhibits' '('exhibitions+=TypeWithProperties (',' exhibitions+=TypeWithProperties)*  ')' ) 
+	{Inclusion}('includes' '(' inclusions+=TypeWithProperties (',' inclusions+=TypeWithProperties)*')'   ) |
+	{Alias}('is' type=TypeWithProperties  ) |
+	{TraitExhibition}('exhibits' '('exhibitions+=TypeWithProperties (',' exhibitions+=TypeWithProperties)*  ')' ) 
 ;
 
 NamedType:

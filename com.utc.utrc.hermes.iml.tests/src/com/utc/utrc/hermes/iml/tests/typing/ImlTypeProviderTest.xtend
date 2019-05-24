@@ -150,7 +150,7 @@ class ImlTypeProviderTest {
 				var2 : t2;
 			}
 			
-			type t2 extends (t3) {
+			type t2 includes (t3) {
 			};
 			
 			type t3 {
@@ -329,7 +329,7 @@ class ImlTypeProviderTest {
 				t1Var : T -> T;
 			}
 			
-			type T2<T> extends (T1<Int>) {
+			type T2<T> includes (T1<Int>) {
 				t2Var : T[];
 			}
 			
@@ -822,7 +822,7 @@ class ImlTypeProviderTest {
 				v1 : T -> T := fun (a : T) { a ;};
 			}
 			
-			type T2<T> extends (T1<T>) {
+			type T2<T> includes (T1<T>) {
 				
 			}
 			
@@ -845,7 +845,7 @@ class ImlTypeProviderTest {
 				f1<P> : (T, P) -> (P, T) := fun (a : T, b : P) { (b, a);};
 			}
 			
-			type T2<T> extends (T1<T>) {
+			type T2<T> includes (T1<T>) {
 				
 			}
 			
@@ -912,7 +912,7 @@ class ImlTypeProviderTest {
 			type T1 exhibits(mT) {
 			}
 			
-			type T2 extends (T1){
+			type T2 includes (T1){
 				vv : T1 := v(5);
 			}
 		'''.parse
@@ -933,7 +933,7 @@ class ImlTypeProviderTest {
 			type T1 exhibits(mT<Int>) {
 			}
 			
-			type T2 extends (T1){
+			type T2 includes (T1){
 				vv : T1 := v(5);
 			}
 		'''.parse
