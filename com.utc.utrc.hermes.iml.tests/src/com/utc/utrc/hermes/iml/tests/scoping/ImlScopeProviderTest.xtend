@@ -74,7 +74,7 @@ class ImlScopeProviderTest {
 			type Parent {
 				varp : Int;
 			};
-			type t1 extends (Parent) {
+			type t1 includes (Parent) {
 				var1 : Int;
 			};
 			
@@ -98,7 +98,7 @@ class ImlScopeProviderTest {
 			type Parent {
 				varp : Int;
 			};
-			type t1 extends (Parent) {
+			type t1 includes (Parent) {
 				var1 : Int;
 				varx : Int := varp;
 			};

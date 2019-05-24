@@ -3,89 +3,88 @@
  * See License.txt in the project root directory for license information. */
 package com.utc.utrc.hermes.iml.typing
 
+import com.google.inject.Inject
 import com.utc.utrc.hermes.iml.custom.ImlCustomFactory
 import com.utc.utrc.hermes.iml.iml.Addition
 import com.utc.utrc.hermes.iml.iml.ArrayAccess
 import com.utc.utrc.hermes.iml.iml.ArrayType
 import com.utc.utrc.hermes.iml.iml.AtomicExpression
 import com.utc.utrc.hermes.iml.iml.CaseTermExpression
-import com.utc.utrc.hermes.iml.iml.NamedType
-import com.utc.utrc.hermes.iml.iml.EnumRestriction
-import com.utc.utrc.hermes.iml.iml.Extension
+import com.utc.utrc.hermes.iml.iml.CharLiteral
+import com.utc.utrc.hermes.iml.iml.DatatypeConstructor
+import com.utc.utrc.hermes.iml.iml.ExpressionTail
 import com.utc.utrc.hermes.iml.iml.FloatNumberLiteral
 import com.utc.utrc.hermes.iml.iml.FolFormula
-import com.utc.utrc.hermes.iml.iml.ImlType
+import com.utc.utrc.hermes.iml.iml.FunctionType
 import com.utc.utrc.hermes.iml.iml.ImlFactory
+import com.utc.utrc.hermes.iml.iml.ImlType
 import com.utc.utrc.hermes.iml.iml.InstanceConstructor
 import com.utc.utrc.hermes.iml.iml.IteTermExpression
 import com.utc.utrc.hermes.iml.iml.LambdaExpression
+import com.utc.utrc.hermes.iml.iml.MatchExpression
+import com.utc.utrc.hermes.iml.iml.MatchStatement
 import com.utc.utrc.hermes.iml.iml.Multiplication
+import com.utc.utrc.hermes.iml.iml.NamedType
 import com.utc.utrc.hermes.iml.iml.NumberLiteral
 import com.utc.utrc.hermes.iml.iml.ParenthesizedTerm
 import com.utc.utrc.hermes.iml.iml.QuantifiedFormula
+import com.utc.utrc.hermes.iml.iml.RecordConstructor
+import com.utc.utrc.hermes.iml.iml.RecordType
 import com.utc.utrc.hermes.iml.iml.SelfTerm
 import com.utc.utrc.hermes.iml.iml.SelfType
 import com.utc.utrc.hermes.iml.iml.SequenceTerm
 import com.utc.utrc.hermes.iml.iml.SimpleTypeReference
-import com.utc.utrc.hermes.iml.iml.Symbol
+import com.utc.utrc.hermes.iml.iml.StringLiteral
 import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
 import com.utc.utrc.hermes.iml.iml.SymbolReferenceTerm
+import com.utc.utrc.hermes.iml.iml.TailedExpression
 import com.utc.utrc.hermes.iml.iml.TermExpression
 import com.utc.utrc.hermes.iml.iml.TermMemberSelection
+import com.utc.utrc.hermes.iml.iml.Trait
+import com.utc.utrc.hermes.iml.iml.TraitExhibition
 import com.utc.utrc.hermes.iml.iml.TruthValue
 import com.utc.utrc.hermes.iml.iml.TupleConstructor
 import com.utc.utrc.hermes.iml.iml.TupleType
-import com.utc.utrc.hermes.iml.iml.TypeRestriction
+import com.utc.utrc.hermes.iml.lib.ImlStdLib
 import com.utc.utrc.hermes.iml.util.ImlUtil
-import java.util.HashMap
-import java.util.Map
 import org.eclipse.emf.ecore.util.EcoreUtil
 import org.eclipse.xtext.EcoreUtil2
 
 import static extension org.eclipse.xtext.EcoreUtil2.*
-import org.eclipse.emf.ecore.EObject
 import com.utc.utrc.hermes.iml.iml.Model
-import com.utc.utrc.hermes.iml.iml.ExpressionTail
-import com.utc.utrc.hermes.iml.iml.FunctionType
-import com.utc.utrc.hermes.iml.iml.TailedExpression
-import com.utc.utrc.hermes.iml.iml.StringLiteral
-import com.utc.utrc.hermes.iml.iml.CharLiteral
-import com.google.inject.Inject
-import com.utc.utrc.hermes.iml.lib.ImlStdLib
-import com.utc.utrc.hermes.iml.iml.RecordType
-import com.utc.utrc.hermes.iml.iml.MatchExpression
-import com.utc.utrc.hermes.iml.iml.MatchStatement
-import com.utc.utrc.hermes.iml.iml.RecordConstructor
+import com.utc.utrc.hermes.iml.iml.Inclusion
 
-public class ImlTypeProvider {
+class ImlTypeProvider {
 	
 	@Inject
-	extension private ImlStdLib
+	extension ImlStdLib
 	
 	@Inject 
-	extension private TypingServices
+	extension TypingServices
 
 	def ImlType termExpressionType(FolFormula t) {
-		termExpressionType(t, null)
+		val env = new TypingEnvironment(t.getContainerOfType(NamedType))
+		termExpressionType(t, env)
 	}
 
 	def ImlType termExpressionType(TermExpression t) {
-		termExpressionType(t, null)
+		val env = new TypingEnvironment(t.getContainerOfType(NamedType))
+		termExpressionType(t, env)
 	}
 	
-	def ImlType termExpressionType(FolFormula t, SimpleTypeReference context) {
+	def ImlType termExpressionType(FolFormula t, TypingEnvironment env) {
 		if (t instanceof TermExpression) {
-			return termExpressionType((t as TermExpression), context)
+			return termExpressionType((t as TermExpression), env)
 		}
 		if (t instanceof AtomicExpression) {
 			return createBoolRef
 		}
-		return t.left.termExpressionType(context);
+		return t.left.termExpressionType(env);
 	}
 	
-		def ImlType termExpressionType(TermExpression t, SimpleTypeReference context) {
-			return normalizeType(expressionType(t, context))
-		}
+	def ImlType termExpressionType(TermExpression t, TypingEnvironment env) {
+		return normalizeType(expressionType(t, env))
+	}
 	
 
 	/* Compute the type of a TermExpression 
@@ -94,21 +93,26 @@ public class ImlTypeProvider {
 	 * that contains stereotypes, type and type binding information
 	 * for the term. 
 	 * */
-	def ImlType expressionType(TermExpression t, SimpleTypeReference context) {
+	def ImlType expressionType(TermExpression t, TypingEnvironment env) {
 
 		switch (t) {
 			// If the expression is "self", then its type is 
 			// type of the container type.
 			SelfTerm: {
-				return bind(ImlCustomFactory.INST.createSimpleTypeReference(t.getContainerOfType(NamedType)), context)
+				var typeContainer = t.getContainerOfType(NamedType);
+				if (typeContainer instanceof Trait && env.selfContext !== null) {
+					return env.selfContext
+				} else {
+					return env.bind(ImlCustomFactory.INST.createSimpleTypeReference(typeContainer))
+				}
 			}
 			// Additions are among numeric types and the result is a numeric 
 			// type. If one of the two terms is real, then the type is real
 			// otherwise it is integer.
 			Addition: {
 				// note that in iml grammar, addition includes both "+" and "-".
-				if (t.left.termExpressionType(context).isReal ||
-					t.right.termExpressionType(context).isReal) {
+				if (t.left.termExpressionType(env).isReal ||
+					t.right.termExpressionType(env).isReal) {
 					return createRealRef
 				}
 				return createIntRef
@@ -124,8 +128,8 @@ public class ImlTypeProvider {
 				}
 
 				// note that in iml grammar, multiplication includes both "x" and "/".
-				if (t.left.termExpressionType(context).isReal ||
-					t.right.termExpressionType(context).isReal || t.sign == '/') {
+				if (t.left.termExpressionType(env).isReal ||
+					t.right.termExpressionType(env).isReal || t.sign == '/') {
 					return createRealRef
 				}
 				return createIntRef;
@@ -133,21 +137,24 @@ public class ImlTypeProvider {
 			// Compute the actual type reference which 
 			// depends on the types of the change of member selections
 			TermMemberSelection: {
-				val receiverType = termExpressionType(t.receiver, context)
+				val receiverType = termExpressionType(t.receiver, env)
 				if (receiverType instanceof SimpleTypeReference) {
-					return termExpressionType(t.member, receiverType)
+					return termExpressionType(t.member, env.addContext(receiverType))
 				} else if (receiverType instanceof RecordType) {
-					return termExpressionType(t.member, context)
+					return termExpressionType(t.member, env)
+				} else if (receiverType instanceof SelfType) {
+					return receiverType
 				} else {
 					throw new IllegalArgumentException("TermMemberSelection receiver should be simple type or record type only.")	
 				}
 			}
 			TailedExpression: {
-				var leftType = termExpressionType(t.left)
+				var leftType = termExpressionType(t.left, env)
 				return accessTail(leftType, t.tail)
 			}
 			SymbolReferenceTerm: {
-				return normalizeType(getSymbolReferenceType(t, context), t.getContainerOfType(NamedType))
+				val symbolType =getSymbolReferenceType(t, env)
+				return normalizeType(symbolType, env.selfType)
 
 			}
 			// A number literal is always an integer
@@ -168,10 +175,10 @@ public class ImlTypeProvider {
 			}
 			
 			IteTermExpression: {
-				return termExpressionType(t.left, context)
+				return termExpressionType(t.left, env)
 			}
 			CaseTermExpression: {
-				return termExpressionType(t.expressions.get(0), context)
+				return termExpressionType(t.expressions.get(0), env)
 			}
 			
 			TruthValue: {
@@ -184,7 +191,7 @@ public class ImlTypeProvider {
 				} else {
 					retval.domain = ImlCustomFactory.INST.createTupleType(t.parameters.map[clone(type)])
 				}
-				retval.range = (t.definition as SequenceTerm).^return.termExpressionType(context)
+				retval.range = (t.definition as SequenceTerm).^return.termExpressionType(env)
 				return retval
 			}
 			InstanceConstructor: {
@@ -192,27 +199,27 @@ public class ImlTypeProvider {
 			}
 			TupleConstructor: {
 				return ImlFactory.eINSTANCE.createTupleType => [
-					types.addAll(t.elements.map[it.termExpressionType(context)]);
+					types.addAll(t.elements.map[it.termExpressionType(env)]);
 				]
 			}
 			RecordConstructor: {
 				return ImlFactory.eINSTANCE.createRecordType => [
 					symbols.addAll(t.elements.map[
-						ImlCustomFactory.INST.createSymbolDeclaration(it.name, it.definition.termExpressionType(context))
+						ImlCustomFactory.INST.createSymbolDeclaration(it.name, it.definition.termExpressionType(env))
 					])
 				]
 			}
 			SequenceTerm: {
-				return t.^return.termExpressionType(context)
+				return t.^return.termExpressionType(env)
 			}
 			ParenthesizedTerm : {
-				return t.sub.termExpressionType(context)
+				return t.sub.termExpressionType(env)
 			} 
 			QuantifiedFormula : {
 				return createBoolRef
 			}
 			MatchExpression : {
-				return t.matchStatements.get(0).^return.termExpressionType(context)
+				return t.matchStatements.get(0).^return.termExpressionType(env)
 			}
 			default: {
 				return createNullRef
@@ -220,52 +227,6 @@ public class ImlTypeProvider {
 		}
 	}
 	
-	def isEnumLiteral(Symbol s) {
-		val container = EcoreUtil2.getContainerOfType(s, NamedType)
-		if (container !== null) {
-			return isLiteralOf(s, container)
-		}
-		return false
-	}
-
-	def isLiteralOf(Symbol s, NamedType t) {
-		for (TypeRestriction r : t.restrictions) {
-			if (r instanceof EnumRestriction) {
-				if (r.literals.contains(s)) {
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-	
-	def getSymbolReferenceType(SymbolReferenceTerm sr, SimpleTypeReference context) {
-		if (sr.symbol instanceof NamedType) {
-			if (isAlias(sr.symbol as NamedType)) {
-				return getAliasType(sr.symbol as NamedType)
-			} else {
-				// FIXME some stuff here need to be refactor as it seems we have duplicate code
-				var SimpleTypeReference retType = ImlCustomFactory.INST.createSimpleTypeReference=>[type = sr.symbol as NamedType];
-				retType.typeBinding.addAll(sr.typeBinding.map[it.clone])
-				return bind(retType, context)
-			}
-		} else if (sr.symbol.isEnumLiteral) {
-			// Accessing specific literal
-			return ImlCustomFactory.INST.createSimpleTypeReference(EcoreUtil2.getContainerOfType(sr.symbol, NamedType))
-		} else if (sr.symbol.eContainer instanceof MatchStatement && 
-					(sr.symbol.eContainer as MatchStatement).paramSymbols.contains(sr.symbol)) { // Datatype constructor symbol
-			val matchStatment = sr.symbol.eContainer as MatchStatement
-			val constructor = matchStatment.constructor
-			val symbolType = constructor.parameters.get(matchStatment.paramSymbols.indexOf(sr.symbol))
-			return bind(symbolType, context)
-		} else {
-			// Reference to a symbol
-			//Change this call to include type parameters
-			return getType(sr, context);
-		}
-		
-	}
-
 	def accessTail(ImlType type, ExpressionTail tail) {
 		if (tail instanceof ArrayAccess) {
 			if (type instanceof ArrayType) {
@@ -325,263 +286,109 @@ public class ImlTypeProvider {
 			return type
 	}
 	
-	// FIXME this is a temp implementation as we ignore SymbolDeclaration templates
-	// TODO do we need this? Why not getType(SymbolTermReference, SimpleTypeReference)?
-	def ImlType getType(SymbolDeclaration s, SimpleTypeReference ctx) {
-		if (ImlUtil.isGlobalSymbol(s)) {
-			return s.type // Global symbols doesn't need binding with context
-		}
-		if (ctx === null) {
-			return s.type
-		}
-		if (!s.isTemplate) {
-			if ( ctx.type.symbols.contains(s) || symbolInsideLambda(s) || 
-				symbolInsideProgram(s)
-			) {
-				return bind(s.type,ctx)
+	def getSymbolReferenceType(SymbolReferenceTerm sr, TypingEnvironment env) {
+		if (sr.symbol instanceof NamedType) {
+			if (ImlUtil.isAlias(sr.symbol as NamedType)) {
+				return getAliasType(sr.symbol as NamedType)
+			} else {
+				// FIXME some stuff here need to be refactored as it seems we have duplicate code
+				var SimpleTypeReference retType = ImlCustomFactory.INST.createSimpleTypeReference=>[type = sr.symbol as NamedType];
+				retType.typeBinding.addAll(sr.typeBinding.map[it.clone])
+				return env.bind(retType)
 			}
-			
-			for (rel : ctx.type.relations) {
-				switch (rel) {
-					Extension: {
-						for (twp : rel.extensions) {
-							val target = twp.type
-							if (target instanceof SimpleTypeReference) {
-								var sup = bind(target, ctx) as SimpleTypeReference
-								var retval = getType(s, sup);
-								if (retval !== null) {
-									return retval;
-								}
-							}
-	
-						}
-					}
-				}
-			}
-			return null;
+		} else if (ImlUtil.isEnumLiteral(sr.symbol)) {
+			// Accessing specific literal
+			return env.bind(ImlCustomFactory.INST.createSimpleTypeReference(EcoreUtil2.getContainerOfType(sr.symbol, NamedType)))
+		} else if (sr.symbol.eContainer instanceof MatchStatement && 
+					(sr.symbol.eContainer as MatchStatement).paramSymbols.contains(sr.symbol)) { // Datatype constructor symbol
+			val matchStatment = sr.symbol.eContainer as MatchStatement
+			val constructor = matchStatment.constructor
+			val symbolType = constructor.parameters.get(matchStatment.paramSymbols.indexOf(sr.symbol))
+			return env.bind(symbolType)
 		} else {
-			return s.type
-		}
-	}
-
-	def ImlType getType(SymbolReferenceTerm s, SimpleTypeReference context) {
-		var ctx = context;
-		if (ctx === null) {
-			ctx = getSymbolRefContext(s) as SimpleTypeReference
+			// Reference to a symbol declaration
+			return getType(sr, env);
 		}
 		
-		if (ctx === null || ctx.type === null) {
+	}
+	
+	def ImlType getType(SymbolDeclaration s, TypingEnvironment env) {
+		return getType(ImlCustomFactory.INST.createSymbolReferenceTerm(s), env)
+	}
+
+	def ImlType getType(SymbolReferenceTerm s, TypingEnvironment env) {
+		if (env.typeContext === null || env.typeContext.type === null) {
 			if ( s.symbol instanceof SymbolDeclaration) {
 				val symbolDecl = s.symbol as SymbolDeclaration
-				if (! symbolDecl.isPolymorphic) {
+				if (! ImlUtil.isPolymorphic(symbolDecl)) {
 					return EcoreUtil.copy(symbolDecl.type)
 				}
-				//TODO take care of type binding here
 				var retval = EcoreUtil.copy(symbolDecl.type)
 				if (symbolDecl.typeParameter.size != s.typeBinding.size) return retval; // Precondition
-				
-				//replace all type parameters with the new ones
-				var ctmap = new HashMap<NamedType,ImlType>()
-				for(var i = 0; i < symbolDecl.typeParameter.size();i++){
-					ctmap.put(symbolDecl.typeParameter.get(i),s.typeBinding.get(i))
-				}
-				return remap(retval,ctmap);
+				env.addContext(s)
+				return env.remap(retval);
 			}
 		}
 		
 		if (s.symbol instanceof SymbolDeclaration) {
 			if ((s.symbol as SymbolDeclaration).type instanceof SelfType){
-				return ctx;
+				if (env.selfContext !== null) {
+					return env.selfContext;
+				} else {
+					return (s.symbol as SymbolDeclaration).type
+				}
 			}
 			
-			if (ctx.type.symbols.contains(s.symbol as SymbolDeclaration) || symbolInsideLambda(s.symbol as SymbolDeclaration) || symbolInsideProgram(s.symbol as SymbolDeclaration)) {
-				return bind(s, ctx)
-			}
-		}
-		
-		for (rel : ctx.type.relations) {
-			switch (rel) {
-				Extension: {
-					for (twp : rel.extensions) {
-						val target = twp.type
-						if (target instanceof SimpleTypeReference) {
-							var sup = bind(target, ctx) as SimpleTypeReference
-							var retval = getType(s, sup);
-							if (retval !== null) {
-								return retval;
-							}
-						}
-
-					}
-				}
-			}
-		}
-		return bind(s, ctx);
-	}
-	
-	def getSymbolRefContext(SymbolReferenceTerm symbolRef) {
-		return getSymbolRefContext(symbolRef, symbolRef.eContainer)		
-	}
-	
-	def SimpleTypeReference getSymbolRefContext(SymbolReferenceTerm symbolRef, EObject container) {
-		switch (container) {
-			TermMemberSelection: {
-				if (container.member == symbolRef.symbol) {
-					return termExpressionType(container.receiver) as SimpleTypeReference
-				}
-			}
-			NamedType: {
-				if (container.symbols.contains(symbolRef.symbol)) {
-					return ImlCustomFactory.INST.createSimpleTypeReference(container)
-				}
-				for (target : ImlUtil.getRelationTypes(container, Extension)) {
-					if (target.type instanceof SimpleTypeReference && (target.type as SimpleTypeReference).type.symbols.contains(symbolRef.symbol)) {
-						return target.type as SimpleTypeReference
-					}
-				}
-			}
-			Model: {
-				return null; // End of recursion
-			}
-		}
-		return getSymbolRefContext(symbolRef, container.eContainer)
-	}
-		
-	/**
-	 * Check if symbol declaration is defined inside a program
-	 */
-	def symbolInsideProgram(SymbolDeclaration symbol) {
-		return symbol.eContainer instanceof SequenceTerm
-	}
-
-	/**
-	 * Check if symbol declaration is defined inside a lambda signature
-	 */
-	def symbolInsideLambda(SymbolDeclaration symbol) {
-		return symbol.eContainer instanceof LambdaExpression &&
-			(symbol.eContainer as LambdaExpression).parameters.contains(symbol)
-	}
-
-	def bind(SymbolReferenceTerm s, SimpleTypeReference ctx) {
-		if (ctx.type === null){
-			return clone((s.symbol as SymbolDeclaration).type)
-		}
-		var partialbind = new HashMap<NamedType, ImlType>();
-		for(var i =0 ; i < s.typeBinding.size() ; i++){
-			var NamedType typeParameter = null;
-			if (s.symbol instanceof NamedType) {
-				typeParameter = (s.symbol as NamedType).typeParameter.get(i)
-			} else if (s.symbol instanceof SymbolDeclaration) {
-				typeParameter = (s.symbol as SymbolDeclaration).typeParameter.get(i)
+			if (env.typeContext.type.symbols.contains(s.symbol as SymbolDeclaration) || isSymbolLocalScope(s.symbol as SymbolDeclaration)) {
+				return env.bind(s)
+			} else if (s.symbol.eContainer instanceof Model) { // public symbol
+				env.addContext(s)
+				return env.bind(s)
 			} else {
-				throw new IllegalArgumentException("Type " + s.symbol.class + " doesn't support type parameters!")
-			}
-			partialbind.put(typeParameter, s.typeBinding.get(i))
-		}
-		if (s.symbol instanceof SymbolDeclaration) {
-			return bind((s.symbol as SymbolDeclaration).type, partialbind,ctx)
-		} 
-		System.out.println(s.symbol.name + " is just a symbol ") ;
-		ctx
-	}
-
-	def bind(ImlType t, SimpleTypeReference ctx) {
-		if (ctx === null) return t; // Precondition
-		var ctxbinds = new HashMap<NamedType, ImlType>();
-		if (ctx.typeBinding.size == ctx.type.typeParameter.size) {
-			for (i : 0 ..< ctx.type.typeParameter.size) {
-				ctxbinds.put(ctx.type.typeParameter.get(i), ctx.typeBinding.get(i))
-			}
-		}
-
-		return remap(t, ctxbinds)
-	}
-	
-	def bind(ImlType t, Map<NamedType, ImlType> partialbind, SimpleTypeReference ctx) {
-		var ctxbinds = new HashMap<NamedType, ImlType>();
-		ctxbinds.putAll(partialbind)
-		if (ctx.typeBinding.size == ctx.type.typeParameter.size) {
-			for (i : 0 ..< ctx.type.typeParameter.size) {
-				ctxbinds.put(ctx.type.typeParameter.get(i), ctx.typeBinding.get(i))
-			}
-		}
-
-		return remap(t, ctxbinds)
-	}
-
-	def ImlType remap(ImlType t, Map<NamedType, ImlType> map) {
-		if (map.isEmpty) { 
-			return copy(t)
-		}
-		switch (t) {
-			ArrayType: {
-				var retval = ImlFactory.eINSTANCE.createArrayType;
-				retval.type = remap(t.type, map)
-				for (d : t.dimensions) {
-					// TODO : Should we TypingServices.clone the term expressions?
-					retval.dimensions.add(ImlFactory::eINSTANCE.createOptionalTermExpr => [
-						term = ImlFactory::eINSTANCE.createNumberLiteral => [value = 0];
-					])
-				}
-				return retval
-			}
-			SimpleTypeReference: {
-				if (map.containsKey(t.type)) {
-					return clone(map.get(t.type))					
-				}
-				var retval = ImlFactory.eINSTANCE.createSimpleTypeReference;
-				retval.type = t.type
-				for (h : t.typeBinding) {
-					if (h instanceof SimpleTypeReference) {
-						if ((h as SimpleTypeReference).typeBinding.size === 0) {
-							if (map.containsKey(h.type)) {
-								retval.typeBinding.add(clone(map.get(h.type)))
-							} else {
-								retval.typeBinding.add(clone(h))
+				// Collect related types from relations
+				val relatedTypes = newArrayList
+				for (rel : env.typeContext.type.relations) {
+					switch (rel) {
+						Inclusion: {
+							for (twp : rel.inclusions) {
+								relatedTypes.add(twp.type)
 							}
-						} else {
-							retval.typeBinding.add(remap(h, map))
 						}
-					} else {
-						retval.typeBinding.add(remap(h, map))
+						TraitExhibition: {
+							for (twp : rel.exhibitions) {
+								relatedTypes.add(twp.type)
+							}
+						}
 					}
 				}
-				return retval;
-			}
-			TupleType: {
-				var retval = ImlFactory.eINSTANCE.createTupleType;
-				for (s : t.types) {
-					retval.types.add(remap(s, map))
+				// Check if symbol referenced from one of the related types
+				for (target : relatedTypes) {
+					if (target instanceof SimpleTypeReference) {
+						var sup = env.bind(target) as SimpleTypeReference
+						var retval = getType(s, env.addContext(sup));
+						if (retval !== null) {
+							return retval;
+						}
+					}
 				}
-				return retval;
-			}
-			RecordType: {
-				var retval = ImlFactory.eINSTANCE.createRecordType;
-				for (s : t.symbols) {
-					val ss = ImlFactory.eINSTANCE.createSymbolDeclaration
-					ss.name = s.name
-					ss.type = remap(s.type, map)
-					retval.symbols.add(ss)
-				}
-				return retval;
-			}
-			FunctionType: { // Function type
-				var retval = ImlFactory.eINSTANCE.createFunctionType;
-				retval.domain = remap(t.domain, map)
-				if (t.range !== null) {
-					retval.range = remap(t.range, map)
-				}
-				return retval;
 			}
 		}
-	}
-
-	def boolean isPolymorphic(Symbol s){
-		switch(s){
-			NamedType : { return s.typeParameter.size > 0 }
-			SymbolDeclaration : { return s.typeParameter.size > 0 }
-			default:
-				return false
+		
+		if(s.symbol instanceof DatatypeConstructor) {
+			return env.typeContext
 		}
+		
+		return null;
 	}
+	
+	def isSymbolLocalScope(SymbolDeclaration symbol) {
+		val container = symbol.eContainer
+		if (container instanceof RecordType || container instanceof QuantifiedFormula || container instanceof LambdaExpression
+			|| container instanceof InstanceConstructor || container instanceof SequenceTerm
+		) {
+			return true
+		}
+		return false
+	}
+		
 }

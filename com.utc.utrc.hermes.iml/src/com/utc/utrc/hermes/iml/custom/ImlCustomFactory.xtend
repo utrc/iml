@@ -163,10 +163,9 @@ public class ImlCustomFactory extends ImlFactoryImpl {
 		]
 	}
 	
-	def createExtension(NamedType  extendedType) {
-		createExtension => [
-			^extends = true;
-			extensions.add(createTypeWithProperties(extendedType))
+	def createInclusion(NamedType  extendedType) {
+		createInclusion => [
+			inclusions.add(createTypeWithProperties(extendedType))
 		]
 	}
 	

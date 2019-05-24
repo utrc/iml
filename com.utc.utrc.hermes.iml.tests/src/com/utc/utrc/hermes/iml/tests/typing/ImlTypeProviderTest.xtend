@@ -4,33 +4,30 @@
 package com.utc.utrc.hermes.iml.tests.typing
 
 import com.google.inject.Inject
+import com.utc.utrc.hermes.iml.ImlParseHelper
 import com.utc.utrc.hermes.iml.iml.ArrayType
+import com.utc.utrc.hermes.iml.iml.Datatype
 import com.utc.utrc.hermes.iml.iml.FunctionType
 import com.utc.utrc.hermes.iml.iml.ImlType
 import com.utc.utrc.hermes.iml.iml.IteTermExpression
 import com.utc.utrc.hermes.iml.iml.LambdaExpression
-import com.utc.utrc.hermes.iml.iml.Model
 import com.utc.utrc.hermes.iml.iml.NamedType
 import com.utc.utrc.hermes.iml.iml.SequenceTerm
 import com.utc.utrc.hermes.iml.iml.SimpleTypeReference
 import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
 import com.utc.utrc.hermes.iml.iml.TupleType
+import com.utc.utrc.hermes.iml.lib.ImlStdLib
 import com.utc.utrc.hermes.iml.tests.ImlInjectorProvider
 import com.utc.utrc.hermes.iml.tests.TestHelper
 import com.utc.utrc.hermes.iml.typing.ImlTypeProvider
 import com.utc.utrc.hermes.iml.typing.TypingServices
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.XtextRunner
-import org.eclipse.xtext.testing.util.ParseHelper
 import org.eclipse.xtext.testing.validation.ValidationTestHelper
 import org.junit.Test
 import org.junit.runner.RunWith
 
 import static org.junit.Assert.*
-import com.utc.utrc.hermes.iml.lib.ImlStdLib
-import com.utc.utrc.hermes.iml.ImlParseHelper
-import com.utc.utrc.hermes.iml.iml.ImlPackage
-import com.utc.utrc.hermes.iml.iml.Datatype
 
 /**
  * Test related helper methods
@@ -153,7 +150,7 @@ class ImlTypeProviderTest {
 				var2 : t2;
 			}
 			
-			type t2 extends (t3) {
+			type t2 includes (t3) {
 			};
 			
 			type t3 {
@@ -332,7 +329,7 @@ class ImlTypeProviderTest {
 				t1Var : T -> T;
 			}
 			
-			type T2<T> extends (T1<Int>) {
+			type T2<T> includes (T1<Int>) {
 				t2Var : T[];
 			}
 			
@@ -817,4 +814,132 @@ class ImlTypeProviderTest {
 		assertTrue(typingServices.isEqual(v1.type, typeProvider.termExpressionType(v1.definition)))
 	}
 	
+	@Test
+	def testNestedTemplates() {
+		val model = '''
+			package p;
+			type T1<T> {
+				v1 : T -> T := fun (a : T) { a ;};
+			}
+			
+			type T2<T> includes (T1<T>) {
+				
+			}
+			
+			v : T2<Int>;
+			vv : Int := v.v1(5);
+			
+		'''.parse
+		
+		model.assertNoErrors
+		
+		val vv = model.findSymbol("vv") as SymbolDeclaration;
+		assertTrue(typingServices.isEqual(vv.type, typeProvider.termExpressionType(vv.definition)))		
+	}
+	
+	@Test
+	def testNestedTemplates2() {
+		val model = '''
+			package p;
+			type T1<T> {
+				f1<P> : (T, P) -> (P, T) := fun (a : T, b : P) { (b, a);};
+			}
+			
+			type T2<T> includes (T1<T>) {
+				
+			}
+			
+			v : T2<Int>;
+			vv : (Real, Int) := v.f1<Real>(5, 0.5);
+			
+		'''.parse
+		
+//		model.assertNoErrors
+		
+		val vv = model.findSymbol("vv") as SymbolDeclaration;
+		assertTrue(typingServices.isEqual(vv.type, typeProvider.termExpressionType(vv.definition)))		
+	}
+	
+	
+	@Test
+	def testTraitSelfType() {
+		val model = '''
+			package p;
+			trait mT {
+				v : Int -> Self;
+			}
+			
+			type T1 exhibits(mT) {
+				vv : T1 := v(5);
+			}
+		'''.parse
+		
+		model.assertNoErrors
+		val vv = (model.findSymbol("T1") as NamedType).findSymbol("vv") as SymbolDeclaration
+		assertTrue(typingServices.isEqual(vv.type, typeProvider.termExpressionType(vv.definition)))		
+	}
+	
+	@Test
+	def testTraitSelfType2() {
+		val model = '''
+			package p;
+			trait mT {
+				v : Int -> Self;
+			}
+			
+			type T1 exhibits(mT) {
+			}
+			
+			type T2 {
+				x : T1;
+				vv : T1 := x.v(5);
+			}
+		'''.parse
+		
+		model.assertNoErrors
+		val vv = (model.findSymbol("T2") as NamedType).findSymbol("vv") as SymbolDeclaration
+		assertTrue(typingServices.isEqual(vv.type, typeProvider.termExpressionType(vv.definition)))		
+	}
+	
+	@Test
+	def testTraitSelfType3() {
+		val model = '''
+			package p;
+			trait mT {
+				v : Int -> Self;
+			}
+			
+			type T1 exhibits(mT) {
+			}
+			
+			type T2 includes (T1){
+				vv : T1 := v(5);
+			}
+		'''.parse
+		
+		model.assertNoErrors
+		val vv = (model.findSymbol("T2") as NamedType).findSymbol("vv") as SymbolDeclaration
+		assertTrue(typingServices.isEqual(vv.type, typeProvider.termExpressionType(vv.definition)))		
+	}
+	
+	@Test
+	def testTraitSelfType4() {
+		val model = '''
+			package p;
+			trait mT<T> {
+				v : T -> Self;
+			}
+			
+			type T1 exhibits(mT<Int>) {
+			}
+			
+			type T2 includes (T1){
+				vv : T1 := v(5);
+			}
+		'''.parse
+		
+//		model.assertNoErrors
+		val vv = (model.findSymbol("T2") as NamedType).findSymbol("vv") as SymbolDeclaration
+		assertTrue(typingServices.isEqual(vv.type, typeProvider.termExpressionType(vv.definition)))		
+	}
 }

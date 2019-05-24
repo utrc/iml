@@ -48,9 +48,9 @@ TypeWithProperties :
 ;
 
 Relation:
-	{Extension}( extends?='extends' '(' extensions+=TypeWithProperties (',' extensions+=TypeWithProperties)*')'   ) |
-	{Alias}( alias?='is' type=TypeWithProperties  ) |
-	{TraitExhibition}( exhibits?='exhibits' '('exhibitions+=TypeWithProperties (',' exhibitions+=TypeWithProperties)*  ')' ) 
+	{Inclusion}('includes' '(' inclusions+=TypeWithProperties (',' inclusions+=TypeWithProperties)*')'   ) |
+	{Alias}('is' type=TypeWithProperties  ) |
+	{TraitExhibition}('exhibits' '('exhibitions+=TypeWithProperties (',' exhibitions+=TypeWithProperties)*  ')' ) 
 ;
 
 NamedType:
@@ -147,10 +147,7 @@ SimpleTypeReference returns ImlType:
 /*Entry point for a first order logic formula.*/
 FolFormula:
 	/*Weakest operators are implication -> and double implication <->*/
-	 Formula ({FolFormula.left=current} op=('=>' | '<=>') right=Formula)?;
-
-Formula returns FolFormula:
-	OrExpression;
+	 OrExpression ({FolFormula.left=current} op=('=>' | '<=>') right=OrExpression)?;
 
 /*A quantified formula (universally or existentially quantified) has
  * a list of bound variables and a body defined over those variables.
