@@ -6,7 +6,7 @@ type Direction enum {IN, OUT, INOUT} ;
 
 trait Connectable {
 	connectTo : Self -> Connector<Self> :=
-	fun(x:Self) : Connector<Self>{
+	fun(x:Self) {
 		some(c:Connector<Self>) { c.source = self && c.target = x}		  
 	}  ;
 }
@@ -14,7 +14,7 @@ trait Connectable {
 /*This is going to be reused in any definition of a port type.
  * It makes sense to have it as a trait.
  */
-trait Port extends (Connectable) {
+trait Port includes (Connectable) {
 	direction : Direction ;
 }
 
@@ -34,9 +34,9 @@ trait DataCarrier<DataType> {
 }
 
 
-trait EventPort<EventType> extends(Port,EventCarrier<EventType>);
-trait DataPort<DateType> extends(Port,DataCarrier<DateType>);
-trait EventDataPort<EventType,DataType> extends(Port,EventCarrier<EventType>,DataCarrier<DataType>);
+trait EventPort<EventType> includes(Port,EventCarrier<EventType>);
+trait DataPort<DateType> includes(Port,DataCarrier<DateType>);
+trait EventDataPort<EventType,DataType> includes(Port,EventCarrier<EventType>,DataCarrier<DataType>);
 
 type InEventPort<EventType> exhibits(EventPort<EventType>){
 	assert {direction = Direction.IN} ;
