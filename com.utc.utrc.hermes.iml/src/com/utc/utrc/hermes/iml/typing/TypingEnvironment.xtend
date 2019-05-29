@@ -42,6 +42,15 @@ class TypingEnvironment {
 		addContext(ctx)		
 	}
 	
+	override TypingEnvironment clone() {
+		val newEnv = new TypingEnvironment
+		newEnv.typeContext = this.typeContext
+		newEnv.selfContext = this.selfContext
+		newEnv.symbolRefContext = this.symbolRefContext
+		newEnv.bindingMap.putAll(bindingMap)
+		return newEnv
+	}
+	
 	def TypingEnvironment addContext(NamedType ctx) {
 		if (ctx !== null) {
 			addContext(ImlCustomFactory.INST.createSimpleTypeReference(ctx))
@@ -79,10 +88,6 @@ class TypingEnvironment {
 	}
 	
 	def bind(SymbolReferenceTerm s) {
-		if (typeContext.type === null){
-			return EcoreUtil.copy((s.symbol as SymbolDeclaration).type)
-		}
-		
 		if (s.symbol instanceof SymbolDeclaration) {
 			addContext(s)
 			bind((s.symbol as SymbolDeclaration).type)
@@ -95,15 +100,12 @@ class TypingEnvironment {
 		return remap(t)
 	}
 	
-	def ImlType remap(ImlType t) {
-		if (bindingMap.isEmpty || t instanceof SelfType) { 
-			return EcoreUtil.copy(t)
-		}
-		switch (t) {
+	def ImlType remap(ImlType type) {
+		switch (type) {
 			ArrayType: {
 				var retval = ImlFactory.eINSTANCE.createArrayType;
-				retval.type = remap(t.type)
-				for (d : t.dimensions) {
+				retval.type = remap(type.type)
+				for (d : type.dimensions) {
 					// TODO : Should we TypingServices.clone the term expressions?
 					retval.dimensions.add(ImlFactory::eINSTANCE.createOptionalTermExpr => [
 						term = ImlFactory::eINSTANCE.createNumberLiteral => [value = 0];
@@ -112,38 +114,26 @@ class TypingEnvironment {
 				return retval
 			}
 			SimpleTypeReference: {
-				if (bindingMap.containsKey(t.type)) {
-					return EcoreUtil.copy(bindingMap.get(t.type))					
+				if (bindingMap.containsKey(type.type)) {
+					return EcoreUtil.copy(bindingMap.get(type.type))					
 				}
 				var retval = ImlFactory.eINSTANCE.createSimpleTypeReference;
-				retval.type = t.type
-				for (h : t.typeBinding) {
-					if (h instanceof SimpleTypeReference) {
-						if ((h as SimpleTypeReference).typeBinding.size === 0) {
-							if (bindingMap.containsKey(h.type)) {
-								retval.typeBinding.add(EcoreUtil.copy(bindingMap.get(h.type)))
-							} else {
-								retval.typeBinding.add(EcoreUtil.copy(h))
-							}
-						} else {
-							retval.typeBinding.add(remap(h))
-						}
-					} else {
-						retval.typeBinding.add(remap(h))
-					}
+				retval.type = type.type
+				for (binding : type.typeBinding) {
+					retval.typeBinding.add(remap(binding))
 				}
 				return retval;
 			}
 			TupleType: {
 				var retval = ImlFactory.eINSTANCE.createTupleType;
-				for (s : t.types) {
+				for (s : type.types) {
 					retval.types.add(remap(s))
 				}
 				return retval;
 			}
 			RecordType: {
 				var retval = ImlFactory.eINSTANCE.createRecordType;
-				for (s : t.symbols) {
+				for (s : type.symbols) {
 					val ss = ImlFactory.eINSTANCE.createSymbolDeclaration
 					ss.name = s.name
 					ss.type = remap(s.type)
@@ -153,11 +143,18 @@ class TypingEnvironment {
 			}
 			FunctionType: { // Function type
 				var retval = ImlFactory.eINSTANCE.createFunctionType;
-				retval.domain = remap(t.domain)
-				if (t.range !== null) {
-					retval.range = remap(t.range)
+				retval.domain = remap(type.domain)
+				if (type.range !== null) {
+					retval.range = remap(type.range)
 				}
 				return retval;
+			}
+			SelfType : {
+				if (selfType !== null) {
+					return EcoreUtil.copy(selfType)
+				} else {
+					throw new IllegalArgumentException("Found SelfType without self context!")
+				}
 			}
 		}
 	}
@@ -192,5 +189,5 @@ class TypingEnvironment {
 
 	def SimpleTypeReference getTypeContext() {
 		return typeContext
-	}
+	} 
 }

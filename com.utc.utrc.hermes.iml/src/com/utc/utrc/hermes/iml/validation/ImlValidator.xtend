@@ -402,8 +402,8 @@ class ImlValidator extends AbstractImlValidator {
 	def checkCompatibleDeclarationAndDefinition(SymbolDeclaration symbol) {
 		if (symbol.type !== null && symbol.definition !== null) {
 			val defType = termExpressionType(symbol.definition)
-			if (!isCompatible(symbol.type, defType)) {
-				error('''Incompatible types, expected  «ImlUtil.getTypeName(symbol.type, qnp)» but actual was «ImlUtil.getTypeName(defType, qnp)»''',
+			if (!isCompatible(getSymbolType(symbol), defType)) {
+				error('''Incompatible types, expected  «ImlUtil.getTypeName(getSymbolType(symbol), qnp)» but actual was «ImlUtil.getTypeName(defType, qnp)»''',
 					ImlPackage.eINSTANCE.symbolDeclaration_Definition,
 					TYPE_MISMATCH_IN_TERM_EXPRESSION
 				)

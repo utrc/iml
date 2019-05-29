@@ -24,6 +24,7 @@ import com.utc.utrc.hermes.iml.iml.RecordType
 import com.utc.utrc.hermes.iml.util.ImlUtil
 import com.utc.utrc.hermes.iml.iml.ImlFactory
 import com.utc.utrc.hermes.iml.iml.Inclusion
+import org.eclipse.xtext.EcoreUtil2
 
 class TypingServices {
 	
@@ -306,50 +307,45 @@ class TypingServices {
 		}
 		return r // if it is not alias return the original type
 	}
-	
-	
-	def ImlType normalizeType(ImlType type) {
-		normalizeType(type, null)
-	}
-	
+
 	/**
 	 * Normalize type by resolving aliases and Self type in case a container was provided
 	 */
-	def ImlType normalizeType(ImlType type, SimpleTypeReference selfActualType) {
+	def ImlType normalizeType(ImlType type) {
 		if (type instanceof SimpleTypeReference) {
 			if (ImlUtil.isAlias(type)) {
-				return normalizeType(getAliasType(type), selfActualType)
+				return normalizeType(getAliasType(type))
 			} else {
 				return clone(type)
 			}
 		}
 		if (type instanceof SelfType) {
-			if (selfActualType !== null) {
-				return clone(selfActualType)
+			if (EcoreUtil2.getContainerOfType(type, NamedType) !== null) {
+				return ImlCustomFactory.INST.createSimpleTypeReference(EcoreUtil2.getContainerOfType(type, NamedType))
 			} else {
 				return type
 			}
 		}
 		if (type instanceof TupleType) {
-			return ImlCustomFactory.INST.createTupleType(type.types.map[normalizeType(it, selfActualType)])
+			return ImlCustomFactory.INST.createTupleType(type.types.map[normalizeType(it)])
 		}
 		if (type instanceof RecordType) {
 			return ImlCustomFactory.INST.createRecordType => [
 				it.symbols.addAll(type.symbols.map[
-					ImlCustomFactory.INST.createSymbolDeclaration(it.name, normalizeType(it.type, selfActualType))	
+					ImlCustomFactory.INST.createSymbolDeclaration(it.name, normalizeType(it.type))	
 				])
 			]
 		}
 		if (type instanceof ArrayType) {
 			return ImlCustomFactory.INST.createArrayType => [
-				it.type = normalizeType(type.type, selfActualType)
+				it.type = normalizeType(type.type)
 				it.dimensions.addAll(type.dimensions.map[ImlCustomFactory.INST.createOptionalTermExpr])
 			]
 		}
 		if (type instanceof FunctionType) {
 			return ImlCustomFactory.INST.createFunctionType => [
-				domain = normalizeType(type.domain, selfActualType)
-				range = normalizeType(type.range, selfActualType)
+				domain = normalizeType(type.domain)
+				range = normalizeType(type.range)
 			]
 		}
 	}

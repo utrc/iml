@@ -938,8 +938,71 @@ class ImlTypeProviderTest {
 			}
 		'''.parse
 		
-//		model.assertNoErrors
+		model.assertNoErrors
 		val vv = (model.findSymbol("T2") as NamedType).findSymbol("vv") as SymbolDeclaration
 		assertTrue(typingServices.isEqual(vv.type, typeProvider.termExpressionType(vv.definition)))		
 	}
+	
+	@Test
+	def testTraitSelfType5() {
+		val model = '''
+			package p;
+			
+			trait Connectable {
+				connectTo : Self -> Connector<Self> := fun(x : Self) {
+					some(c:Connector<Self>) {c.source = self && c.target = x}
+				} ;
+			}
+			
+			type Connector<T> {
+				source : T ;
+				target : T ;
+			};
+		'''.parse
+		model.assertNoErrors
+		val vv = (model.findSymbol("Connectable") as NamedType).findSymbol("connectTo") as SymbolDeclaration
+		assertTrue(typingServices.isEqual(typeProvider.getSymbolType(vv), typeProvider.termExpressionType(vv.definition)))	
+	}
+	
+	@Test
+	def testNestedTemplates3() {
+		val model = '''
+			package p;
+			
+			type T1<T> {
+				x : T;
+			}
+			type T2<T> {
+				y : T;
+			}
+			
+			v : T1<T2<Int>>;
+			v2 : Int := v.x.y;
+		'''.parse
+		model.assertNoErrors
+		val v2 = model.findSymbol("v2") as SymbolDeclaration
+		assertTrue(typingServices.isEqual(v2.type, typeProvider.termExpressionType(v2.definition)))
+	}
+	
+	@Test
+	def testPolymorphicGlobalSymbol() {
+		val model = '''
+			package p;
+			
+			v<T> : Int -> T;
+			
+			type T1 {
+				vt : Bool := v<Bool>(5);
+			}
+		'''.parse
+		
+		model.assertNoErrors
+		
+		val vt = (model.findSymbol("T1") as NamedType).findSymbol("vt") as SymbolDeclaration
+		assertTrue(typingServices.isEqual(typeProvider.getSymbolType(vt), typeProvider.termExpressionType(vt.definition)))		
+	}
+	
+
+	
+	
 }
