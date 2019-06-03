@@ -49,7 +49,7 @@ TypeWithProperties :
 
 Relation:
 	{Inclusion}('includes' '(' inclusions+=TypeWithProperties (',' inclusions+=TypeWithProperties)*')' ) |
-	{Refinment}('refines' '('  refinements+=TypeWithProperties (',' refinements+=TypeWithProperties)*')') |
+	{Refinement}('refines' '('  refinements+=TypeWithProperties (',' refinements+=TypeWithProperties)*')') |
 	{Alias}('is' type=TypeWithProperties  ) |
 	{TraitExhibition}('exhibits' '('exhibitions+=TypeWithProperties (',' exhibitions+=TypeWithProperties)*  ')' ) 
 ;
