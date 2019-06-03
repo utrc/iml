@@ -1188,4 +1188,22 @@ class ImlValidatorTest {
 	 	
 	 	model.assertError(ImlPackage.eINSTANCE.termMemberSelection, INVALID_PARAMETER_LIST)
 	 }
+	 
+	 @Test
+	 def void testCorrectRelationForRefinement_Valid() {
+	 	'''
+	 		package p;
+	 		trait tr;
+	 		trait tr2 refines(tr); 		
+	 	'''.parse.assertNoErrors
+	 }
+	 
+	 @Test
+	 def void testCorrectRelationForRefinement_InvalidInclues() {
+	 	'''
+	 		package p;
+	 		trait tr;
+	 		trait tr2 includes(tr); 		
+	 	'''.parse.assertError(ImlPackage.eINSTANCE.inclusion, INVALID_RELATION)
+	 }
 }

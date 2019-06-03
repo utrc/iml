@@ -56,6 +56,12 @@ import com.utc.utrc.hermes.iml.iml.TermMemberSelection
 import com.utc.utrc.hermes.iml.iml.DatatypeConstructor
 import com.utc.utrc.hermes.iml.typing.TypingEnvironment
 import com.utc.utrc.hermes.iml.iml.Inclusion
+import com.utc.utrc.hermes.iml.iml.Relation
+import com.utc.utrc.hermes.iml.iml.TypeWithProperties
+import com.utc.utrc.hermes.iml.iml.Annotation
+import com.utc.utrc.hermes.iml.iml.Trait
+import com.utc.utrc.hermes.iml.iml.Refinment
+import com.utc.utrc.hermes.iml.iml.TraitExhibition
 
 /**
  * This class contains custom validation rules. 
@@ -133,25 +139,66 @@ class ImlValidator extends AbstractImlValidator {
 	}
 
 	@Check
-	def checkExtension(NamedType t) {
-		val extensions = t.relations.filter[it instanceof Extension].map[it as Extension]
-		if (t.numeric) {
-			if (extensions.size > 1) {
-				error('''If a type is extending a primitive numeric type, then it cannot extend any other type''',
-					ImlPackage::eINSTANCE.symbol_Name, INVALID_TYPE_DECLARATION);
+	def checkRelations(Relation relation) {
+		val type = relation.getContainerOfType(NamedType)
+		val typeName = if (type === null) "" else type.name
+		switch (relation) {
+			Inclusion : {
+				for (related : relation.inclusions.map[it.type]) {
+					if (! (related instanceof SimpleTypeReference)) {
+						error("Type '" + typeName + "' can include only simple types", 
+							ImlPackage::eINSTANCE.inclusion_Inclusions, INVALID_RELATION)
+					} else {
+						// Check range
+						val relatedType = related as SimpleTypeReference
+						if (!(isOnlyNamedType(relatedType.type) || relatedType.type instanceof Datatype)) {
+							error("Type '" + typeName + "' can only include Datatypes or NamedType", 
+							ImlPackage::eINSTANCE.inclusion_Inclusions, INVALID_RELATION)
+						}
+					}
+				}
 			}
-			if (t.template) {
-				error('''If a type is extending a primitive numeric type, then it cannot be generic''',
-					ImlPackage::eINSTANCE.symbol_Name, INVALID_TYPE_DECLARATION);
+			Refinment : {
+				if (!(type instanceof Trait)) {
+					error("'" + typeName + "': Refinement can only be applied to trait types", 
+						ImlPackage::eINSTANCE.inclusion_Inclusions, INVALID_RELATION)
+				}
+				for (related : relation.refinements.map[it.type]) {
+					if (! (related instanceof SimpleTypeReference && 
+							(related as SimpleTypeReference).type instanceof Trait)) {
+						error("Trait  '" + typeName + "' can refines only trait types", 
+							ImlPackage::eINSTANCE.inclusion_Inclusions, INVALID_RELATION)
+					}
+				}
+			}
+			Alias : {
+				// TODO What are the rules there?
+			}
+			TraitExhibition : {
+				if (type instanceof Trait) {
+					error("Trait '" + typeName + "' cannot exhibits another trait. Use 'refines' instead.", 
+						ImlPackage::eINSTANCE.inclusion_Inclusions, INVALID_RELATION)
+				}
+				for (related : relation.exhibitions.map[it.type]) {
+					if (! (related instanceof SimpleTypeReference && 
+						((related as SimpleTypeReference).type instanceof Trait))) {
+						error("Type '" + typeName + "' can exhibits only traits", 
+							ImlPackage::eINSTANCE.inclusion_Inclusions, INVALID_RELATION)
+					}
+				}
 			}
 		}
+	}
+		
+	def isOnlyNamedType(NamedType type) {
+		return !(type instanceof Annotation || type instanceof Datatype || type instanceof Trait)
 	}
 	
 	@Check
 	def checkExtendsRelation(Inclusion extendRelation) {
 		extendRelation.inclusions.forEach[
 			if (! (it.type instanceof SimpleTypeReference)) {
-				error("Types can extend only simple types", 
+				error("Types can include only simple types", 
 					ImlPackage::eINSTANCE.inclusion_Inclusions, INVALID_RELATION)
 			}
 		]

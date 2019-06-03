@@ -15,6 +15,8 @@ import com.utc.utrc.hermes.iml.iml.FunctionType
 import org.eclipse.emf.ecore.util.EcoreUtil
 import com.utc.utrc.hermes.iml.iml.SelfType
 import com.utc.utrc.hermes.iml.custom.ImlCustomFactory
+import com.utc.utrc.hermes.iml.util.ImlUtil
+import com.utc.utrc.hermes.iml.iml.Alias
 
 class TypingEnvironment {
 	Map<NamedType, ImlType> bindingMap
