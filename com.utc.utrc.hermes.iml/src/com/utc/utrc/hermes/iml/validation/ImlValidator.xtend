@@ -183,7 +183,7 @@ class ImlValidator extends AbstractImlValidator {
 					if (! (related instanceof SimpleTypeReference && 
 						((related as SimpleTypeReference).type instanceof Trait))) {
 						error("Type '" + typeName + "' can exhibits only traits", 
-							ImlPackage::eINSTANCE.inclusion_Inclusions, INVALID_RELATION)
+							ImlPackage::eINSTANCE.traitExhibition_Exhibitions, INVALID_RELATION)
 					}
 				}
 			}

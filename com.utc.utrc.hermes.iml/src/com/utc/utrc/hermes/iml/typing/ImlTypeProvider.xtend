@@ -53,6 +53,7 @@ import org.eclipse.xtext.EcoreUtil2
 import static extension org.eclipse.xtext.EcoreUtil2.*
 import com.utc.utrc.hermes.iml.iml.Model
 import com.utc.utrc.hermes.iml.iml.Inclusion
+import com.utc.utrc.hermes.iml.iml.Refinement
 
 class ImlTypeProvider {
 	
@@ -325,6 +326,11 @@ class ImlTypeProvider {
 					switch (rel) {
 						Inclusion: {
 							for (twp : rel.inclusions) {
+								relatedTypes.add(twp.type)
+							}
+						}
+						Refinement: {
+							for (twp : rel.refinements) {
 								relatedTypes.add(twp.type)
 							}
 						}

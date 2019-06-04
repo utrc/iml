@@ -1206,4 +1206,6 @@ class ImlValidatorTest {
 	 		trait tr2 includes(tr); 		
 	 	'''.parse.assertError(ImlPackage.eINSTANCE.inclusion, INVALID_RELATION)
 	 }
+	 
+	 
 }

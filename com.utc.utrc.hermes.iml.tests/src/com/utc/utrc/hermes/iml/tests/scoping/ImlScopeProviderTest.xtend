@@ -358,6 +358,40 @@ class ImlScopeProviderTest {
 		return
 	}
 	
+	@Test 
+	def scopeForRefinement() {
+		val model = '''
+			package p;
+			trait Tr {
+				a : Int;
+			}
+			
+			trait Tr2 refines(Tr) {
+				b : Int := a;
+			}
+		'''.parse
+		model.assertNoErrors
+	}
+	
+	@Test 
+	def scopeForRefinement2() {
+		val model = '''
+			package p;
+			trait Tr {
+				a : Int;
+			}
+			
+			trait Tr2 refines(Tr) {
+				b : Int := a;
+			}
+			type T1 exhibits(Tr2) {
+				x : Int := a;
+				y : Int := b;
+			}
+		'''.parse
+		model.assertNoErrors
+	}
+	
 	def private assertScope(EObject context, EReference ref, List<String> expected) {
 		context.assertNoErrors
 		val scope = context.getScope(ref).allElements.map[name.toString].toList

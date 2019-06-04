@@ -25,6 +25,7 @@ import com.utc.utrc.hermes.iml.util.ImlUtil
 import com.utc.utrc.hermes.iml.iml.ImlFactory
 import com.utc.utrc.hermes.iml.iml.Inclusion
 import org.eclipse.xtext.EcoreUtil2
+import com.utc.utrc.hermes.iml.iml.Refinement
 
 class TypingServices {
 	
@@ -237,7 +238,15 @@ class TypingServices {
 								}
 							}
 						}
-						
+					}
+					for (rel : ctype.relations.filter(Refinement)) {
+						for(twp : rel.refinements){
+							if (twp.type instanceof SimpleTypeReference) {
+								if (! closed.contains((twp.type as SimpleTypeReference).type)) {
+									toAdd.add(twp.type as SimpleTypeReference)
+								}
+							}
+						}
 					}
 					for (rel : ctype.relations.filter(Alias)) {
 						if (rel.type.type instanceof SimpleTypeReference) {
