@@ -60,7 +60,7 @@ import com.utc.utrc.hermes.iml.iml.Relation
 import com.utc.utrc.hermes.iml.iml.TypeWithProperties
 import com.utc.utrc.hermes.iml.iml.Annotation
 import com.utc.utrc.hermes.iml.iml.Trait
-import com.utc.utrc.hermes.iml.iml.Refinment
+import com.utc.utrc.hermes.iml.iml.Refinement
 import com.utc.utrc.hermes.iml.iml.TraitExhibition
 
 /**
@@ -158,7 +158,7 @@ class ImlValidator extends AbstractImlValidator {
 					}
 				}
 			}
-			Refinment : {
+			Refinement : {
 				if (!(type instanceof Trait)) {
 					error("'" + typeName + "': Refinement can only be applied to trait types", 
 						ImlPackage::eINSTANCE.inclusion_Inclusions, INVALID_RELATION)
