@@ -15,27 +15,30 @@ trait Stream<T> {
 }
  
 trait NumericType  {
-	plus : (Self,Self)->Self; 
-	minus : (Self,Self)->Self; 
-	div : (Self,Self)->Self; 
-	mult : (Self,Self)->Self; 
-
-	leq : (Self,Self)->Stream<Bool>; 
-	geq : (Self,Self)->Stream<Bool>; 
-	le : (Self,Self)->Stream<Bool>; 
-	gr : (Self,Self)->Stream<Bool>; 
+	plus : Self->Self; 
+	minus : Self->Self; 
+	div : Self->Self; 
+	mult : Self->Self; 
+	leq : Self->Stream<Bool>; 
+	geq : Self->Stream<Bool>; 
+	le : Self->Stream<Bool>; 
+	gr : Self->Stream<Bool>; 
 }
+
+
 
 type RealStream  exhibits (NumericType,Stream<Real>);
 type IntStream  exhibits (NumericType,Stream<Int>);
 type BoolStream exhibits (Stream<Bool>);
+
+plus<T1 exhibits(NumericType)> : (T1,T1) -> T1 ; 
 
 
 and : (BoolStream,BoolStream)->BoolStream;
 or : (BoolStream,BoolStream)->BoolStream;
 not : BoolStream->BoolStream;
 
-ite<T> : (BoolStream,Stream<T>,Stream<T>) -> Stream<T> ;
+ite<D,S exhibits(Stream<D>) > : (BoolStream,S,S) -> S ;
 
 //node Counter(x0, d:int; r:bool) returns (n:int)
 //let
@@ -47,10 +50,11 @@ type Counter exhibits(Component, Synchronous) {
 	d: InDataPort<IntStream>;
 	r: InDataPort<BoolStream>;
 	n: OutDataPort<IntStream>;
+
 	
 	[Let] l:Stream<Bool> := 
 	{ 
-		n.data.eq( x0.data.then( ite<Int>(r.data, x0.data, n.data.pre.plus(d.data) ) ) ) ;
+		n.data.eq( x0.data.then( ite<Int,IntStream>(r.data, x0.data, n.data.pre.plus(d.data) ) ) ) ;
 	} ;
 	
 }

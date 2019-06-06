@@ -5,25 +5,29 @@ import iml.lang.* ;
 type Direction enum {IN, OUT, INOUT} ;
 
 trait Connectable {
-	connectTo<T> : Self -> Connector<T> ;
+	
 }
 
-/*This is going to be reused in any definition of a port type.
+
+/** This is going to be reused in any definition of a port type.
  * It makes sense to have it as a trait.
  */
-trait Port extends (Connectable) {
+trait Port refines (Connectable) {
 	direction : Direction ;
 }
 
-/*It might be useful to define a empty simple port that just has the
+/** It might be useful to define a empty simple port that just has the
  * direction property
  */
-type SimplePort exhibits (Port){
-	connectTo<SimplePort> : SimplePort -> Connector<SimplePort> :=  
-	fun(x:SimplePort) : Connector<SimplePort>{
-		some(c:Connector<SimplePort>) { c.source = self && c.target = x}		  
-	}  ;
-}
+type InPort exhibits (Port){
+	assert {direction = Direction.IN} ;
+};
+type OutPort exhibits (Port){
+	assert {direction = Direction.OUT} ;
+};
+type InOutPort exhibits (Port){
+	assert {direction = Direction.INOUT} ;
+};
 
 /*This is the trait of a type that carries and event */
 trait EventCarrier<EventType> {
@@ -36,16 +40,12 @@ trait DataCarrier<DataType> {
 }
 
 
-trait EventPort<EventType> extends(Port,EventCarrier<EventType>);
-trait DataPort<DateType> extends(Port,DataCarrier<DateType>);
-trait EventDataPort<EventType,DataType> extends(Port,EventCarrier<EventType>,DataCarrier<DataType>);
+trait EventPort<EventType> refines(Port,EventCarrier<EventType>);
+trait DataPort<DateType> refines(Port,DataCarrier<DateType>);
+trait EventDataPort<EventType,DataType> refines(Port,EventCarrier<EventType>,DataCarrier<DataType>);
 
 type InEventPort<EventType> exhibits(EventPort<EventType>){
 	assert {direction = Direction.IN} ;
-	connectTo<EventType> : InEventPort<EventType> -> Connector<EventType> :=  
-	fun(x:InEventPort<EventType>) : Connector<EventType>{
-		some(c:Connector<EventType>) { c.source = event && c.target = x.event}		  
-	}  ;
 };
 type InDataPort<DateType> exhibits(DataPort<DateType>){
 	assert {direction = Direction.IN} ;
@@ -74,9 +74,6 @@ type InOutEventDataPort<EventType,DataType> exhibits(EventDataPort<EventType,Dat
 	assert {direction = Direction.INOUT} ;
 };
 
-
-
-
 /* This annotation is used on a symbol that belongs
  * to a system type to denote that the symbol
  * represents a component. The type of the system must
@@ -86,12 +83,56 @@ type InOutEventDataPort<EventType,DataType> exhibits(EventDataPort<EventType,Dat
 trait Component { 
 	subComponents<T exhibits(Component)> : Int -> T ; 
 	ports<T exhibits(Port)> : Int -> T ;
+	isRoot : Bool ;
 };
 
+//should really be extends or refines
+trait System refines(Component) {
+	assert {isRoot = true} ;
+}
 
 /*A connection is a type of two elements of the same type.
  */
-type Connector<T> {
-	source : T ;
-	target : T ;
+type Connector<SourceType exhibits(Connectable),TargetType exhibits(Connectable)> {
+	source : SourceType ;
+	target : TargetType ;
 };
+
+connect<SourceType exhibits(Connectable),TargetType exhibits(Connectable)> : (SourceType,TargetType) -> Connector<SourceType,TargetType> :=
+fun(source:SourceType, target:TargetType) {
+	some(c:Connector<SourceType,TargetType>){c.source=source && c.target=target} ;
+}
+;
+
+delegate<PortType exhibits(Connectable)> : (PortType,PortType) -> Connector<PortType,PortType> :=
+fun(source:PortType, target:PortType) {
+	some(c:Connector<PortType,PortType>){c.source=source && c.target=target} ;
+}
+;
+
+type A exhibits(Component) {
+	p1 : InDataPort<Int> ;
+	p2 : OutDataPort<Real> ;
+}
+
+type B exhibits(Component) {
+	p1 : InDataPort<Real> ;
+	p2 : OutDataPort<Int> ;
+}
+
+type S exhibits(Component) {
+	//Ports
+	p1 : InDataPort<Int> ;
+	p2 : OutDataPort<Int> ;
+	//Sub-components
+	a : A ;
+	b : B ;
+	//Connections
+	c1 : Connector<InDataPort<Int>,InDataPort<Int>> := delegate<InDataPort<Int>>(p1,a.p1) ;
+	c2 : Connector<OutDataPort<Real>,InDataPort<Real>> := connect<OutDataPort<Real>,InDataPort<Real>>(a.p2,b.p1) ;
+	c3 : Connector<OutDataPort<Real>,OutDataPort<Real>> := delegate<OutDataPort<Real>>(b.p2,p2) ;	
+}
+
+
+
+
