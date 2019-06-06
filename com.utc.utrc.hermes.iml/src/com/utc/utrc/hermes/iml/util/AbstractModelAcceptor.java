@@ -1,3 +1,6 @@
+/*
+ * Copyright (c) 2019 United Technologies Corporation. All rights reserved.
+ * See License.txt in the project root directory for license information. */
 package com.utc.utrc.hermes.iml.util;
 
 import com.utc.utrc.hermes.iml.iml.Addition;
@@ -12,11 +15,11 @@ import com.utc.utrc.hermes.iml.iml.CaseTermExpression;
 import com.utc.utrc.hermes.iml.iml.NamedType;
 import com.utc.utrc.hermes.iml.iml.OptionalTermExpr;
 import com.utc.utrc.hermes.iml.iml.EnumRestriction;
-import com.utc.utrc.hermes.iml.iml.Extension;
 import com.utc.utrc.hermes.iml.iml.FolFormula;
 import com.utc.utrc.hermes.iml.iml.FunctionType;
 import com.utc.utrc.hermes.iml.iml.ImlType;
 import com.utc.utrc.hermes.iml.iml.Import;
+import com.utc.utrc.hermes.iml.iml.Inclusion;
 import com.utc.utrc.hermes.iml.iml.IteTermExpression;
 import com.utc.utrc.hermes.iml.iml.Model;
 import com.utc.utrc.hermes.iml.iml.Multiplication;
@@ -88,8 +91,8 @@ public class AbstractModelAcceptor implements IModelAcceptor {
 		}
 		if (s.getRelations() != null) {
 			for(Relation r : s.getRelations()) {
-				if (r instanceof Extension) {
-					for(TypeWithProperties p : ((Extension) r).getExtensions()) {
+				if (r instanceof Inclusion) {
+					for(TypeWithProperties p : ((Inclusion) r).getInclusions()) {
 						accept(p,visitor);
 					}
 				}
@@ -180,8 +183,8 @@ public class AbstractModelAcceptor implements IModelAcceptor {
 	public void accept(Annotation s, IModelVisitor visitor) {
 		if (s.getRelations() != null) {
 			for(Relation r : s.getRelations()) {
-				if (r instanceof Extension) {
-					for(TypeWithProperties p : ((Extension) r).getExtensions()) {
+				if (r instanceof Inclusion) {
+					for(TypeWithProperties p : ((Inclusion) r).getInclusions()) {
 						accept(p,visitor);
 					}
 				}
@@ -219,8 +222,8 @@ public class AbstractModelAcceptor implements IModelAcceptor {
 		}
 		if (s.getRelations() != null) {
 			for(Relation r : s.getRelations()) {
-				if (r instanceof Extension) {
-					for(TypeWithProperties p : ((Extension) r).getExtensions()) {
+				if (r instanceof Inclusion) {
+					for(TypeWithProperties p : ((Inclusion) r).getInclusions()) {
 						accept(p,visitor);
 					}
 				}

@@ -1,5 +1,4 @@
 package iml.ports ;
-import iml.lang.* ;
 import iml.lang.utils.* ;
 import iml.connectivity.* ;
 import iml.fsm.* ;
@@ -52,17 +51,17 @@ source : FlowPath -> EndToEndFlow :=
 	};
 
 	
-type DataPort<T> extends (Port) {
+type DataPort<T> includes (Port) {
 	data : T ;
 	flowpoint : FlowPoint ;
 } 
 
-type EventPort extends (Port) {
+type EventPort includes (Port) {
 	event : Bool ;
 	flowpoint : FlowPoint ;
 }
 
-type EventDataPort<T> extends (Port) {
+type EventDataPort<T> includes (Port) {
 	event : Bool ;
 	data : T ;
 	flowpoint : FlowPoint ;

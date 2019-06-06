@@ -1,3 +1,6 @@
+/*
+ * Copyright (c) 2019 United Technologies Corporation. All rights reserved.
+ * See License.txt in the project root directory for license information. */
 package com.utc.utrc.hermes.iml.util;
 
 import com.utc.utrc.hermes.iml.iml.Annotation;
