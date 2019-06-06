@@ -1,7 +1,7 @@
 package iml.ports ;
 import iml.lang.utils.* ;
-import iml.connectivity.* ;
-import iml.fsm.* ;
+import iml.systems.* ;
+import iml.sms.* ;
 
 type Port;
 
@@ -68,7 +68,7 @@ type EventDataPort<T> includes (Port) {
 }
 
 type FlowConnector<T> {
-	connector : Connector<T>;
+	connector : Connector<T,T>;
 	flow:FlowPath ;
 }
 
@@ -83,32 +83,36 @@ fun(x:EndToEndFlow,u:Real,l:Real){
 	x.end.lowerBound - x.start.upperBound >= l
 };
 
-type DelayState enum {s0,s1,s2}; 
-type [Fsm] delay {
-	[Input] f : FlowPath ;
-	[Input] n : Int ;
-	state : PrimedVar<DelayState>  ;
-	i : PrimedVar<Int> ;
-	[Init] state_i_init : Bool := (i.current = 1) && (state.current = DelayState.s0) ;
-	[Transition] s_trans : Bool := {
-		state.next = 
+type ThreeState enum {s0,s1,s2}; 
+type DelayState exhibits(State) {
+	state : ThreeState ;
+	i : Int;
+}
+
+
+type  delay exhibits(StateMachine<DelayState>){
+	f : InDataPort<FlowPath> ;
+	n : InDataPort<Int> ;
+	holds : OutDataPort<Bool> ; 
+	init : Bool := (current.i = 1) && (current.state = ThreeState.s0) ;
+	transition : Bool := {
+		next.state = 
 			case {
-				state.current = DelayState.s0 && f.end.event : DelayState.s2;
-				state.current = DelayState.s0 && f.start.event : DelayState.s1 ;
-				state.current = DelayState.s1 && f.end.event : DelayState.s0 ;
-				state.current = DelayState.s1 && i.current >= n : DelayState.s2 ;
-				true : state.current ;
+				current.state = ThreeState.s0 && f.data.end.event : ThreeState.s2;
+				current.state = ThreeState.s0 && f.data.start.event : ThreeState.s1 ;
+				current.state = ThreeState.s1 && f.data.end.event : ThreeState.s0 ;
+				current.state = ThreeState.s1 && current.i >= n.data : ThreeState.s2 ;
+				true : current.state ;
 			} 	
-	};
-	[Transition] i_trans : Bool := { 
-		i.next =
+		&&
+		next.i =
 		case {
-			state.current = DelayState.s0 :  1 ;
-			state.current = DelayState.s1 : i.current + 1 ;
-			true : i.current ;	
+			current.state = ThreeState.s0 :  1 ;
+			current.state = ThreeState.s1 : current.i + 1 ;
+			true : current.i ;	
 		}
-	} ;
-	[Output] holds : Bool := (state.current = DelayState.s0 || state.current = DelayState.s1) ;
+	};
+	invariant : Bool := holds.data = (current.state = ThreeState.s0 || current.state = ThreeState.s1) ;
 }
 
 
