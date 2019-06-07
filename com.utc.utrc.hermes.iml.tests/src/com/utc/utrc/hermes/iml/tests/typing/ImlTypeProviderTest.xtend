@@ -789,7 +789,7 @@ class ImlTypeProviderTest {
 		val model = '''
 		package p;
 		type T1 {
-			v1 : {a:Int, b:Bool} := {a := 5, b := Bool};
+			v1 : {a:Int, b:Bool} := {a := 5, b := false};
 		}
 		'''.parse
 		model.assertNoErrors
@@ -804,7 +804,7 @@ class ImlTypeProviderTest {
 		val model = '''
 		package p;
 		type T1 {
-			v1 : {a:Int, b:Bool} := {b := Bool, a := Int};
+			v1 : {a:Int, b:Bool} := {b := true, a := 5};
 		}
 		'''.parse
 		model.assertNoErrors
