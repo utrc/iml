@@ -1207,5 +1207,19 @@ class ImlValidatorTest {
 	 	'''.parse.assertError(ImlPackage.eINSTANCE.inclusion, INVALID_RELATION)
 	 }
 	 
+	 @Test
+	 def void testScopeOfAnnotation() {
+	 	'''
+	 	package p;
+	 	annotation An {
+	 		a : Int;
+	 	}
+	 	
+	 	type [An {a=1}] t1 {
+	 		
+	 	}
+	 	'''.parse.assertNoErrors
+	 }
+	 
 	 
 }

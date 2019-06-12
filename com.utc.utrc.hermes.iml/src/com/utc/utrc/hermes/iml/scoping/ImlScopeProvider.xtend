@@ -199,6 +199,8 @@ class ImlScopeProvider extends AbstractDeclarativeScopeProvider {
 				return Scopes::scopeFor(o.constructors,scopeOfNamedType(o, buildNestedScope(o.eContainer)))
 			NamedType:
 				return scopeOfNamedType(o, buildNestedScope(o.eContainer))
+			com.utc.utrc.hermes.iml.iml.Property:
+				return scopeOfNamedType((o.ref as SimpleTypeReference).type, buildNestedScope(o.eContainer))
 			Model:
 				return Scopes::scopeFor(o.symbols, getGlobalScope(o,ImlPackage::eINSTANCE.model_Symbols))
 			default:
