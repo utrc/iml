@@ -13,9 +13,9 @@ type Filter exhibits(Component, Contract, Synchronous) {
 	filter_in : InEventDataPort<Bool,Command__Impl> ;
 	filter_out : OutEventDataPort<Bool,Command__Impl> ;
 	
-	//[Doc{text="Authenticated command from the Ground Station"}]
+	[Doc{text="Authenticated command from the Ground Station"}]
 	Req001_Filter : Bool := filter_in.data.HMAC = true ;
-	
+
 	Req002_Filter : Bool := filter_out.data.HMAC = true ;
 	
 	Req003_Filter : Bool := good_command(filter_out.data) ;
