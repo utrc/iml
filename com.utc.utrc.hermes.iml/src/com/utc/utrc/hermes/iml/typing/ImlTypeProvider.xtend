@@ -300,7 +300,10 @@ class ImlTypeProvider {
 			return env.bind(symbolType)
 		} else if(sr.symbol instanceof DatatypeConstructor) {
 			return env.typeContext
-		}  else {
+		} else if (sr.getContainerOfType(com.utc.utrc.hermes.iml.iml.Property) !== null) { 
+			env.addContext(sr.getContainerOfType(com.utc.utrc.hermes.iml.iml.Property).ref as SimpleTypeReference)
+			return getSymbolType(sr, env)
+		} else {
 			// Reference to a symbol declaration
 			return getSymbolType(sr, env);
 		}
