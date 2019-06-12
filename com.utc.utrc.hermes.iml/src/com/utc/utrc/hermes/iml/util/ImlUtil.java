@@ -1,9 +1,13 @@
+/*
+ * Copyright (c) 2019 United Technologies Corporation. All rights reserved.
+ * See License.txt in the project root directory for license information. */
 package com.utc.utrc.hermes.iml.util;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
@@ -15,15 +19,17 @@ import org.eclipse.xtext.resource.XtextResource;
 
 import com.utc.utrc.hermes.iml.iml.Alias;
 import com.utc.utrc.hermes.iml.iml.ArrayType;
+import com.utc.utrc.hermes.iml.iml.EnumRestriction;
 import com.utc.utrc.hermes.iml.iml.NamedType;
-import com.utc.utrc.hermes.iml.iml.Extension;
 import com.utc.utrc.hermes.iml.iml.FolFormula;
 import com.utc.utrc.hermes.iml.iml.FunctionType;
 import com.utc.utrc.hermes.iml.iml.ImlType;
+import com.utc.utrc.hermes.iml.iml.Inclusion;
 import com.utc.utrc.hermes.iml.iml.Model;
 import com.utc.utrc.hermes.iml.iml.ParenthesizedTerm;
 import com.utc.utrc.hermes.iml.iml.Property;
 import com.utc.utrc.hermes.iml.iml.RecordType;
+import com.utc.utrc.hermes.iml.iml.Refinement;
 import com.utc.utrc.hermes.iml.iml.Relation;
 import com.utc.utrc.hermes.iml.iml.SelfType;
 import com.utc.utrc.hermes.iml.iml.SignedAtomicFormula;
@@ -32,8 +38,10 @@ import com.utc.utrc.hermes.iml.iml.Symbol;
 import com.utc.utrc.hermes.iml.iml.SymbolDeclaration;
 import com.utc.utrc.hermes.iml.iml.SymbolReferenceTerm;
 import com.utc.utrc.hermes.iml.iml.TermExpression;
+import com.utc.utrc.hermes.iml.iml.Trait;
 import com.utc.utrc.hermes.iml.iml.TraitExhibition;
 import com.utc.utrc.hermes.iml.iml.TupleType;
+import com.utc.utrc.hermes.iml.iml.TypeRestriction;
 import com.utc.utrc.hermes.iml.iml.TypeWithProperties;
 
 public class ImlUtil {
@@ -58,9 +66,9 @@ public class ImlUtil {
 		List<NamedType> retval = new ArrayList<>();
 		if (type.getRelations() != null) {
 			for(Relation rel : type.getRelations()) {
-				if(rel instanceof Extension) {
+				if(rel instanceof Inclusion) {
 					retval.addAll(
-							((Extension) rel).getExtensions().stream()
+							((Inclusion) rel).getInclusions().stream()
 							.map(it -> ((SimpleTypeReference) it.getType()).getType())
 							.collect(Collectors.toList())) ;
 				}
@@ -73,9 +81,9 @@ public class ImlUtil {
 		List<SimpleTypeReference> retval = new ArrayList<>();
 		if (type.getRelations() != null) {
 			for(Relation rel : type.getRelations()) {
-				if(rel instanceof Extension) {
+				if(rel instanceof Inclusion) {
 					retval.addAll(
-							((Extension) rel).getExtensions().stream()
+							((Inclusion) rel).getInclusions().stream()
 							.map(it -> ((SimpleTypeReference) it.getType()))
 							.collect(Collectors.toList())) ;
 				}
@@ -94,6 +102,8 @@ public class ImlUtil {
 		}
 		return false;
 	}
+	
+	
 
 	public static NamedType getNamedTypeByName(Model model, String name) {
 		return (NamedType) model.getSymbols().stream()
@@ -157,8 +167,8 @@ public class ImlUtil {
 		List<TypeWithProperties> types = new ArrayList<>();
 		EList<Relation> relations = type.getRelations();
 		for (Relation relation : relations) {
-			if (relation instanceof Extension) {
-				types.addAll(((Extension) relation).getExtensions());
+			if (relation instanceof Inclusion) {
+				types.addAll(((Inclusion) relation).getInclusions());
 			} else if (relation instanceof Alias) {
 				types.add(((Alias) relation).getType());
 			} else {
@@ -172,12 +182,14 @@ public class ImlUtil {
 		List<TypeWithProperties> types = new ArrayList<>();
 		for (Relation relation : type.getRelations()) {
 			if (relationType.isInstance(relation)) {
-				if (relation instanceof Extension) {
-					types.addAll(((Extension) relation).getExtensions());
+				if (relation instanceof Inclusion) {
+					types.addAll(((Inclusion) relation).getInclusions());
 				} else if (relation instanceof Alias) {
 					types.add(((Alias) relation).getType());
 				} else if (relation instanceof TraitExhibition){
 					types.addAll(((TraitExhibition) relation).getExhibitions());
+				} else if (relation instanceof Refinement) {
+					types.addAll(((Refinement) relation).getRefinements());
 				}
 			}
 		}
@@ -211,7 +223,7 @@ public class ImlUtil {
 	}
 
 	public static boolean isSubTypeOf(NamedType type, String ParentTypeName) {
-		for (TypeWithProperties parent : getRelationTypes(type, Extension.class)) {
+		for (TypeWithProperties parent : getRelationTypes(type, Inclusion.class)) {
 			NamedType parentCt = ((SimpleTypeReference)parent.getType()).getType();
 			if (parentCt.getName().equals(ParentTypeName)) {
 				return true;
@@ -320,4 +332,100 @@ public class ImlUtil {
 		
 		return false;
 	}
+	
+	/* Check whether a constrained type is a template  */
+	public static boolean isTemplate(NamedType nt) {
+		return nt.isTemplate();
+	}
+
+	public static boolean isSimpleTR(ImlType imlType) {
+		return (imlType instanceof SimpleTypeReference);
+	}
+
+	public static SimpleTypeReference asSimpleTR(ImlType imlType) {
+		if (isSimpleTR(imlType)) {
+			return (SimpleTypeReference) imlType;
+		}
+		return null;
+	}
+	
+	public static boolean isAlias(SimpleTypeReference r) {
+		return isAlias(r.getType());
+	}
+	
+	public static boolean isAlias(NamedType t) {
+		if (t.getRelations().stream().anyMatch(it -> it instanceof Alias)) {
+			return true;
+		}
+		return false;
+	}
+	
+	public static boolean isEnumLiteral(Symbol s) {
+		NamedType container = EcoreUtil2.getContainerOfType(s, NamedType.class);
+		if (container != null) {
+			return isLiteralOf(s, container);
+		}
+		return false;
+	}
+
+	public static boolean isLiteralOf(Symbol s, NamedType t) {
+		for (TypeRestriction r : t.getRestrictions()) {
+			if (r instanceof EnumRestriction) {
+				if (((EnumRestriction) r).getLiterals().contains(s)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
+	public static boolean isPolymorphic(Symbol s){
+		if (s instanceof NamedType) {
+			return !((NamedType) s).getTypeParameter().isEmpty();
+		}
+		if (s instanceof SymbolDeclaration) {
+			return !((SymbolDeclaration) s).getTypeParameter().isEmpty();
+		}
+		return false;
+	}
+	
+	public static boolean hasType(ImlType imlType, NamedType namedType) {
+		if (imlType instanceof SimpleTypeReference &&
+			((SimpleTypeReference)imlType).getType() == namedType	) {
+			return true ;
+		}
+		return false;
+	}
+	
+	public static boolean exhibits(NamedType type, Trait trait) {
+		
+		List<TypeWithProperties> traits = getRelationTypes(type, TraitExhibition.class);
+		if (traits.size() == 0)
+			return false;
+		//Either the type exhibits the trait	
+		return traits.stream().filter(twp -> twp.getType() instanceof SimpleTypeReference).map(twp -> (Trait) ((SimpleTypeReference) twp.getType()).getType() ).anyMatch(t -> t == trait || refines(t, trait)) ;
+		
+	}
+
+	public static boolean exhibits(ImlType type, Trait trait) {
+		if (type instanceof SimpleTypeReference) {
+			return exhibits( ((SimpleTypeReference) type).getType() , trait) ;
+		}
+		return false;
+	}
+	
+	public static boolean refines(Trait type, Trait trait) {
+		
+		List<TypeWithProperties> traits = getRelationTypes(type, Refinement.class);
+		if (traits.size() == 0)
+			return false;
+		//Either the type exhibits the trait	
+		return traits.stream().filter(twp -> twp.getType() instanceof SimpleTypeReference).map(twp -> (Trait) ((SimpleTypeReference) twp.getType()).getType() ).anyMatch(t -> t == trait || refines(t, trait)) ;
+		
+		
+	}
+
+	
+	
+	
 }

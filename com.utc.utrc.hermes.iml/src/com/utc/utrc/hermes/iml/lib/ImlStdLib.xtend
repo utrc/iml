@@ -1,3 +1,6 @@
+/*
+ * Copyright (c) 2019 United Technologies Corporation. All rights reserved.
+ * See License.txt in the project root directory for license information. */
 package com.utc.utrc.hermes.iml.lib
 
 import com.utc.utrc.hermes.iml.iml.NamedType
@@ -11,6 +14,7 @@ import org.eclipse.emf.ecore.resource.ResourceSet
 import com.google.inject.Singleton
 import com.google.inject.Inject
 import org.eclipse.xtext.naming.IQualifiedNameProvider
+import org.eclipse.xtext.naming.QualifiedName
 
 @Singleton
 class ImlStdLib {
@@ -188,5 +192,6 @@ class ImlStdLib {
 	def boolean isStdLib(Model model) {
 		return model.name !== null && model.name.startsWith("iml.")
 	}
+
 	
 }

@@ -1,3 +1,6 @@
+/*
+ * Copyright (c) 2019 United Technologies Corporation. All rights reserved.
+ * See License.txt in the project root directory for license information. */
 package com.utc.utrc.hermes.iml.tests.scoping
 
 import com.google.inject.Inject
@@ -71,7 +74,7 @@ class ImlScopeProviderTest {
 			type Parent {
 				varp : Int;
 			};
-			type t1 extends (Parent) {
+			type t1 includes (Parent) {
 				var1 : Int;
 			};
 			
@@ -95,7 +98,7 @@ class ImlScopeProviderTest {
 			type Parent {
 				varp : Int;
 			};
-			type t1 extends (Parent) {
+			type t1 includes (Parent) {
 				var1 : Int;
 				varx : Int := varp;
 			};
@@ -353,6 +356,40 @@ class ImlScopeProviderTest {
 		val aEmployee = model.symbols.last as SymbolDeclaration
 		model.assertNoErrors
 		return
+	}
+	
+	@Test 
+	def scopeForRefinement() {
+		val model = '''
+			package p;
+			trait Tr {
+				a : Int;
+			}
+			
+			trait Tr2 refines(Tr) {
+				b : Int := a;
+			}
+		'''.parse
+		model.assertNoErrors
+	}
+	
+	@Test 
+	def scopeForRefinement2() {
+		val model = '''
+			package p;
+			trait Tr {
+				a : Int;
+			}
+			
+			trait Tr2 refines(Tr) {
+				b : Int := a;
+			}
+			type T1 exhibits(Tr2) {
+				x : Int := a;
+				y : Int := b;
+			}
+		'''.parse
+		model.assertNoErrors
 	}
 	
 	def private assertScope(EObject context, EReference ref, List<String> expected) {

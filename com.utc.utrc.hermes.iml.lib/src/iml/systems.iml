@@ -5,23 +5,32 @@ import iml.lang.* ;
 type Direction enum {IN, OUT, INOUT} ;
 
 trait Connectable {
-	connectTo : Self -> Connector<Self> :=
-	fun(x:Self) {
-		some(c:Connector<Self>) { c.source = self && c.target = x}		  
-	}  ;
+
 }
 
-/*This is going to be reused in any definition of a port type.
+
+/** This is going to be reused in any definition of a port type.
  * It makes sense to have it as a trait.
  */
-trait Port includes (Connectable) {
+trait Port refines (Connectable) {
 	direction : Direction ;
 }
+trait In refines (Port){
+	assert {direction = Direction.IN} ;
+}
+trait Out refines (Port) {
+	assert {direction = Direction.OUT} ;
+}
 
-/*It might be useful to define a empty simple port that just has the
+trait InOut refines (Port) {
+	assert {direction = Direction.INOUT} ;
+}
+/** It might be useful to define a empty simple port that just has the
  * direction property
  */
-type SimplePort exhibits (Port);
+type InPort exhibits (In);
+type OutPort exhibits (Out);
+type InOutPort exhibits (InOut);
 
 /*This is the trait of a type that carries and event */
 trait EventCarrier<EventType> {
@@ -34,57 +43,72 @@ trait DataCarrier<DataType> {
 }
 
 
-trait EventPort<EventType> includes(Port,EventCarrier<EventType>);
-trait DataPort<DateType> includes(Port,DataCarrier<DateType>);
-trait EventDataPort<EventType,DataType> includes(Port,EventCarrier<EventType>,DataCarrier<DataType>);
+type InEventPort<EventType> exhibits(In, EventCarrier<EventType>);
+type InDataPort<DateType> exhibits(In, DataCarrier<DateType>);
+type InEventDataPort<EventType,DataType> exhibits(In, EventCarrier<EventType>,DataCarrier<DataType>);
 
-type InEventPort<EventType> exhibits(EventPort<EventType>){
-	assert {direction = Direction.IN} ;
-};
-type InDataPort<DateType> exhibits(DataPort<DateType>){
-	assert {direction = Direction.IN} ;
-};
-type InEventDataPort<EventType,DataType> exhibits(EventDataPort<EventType,DataType>){
-	assert {direction = Direction.IN} ;
-};
+type OutEventPort<EventType> exhibits(Out, EventCarrier<EventType>);
+type OutDataPort<DateType> exhibits(Out, DataCarrier<DateType>);
+type OutEventDataPort<EventType,DataType> exhibits(Out, EventCarrier<EventType>,DataCarrier<DataType>);
 
-type OutEventPort<EventType> exhibits(EventPort<EventType>){
-	assert {direction = Direction.OUT} ;
-};
-type OutDataPort<DateType> exhibits(DataPort<DateType>){
-	assert {direction = Direction.OUT} ;
-};
-type OutEventDataPort<EventType,DataType> exhibits(EventDataPort<EventType,DataType>){
-	assert {direction = Direction.OUT} ;
-};
-
-type InOutEventPort<EventType> exhibits(EventPort<EventType>){
-	assert {direction = Direction.INOUT} ;
-};
-type InOutDataPort<DateType> exhibits(DataPort<DateType>){
-	assert {direction = Direction.INOUT} ;
-};
-type InOutEventDataPort<EventType,DataType> exhibits(EventDataPort<EventType,DataType>){
-	assert {direction = Direction.INOUT} ;
-};
+type InOutEventPort<EventType> exhibits(InOut, EventCarrier<EventType>);
+type InOutDataPort<DateType> exhibits(InOut, DataCarrier<DateType>);
+type InOutEventDataPort<EventType,DataType> exhibits(InOut, EventCarrier<EventType>,DataCarrier<DataType>);
 
 
-
-
-/* This annotation is used on a symbol that belongs
- * to a system type to denote that the symbol
- * represents a component. The type of the system must
- * have a System annotation.
- * 
- */
 trait Component { 
 	subComponents<T exhibits(Component)> : Int -> T ; 
 	ports<T exhibits(Port)> : Int -> T ;
+	isRoot : Bool ;
 };
 
-/*A connection is a type of two elements of the same type.
- */
-type Connector<T> {
-	source : T ;
-	target : T ;
+
+trait System refines(Component) {
+	assert {isRoot = true} ;
+}
+
+
+type Connector<SourceType exhibits(Connectable),TargetType exhibits(Connectable)> {
+	source : SourceType ;
+	target : TargetType ;
 };
+
+connect<SourceType exhibits(Connectable),TargetType exhibits(Connectable)> : (SourceType,TargetType) -> Connector<SourceType,TargetType> :=
+fun(source:SourceType, target:TargetType) {
+	some(c:Connector<SourceType,TargetType>){c.source=source && c.target=target} ;
+}
+;
+
+delegate<PortType exhibits(Connectable)> : (PortType,PortType) -> Connector<PortType,PortType> :=
+fun(source:PortType, target:PortType) {
+	some(c:Connector<PortType,PortType>){c.source=source && c.target=target} ;
+}
+;
+
+/** Example 
+type A exhibits(Component) {
+	p1 : InDataPort<Int> ;
+	p2 : OutDataPort<Real> ;
+}
+
+type B exhibits(Component) {
+	p1 : InDataPort<Real> ;
+	p2 : OutDataPort<Int> ;
+}
+
+type S exhibits(Component) {
+	//Ports
+	p1 : InDataPort<Int> ;
+	p2 : OutDataPort<Int> ;
+	//Sub-components
+	a : A ;
+	b : B ;
+	//Connections
+	c1 : Connector<InDataPort<Int>,InDataPort<Int>> := delegate<InDataPort<Int>>(p1,a.p1) ;
+	c2 : Connector<OutDataPort<Real>,InDataPort<Real>> := connect<OutDataPort<Real>,InDataPort<Real>>(a.p2,b.p1) ;
+	c3 : Connector<OutDataPort<Real>,OutDataPort<Real>> := delegate<OutDataPort<Real>>(b.p2,p2) ;	
+}
+*/
+
+
+

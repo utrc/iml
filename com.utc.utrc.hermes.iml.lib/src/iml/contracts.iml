@@ -1,8 +1,14 @@
 package iml.contracts ;
 import iml.lang.*;
+import iml.queries.*;
 
-annotation Contract ;
-annotation Specification ;
-annotation Implementation ;
-annotation Assumption ;
-annotation Guarantee ;
+trait Contract {
+	assumption : Bool ;
+	guarantee : Bool ;
+} ;
+
+type Refines<Spec exhibits(Contract), Impl exhibits(Contract)> exhibits(Property) {
+	spec : Spec ;
+	impl : Impl ;
+}
+
