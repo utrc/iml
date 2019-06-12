@@ -5,7 +5,7 @@ import iml.lang.* ;
 type Direction enum {IN, OUT, INOUT} ;
 
 trait Connectable {
-	
+
 }
 
 
