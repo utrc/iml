@@ -1,0 +1,14 @@
+package iml.synchronousdf ;
+
+
+trait SynchronousDF ;
+
+trait Stream {
+	pre : Self ;
+	init : Self -> Self ;
+	then : Self->Self ;
+	current : Self;
+	when : Self->Self;
+	eq : Self->Bool ;
+} ;
+

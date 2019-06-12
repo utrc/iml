@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
@@ -28,6 +29,7 @@ import com.utc.utrc.hermes.iml.iml.Model;
 import com.utc.utrc.hermes.iml.iml.ParenthesizedTerm;
 import com.utc.utrc.hermes.iml.iml.Property;
 import com.utc.utrc.hermes.iml.iml.RecordType;
+import com.utc.utrc.hermes.iml.iml.Refinement;
 import com.utc.utrc.hermes.iml.iml.Relation;
 import com.utc.utrc.hermes.iml.iml.SelfType;
 import com.utc.utrc.hermes.iml.iml.SignedAtomicFormula;
@@ -36,6 +38,7 @@ import com.utc.utrc.hermes.iml.iml.Symbol;
 import com.utc.utrc.hermes.iml.iml.SymbolDeclaration;
 import com.utc.utrc.hermes.iml.iml.SymbolReferenceTerm;
 import com.utc.utrc.hermes.iml.iml.TermExpression;
+import com.utc.utrc.hermes.iml.iml.Trait;
 import com.utc.utrc.hermes.iml.iml.TraitExhibition;
 import com.utc.utrc.hermes.iml.iml.TupleType;
 import com.utc.utrc.hermes.iml.iml.TypeRestriction;
@@ -99,6 +102,8 @@ public class ImlUtil {
 		}
 		return false;
 	}
+	
+	
 
 	public static NamedType getNamedTypeByName(Model model, String name) {
 		return (NamedType) model.getSymbols().stream()
@@ -183,6 +188,8 @@ public class ImlUtil {
 					types.add(((Alias) relation).getType());
 				} else if (relation instanceof TraitExhibition){
 					types.addAll(((TraitExhibition) relation).getExhibitions());
+				} else if (relation instanceof Refinement) {
+					types.addAll(((Refinement) relation).getRefinements());
 				}
 			}
 		}
@@ -381,4 +388,44 @@ public class ImlUtil {
 		}
 		return false;
 	}
+	
+	public static boolean hasType(ImlType imlType, NamedType namedType) {
+		if (imlType instanceof SimpleTypeReference &&
+			((SimpleTypeReference)imlType).getType() == namedType	) {
+			return true ;
+		}
+		return false;
+	}
+	
+	public static boolean exhibits(NamedType type, Trait trait) {
+		
+		List<TypeWithProperties> traits = getRelationTypes(type, TraitExhibition.class);
+		if (traits.size() == 0)
+			return false;
+		//Either the type exhibits the trait	
+		return traits.stream().filter(twp -> twp.getType() instanceof SimpleTypeReference).map(twp -> (Trait) ((SimpleTypeReference) twp.getType()).getType() ).anyMatch(t -> t == trait || refines(t, trait)) ;
+		
+	}
+
+	public static boolean exhibits(ImlType type, Trait trait) {
+		if (type instanceof SimpleTypeReference) {
+			return exhibits( ((SimpleTypeReference) type).getType() , trait) ;
+		}
+		return false;
+	}
+	
+	public static boolean refines(Trait type, Trait trait) {
+		
+		List<TypeWithProperties> traits = getRelationTypes(type, Refinement.class);
+		if (traits.size() == 0)
+			return false;
+		//Either the type exhibits the trait	
+		return traits.stream().filter(twp -> twp.getType() instanceof SimpleTypeReference).map(twp -> (Trait) ((SimpleTypeReference) twp.getType()).getType() ).anyMatch(t -> t == trait || refines(t, trait)) ;
+		
+		
+	}
+
+	
+	
+	
 }
