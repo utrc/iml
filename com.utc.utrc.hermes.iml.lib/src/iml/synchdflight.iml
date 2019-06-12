@@ -1,0 +1,12 @@
+package iml.synchd.sf ;
+
+
+annotation Let ;
+
+trait Synchronous {
+
+}
+pre<T> : T -> T ;
+init<T> : (T,T) -> T ;
+
+

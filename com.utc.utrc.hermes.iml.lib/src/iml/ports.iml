@@ -89,7 +89,6 @@ type DelayState exhibits(State) {
 	i : Int;
 }
 
-
 type  delay exhibits(StateMachine<DelayState>){
 	f : InDataPort<FlowPath> ;
 	n : InDataPort<Int> ;

@@ -1,0 +1,48 @@
+package examples.agree ;
+import iml.synchd.sf.* ;
+import iml.systems.* ;
+import iml.contracts.* ;
+
+type Command ;
+type Command__Impl {
+	HMAC : Bool ;
+}
+
+
+type Filter exhibits(Component, Contract, Synchronous) {
+	filter_in : InEventDataPort<Bool,Command__Impl> ;
+	filter_out : OutEventDataPort<Bool,Command__Impl> ;
+	
+	//[Doc{text="Authenticated command from the Ground Station"}]
+	Req001_Filter : Bool := filter_in.data.HMAC = true ;
+	
+	Req002_Filter : Bool := filter_out.data.HMAC = true ;
+	
+	Req003_Filter : Bool := good_command(filter_out.data) ;
+	
+	assumption : Bool := Req001_Filter ;
+	
+	guarantee : Bool := Req002_Filter && Req003_Filter;
+	
+}
+
+
+good_command : Command__Impl -> Bool ;
+
+/*
+ *  system Filter
+        features
+            filter_in: in event data port Command.Impl;
+            filter_out: out event data port Command.Impl;
+        annex agree {**
+            assume Req001_Filter "Authenticated command from the Ground Station" : filter_in.HMAC = True;
+            guarantee Req002_Filter "Authenticated command from the Ground Station" : filter_out.HMAC = True;
+            guarantee Req003_Filter "Well-formed messages" : good_command(filter_out);
+        **};
+        annex resolute {**
+            prove(agree_prop_checked(this))
+        **};
+    end Filter;
+ * 
+ * 
+ */ 
