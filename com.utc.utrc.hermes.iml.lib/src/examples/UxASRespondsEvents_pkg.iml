@@ -1,0 +1,124 @@
+package UxASRespondsEvents_pkg ;
+import iml.contracts.* ;
+import iml.systems.* ;
+import iml.software.* ;
+import iml.lang.* ;
+import iml.ports.* ;
+import iml.sms.* ;
+
+type RespondsState exhibits(State) enum { s0 , s1 , s2 } ;
+
+type responds_once exhibits(Component,StateMachine<RespondsState>) {
+	a : InDataPort<Bool> ;
+	b : InDataPort<Bool> ;
+	// Initialization of the state variable
+	init : Bool := { current = RespondsState.s0 } ;
+	// Transition relation
+	transition : Bool := { 
+			next =
+				case {
+					current = RespondsState.s0 && b.data && !a.data :  RespondsState.s1 ;
+	current = RespondsState.s0 && a.data :  RespondsState.s2 ;
+	current = RespondsState.s1 && a.data : RespondsState.s0 ;
+	true : current ;
+	}	  
+	} ;	
+	holds : OutDataPort<Bool> := some(x:OutDataPort<Bool>) { x.data = (current = RespondsState.s0 ||  current = RespondsState.s1) };
+}
+type one_request_at_a_time exhibits(Component,StateMachine<RespondsState>)  {
+	a : InDataPort<Bool> ;
+	b : InDataPort<Bool> ;
+	init : Bool := {current = RespondsState.s0 } ;
+	transition : Bool := { 
+		next = 
+			case {
+				current = RespondsState.s0 && b.data : RespondsState.s1 ;
+	current = RespondsState.s1 && b.data : RespondsState.s2 ;
+	current = RespondsState.s1 && a.data && ! b.data : RespondsState.s0 ;
+	true : current ;
+	}  	
+	} ;
+	holds : OutDataPort<Bool> :=  some(x:OutDataPort<Bool>) { x.data = ( current = RespondsState.s0 ||  current = RespondsState.s1 )};
+}
+type GenericService exhibits(Component,Contract,Thread) {
+	CmdRequest_in : InEventDataPort < Bool, Bool > ;
+	CmdResponse_out : OutEventDataPort < Bool, Bool > ;
+	SubRequest_out : OutEventDataPort < Bool, Bool > ;
+	SubResponse_in : InEventDataPort < Bool, Bool > ;
+//	processing_path0 : FlowPath ;
+//	assert { ( processing_path0.start = CmdRequest_in.flowpoint && processing_path0.end = SubRequest_out.flowpoint ) } ;
+//	processing_path1 : FlowPath ;
+//	assert { ( processing_path1.start = SubResponse_in.flowpoint && processing_path1.end = CmdResponse_out.flowpoint ) } ;
+	g1monitor : responds_once ;
+	c1 : Connector < InEventDataPort < Bool, Bool >,InDataPort < Bool > > := connect<InEventDataPort < Bool, Bool >, InDataPort<Bool>>(CmdRequest_in,g1monitor.b);
+	c2 : Connector < OutEventDataPort < Bool, Bool >,  InDataPort<Bool>> := connect<OutEventDataPort < Bool, Bool >,  InDataPort<Bool>>(SubRequest_out,g1monitor.a);
+	g2monitor : responds_once ;
+	c3 : Connector < InEventDataPort < Bool, Bool >, InDataPort<Bool> > := connect<InEventDataPort < Bool, Bool >, InDataPort<Bool> >(SubResponse_in,g2monitor.b);
+	c4 : Connector < OutEventDataPort < Bool, Bool >,  InDataPort<Bool> > := connect<OutEventDataPort < Bool, Bool >,  InDataPort<Bool>>(CmdResponse_out,g2monitor.a);
+//	d1 : delay ;
+//	c5 : Connector < FlowPath > := connect<FlowPath>(processing_path0,d1.f);
+//	c6 : Connector < Int > := connect<Int>(1,d1.n);
+//	d2 : delay ;
+//	c7 : Connector < FlowPath > := connect<FlowPath>(processing_path1,d2.f);
+//	c8 : Connector < Int > := connect<Int>(1,d2.n);
+	holds : OutDataPort<Bool> :=  some(x:OutDataPort<Bool>) { x.data = (g1monitor.holds.data && g2monitor.holds.data)};
+	guarantee : Bool := holds.data ;
+// guarantee : Bool := g1monitor.holds.data && g2monitor.holds.data ;
+}
+type  GenericLastService exhibits(Component,Contract,Thread){
+	CmdRequest_in : InEventDataPort < Bool , Bool> ;
+	CmdResponse_out : OutEventDataPort < Bool , Bool> ;
+	// processing_path : FlowPath ;
+	// assert { ( processing_path.start = CmdRequest_in.flowpoint && processing_path.end = CmdResponse_out.flowpoint ) } ;
+	gmonitor : responds_once ;
+	c1 : Connector < InEventDataPort < Bool , Bool> , InDataPort < Bool > > := connect<InEventDataPort < Bool , Bool> , InDataPort < Bool >>(CmdRequest_in,gmonitor.b);
+	c2 : Connector < OutEventDataPort < Bool , Bool>,  InDataPort < Bool >  > := connect<OutEventDataPort < Bool , Bool>,  InDataPort < Bool > >(CmdResponse_out,gmonitor.a);
+	// d1 : delay ;
+	// c5 : Connector < FlowPath > := connect<FlowPath>(processing_path,d1.f);
+	// c6 : Connector < Int > := connect<Int>(1,d1.n);
+	holds : OutDataPort<Bool> :=  some(x:OutDataPort<Bool>) { x.data = gmonitor.holds.data};
+	guarantee : Bool := holds.data ;
+// guarantee : Bool := g1monitor.holds.data && g2monitor.holds.data ;
+}
+type  UxAS_responds exhibits(Component,Contract,System) {
+	AutomationRequest_in : InEventDataPort < Bool , Bool> ;
+	AutomationResponse_out : OutEventDataPort < Bool , Bool> ;
+	// processing_path : FlowPath ;
+	// assert { ( processing_path.start = AutomationRequest_in.flowpoint && processing_path.end = AutomationResponse_out.flowpoint ) } ;
+	amonitor : one_request_at_a_time ;
+	// adelaymonitor : one_request_at_a_time ;
+	gmonitor : responds_once ;
+	c1 : Connector < InEventDataPort < Bool , Bool> , InDataPort < Bool > > := connect<InEventDataPort < Bool , Bool> , InDataPort < Bool >>(AutomationRequest_in,amonitor.b);
+	c2 : Connector < OutEventDataPort < Bool , Bool>,  InDataPort < Bool >  > := connect<OutEventDataPort < Bool , Bool>,  InDataPort < Bool > >(AutomationResponse_out,amonitor.a);
+	// c11 : Connector < Bool > :=	connect<Bool>(AutomationRequest_in.flowpoint.event,adelaymonitor.b);
+	// c21 : Connector < Bool > := connect<Bool>(AutomationResponse_out.flowpoint.event,adelaymonitor.a);
+	c3 : Connector < InEventDataPort < Bool , Bool> , InDataPort < Bool > > := connect<InEventDataPort < Bool , Bool> , InDataPort < Bool >>(AutomationRequest_in,gmonitor.b);
+	c4 : Connector < OutEventDataPort < Bool , Bool> , InDataPort < Bool > > := connect<OutEventDataPort < Bool , Bool> , InDataPort < Bool >>(AutomationResponse_out,gmonitor.a);
+//	d : delay;
+//	c5 : Connector < FlowPath > := connect<FlowPath>(processing_path,d.f);
+//	c6 : Connector < Int > := connect<Int>(8,d.n);
+	a : OutDataPort<Bool> :=  some(x:OutDataPort<Bool>) { x.data = amonitor.holds.data};
+	assumption : Bool := a.data ;
+	g : OutDataPort<Bool> :=  some(x:OutDataPort<Bool>) { x.data = gmonitor.holds.data};
+	guarantee : Bool := g.data ;
+}
+
+type UxAS_responds_dot_i exhibits(Component,Contract,System) {
+	AutomationRequest_in : InEventDataPort < Bool , Bool> ;
+	AutomationResponse_out : OutEventDataPort < Bool , Bool> ;
+	AutomationRequestValidator : GenericService ;
+	PlanBuilder : GenericService ;
+	TaskServiceBase : GenericService ;
+	RouteAggregator : GenericService ;
+	Planner : GenericLastService ;
+	conn001 : Connector < InEventDataPort < Bool,Bool >, InEventDataPort < Bool,Bool > > :=  connect< InEventDataPort < Bool,Bool >, InEventDataPort < Bool,Bool > > ( AutomationRequest_in, AutomationRequestValidator.CmdRequest_in ) ;
+	conn002 : Connector < OutEventDataPort < Bool,Bool >, OutEventDataPort < Bool,Bool > > := connect< OutEventDataPort < Bool,Bool >, OutEventDataPort < Bool,Bool >>  ( AutomationRequestValidator.CmdResponse_out, AutomationResponse_out ) ;
+	conn011 : Connector < OutEventDataPort < Bool,Bool >, InEventDataPort < Bool,Bool > > :=  connect< OutEventDataPort < Bool,Bool >, InEventDataPort < Bool,Bool > > ( AutomationRequestValidator.SubRequest_out, PlanBuilder.CmdRequest_in ) ;
+	conn012 : Connector < OutEventDataPort < Bool,Bool >, InEventDataPort < Bool,Bool > > :=  connect< OutEventDataPort < Bool,Bool >, InEventDataPort < Bool,Bool > > ( PlanBuilder.CmdResponse_out, AutomationRequestValidator.SubResponse_in ) ;
+	conn021 : Connector < OutEventDataPort < Bool,Bool >, InEventDataPort < Bool,Bool >> :=  connect< OutEventDataPort < Bool,Bool >, InEventDataPort < Bool,Bool > > ( PlanBuilder.SubRequest_out, TaskServiceBase.CmdRequest_in ) ;
+	conn022 : Connector < OutEventDataPort < Bool,Bool >, InEventDataPort < Bool,Bool > > :=  connect< OutEventDataPort < Bool,Bool >, InEventDataPort < Bool,Bool > > ( TaskServiceBase.CmdResponse_out, PlanBuilder.SubResponse_in ) ;
+	conn031 : Connector < OutEventDataPort < Bool,Bool >, InEventDataPort < Bool,Bool > > :=  connect< OutEventDataPort < Bool,Bool >, InEventDataPort < Bool,Bool > > ( TaskServiceBase.SubRequest_out, RouteAggregator.CmdRequest_in ) ;
+	conn032 : Connector < OutEventDataPort < Bool,Bool >, InEventDataPort < Bool,Bool > > :=  connect< OutEventDataPort < Bool,Bool >, InEventDataPort < Bool,Bool > > ( RouteAggregator.CmdResponse_out, TaskServiceBase.SubResponse_in ) ;
+	conn041 : Connector < OutEventDataPort < Bool,Bool >, InEventDataPort < Bool,Bool > > :=  connect< OutEventDataPort < Bool,Bool >, InEventDataPort < Bool,Bool >> ( RouteAggregator.SubRequest_out, Planner.CmdRequest_in ) ;
+	conn042 : Connector < OutEventDataPort < Bool,Bool >, InEventDataPort < Bool,Bool > > :=  connect<OutEventDataPort < Bool,Bool >, InEventDataPort < Bool,Bool > > ( Planner.CmdResponse_out, RouteAggregator.SubResponse_in ) ;
+}

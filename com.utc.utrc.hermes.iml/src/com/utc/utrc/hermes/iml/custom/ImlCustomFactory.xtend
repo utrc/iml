@@ -1,3 +1,6 @@
+/*
+ * Copyright (c) 2019 United Technologies Corporation. All rights reserved.
+ * See License.txt in the project root directory for license information. */
 package com.utc.utrc.hermes.iml.custom
 
 import com.utc.utrc.hermes.iml.iml.impl.ImlFactoryImpl
@@ -160,10 +163,9 @@ public class ImlCustomFactory extends ImlFactoryImpl {
 		]
 	}
 	
-	def createExtension(NamedType  extendedType) {
-		createExtension => [
-			^extends = true;
-			extensions.add(createTypeWithProperties(extendedType))
+	def createInclusion(NamedType  extendedType) {
+		createInclusion => [
+			inclusions.add(createTypeWithProperties(extendedType))
 		]
 	}
 	

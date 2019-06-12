@@ -1,0 +1,53 @@
+package iml.examples.agree ;
+import iml.systems.*;
+import iml.contracts.* ;
+import iml.synchrony.* ;
+
+type Command__Impl   {
+	HMAC : Bool ;
+};
+
+type A ;
+x_of_A : A -> Bool ;
+
+toStream<T> : T->T[] ;
+fieldToStream<T,R> : (T,(T->R))->R[] ;
+
+a: A;
+b : Bool[] := fieldToStream<A,Bool>(a,x_of_A) ;
+
+type Command__Impl_Stream exhibits(Stream<Command__Impl>)   {
+	HMAC_stream : BoolStream := some(x:BoolStream){  forall(i:Int){x.value[i] = value[i].HMAC}  } ; 
+};
+
+type Filter exhibits(Component,Contract,Synchronous) {
+	
+	filter_in : InEventDataPort<Bool, Command__Impl_Stream > ;
+	filter_out : OutEventDataPort<Bool, Command__Impl > ;
+	
+	a1 : Bool := filter_in.data.HMAC_stream = toBoolStream(true);
+	
+	
+	
+}
+
+
+
+
+/*
+ *  system Filter
+        features
+            filter_in: in event data port Command.Impl;
+            filter_out: out event data port Command.Impl;
+        annex agree {**
+            assume Req001_Filter "Authenticated command from the Ground Station" : filter_in.HMAC = True;
+            guarantee Req002_Filter "Authenticated command from the Ground Station" : filter_out.HMAC = True;
+            guarantee Req003_Filter "Well-formed messages" : good_command(filter_out);
+        **};
+        annex resolute {**
+            prove(agree_prop_checked(this))
+        **};
+    end Filter;
+ * 
+ * 
+ */

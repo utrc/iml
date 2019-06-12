@@ -1,3 +1,6 @@
+/*
+ * Copyright (c) 2019 United Technologies Corporation. All rights reserved.
+ * See License.txt in the project root directory for license information. */
 package com.utc.utrc.hermes.iml.tests.typing
 
 import org.junit.runner.RunWith
@@ -181,7 +184,7 @@ class TypingServicesTest {
 		val model = '''
 			package p;
 			type Parent;
-			type t1 extends (Parent) {
+			type t1 includes (Parent) {
 				
 			}
 		'''.parse
@@ -197,7 +200,7 @@ class TypingServicesTest {
 		val model = '''
 			package p;
 			type Parent;
-			type t1 extends (Parent, Int) {
+			type t1 includes (Parent, Int) {
 				
 			}
 		'''.parse
@@ -214,9 +217,9 @@ class TypingServicesTest {
 			package p;
 			type Parent33;
 			type Parent3 is Parent33;
-			type Parent2 extends (Parent3, Int);
-			type Parent extends (Parent2);
-			type t1 extends (Parent) {
+			type Parent2 includes (Parent3, Int);
+			type Parent includes (Parent2);
+			type t1 includes (Parent) {
 				
 			}
 		'''.parse
@@ -305,7 +308,7 @@ class TypingServicesTest {
 		
 		val var1Type = ((model.findSymbol("Tx") as NamedType).findSymbol("var1") as SymbolDeclaration).type
 		val var2Type = ((model.findSymbol("Tx") as NamedType).findSymbol("var2") as SymbolDeclaration).type
-		return typingServices.isEqual(var2Type, typingServices.resolveAliases(var1Type))
+		return typingServices.isEqual(var2Type, typingServices.normalizeType(var1Type))
 		
 	}
 	

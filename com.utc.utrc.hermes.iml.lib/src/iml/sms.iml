@@ -1,0 +1,20 @@
+package iml.sms ;
+import iml.lang.* ;
+
+trait State {
+	
+}
+
+trait StateMachine<S exhibits(State)> {
+	current : S ;
+	next : S ;
+	/*A predicate that defines the initial state */
+	init : S->Bool ;
+	/*A predicate that defines invariants */
+	invariant : S->Bool ;
+	/*A predicate that defines the transition function */
+	transition : (S,S)->Bool ;
+	
+}
+
+
