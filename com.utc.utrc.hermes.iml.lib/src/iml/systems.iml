@@ -15,19 +15,22 @@ trait Connectable {
 trait Port refines (Connectable) {
 	direction : Direction ;
 }
+trait In refines (Port){
+	assert {direction = Direction.IN} ;
+}
+trait Out refines (Port) {
+	assert {direction = Direction.OUT} ;
+}
 
+trait InOut refines (Port) {
+	assert {direction = Direction.INOUT} ;
+}
 /** It might be useful to define a empty simple port that just has the
  * direction property
  */
-type InPort exhibits (Port){
-	assert {direction = Direction.IN} ;
-};
-type OutPort exhibits (Port){
-	assert {direction = Direction.OUT} ;
-};
-type InOutPort exhibits (Port){
-	assert {direction = Direction.INOUT} ;
-};
+type InPort exhibits (In);
+type OutPort exhibits (Out);
+type InOutPort exhibits (InOut);
 
 /*This is the trait of a type that carries and event */
 trait EventCarrier<EventType> {
@@ -40,59 +43,31 @@ trait DataCarrier<DataType> {
 }
 
 
-trait EventPort<EventType> refines(Port,EventCarrier<EventType>);
-trait DataPort<DateType> refines(Port,DataCarrier<DateType>);
-trait EventDataPort<EventType,DataType> refines(Port,EventCarrier<EventType>,DataCarrier<DataType>);
+type InEventPort<EventType> exhibits(In, EventCarrier<EventType>);
+type InDataPort<DateType> exhibits(In, DataCarrier<DateType>);
+type InEventDataPort<EventType,DataType> exhibits(In, EventCarrier<EventType>,DataCarrier<DataType>);
 
-type InEventPort<EventType> exhibits(EventPort<EventType>){
-	assert {direction = Direction.IN} ;
-};
-type InDataPort<DateType> exhibits(DataPort<DateType>){
-	assert {direction = Direction.IN} ;
-};
-type InEventDataPort<EventType,DataType> exhibits(EventDataPort<EventType,DataType>){
-	assert {direction = Direction.IN} ;
-};
+type OutEventPort<EventType> exhibits(Out, EventCarrier<EventType>);
+type OutDataPort<DateType> exhibits(Out, DataCarrier<DateType>);
+type OutEventDataPort<EventType,DataType> exhibits(Out, EventCarrier<EventType>,DataCarrier<DataType>);
 
-type OutEventPort<EventType> exhibits(EventPort<EventType>){
-	assert {direction = Direction.OUT} ;
-};
-type OutDataPort<DateType> exhibits(DataPort<DateType>){
-	assert {direction = Direction.OUT} ;
-};
-type OutEventDataPort<EventType,DataType> exhibits(EventDataPort<EventType,DataType>){
-	assert {direction = Direction.OUT} ;
-};
+type InOutEventPort<EventType> exhibits(InOut, EventCarrier<EventType>);
+type InOutDataPort<DateType> exhibits(InOut, DataCarrier<DateType>);
+type InOutEventDataPort<EventType,DataType> exhibits(InOut, EventCarrier<EventType>,DataCarrier<DataType>);
 
-type InOutEventPort<EventType> exhibits(EventPort<EventType>){
-	assert {direction = Direction.INOUT} ;
-};
-type InOutDataPort<DateType> exhibits(DataPort<DateType>){
-	assert {direction = Direction.INOUT} ;
-};
-type InOutEventDataPort<EventType,DataType> exhibits(EventDataPort<EventType,DataType>){
-	assert {direction = Direction.INOUT} ;
-};
 
-/* This annotation is used on a symbol that belongs
- * to a system type to denote that the symbol
- * represents a component. The type of the system must
- * have a System annotation.
- * 
- */
 trait Component { 
 	subComponents<T exhibits(Component)> : Int -> T ; 
 	ports<T exhibits(Port)> : Int -> T ;
 	isRoot : Bool ;
 };
 
-//should really be extends or refines
+
 trait System refines(Component) {
 	assert {isRoot = true} ;
 }
 
-/*A connection is a type of two elements of the same type.
- */
+
 type Connector<SourceType exhibits(Connectable),TargetType exhibits(Connectable)> {
 	source : SourceType ;
 	target : TargetType ;
@@ -110,6 +85,7 @@ fun(source:PortType, target:PortType) {
 }
 ;
 
+/** Example 
 type A exhibits(Component) {
 	p1 : InDataPort<Int> ;
 	p2 : OutDataPort<Real> ;
@@ -132,7 +108,7 @@ type S exhibits(Component) {
 	c2 : Connector<OutDataPort<Real>,InDataPort<Real>> := connect<OutDataPort<Real>,InDataPort<Real>>(a.p2,b.p1) ;
 	c3 : Connector<OutDataPort<Real>,OutDataPort<Real>> := delegate<OutDataPort<Real>>(b.p2,p2) ;	
 }
-
+*/
 
 
 
