@@ -5,10 +5,8 @@ import iml.software.* ;
 import iml.lang.* ;
 import iml.ports.* ;
 import iml.sms.* ;
-
 type RespondsState exhibits(State) enum { s0 , s1 , s2 } ;
-
-type responds_once exhibits(Component,StateMachine<RespondsState>) {
+type responds_once exhibits(Component, StateMachine<RespondsState>) {
 	a : InDataPort<Bool> ;
 	b : InDataPort<Bool> ;
 	// Initialization of the state variable
@@ -22,7 +20,7 @@ type responds_once exhibits(Component,StateMachine<RespondsState>) {
 	current = RespondsState.s1 && a.data : RespondsState.s0 ;
 	true : current ;
 	}	  
-	} ;	
+	} ;
 	holds : OutDataPort<Bool> := some(x:OutDataPort<Bool>) { x.data = (current = RespondsState.s0 ||  current = RespondsState.s1) };
 }
 type one_request_at_a_time exhibits(Component,StateMachine<RespondsState>)  {
@@ -40,7 +38,7 @@ type one_request_at_a_time exhibits(Component,StateMachine<RespondsState>)  {
 	} ;
 	holds : OutDataPort<Bool> :=  some(x:OutDataPort<Bool>) { x.data = ( current = RespondsState.s0 ||  current = RespondsState.s1 )};
 }
-type GenericService exhibits(Component,Contract,Thread) {
+type GenericService exhibits(Component,Contract,Thread,StateMachine<Bool>) {
 	CmdRequest_in : InEventDataPort < Bool, Bool > ;
 	CmdResponse_out : OutEventDataPort < Bool, Bool > ;
 	SubRequest_out : OutEventDataPort < Bool, Bool > ;
@@ -65,7 +63,7 @@ type GenericService exhibits(Component,Contract,Thread) {
 	guarantee : Bool := holds.data ;
 // guarantee : Bool := g1monitor.holds.data && g2monitor.holds.data ;
 }
-type  GenericLastService exhibits(Component,Contract,Thread){
+type  GenericLastService exhibits(Component,Contract,Thread,StateMachine<Bool>){
 	CmdRequest_in : InEventDataPort < Bool , Bool> ;
 	CmdResponse_out : OutEventDataPort < Bool , Bool> ;
 	// processing_path : FlowPath ;
@@ -80,7 +78,7 @@ type  GenericLastService exhibits(Component,Contract,Thread){
 	guarantee : Bool := holds.data ;
 // guarantee : Bool := g1monitor.holds.data && g2monitor.holds.data ;
 }
-type  UxAS_responds exhibits(Component,Contract,System) {
+type  UxAS_responds exhibits(Component,Contract,System,StateMachine<Bool>) {
 	AutomationRequest_in : InEventDataPort < Bool , Bool> ;
 	AutomationResponse_out : OutEventDataPort < Bool , Bool> ;
 	// processing_path : FlowPath ;
@@ -102,8 +100,7 @@ type  UxAS_responds exhibits(Component,Contract,System) {
 	g : OutDataPort<Bool> :=  some(x:OutDataPort<Bool>) { x.data = gmonitor.holds.data};
 	guarantee : Bool := g.data ;
 }
-
-type UxAS_responds_dot_i exhibits(Component,Contract,System) {
+type UxAS_responds_dot_i exhibits(Component,Contract,System,StateMachine<Bool>) {
 	AutomationRequest_in : InEventDataPort < Bool , Bool> ;
 	AutomationResponse_out : OutEventDataPort < Bool , Bool> ;
 	AutomationRequestValidator : GenericService ;
