@@ -5,38 +5,41 @@ import iml.software.* ;
 import iml.lang.* ;
 import iml.ports.* ;
 import iml.sms.* ;
+
 type RespondsState exhibits(State) enum { s0 , s1 , s2 } ;
+
 type responds_once exhibits(Component, StateMachine<RespondsState>) {
 	a : InDataPort<Bool> ;
 	b : InDataPort<Bool> ;
 	// Initialization of the state variable
-	init : Bool := { current = RespondsState.s0 } ;
+	init : RespondsState -> Bool := fun(x:RespondsState) : Bool { x = RespondsState.s0 }; 
 	// Transition relation
-	transition : Bool := { 
-			next =
+	transition : (RespondsState,RespondsState)->Bool := fun(x:RespondsState, y:RespondsState) : Bool{ 
+			y =
 				case {
-					current = RespondsState.s0 && b.data && !a.data :  RespondsState.s1 ;
-	current = RespondsState.s0 && a.data :  RespondsState.s2 ;
-	current = RespondsState.s1 && a.data : RespondsState.s0 ;
-	true : current ;
-	}	  
+					x = RespondsState.s0 && b.data && !a.data :  RespondsState.s1 ;
+					x = RespondsState.s0 && a.data :  RespondsState.s2 ;
+					x = RespondsState.s1 && a.data : RespondsState.s0 ;
+					true : x ;
+				}	  
 	} ;
-	holds : OutDataPort<Bool> := some(x:OutDataPort<Bool>) { x.data = (current = RespondsState.s0 ||  current = RespondsState.s1) };
+	holds : OutDataPort<Bool> := some(x:OutDataPort<Bool>) { x.data = (state = RespondsState.s0 ||  state = RespondsState.s1) };
 }
+
 type one_request_at_a_time exhibits(Component,StateMachine<RespondsState>)  {
 	a : InDataPort<Bool> ;
 	b : InDataPort<Bool> ;
-	init : Bool := {current = RespondsState.s0 } ;
-	transition : Bool := { 
-		next = 
+	init : RespondsState -> Bool := fun(x:RespondsState) : Bool { x = RespondsState.s0 };
+	transition : (RespondsState,RespondsState)->Bool := fun(x:RespondsState, y:RespondsState) : Bool { 
+		y = 
 			case {
-				current = RespondsState.s0 && b.data : RespondsState.s1 ;
-	current = RespondsState.s1 && b.data : RespondsState.s2 ;
-	current = RespondsState.s1 && a.data && ! b.data : RespondsState.s0 ;
-	true : current ;
-	}  	
+				x = RespondsState.s0 && b.data : RespondsState.s1 ;
+				x = RespondsState.s1 && b.data : RespondsState.s2 ;
+				x = RespondsState.s1 && a.data && ! b.data : RespondsState.s0 ;
+				true : x ;
+			}  	
 	} ;
-	holds : OutDataPort<Bool> :=  some(x:OutDataPort<Bool>) { x.data = ( current = RespondsState.s0 ||  current = RespondsState.s1 )};
+	holds : OutDataPort<Bool> :=  some(x:OutDataPort<Bool>) { x.data = ( state = RespondsState.s0 ||  state = RespondsState.s1 )};
 }
 type GenericService exhibits(Component,Contract,Thread,StateMachine<Bool>) {
 	CmdRequest_in : InEventDataPort < Bool, Bool > ;
