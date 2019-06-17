@@ -18,6 +18,7 @@ import org.eclipse.xtext.naming.IQualifiedNameProvider;
 import org.eclipse.xtext.resource.XtextResource;
 
 import com.utc.utrc.hermes.iml.iml.Alias;
+import com.utc.utrc.hermes.iml.iml.Annotation;
 import com.utc.utrc.hermes.iml.iml.ArrayType;
 import com.utc.utrc.hermes.iml.iml.EnumRestriction;
 import com.utc.utrc.hermes.iml.iml.NamedType;
@@ -424,7 +425,48 @@ public class ImlUtil {
 		
 		
 	}
+	
+	public static boolean hasAnnotation(SymbolDeclaration s, Annotation a) {
+		return false;
+	}
+	
+	
+	public static boolean hasAnnotation(ImlType t, Annotation a) {
+		return false;
+	}
+	
+	public static boolean hasAnnotation(NamedType t, Annotation a) {
+		return false;
+	}
+	
+	public static boolean isEnum(NamedType t) {
+		if (t.getRelations() == null) {
+			return false;
+		}
+		for (TypeRestriction r : t.getRestrictions()) {
+			if (r instanceof EnumRestriction) {
+				return true;
+			}
+		}
+		return false;
 
+	}
+	
+	public static List<String> getLiterals(NamedType t) {
+		List<String> retval = new ArrayList<String>();
+		if (t.getRelations() != null) {
+
+			for (TypeRestriction r : t.getRestrictions()) {
+				if (r instanceof EnumRestriction) {
+					for(SymbolDeclaration sd : ((EnumRestriction) r).getLiterals()) {
+						retval.add(sd.getName());
+					}
+				}
+			}
+		}
+		return retval;
+
+	}
 	
 	
 	
