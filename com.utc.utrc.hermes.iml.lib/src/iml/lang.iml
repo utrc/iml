@@ -1,6 +1,5 @@
 package iml.lang;
 
-
 annotation Doc {
 	text : String ;
 }
