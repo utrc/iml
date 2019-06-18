@@ -1,0 +1,157 @@
+package examples.SW ;
+import iml.systems.* ;
+import iml.synchdf.ontological.* ;
+import iml.contracts.*;
+type  Coordinate_dot_Impl {
+	lat : Int ;
+	long : Int ;
+	alt : Int ;
+}
+type  Map_dot_Impl  {
+	wp1 : Coordinate_dot_Impl ;
+	wp2 : Coordinate_dot_Impl ;
+	wp3 : Coordinate_dot_Impl ;
+	wp4 : Coordinate_dot_Impl ;
+}
+type FlightPattern enum { ZigZag , StraightLine , Perimeter } ;
+type Command_dot_Impl  {
+	Map : Map_dot_Impl ;
+	Pattern : FlightPattern ;
+	HMAC : Bool ;
+}
+type Mission_dot_Impl  {
+	wp1 : Coordinate_dot_Impl ;
+	wp2 : Coordinate_dot_Impl ;
+	wp3 : Coordinate_dot_Impl ;
+	wp4 : Coordinate_dot_Impl ;
+	wp5 : Coordinate_dot_Impl ;
+	wp6 : Coordinate_dot_Impl ;
+	wp7 : Coordinate_dot_Impl ;
+	wp8 : Coordinate_dot_Impl ;
+	wp9 : Coordinate_dot_Impl ;
+	wp10 : Coordinate_dot_Impl ;
+}
+type  MissionWindow_dot_Impl  {
+	wp1 : Coordinate_dot_Impl ;
+	wp2 : Coordinate_dot_Impl ;
+	wp3 : Coordinate_dot_Impl ;
+	wp4 : Coordinate_dot_Impl ;
+	crc : Bool ;
+}
+type  RadioDriver exhibits (Component,Contract,Synchronous){
+	recv_map_in : InEventDataPort < Bool,Command_dot_Impl > ;
+	send_status_out : OutEventDataPort < Bool,Coordinate_dot_Impl > ;
+	send_status_in : InEventDataPort < Bool, Coordinate_dot_Impl > ;
+	recv_map_out : OutEventDataPort < Bool,Command_dot_Impl > ;
+	assumption : Bool := recv_map_in.data.HMAC = true;
+	guarantee : Bool :=  recv_map_out.data.HMAC = true ;
+}
+type  FlightPlanner exhibits (Component,Contract,Synchronous){
+	flight_plan : OutDataPort < Mission_dot_Impl > ;
+	recv_map : InEventDataPort < Bool,Command_dot_Impl > ;
+	position_status : InEventDataPort < Bool,Coordinate_dot_Impl > ;
+	a1 : Bool := recv_map.data.HMAC = true;
+	a2 : Bool := good_gs_command(recv_map.data);
+	assumption : Bool := a1 && a2 ;
+	guarantee : Bool := good_mission(flight_plan.data);
+}
+type WaypointManager exhibits (Component,Contract,Synchronous){
+	flight_plan : InDataPort < Mission_dot_Impl > ;
+	waypoint : OutEventDataPort < Bool, MissionWindow_dot_Impl > ;
+	position_status : InEventDataPort < Bool, Coordinate_dot_Impl > ;
+	assumption : Bool := good_mission(flight_plan.data);
+	guarantee : Bool :=  good_mission_window(waypoint.data);
+}
+type UARTDriver exhibits (Component,Contract,Synchronous){
+	position_status_in : InEventDataPort < Bool,Coordinate_dot_Impl > ;
+	waypoint_out : OutEventDataPort < Bool,MissionWindow_dot_Impl > ;
+	position_status_out : OutEventDataPort < Bool,Coordinate_dot_Impl > ;
+	waypoint_in : InEventDataPort < Bool,MissionWindow_dot_Impl > ;
+	assumption : Bool := good_mission_window(waypoint_in.data);
+	guarantee : Bool := waypoint_out.data.crc = true;
+}
+type MC_SW exhibits (Component,Contract,Synchronous){
+	recv_map : InEventDataPort < Bool,Command_dot_Impl > ;
+	send_status : OutEventDataPort < Bool,Coordinate_dot_Impl > ;
+	waypoint : OutEventDataPort < Bool,MissionWindow_dot_Impl > ;
+	position_status : InEventDataPort < Bool,Coordinate_dot_Impl > ;
+	// we abstract away the authentication and just assume the message has undergone authenticity verification
+	assumption : Bool := recv_map.data.HMAC = true;
+	guarantee : Bool := waypoint.data.crc = true;
+}
+type  MC_SW_dot_Impl exhibits (Component,Contract,Synchronous) {
+	recv_map : InEventDataPort < Bool,Command_dot_Impl > ;
+	send_status : OutEventDataPort < Bool,Coordinate_dot_Impl > ;
+	waypoint : OutEventDataPort < Bool,MissionWindow_dot_Impl > ;
+	position_status : InEventDataPort < Bool,Coordinate_dot_Impl > ;
+	RADIO : RadioDriver ;
+	FPLN : FlightPlanner ;
+	WPM : WaypointManager ;
+	UART : UARTDriver ;
+	
+	c1 : Connector < InEventDataPort < Bool,Command_dot_Impl >,InEventDataPort < Bool,Command_dot_Impl > > :=
+	connect<InEventDataPort < Bool,Command_dot_Impl >,InEventDataPort < Bool,Command_dot_Impl >>(recv_map,RADIO.recv_map_in) ;
+	
+	c2 : Connector < OutEventDataPort < Bool,Coordinate_dot_Impl >,OutEventDataPort < Bool,Coordinate_dot_Impl > > := 
+	connect < OutEventDataPort < Bool,Coordinate_dot_Impl >,OutEventDataPort < Bool,Coordinate_dot_Impl > >(RADIO.send_status_out,send_status);
+	
+	c3 : Connector < OutEventDataPort < Bool,Command_dot_Impl >,InEventDataPort < Bool,Command_dot_Impl > > := 
+	connect < OutEventDataPort < Bool,Command_dot_Impl >,InEventDataPort < Bool,Command_dot_Impl > >(RADIO.recv_map_out,FPLN.recv_map);
+	
+	c5 : Connector < OutDataPort < Mission_dot_Impl >, InDataPort<Mission_dot_Impl> > :=
+	connect < OutDataPort < Mission_dot_Impl >, InDataPort<Mission_dot_Impl> > (FPLN.flight_plan,WPM.flight_plan)  ;
+	
+	c6 : Connector < OutEventDataPort < Bool, MissionWindow_dot_Impl >, InEventDataPort < Bool, MissionWindow_dot_Impl > >:= 
+	connect < OutEventDataPort < Bool, MissionWindow_dot_Impl >, InEventDataPort < Bool, MissionWindow_dot_Impl > >(WPM.waypoint,UART.waypoint_in) ;
+	
+	c7 : Connector < OutEventDataPort < Bool, Coordinate_dot_Impl >, InEventDataPort < Bool, Coordinate_dot_Impl > > :=
+	 connect < OutEventDataPort < Bool, Coordinate_dot_Impl >, InEventDataPort < Bool, Coordinate_dot_Impl > >(UART.position_status_out, WPM.position_status);
+	
+	c8 : Connector < OutEventDataPort < Bool, Coordinate_dot_Impl > , InEventDataPort < Bool, Coordinate_dot_Impl >> :=
+	 connect < OutEventDataPort < Bool, Coordinate_dot_Impl > , InEventDataPort < Bool, Coordinate_dot_Impl >>(UART.position_status_out,FPLN.position_status);
+	
+	c9 : Connector < OutEventDataPort < Bool, Coordinate_dot_Impl >, InEventDataPort < Bool, Coordinate_dot_Impl > > := 
+	connect < OutEventDataPort < Bool, Coordinate_dot_Impl >, InEventDataPort < Bool, Coordinate_dot_Impl > >(UART.position_status_out, RADIO.send_status_in);
+
+	c10 : Connector < OutEventDataPort < Bool, MissionWindow_dot_Impl >,OutEventDataPort < Bool, MissionWindow_dot_Impl > > := 
+	connect < OutEventDataPort < Bool, MissionWindow_dot_Impl >,OutEventDataPort < Bool, MissionWindow_dot_Impl > >(UART.waypoint_out,waypoint);
+
+	c11 : Connector < InEventDataPort < Bool, Coordinate_dot_Impl >, InEventDataPort < Bool, Coordinate_dot_Impl > > :=
+	connect < InEventDataPort < Bool, Coordinate_dot_Impl >, InEventDataPort < Bool, Coordinate_dot_Impl > >(position_status, UART.position_status_in);
+	
+}
+// These functions check the well-formedness of message structures
+good_coordinate : Coordinate_dot_Impl -> Bool := fun(coord : Coordinate_dot_Impl) {
+																coord.lat >= -90 && 
+																coord.lat <= 90 && 
+																coord.long >= -180 && 
+																coord.long <= 180 && 
+																coord.alt >= 0 && 
+																coord.alt <= 15000 } ;
+good_map : Map_dot_Impl -> Bool := fun(map : Map_dot_Impl) {	
+			 												good_coordinate(map.wp1) && 
+															good_coordinate(map.wp2) && 
+															good_coordinate(map.wp3) && 
+															good_coordinate(map.wp4) } ;
+good_pattern : FlightPattern -> Bool :=	fun(pattern : FlightPattern) {pattern = FlightPattern.ZigZag ||
+																			  (pattern = FlightPattern.StraightLine) ||
+																			   (pattern = FlightPattern.Perimeter)} ;
+good_HMAC : Bool -> Bool := fun(hmac : Bool) { (hmac = true) || (hmac = false) } ;
+good_gs_command : Command_dot_Impl -> Bool :=	fun(cmd : Command_dot_Impl) {good_map(cmd.Map) && 
+																		good_pattern(cmd.Pattern) && 
+																		good_HMAC(cmd.HMAC) };
+good_mission : Mission_dot_Impl -> Bool :=	fun( mission : Mission_dot_Impl) {good_coordinate(mission.wp1) && 
+																		good_coordinate(mission.wp2) && 
+																		good_coordinate(mission.wp3) && 
+																		good_coordinate(mission.wp4) && 
+																		good_coordinate(mission.wp5) && 
+																		good_coordinate(mission.wp6) && 
+																		good_coordinate(mission.wp7) && 
+																		good_coordinate(mission.wp8) && 
+																		good_coordinate(mission.wp9) && 
+																		good_coordinate(mission.wp10) };
+good_mission_window : MissionWindow_dot_Impl -> Bool :=	fun(win : MissionWindow_dot_Impl) {good_coordinate(win.wp1) && 
+																				good_coordinate(win.wp2) && 
+																				good_coordinate(win.wp3) && 
+																				good_coordinate(win.wp4)};
+
