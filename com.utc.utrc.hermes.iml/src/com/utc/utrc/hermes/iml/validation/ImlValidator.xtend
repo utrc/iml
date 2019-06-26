@@ -161,13 +161,13 @@ class ImlValidator extends AbstractImlValidator {
 			Refinement : {
 				if (!(type instanceof Trait)) {
 					error("'" + typeName + "': Refinement can only be applied to trait types", 
-						ImlPackage::eINSTANCE.inclusion_Inclusions, INVALID_RELATION)
+						ImlPackage::eINSTANCE.refinement_Refinements, INVALID_RELATION)
 				}
 				for (related : relation.refinements.map[it.type]) {
 					if (! (related instanceof SimpleTypeReference && 
 							(related as SimpleTypeReference).type instanceof Trait)) {
 						error("Trait  '" + typeName + "' can refines only trait types", 
-							ImlPackage::eINSTANCE.inclusion_Inclusions, INVALID_RELATION)
+							ImlPackage::eINSTANCE.refinement_Refinements, INVALID_RELATION)
 					}
 				}
 			}
