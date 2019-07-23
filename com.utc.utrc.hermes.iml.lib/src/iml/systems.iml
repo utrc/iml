@@ -98,31 +98,3 @@ fun(source:PortType, target:PortType) {
 	some(c:Connector<PortType,PortType>){c.source=source && c.target=target} ;
 }
 ;
-
-/** Example 
-type A exhibits(Component) {
-	p1 : InDataPort<Int> ;
-	p2 : OutDataPort<Real> ;
-}
-
-type B exhibits(Component) {
-	p1 : InDataPort<Real> ;
-	p2 : OutDataPort<Int> ;
-}
-
-type S exhibits(Component) {
-	//Ports
-	p1 : InDataPort<Int> ;
-	p2 : OutDataPort<Int> ;
-	//Sub-components
-	a : A ;
-	b : B ;
-	//Connections
-	c1 : Connector<InDataPort<Int>,InDataPort<Int>> := delegate<InDataPort<Int>>(p1,a.p1) ;
-	c2 : Connector<OutDataPort<Real>,InDataPort<Real>> := connect<OutDataPort<Real>,InDataPort<Real>>(a.p2,b.p1) ;
-	c3 : Connector<OutDataPort<Real>,OutDataPort<Real>> := delegate<OutDataPort<Real>>(b.p2,p2) ;	
-}
-*/
-
-
-
