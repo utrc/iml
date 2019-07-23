@@ -1,4 +1,5 @@
 package iml.lang.utils ;
+import iml.lang.*;
 
 type List<T> {
 	isEmpty : Bool ;
