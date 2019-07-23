@@ -73,11 +73,25 @@ type Connector<SourceType exhibits(Connectable),TargetType exhibits(Connectable)
 	target : TargetType ;
 };
 
+type EqualityConnector<Type exhibits(Connectable)> {
+	source : Type ;
+	target : Type ;
+	assert {source = target} ;
+};
+
+
 connect<SourceType exhibits(Connectable),TargetType exhibits(Connectable)> : (SourceType,TargetType) -> Connector<SourceType,TargetType> :=
 fun(source:SourceType, target:TargetType) {
 	some(c:Connector<SourceType,TargetType>){c.source=source && c.target=target} ;
 }
 ;
+
+connectEqual<Type exhibits(Connectable)> : (Type,Type) -> EqualityConnector<Type> :=
+fun(source:Type, target:Type) {
+	some(c:EqualityConnector<Type>){c.source=source && c.target=target} ;
+}
+;
+
 
 delegate<PortType exhibits(Connectable)> : (PortType,PortType) -> Connector<PortType,PortType> :=
 fun(source:PortType, target:PortType) {

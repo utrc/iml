@@ -48,27 +48,29 @@ not : BoolStream->BoolStream;
 
 ite<D,S exhibits(Stream<D>) > : (BoolStream,S,S) -> S ;
 
+
+// Node Example
 //node Counter(x0, d:int; r:bool) returns (n:int)
 //let
 //n = x0 -> if r then x0 else pre(n) + d
 //tel
 
-type Counter exhibits(Component, Synchronous) {
-	x0: InDataPort<IntStream>;
-	d: InDataPort<IntStream>;
-	r: InDataPort<BoolStream>;
-	n: OutDataPort<IntStream>;
-
-	
-	assert {ports<InDataPort<IntStream>>(0) = x0} ;
-	
-	
-	[Let] l:Stream<Bool> := 
-	{ 
-		n.data.eq( x0.data.then( ite<Int,IntStream>(r.data, x0.data, n.data.pre.plus(d.data) ) ) ) ;
-	} ;
-	
-}
+//type Counter exhibits(Component, Synchronous) {
+//	x0: InDataPort<IntStream>;
+//	d: InDataPort<IntStream>;
+//	r: InDataPort<BoolStream>;
+//	n: OutDataPort<IntStream>;
+//
+//	
+//	assert {ports<InDataPort<IntStream>>(0) = x0} ;
+//	
+//	
+//	[Let] l:Stream<Bool> := 
+//	{ 
+//		n.data.eq( x0.data.then( ite<Int,IntStream>(r.data, x0.data, n.data.pre.plus(d.data) ) ) ) ;
+//	} ;
+//	
+//}
 
 
 
