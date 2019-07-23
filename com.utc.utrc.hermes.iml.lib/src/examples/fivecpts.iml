@@ -1,0 +1,69 @@
+package sandbox.fivecpts ;
+import iml.systems.*;
+import iml.synchdf.ontological.* ;
+ 
+
+type responds_exactly_once_within exhibits(Component, Synchronous) {
+	a : InDataPort<Bool> ;
+	b : InDataPort<Bool> ;
+	n : InDataPort<Int> ;
+	holds2 : OutDataPort<Bool> := some(x:OutDataPort<Bool>){x.data = (state = 0) || (state = 1)};
+	latch : Int:= init<Int>(n.data,pre<Int>(latch));
+		 
+	 pre_i : Int := init<Int>(0,pre<Int>(i));
+	 pre_state : Int := init<Int>(0,pre<Int>(state));
+	 some_transition : Bool := T_0_to_1 || T_1_to_2 || T_0_to_2 || T_1_to_0;
+	 T_0_to_1 : Bool := pre_state = 0 && b.data && ! a.data;
+	 T_1_to_2 : Bool := pre_state = 1 && ! a.data && i >= latch;
+	 T_0_to_2 : Bool := pre_state = 0 && a.data;
+	 T_1_to_0 : Bool := pre_state = 1 && a.data;
+	 
+	 state :Int := 
+	 	case {
+	 		T_0_to_1 : 1 ;
+	 		T_1_to_2 : 2 ;
+	 		T_0_to_2 : 2 ;
+	 		T_1_to_0 : 0 ;
+	 		true : pre_state;
+	 	} ;
+	 i : Int := init<Int>(0, 
+	 	case {
+	 		pre_state = 0 : 0 ;
+	 		pre_state = 1 : pre_i +1 ;
+	 		true : pre_i ;
+	 	} ) ;
+}
+type one_request_at_the_time exhibits(Component, Synchronous) {
+	a : InDataPort<Bool> ;
+	b : InDataPort<Bool> ;
+	n : InDataPort<Bool> ;
+	holds2 : OutDataPort<Bool>;
+
+}
+
+type PlanService exhibits(Component,Synchronous) {
+	RequestIn : InDataPort<Bool> ;
+	ResponseOut : OutDataPort<Bool> ;
+	
+	r1 : responds_exactly_once_within ;
+	c1 : Connector<OutDataPort<Bool>,InDataPort<Bool>> := 
+	connect<OutDataPort<Bool>,InDataPort<Bool>>(ResponseOut,r1.a);
+	c2 : Connector<InDataPort<Bool>,InDataPort<Bool>> := 
+	connect<InDataPort<Bool>,InDataPort<Bool>>(RequestIn,r1.b); 
+	c3 : Connector<Int,Int> := 
+	connect<Int,Int>(1,r1.n.data); 
+	
+	
+	
+	
+	
+	
+}
+
+
+
+
+
+
+
+	

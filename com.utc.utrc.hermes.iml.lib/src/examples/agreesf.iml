@@ -1,5 +1,5 @@
 package examples.agree ;
-import iml.synchd.sf.* ;
+import iml.synchdf.ontological.* ;
 import iml.systems.* ;
 import iml.contracts.* ;
 

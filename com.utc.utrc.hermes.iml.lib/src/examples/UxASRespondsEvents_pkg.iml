@@ -6,7 +6,7 @@ import iml.lang.* ;
 import iml.ports.* ;
 import iml.sms.* ;
 
-type RespondsState exhibits(State) enum { s0 , s1 , s2 } ;
+type RespondsState  enum { s0 , s1 , s2 } ;
 
 type responds_once exhibits(Component, StateMachine<RespondsState>) {
 	a : InDataPort<Bool> ;
@@ -21,7 +21,7 @@ type responds_once exhibits(Component, StateMachine<RespondsState>) {
 					x = RespondsState.s0 && a.data :  RespondsState.s2 ;
 					x = RespondsState.s1 && a.data : RespondsState.s0 ;
 					true : x ;
-				}	  
+				}	   
 	} ;
 	holds : OutDataPort<Bool> := some(x:OutDataPort<Bool>) { x.data = (state = RespondsState.s0 ||  state = RespondsState.s1) };
 }
