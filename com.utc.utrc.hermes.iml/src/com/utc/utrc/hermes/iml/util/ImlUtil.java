@@ -215,7 +215,7 @@ public class ImlUtil {
 	}
 	
 	public static boolean isGlobalSymbol(Symbol symbol) {
-		return symbol.eContainer() instanceof Model;
+		return symbol.eContainer() instanceof Model || symbol.eContainer() == null;
 	}
 
 	public static String getUnqualifiedName(String name) {
@@ -271,6 +271,31 @@ public class ImlUtil {
 		for (SymbolDeclaration symbol : type.getSymbols()) {
 			if (symbolName.equals(symbol.getName())) {
 				return symbol;
+			}
+		}
+		return null;
+	}
+	
+	public static Symbol findSymbol(ResourceSet rs, String symbolFQN) {
+		if (rs == null || symbolFQN == null) {
+			return null;
+		}
+		
+		int dotIndex = symbolFQN.lastIndexOf('.');
+		if (dotIndex < 0) { // Must include FQN
+			return null;
+		}
+		String modelName = symbolFQN.substring(0, dotIndex);
+		String typeName = symbolFQN.substring(dotIndex + 1);
+		
+		for (Resource res : rs.getResources()) {
+			if (!res.getContents().isEmpty() && res.getContents().get(0) instanceof Model
+					&& ((Model) res.getContents().get(0)).getName().equals(modelName)) {
+				
+				Symbol symbol = findSymbol((Model) res.getContents().get(0), typeName);
+				if (symbol != null) {
+					return symbol;
+				}
 			}
 		}
 		return null;
@@ -389,7 +414,7 @@ public class ImlUtil {
 		}
 		return false;
 	}
-	
+
 	public static boolean hasType(ImlType imlType, NamedType namedType) {
 		if (imlType instanceof SimpleTypeReference &&
 			((SimpleTypeReference)imlType).getType() == namedType	) {
@@ -467,7 +492,4 @@ public class ImlUtil {
 		return retval;
 
 	}
-	
-	
-	
 }

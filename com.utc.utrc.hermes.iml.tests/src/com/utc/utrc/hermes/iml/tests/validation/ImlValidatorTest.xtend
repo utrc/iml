@@ -1208,6 +1208,15 @@ class ImlValidatorTest {
 	 }
 	 
 	 @Test
+	 def void testCorrectRelationForRefinement_NotTrait() {
+	 	'''
+	 		package p;
+	 		type t1;
+	 		trait tr2 refines(tr); 		
+	 	'''.parse.assertError(ImlPackage.eINSTANCE.refinement, INVALID_RELATION)
+	 }
+	 
+	 @Test
 	 def void testScopeOfAnnotation() {
 	 	'''
 	 	package p;
