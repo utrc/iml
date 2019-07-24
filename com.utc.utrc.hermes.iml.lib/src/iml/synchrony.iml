@@ -4,8 +4,6 @@ annotation Let ;
 
 trait Synchronous ;
 
-
-
 trait Stream<T> {
 	pre : Self ;
 	init : Self -> Self ;
