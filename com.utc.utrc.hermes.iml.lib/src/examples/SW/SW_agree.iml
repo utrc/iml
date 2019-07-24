@@ -173,33 +173,52 @@ type  MC_SW_dot_Impl exhibits (MC_SWTrait) {
 	
 	c1 : Connector < InEventDataPort < Bool,Command_dot_Impl >,InEventDataPort < Bool,Command_dot_Impl > > :=
 	connect<InEventDataPort < Bool,Command_dot_Impl >,InEventDataPort < Bool,Command_dot_Impl >>(recv_map,RADIO.recv_map_in) ;
+	assert{recv_map.data = RADIO.recv_map_in.data} ;
+	assert{recv_map.event = RADIO.recv_map_in.event} ;
 	
 	c2 : Connector < OutEventDataPort < Bool,Coordinate_dot_Impl >,OutEventDataPort < Bool,Coordinate_dot_Impl > > := 
 	connect < OutEventDataPort < Bool,Coordinate_dot_Impl >,OutEventDataPort < Bool,Coordinate_dot_Impl > >(RADIO.send_status_out,send_status);
+	assert{send_status.data = RADIO.send_status_out.data} ;
+	assert{send_status.event = RADIO.send_status_out.event} ;
 	
 	c3 : Connector < OutEventDataPort < Bool,Command_dot_Impl >,InEventDataPort < Bool,Command_dot_Impl > > := 
 	connect < OutEventDataPort < Bool,Command_dot_Impl >,InEventDataPort < Bool,Command_dot_Impl > >(RADIO.recv_map_out,FPLN.recv_map);
+	assert{FPLN.recv_map.data = RADIO.recv_map_out.data} ;
+	assert{FPLN.recv_map.event = RADIO.recv_map_out.event} ;
 	
 	c5 : Connector < OutDataPort < Mission_dot_Impl >, InDataPort<Mission_dot_Impl> > :=
 	connect < OutDataPort < Mission_dot_Impl >, InDataPort<Mission_dot_Impl> > (FPLN.flight_plan,WPM.flight_plan)  ;
+	assert{FPLN.flight_plan.data = WPM.flight_plan.data} ;
 	
 	c6 : Connector < OutEventDataPort < Bool, MissionWindow_dot_Impl >, InEventDataPort < Bool, MissionWindow_dot_Impl > >:= 
 	connect < OutEventDataPort < Bool, MissionWindow_dot_Impl >, InEventDataPort < Bool, MissionWindow_dot_Impl > >(WPM.waypoint,UART.waypoint_in) ;
+	assert{recv_map.data = RADIO.recv_map_in.data} ;
+	assert{recv_map.event = RADIO.recv_map_in.event} ;
 	
 	c7 : Connector < OutEventDataPort < Bool, Coordinate_dot_Impl >, InEventDataPort < Bool, Coordinate_dot_Impl > > :=
 	 connect < OutEventDataPort < Bool, Coordinate_dot_Impl >, InEventDataPort < Bool, Coordinate_dot_Impl > >(UART.position_status_out, WPM.position_status);
+	 assert{UART.position_status_out.data = WPM.position_status.data} ;
+	assert{UART.position_status_out.event = WPM.position_status.event} ;
 	
 	c8 : Connector < OutEventDataPort < Bool, Coordinate_dot_Impl > , InEventDataPort < Bool, Coordinate_dot_Impl >> :=
 	 connect < OutEventDataPort < Bool, Coordinate_dot_Impl > , InEventDataPort < Bool, Coordinate_dot_Impl >>(UART.position_status_out,FPLN.position_status);
+	 assert{UART.position_status_out.data = FPLN.position_status.data} ;
+	 assert{UART.position_status_out.event = FPLN.position_status.event} ;
 	
 	c9 : Connector < OutEventDataPort < Bool, Coordinate_dot_Impl >, InEventDataPort < Bool, Coordinate_dot_Impl > > := 
 	connect < OutEventDataPort < Bool, Coordinate_dot_Impl >, InEventDataPort < Bool, Coordinate_dot_Impl > >(UART.position_status_out, RADIO.send_status_in);
+	assert{UART.position_status_out.data = RADIO.send_status_in.data} ;
+	assert{UART.position_status_out.event = RADIO.send_status_in.event} ;
 
 	c10 : Connector < OutEventDataPort < Bool, MissionWindow_dot_Impl >,OutEventDataPort < Bool, MissionWindow_dot_Impl > > := 
 	connect < OutEventDataPort < Bool, MissionWindow_dot_Impl >,OutEventDataPort < Bool, MissionWindow_dot_Impl > >(UART.waypoint_out,waypoint);
+	assert{waypoint.data = UART.waypoint_out.data} ;
+	assert{waypoint.event = UART.waypoint_out.event} ;
 
 	c11 : Connector < InEventDataPort < Bool, Coordinate_dot_Impl >, InEventDataPort < Bool, Coordinate_dot_Impl > > :=
 	connect < InEventDataPort < Bool, Coordinate_dot_Impl >, InEventDataPort < Bool, Coordinate_dot_Impl > >(position_status, UART.position_status_in);
+	assert{position_status.data = UART.position_status_in.data} ;
+	assert{position_status.event = UART.position_status_in.event} ;
 	
 }
 // These functions check the well-formedness of message structures

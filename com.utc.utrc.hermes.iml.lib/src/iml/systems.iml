@@ -80,6 +80,8 @@ type EqualityConnector<Type exhibits(Connectable)> {
 };
 
 
+
+
 connect<SourceType exhibits(Connectable),TargetType exhibits(Connectable)> : (SourceType,TargetType) -> Connector<SourceType,TargetType> :=
 fun(source:SourceType, target:TargetType) {
 	some(c:Connector<SourceType,TargetType>){c.source=source && c.target=target} ;
