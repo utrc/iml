@@ -172,8 +172,12 @@ public class ImlUtil {
 				types.addAll(((Inclusion) relation).getInclusions());
 			} else if (relation instanceof Alias) {
 				types.add(((Alias) relation).getType());
-			} else {
+			} else if (relation instanceof Refinement) {
+				types.addAll(((Refinement) relation).getRefinements());
+			} else if (relation instanceof TraitExhibition) {
 				types.addAll(((TraitExhibition) relation).getExhibitions());
+			} else {
+				throw new IllegalArgumentException("Unknown relation type: " + relation.getClass());
 			}
 		}
 		return types;
