@@ -1,25 +1,76 @@
-package examples.SW ;
+package examples.SW.agree ;
 import iml.systems.* ;
 import iml.synchdf.ontological.* ;
 import iml.contracts.*;
-type  Coordinate_dot_Impl {
+import iml.software.* ;
+
+/*In AADL data can be also used as a components
+ * which has sub-components (that are indeed just fields).
+ * In this encoding, I am considering data not as components.
+ */
+
+/*Coordinate type 
+ * AADL distinguishes between types and
+ * implementations. In the past, we have 
+ * used inclusions to encode AADL into
+ * IML. An alternative way would be 
+ * to use traits. We cannot use a trait
+ * as a type, though, which means that 
+ * an AADL type must be an IML type. 
+ * The following could be a possible
+ * encoding. 
+ * */
+//This is a trait which is created for each type
+//and that contains everything defined in the type
+trait CoordinateTrait refines(Data);
+//This is a type needed to be able to define constants
+//of this type
+type Coordinate exhibits(CoordinateTrait) ;
+/*The implementation also exhibits the same trait
+as the type. Notice that we would need a way 
+* to distinguish between the type and the implementation.
+* One way is by name but this is not reliable. The other way
+* is by looking at the content because types (as above) 
+* will always be empty.  However, implementations could
+* be empty too. The only reliable way would be to 
+* add a trait or annotation to implementations. However, 
+* there is no need to recover exactly the same AADL model
+* and there is no different between an empty implementation
+* and a type.*/
+type Coordinate_dot_Impl exhibits(CoordinateTrait) {
 	lat : Int ;
 	long : Int ;
 	alt : Int ;
-}
-type  Map_dot_Impl  {
+} ;
+
+trait MapTrait refines(Data) ;
+type Map exhibits(MapTrait) ;
+type  Map_dot_Impl exhibits(MapTrait) {
 	wp1 : Coordinate_dot_Impl ;
 	wp2 : Coordinate_dot_Impl ;
 	wp3 : Coordinate_dot_Impl ;
 	wp4 : Coordinate_dot_Impl ;
 }
-type FlightPattern enum { ZigZag , StraightLine , Perimeter } ;
-type Command_dot_Impl  {
+
+/** We will need to handle enums differently becasue 
+ * the following does not work */
+//trait FlightPatternTrait exhibits(Data) enum { ZigZag , StraightLine , Perimeter } ;
+//type FlightPattern exhibits(FlightPatternTrait) ;
+type FlightPattern exhibits( Data) enum { ZigZag , StraightLine , Perimeter } ; 
+
+trait CommandTrait refines(Data) ;
+type Command exhibits(CommandTrait) ;
+
+type Command_dot_Impl exhibits(CommandTrait) {
 	Map : Map_dot_Impl ;
 	Pattern : FlightPattern ;
 	HMAC : Bool ;
 }
-type Mission_dot_Impl  {
+
+trait MissionTrait refines(Data) ;
+type Mission exhibits(MissionTrait) ;
+
+type Mission_dot_Impl exhibits(MissionTrait) {
 	wp1 : Coordinate_dot_Impl ;
 	wp2 : Coordinate_dot_Impl ;
 	wp3 : Coordinate_dot_Impl ;
@@ -31,6 +82,10 @@ type Mission_dot_Impl  {
 	wp9 : Coordinate_dot_Impl ;
 	wp10 : Coordinate_dot_Impl ;
 }
+
+trait MissionWindowTrait refines(Data) ;
+type MissionWindow exhibits(MissionWindowTrait) ;
+
 type  MissionWindow_dot_Impl  {
 	wp1 : Coordinate_dot_Impl ;
 	wp2 : Coordinate_dot_Impl ;
@@ -38,52 +93,79 @@ type  MissionWindow_dot_Impl  {
 	wp4 : Coordinate_dot_Impl ;
 	crc : Bool ;
 }
-type  RadioDriver exhibits (Component,Contract,Synchronous){
+
+trait RadioDriverTrait refines(Component,Thread,Contract,Synchronous) {
 	recv_map_in : InEventDataPort < Bool,Command_dot_Impl > ;
 	send_status_out : OutEventDataPort < Bool,Coordinate_dot_Impl > ;
 	send_status_in : InEventDataPort < Bool, Coordinate_dot_Impl > ;
 	recv_map_out : OutEventDataPort < Bool,Command_dot_Impl > ;
-	assumption : Bool := recv_map_in.data.HMAC = true;
-	guarantee : Bool :=  recv_map_out.data.HMAC = true ;
+	[Assume{comment="Authenticated command from the Ground Station"}] Req001_RadioDriver : Bool := recv_map_in.data.HMAC = true;
+	[Guarantee{comment="Authenticated command from the Ground Station"}] Req002_RadioDriver : Bool := recv_map_out.data.HMAC = true ; 
+	assumption : Bool := Req001_RadioDriver;
+	guarantee : Bool :=  Req002_RadioDriver ;
 }
-type  FlightPlanner exhibits (Component,Contract,Synchronous){
+
+type  RadioDriver exhibits (RadioDriverTrait);
+type  RadioDriver_dot_Impl exhibits (RadioDriverTrait);
+
+
+trait  FlightPlannerTrait refines (Component,Thread,Contract,Synchronous){
 	flight_plan : OutDataPort < Mission_dot_Impl > ;
 	recv_map : InEventDataPort < Bool,Command_dot_Impl > ;
 	position_status : InEventDataPort < Bool,Coordinate_dot_Impl > ;
-	a1 : Bool := recv_map.data.HMAC = true;
-	a2 : Bool := good_gs_command(recv_map.data);
-	assumption : Bool := a1 && a2 ;
-	guarantee : Bool := good_mission(flight_plan.data);
+	[Assume{comment="The FlightPlanner shall receive a well-formed command from the GroundStation"}] Req001_FlightPlanner : Bool := recv_map.data.HMAC = true;
+	[Assume{comment="The Flight Planner shall receive an authenticated command from the Ground Station"}] Req002_FlightPlanner : Bool := good_gs_command(recv_map.data);
+	assumption : Bool := Req001_FlightPlanner && Req002_FlightPlanner ;
+	[Guarantee{comment="The Flight Planner shall generate a valid mission"}] Req003_FlightPlanner :Bool := good_mission(flight_plan.data);
+	guarantee : Bool := Req003_FlightPlanner;
 }
-type WaypointManager exhibits (Component,Contract,Synchronous){
+
+type FlightPlanner exhibits(FlightPlannerTrait);
+type FlightPlanner_dot_Impl exhibits(FlightPlannerTrait);
+
+trait WaypointManagerTrait refines (Component,Thread,Contract,Synchronous){
 	flight_plan : InDataPort < Mission_dot_Impl > ;
 	waypoint : OutEventDataPort < Bool, MissionWindow_dot_Impl > ;
 	position_status : InEventDataPort < Bool, Coordinate_dot_Impl > ;
-	assumption : Bool := good_mission(flight_plan.data);
-	guarantee : Bool :=  good_mission_window(waypoint.data);
+	[Assume{comment="The Waypoint Manager shall receive a well-formed mission"}] Req001_WaypointManager : Bool := good_mission(flight_plan.data);
+	[Guarantee{comment="The Waypoint Manager shall output a well-formed mission window"}] Req002_WaypointManager : Bool := good_mission_window(waypoint.data);
+	assumption : Bool := Req001_WaypointManager ;
+	guarantee : Bool :=  Req002_WaypointManager ;
 }
-type UARTDriver exhibits (Component,Contract,Synchronous){
+type WaypointManager exhibits (WaypointManagerTrait) ;
+type WaypointManager_dot_Impl exhibits(WaypointManagerTrait);
+
+trait UARTDriverTrait refines (Component,Thread,Contract,Synchronous){
 	position_status_in : InEventDataPort < Bool,Coordinate_dot_Impl > ;
 	waypoint_out : OutEventDataPort < Bool,MissionWindow_dot_Impl > ;
 	position_status_out : OutEventDataPort < Bool,Coordinate_dot_Impl > ;
 	waypoint_in : InEventDataPort < Bool,MissionWindow_dot_Impl > ;
-	assumption : Bool := good_mission_window(waypoint_in.data);
-	guarantee : Bool := waypoint_out.data.crc = true;
+	[Assume{comment="Well-formed mission window"}] Req001_UARTDriver : Bool := good_mission_window(waypoint_in.data);
+	[Guarantee{comment="A CRC shall be appended to the message to determine message correctness"}] Req002_UARTDriver : Bool := waypoint_out.data.crc = true; 
+	assumption : Bool := Req001_UARTDriver ;
+	guarantee : Bool := Req002_UARTDriver ;
 }
-type MC_SW exhibits (Component,Contract,Synchronous){
+
+type UARTDriver exhibits(UARTDriverTrait) ;
+type UARTDriver_dot_Impl exhibits(UARTDriverTrait) ;
+
+
+trait MC_SWTrait refines(Component,Process,Contract,Synchronous){
 	recv_map : InEventDataPort < Bool,Command_dot_Impl > ;
 	send_status : OutEventDataPort < Bool,Coordinate_dot_Impl > ;
 	waypoint : OutEventDataPort < Bool,MissionWindow_dot_Impl > ;
 	position_status : InEventDataPort < Bool,Coordinate_dot_Impl > ;
 	// we abstract away the authentication and just assume the message has undergone authenticity verification
-	assumption : Bool := recv_map.data.HMAC = true;
-	guarantee : Bool := waypoint.data.crc = true;
+	[Assume{comment="The Mission Computer shall only accept authenticated commands from the Ground Station"}] Req001_MC_SW : Bool := recv_map.data.HMAC = true;
+	[Assume{comment="The Mission Computer shall only accept authenticated commands from the Ground Station"}] Req002_MC_SW : Bool :=  recv_map.data.HMAC = true;
+	[Guarantee{comment="The Mission Computer shall output a valid mission window to the Flight Controller" }] Req003_MC_SW : Bool := waypoint.data.crc = true; 
+	assumption : Bool := Req001_MC_SW && Req002_MC_SW ;
+	guarantee : Bool := Req003_MC_SW ;
 }
-type  MC_SW_dot_Impl exhibits (Component,Contract,Synchronous) {
-	recv_map : InEventDataPort < Bool,Command_dot_Impl > ;
-	send_status : OutEventDataPort < Bool,Coordinate_dot_Impl > ;
-	waypoint : OutEventDataPort < Bool,MissionWindow_dot_Impl > ;
-	position_status : InEventDataPort < Bool,Coordinate_dot_Impl > ;
+
+type MC_SW exhibits(MC_SWTrait) ;
+
+type  MC_SW_dot_Impl exhibits (MC_SWTrait) {
 	RADIO : RadioDriver ;
 	FPLN : FlightPlanner ;
 	WPM : WaypointManager ;

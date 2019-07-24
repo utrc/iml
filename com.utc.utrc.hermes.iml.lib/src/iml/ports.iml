@@ -84,7 +84,7 @@ fun(x:EndToEndFlow,u:Real,l:Real){
 };
 
 type ThreeState enum {s0,s1,s2}; 
-type DelayState exhibits(State) {
+type DelayState  {
 	state : ThreeState ;
 	i : Int;
 }
@@ -93,25 +93,25 @@ type  delay exhibits(StateMachine<DelayState>){
 	f : InDataPort<FlowPath> ;
 	n : InDataPort<Int> ;
 	holds : OutDataPort<Bool> ; 
-	init : Bool := (current.i = 1) && (current.state = ThreeState.s0) ;
-	transition : Bool := {
-		next.state = 
+	init : DelayState -> Bool := fun(x:DelayState):Bool { (x.i = 1) && (x.state = ThreeState.s0)} ;
+	transition : (DelayState, DelayState) -> Bool := fun(x:DelayState,y:DelayState){
+		y.state = 
 			case {
-				current.state = ThreeState.s0 && f.data.end.event : ThreeState.s2;
-				current.state = ThreeState.s0 && f.data.start.event : ThreeState.s1 ;
-				current.state = ThreeState.s1 && f.data.end.event : ThreeState.s0 ;
-				current.state = ThreeState.s1 && current.i >= n.data : ThreeState.s2 ;
-				true : current.state ;
+				x.state = ThreeState.s0 && f.data.end.event : ThreeState.s2;
+				x.state = ThreeState.s0 && f.data.start.event : ThreeState.s1 ;
+				x.state = ThreeState.s1 && f.data.end.event : ThreeState.s0 ;
+				x.state = ThreeState.s1 && x.i >= n.data : ThreeState.s2 ;
+				true : x.state ;
 			} 	
 		&&
-		next.i =
+		y.i =
 		case {
-			current.state = ThreeState.s0 :  1 ;
-			current.state = ThreeState.s1 : current.i + 1 ;
-			true : current.i ;	
+			x.state = ThreeState.s0 :  1 ;
+			x.state = ThreeState.s1 : x.i + 1 ;
+			true : x.i ;	
 		}
 	};
-	invariant : Bool := holds.data = (current.state = ThreeState.s0 || current.state = ThreeState.s1) ;
+	invariant : DelayState -> Bool := fun(x:DelayState){holds.data = (x.state = ThreeState.s0 || x.state = ThreeState.s1)} ;
 }
 
 
