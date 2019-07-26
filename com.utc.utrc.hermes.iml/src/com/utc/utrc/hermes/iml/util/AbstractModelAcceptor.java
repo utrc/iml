@@ -106,14 +106,13 @@ public class AbstractModelAcceptor implements IModelAcceptor {
 				}
 			}
 		}
-		if (s.getRestrictions() != null) {
-			for(TypeRestriction r : s.getRestrictions()) {
-				if (r instanceof CardinalityRestriction) {
-					accept((CardinalityRestriction)r, visitor);
-				}
-				if (r instanceof EnumRestriction) {
-					accept((EnumRestriction)r,visitor);
-				}
+		if (s.getRestriction() != null) {
+			TypeRestriction r = s.getRestriction();
+			if (r instanceof CardinalityRestriction) {
+				accept((CardinalityRestriction)r, visitor);
+			}
+			if (r instanceof EnumRestriction) {
+				accept((EnumRestriction)r,visitor);
 			}
 		}
 		for(Symbol symb: s.getSymbols()) {
@@ -190,14 +189,13 @@ public class AbstractModelAcceptor implements IModelAcceptor {
 				}
 			}
 		}
-		if (s.getRestrictions() != null) {
-			for(TypeRestriction r : s.getRestrictions()) {
-				if (r instanceof CardinalityRestriction) {
-					accept((CardinalityRestriction)r, visitor);
-				}
-				if (r instanceof EnumRestriction) {
-					accept((EnumRestriction)r,visitor);
-				}
+		if (s.getRestriction() != null) {
+			TypeRestriction r = s.getRestriction();
+			if (r instanceof CardinalityRestriction) {
+				accept((CardinalityRestriction)r, visitor);
+			}
+			if (r instanceof EnumRestriction) {
+				accept((EnumRestriction)r,visitor);
 			}
 		}
 		for(Symbol symb: s.getSymbols()) {
@@ -237,14 +235,13 @@ public class AbstractModelAcceptor implements IModelAcceptor {
 				}
 			}
 		}
-		if (s.getRestrictions() != null) {
-			for(TypeRestriction r : s.getRestrictions()) {
-				if (r instanceof CardinalityRestriction) {
-					accept((CardinalityRestriction)r, visitor);
-				}
-				if (r instanceof EnumRestriction) {
-					accept((EnumRestriction)r,visitor);
-				}
+		if (s.getRestriction() != null) {
+			TypeRestriction r = s.getRestriction();
+			if (r instanceof CardinalityRestriction) {
+				accept((CardinalityRestriction)r, visitor);
+			}
+			if (r instanceof EnumRestriction) {
+				accept((EnumRestriction)r,visitor);
 			}
 		}
 		for(Symbol symb: s.getSymbols()) {

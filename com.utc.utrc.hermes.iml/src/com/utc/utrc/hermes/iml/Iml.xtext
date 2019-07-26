@@ -66,7 +66,7 @@ NamedType:
 	(template?='<' typeParameter+=TypeParameter (',' typeParameter+=TypeParameter)* '>')? 
 	('(' constructors+= DatatypeConstructor (',' constructors+= DatatypeConstructor)* ')')?
 	( relations += Relation)*
-	( restrictions += TypeRestriction)*
+	( restriction = TypeRestriction)?
 	(';' | ('{' (symbols+=(SymbolDeclaration|Assertion) ';')* '}' ";"?)) 
 ;
 

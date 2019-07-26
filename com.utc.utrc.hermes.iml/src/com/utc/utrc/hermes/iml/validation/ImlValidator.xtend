@@ -307,7 +307,7 @@ class ImlValidator extends AbstractImlValidator {
 	}
 	
 	def boolean isFinite(NamedType type) {
-		type.restrictions.filter[it instanceof CardinalityRestriction].size > 0
+		type.restriction instanceof CardinalityRestriction
 	}
 	
 	def checkTypeAgainstTail(ImlType type, ExpressionTail tail) {

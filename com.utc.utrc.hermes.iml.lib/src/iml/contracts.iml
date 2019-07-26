@@ -15,5 +15,3 @@ type Refines<Spec exhibits(Contract), Impl exhibits(Contract)> exhibits(Property
 	spec : Spec ;
 	impl : Impl ;
 }
-
-
