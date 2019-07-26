@@ -156,16 +156,20 @@ class ImlStdLib {
 	}
 	
 	def getNamedType(String modelName, String typeName) {
-		val symbol = getSymbol(modelName, typeName)
-		if (symbol instanceof NamedType) {
-			return symbol as NamedType
-		}
-		return null
+		return getSymbol(modelName, typeName, NamedType)
 	}
 	
 	def getSymbol(String modelName, String typeName) {
 		if (imlStdSymbols.containsKey(modelName)) {
 			return imlStdSymbols.get(modelName).get(typeName)
+		}
+		return null
+	}
+	
+	def <T extends Symbol> T getSymbol(String modelName, String typeName, Class<T> symbolClass) {
+		val symbol = getSymbol(modelName, typeName)
+		if (symbol  !== null && symbolClass.isInstance(symbol)) {
+			return symbolClass.cast(symbol)
 		}
 		return null
 	}

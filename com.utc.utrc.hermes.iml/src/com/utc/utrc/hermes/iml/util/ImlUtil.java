@@ -48,11 +48,11 @@ import com.utc.utrc.hermes.iml.iml.TypeWithProperties;
 public class ImlUtil {
 
 	public static List<SymbolDeclaration> getSymbolsWithProperty(NamedType type, String property,
-			boolean considerParent) {
+			boolean recursive) {
 		List<SymbolDeclaration> symbolsWithTheProperty = new ArrayList<SymbolDeclaration>();
-		if (considerParent) {
+		if (recursive) {
 			for (NamedType parent : getDirectParents(type)) {
-				symbolsWithTheProperty.addAll(getSymbolsWithProperty(parent, property, true));
+				symbolsWithTheProperty.addAll(getSymbolsWithProperty(parent, property, recursive));
 			}
 		}
 		for (SymbolDeclaration symbol : type.getSymbols()) {
@@ -183,6 +183,18 @@ public class ImlUtil {
 		return types;
 	}
 	
+	/**
+	 * Get all related type recursively and store them by level
+	 * @return
+	 */
+	public static List<List<TypeWithProperties>> getAllRelationTypes(NamedType type) {
+		List<List<TypeWithProperties>> types = new ArrayList<>();
+		
+		return types;
+	}
+
+		
+	
 	public static List<TypeWithProperties> getRelationTypes(NamedType type, Class<? extends Relation> relationType) {
 		List<TypeWithProperties> types = new ArrayList<>();
 		for (Relation relation : type.getRelations()) {
@@ -262,6 +274,23 @@ public class ImlUtil {
 		return null;
 	}
 	
+	public static Symbol findSymbol(NamedType type, String symbolName, boolean recursive) {
+		Symbol symbol = findSymbol(type, symbolName);
+		if (symbol != null) {
+			return symbol;
+		} else if (recursive) {
+			for (TypeWithProperties relatedtype : getRelationTypes(type)) {
+				if (relatedtype.getType() instanceof SimpleTypeReference) {
+					symbol = findSymbol(((SimpleTypeReference) relatedtype.getType()).getType(), symbolName, recursive);
+					if (symbol != null) {
+						return symbol;
+					}
+				}
+			}
+		} 
+		return null;
+	}
+	
 	public static Symbol findSymbol(Model model, String symbolName) {
 		for (Symbol symbol : model.getSymbols()) {
 			if (symbolName.equals(symbol.getName())) {
@@ -304,7 +333,7 @@ public class ImlUtil {
 		}
 		return null;
 	}
-
+	
 	public static NamedType getContainerCt(EObject eObject) {
 		return EcoreUtil2.getContainerOfType(eObject, NamedType.class);
 	}
@@ -399,11 +428,9 @@ public class ImlUtil {
 	}
 
 	public static boolean isLiteralOf(Symbol s, NamedType t) {
-		for (TypeRestriction r : t.getRestrictions()) {
-			if (r instanceof EnumRestriction) {
-				if (((EnumRestriction) r).getLiterals().contains(s)) {
-					return true;
-				}
+		if (t.getRestriction() instanceof EnumRestriction) {
+			if (((EnumRestriction) t.getRestriction()).getLiterals().contains(s)) {
+				return true;
 			}
 		}
 		return false;
@@ -472,10 +499,8 @@ public class ImlUtil {
 		if (t.getRelations() == null) {
 			return false;
 		}
-		for (TypeRestriction r : t.getRestrictions()) {
-			if (r instanceof EnumRestriction) {
-				return true;
-			}
+		if (t.getRestriction() instanceof EnumRestriction) {
+			return true;
 		}
 		return false;
 
@@ -483,13 +508,11 @@ public class ImlUtil {
 	
 	public static List<String> getLiterals(NamedType t) {
 		List<String> retval = new ArrayList<String>();
-		if (t.getRelations() != null) {
-
-			for (TypeRestriction r : t.getRestrictions()) {
-				if (r instanceof EnumRestriction) {
-					for(SymbolDeclaration sd : ((EnumRestriction) r).getLiterals()) {
-						retval.add(sd.getName());
-					}
+		if (t.getRestriction() != null) {
+			TypeRestriction r = t.getRestriction();
+			if (r instanceof EnumRestriction) {
+				for(SymbolDeclaration sd : ((EnumRestriction) r).getLiterals()) {
+					retval.add(sd.getName());
 				}
 			}
 		}
