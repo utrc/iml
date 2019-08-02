@@ -6,7 +6,12 @@ import java.util.List;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 
 import com.utc.utrc.hermes.iml.custom.ImlCustomFactory;
+import com.utc.utrc.hermes.iml.iml.AtomicExpression;
 import com.utc.utrc.hermes.iml.iml.FolFormula;
+import com.utc.utrc.hermes.iml.iml.SignedAtomicFormula;
+import com.utc.utrc.hermes.iml.iml.SymbolDeclaration;
+import com.utc.utrc.hermes.iml.iml.SymbolReferenceTerm;
+import com.utc.utrc.hermes.iml.iml.TermMemberSelection;
 
 public class FormulaHelper {
 	
@@ -50,6 +55,35 @@ public class FormulaHelper {
 			return disjunction;
 		}
 		return null;
+	}
+	
+	public static String formual2String(FolFormula fol) {
+		if (fol == null) return "null";
+		
+		String left = null;
+		String right = null;
+		if (fol.getLeft() != null) {
+			left = formual2String(fol.getLeft());
+		}
+		if (fol.getRight() != null) {
+			right = formual2String(fol.getRight());
+		}
+		if (fol instanceof SymbolDeclaration) {
+			return ((SymbolDeclaration) fol).getName();
+		} else if (fol instanceof SymbolReferenceTerm) {
+			return ((SymbolReferenceTerm) fol).getSymbol().getName();
+		} else if (fol instanceof TermMemberSelection) {
+			return formual2String(((TermMemberSelection) fol).getReceiver()) + "."
+					+ formual2String(((TermMemberSelection) fol).getMember());
+		} else if (fol instanceof AtomicExpression) {
+			return left +" "+ fol.getOp() + " " + right;
+		} else if (fol.getOp() != null) {
+			return left +" "+ fol.getOp() + " " + right; 
+		} else if (fol instanceof SignedAtomicFormula) {
+			return (((SignedAtomicFormula) fol).isNeg()?"!":"") + left; 
+		} else { // TODO complete the list
+			return "(" + fol + ")";
+		}
 	}
 	
 }

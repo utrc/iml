@@ -10,6 +10,7 @@ import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
 import com.utc.utrc.hermes.iml.iml.SimpleTypeReference
 import com.utc.utrc.hermes.iml.iml.SequenceTerm
 import com.utc.utrc.hermes.iml.iml.StringLiteral
+import org.eclipse.emf.ecore.EObject
 
 @Singleton
 class ContractsServices {
@@ -40,35 +41,30 @@ class ContractsServices {
 		return stdLib.getSymbol(PACKAGE_NAME, GUARANTEE, Annotation)
 	}
 	
-	def isContract(NamedType type) {
-		val contract = contractTrait;
-		if (type instanceof Trait) {
-			return ImlUtil.refines(type, contract);
-		} else {
-			return ImlUtil.exhibits(type, contract)
-		}
+	def isContract(EObject type) {
+		ImlUtil.exhibitsOrRefines(type, contractTrait);
 	}
 	
-	def getContractAssumption(NamedType type) {
+	def getContractAssumption(NamedType type, boolean recursive) {
 		if (isContract(type)) {
-			return ImlUtil.findSymbol(type, ASSUMPTION) as SymbolDeclaration;
+			return ImlUtil.findSymbol(type, ASSUMPTION, recursive) as SymbolDeclaration;
 		}
 		return null;
 	}
 	
-	def getContractGuarantee(NamedType type) {
+	def getContractGuarantee(NamedType type, boolean recursive) {
 		if (isContract(type)) {
-			return ImlUtil.findSymbol(type, GUARANTEE) as SymbolDeclaration;
+			return ImlUtil.findSymbol(type, GUARANTEE, recursive) as SymbolDeclaration;
 		}
 		return null;
 	}
 	
-	def getAssumptionSymbols(NamedType type) {
-		return ImlUtil.getSymbolsWithProperty(type, ASSUME_ANNOT, false);
+	def getAssumptionSymbols(NamedType type, boolean recursive) {
+		return ImlUtil.getSymbolsWithProperty(type, ASSUME_ANNOT, recursive);
 	}
 	
-	def getGuaranteeSymbols(NamedType type) {
-		return ImlUtil.getSymbolsWithProperty(type, GUARANTEE_ANNOT, false);
+	def getGuaranteeSymbols(NamedType type, boolean recursive) {
+		return ImlUtil.getSymbolsWithProperty(type, GUARANTEE_ANNOT, recursive);
 	}
 	
 	def getAnnotationComment(SymbolDeclaration symbol) {
