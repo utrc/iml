@@ -20,6 +20,7 @@ import org.eclipse.xtext.resource.XtextResource;
 import com.utc.utrc.hermes.iml.iml.Alias;
 import com.utc.utrc.hermes.iml.iml.Annotation;
 import com.utc.utrc.hermes.iml.iml.ArrayType;
+import com.utc.utrc.hermes.iml.iml.Assertion;
 import com.utc.utrc.hermes.iml.iml.EnumRestriction;
 import com.utc.utrc.hermes.iml.iml.NamedType;
 import com.utc.utrc.hermes.iml.iml.FolFormula;
@@ -51,8 +52,8 @@ public class ImlUtil {
 			boolean recursive) {
 		List<SymbolDeclaration> symbolsWithTheProperty = new ArrayList<SymbolDeclaration>();
 		if (recursive) {
-			for (NamedType parent : getDirectParents(type)) {
-				symbolsWithTheProperty.addAll(getSymbolsWithProperty(parent, property, recursive));
+			for (SimpleTypeReference parent : getRelatedTypes(type)) {
+				symbolsWithTheProperty.addAll(getSymbolsWithProperty(parent.getType(), property, recursive));
 			}
 		}
 		for (SymbolDeclaration symbol : type.getSymbols()) {
@@ -62,36 +63,21 @@ public class ImlUtil {
 		}
 		return symbolsWithTheProperty;
 	}
-
-	public static List<NamedType> getDirectParents(NamedType type) {
-		List<NamedType> retval = new ArrayList<>();
-		if (type.getRelations() != null) {
-			for(Relation rel : type.getRelations()) {
-				if(rel instanceof Inclusion) {
-					retval.addAll(
-							((Inclusion) rel).getInclusions().stream()
-							.map(it -> ((SimpleTypeReference) it.getType()).getType())
-							.collect(Collectors.toList())) ;
-				}
+	
+	public static List<SymbolDeclaration> getSymbolsWithTrait(NamedType type, Trait trait, boolean recursive) {
+		List<SymbolDeclaration> symbolsWithTheTrait = new ArrayList<SymbolDeclaration>();
+		if (recursive) {
+			for (SimpleTypeReference parent : getRelatedTypes(type)) {
+				symbolsWithTheTrait.addAll(getSymbolsWithTrait(parent.getType(), trait, recursive));
 			}
 		}
-		return retval;
+		for (SymbolDeclaration symbol : type.getSymbols()) {
+			if (exhibitsOrRefines(symbol, trait)) {
+				symbolsWithTheTrait.add(symbol);
+			}
+		}
+		return symbolsWithTheTrait;
 	}
-
-	public static List<SimpleTypeReference> getDirectParentTypeRefs(NamedType type) {
-		List<SimpleTypeReference> retval = new ArrayList<>();
-		if (type.getRelations() != null) {
-			for(Relation rel : type.getRelations()) {
-				if(rel instanceof Inclusion) {
-					retval.addAll(
-							((Inclusion) rel).getInclusions().stream()
-							.map(it -> ((SimpleTypeReference) it.getType()))
-							.collect(Collectors.toList())) ;
-				}
-			}
-		}
-		return retval;
-	}	
 	
 	public static boolean hasProperty(Symbol symbol, String property) {
 		if (symbol.getPropertylist() == null)
@@ -104,8 +90,6 @@ public class ImlUtil {
 		return false;
 	}
 	
-	
-
 	public static NamedType getNamedTypeByName(Model model, String name) {
 		return (NamedType) model.getSymbols().stream()
 				.filter(it -> it instanceof NamedType && it.getName().equals(name)).findFirst().orElse(null);
@@ -164,7 +148,26 @@ public class ImlUtil {
 		return "UNKNOWN_IML_TYPE";
 	}
 	
-	public static List<TypeWithProperties> getRelationTypes(NamedType type) {
+
+	/**
+	 * Get all related type recursively and store them by level
+	 * @return
+	 */
+	public static List<List<TypeWithProperties>> getAllRelationTypes(NamedType type) {
+		List<List<TypeWithProperties>> types = new ArrayList<>();
+		throw new IllegalStateException("Unimplemented method!");
+	}
+	
+	/**
+	 * Get related types that are SimpleTypeReferece
+	 */
+	public static List<SimpleTypeReference> getRelatedTypes(NamedType type) {
+		return getRelatedTypesWithProp(type).stream().filter(twp -> twp.getType() instanceof SimpleTypeReference)
+			.map(twp -> (SimpleTypeReference)twp.getType())
+			.collect(Collectors.toList());
+	}
+	
+	public static List<TypeWithProperties> getRelatedTypesWithProp(NamedType type) {
 		List<TypeWithProperties> types = new ArrayList<>();
 		EList<Relation> relations = type.getRelations();
 		for (Relation relation : relations) {
@@ -182,18 +185,6 @@ public class ImlUtil {
 		}
 		return types;
 	}
-	
-	/**
-	 * Get all related type recursively and store them by level
-	 * @return
-	 */
-	public static List<List<TypeWithProperties>> getAllRelationTypes(NamedType type) {
-		List<List<TypeWithProperties>> types = new ArrayList<>();
-		
-		return types;
-	}
-
-		
 	
 	public static List<TypeWithProperties> getRelationTypes(NamedType type, Class<? extends Relation> relationType) {
 		List<TypeWithProperties> types = new ArrayList<>();
@@ -274,12 +265,12 @@ public class ImlUtil {
 		return null;
 	}
 	
-	public static Symbol findSymbol(NamedType type, String symbolName, boolean recursive) {
-		Symbol symbol = findSymbol(type, symbolName);
+	public static SymbolDeclaration findSymbol(NamedType type, String symbolName, boolean recursive) {
+		SymbolDeclaration symbol = findSymbol(type, symbolName);
 		if (symbol != null) {
 			return symbol;
 		} else if (recursive) {
-			for (TypeWithProperties relatedtype : getRelationTypes(type)) {
+			for (TypeWithProperties relatedtype : getRelatedTypesWithProp(type)) {
 				if (relatedtype.getType() instanceof SimpleTypeReference) {
 					symbol = findSymbol(((SimpleTypeReference) relatedtype.getType()).getType(), symbolName, recursive);
 					if (symbol != null) {
@@ -454,7 +445,24 @@ public class ImlUtil {
 		return false;
 	}
 	
+	public static boolean exhibitsOrRefines(EObject symbol, Trait trait) {
+		if (symbol instanceof Trait) {
+			return refines((Trait) symbol, trait);
+		} else if (symbol instanceof NamedType){
+			return exhibits((NamedType) symbol, trait);
+		} else if (symbol instanceof SimpleTypeReference) {
+			return exhibits(((SimpleTypeReference) symbol).getType(), trait);
+		} else if (symbol instanceof SymbolDeclaration) {
+			return exhibitsOrRefines(((SymbolDeclaration) symbol).getType(), trait);
+		} else {
+			return false;
+		}
+	}
+	
 	public static boolean exhibits(NamedType type, Trait trait) {
+		if (type instanceof Trait) {
+			return refines((Trait) type, trait);
+		}
 		
 		List<TypeWithProperties> traits = getRelationTypes(type, TraitExhibition.class);
 		if (traits.size() == 0)
@@ -519,4 +527,5 @@ public class ImlUtil {
 		return retval;
 
 	}
+
 }

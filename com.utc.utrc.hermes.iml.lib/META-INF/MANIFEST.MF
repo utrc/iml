@@ -10,4 +10,5 @@ Export-Package: com.utc.utrc.hermes.iml.lib,
 Require-Bundle: com.utc.utrc.hermes.iml;bundle-version="1.0.0",
  org.eclipse.xtext.xbase.lib,
  com.google.inject;bundle-version="3.0.0",
- org.eclipse.emf.common
+ org.eclipse.emf.common,
+ org.eclipse.emf.ecore
