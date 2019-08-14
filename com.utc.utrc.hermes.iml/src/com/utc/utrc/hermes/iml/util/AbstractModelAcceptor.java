@@ -28,6 +28,7 @@ import com.utc.utrc.hermes.iml.iml.Property;
 import com.utc.utrc.hermes.iml.iml.PropertyList;
 import com.utc.utrc.hermes.iml.iml.QuantifiedFormula;
 import com.utc.utrc.hermes.iml.iml.RecordType;
+import com.utc.utrc.hermes.iml.iml.Refinement;
 import com.utc.utrc.hermes.iml.iml.Relation;
 import com.utc.utrc.hermes.iml.iml.SelfType;
 import com.utc.utrc.hermes.iml.iml.SequenceTerm;
@@ -230,6 +231,11 @@ public class AbstractModelAcceptor implements IModelAcceptor {
 				}
 				if (r instanceof TraitExhibition) {
 					for(TypeWithProperties p : ((TraitExhibition) r).getExhibitions()) {
+						accept(p,visitor);
+					}
+				}
+				if (r instanceof Refinement) {
+					for(TypeWithProperties p : ((Refinement) r).getRefinements()) {
 						accept(p,visitor);
 					}
 				}
