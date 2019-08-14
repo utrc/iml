@@ -34,6 +34,10 @@ class SystemsServices {
 		return stdLib.getSymbol(PACKAGE_NAME, SYSTEM, Trait)
 	}
 	
+	def getConnectorType() {
+		return stdLib.getSymbol(PACKAGE_NAME, CONNECTOR, NamedType)
+	}
+	
 	def isPort(EObject type) {
 		return ImlUtil.exhibitsOrRefines(type, portTrait);
 	}
@@ -44,6 +48,10 @@ class SystemsServices {
 	
 	def isSystem(EObject type) {
 		return ImlUtil.exhibitsOrRefines(type, systemTrait)
+	}
+	
+	def isConnector(NamedType type) {
+		return connectorType == type
 	}
 	
 	def getPorts(NamedType type, boolean recursive) {

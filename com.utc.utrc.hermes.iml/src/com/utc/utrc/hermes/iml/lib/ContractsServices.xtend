@@ -59,10 +59,16 @@ class ContractsServices {
 		return null;
 	}
 	
+	/**
+	 * Return symbols with Assume annotations
+	 */
 	def getAssumptionSymbols(NamedType type, boolean recursive) {
 		return ImlUtil.getSymbolsWithProperty(type, ASSUME_ANNOT, recursive);
 	}
 	
+	/**
+	 * Return symbols with Guarantee annotations
+	 */
 	def getGuaranteeSymbols(NamedType type, boolean recursive) {
 		return ImlUtil.getSymbolsWithProperty(type, GUARANTEE_ANNOT, recursive);
 	}
