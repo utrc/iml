@@ -15,13 +15,14 @@ import com.google.inject.Singleton
 import com.google.inject.Inject
 import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.naming.QualifiedName
+import com.google.common.collect.Maps
 
 @Singleton
 class ImlStdLib {
 	
 	@Inject extension private IQualifiedNameProvider qnp ;
 
-	private Map<String, Map<String, Symbol>> imlStdSymbols = newHashMap;
+	private Map<String, Map<String, Symbol>> imlStdSymbols = Maps.newHashMap();
 	
 	public val INT = "Int";
 	public val REAL = "Real";
@@ -185,7 +186,7 @@ class ImlStdLib {
 	def populate(Model model) {
 		if (model.stdLib) {
 			if (!imlStdSymbols.containsKey(model.name)) {
-				imlStdSymbols.put(model.name, newHashMap)
+				imlStdSymbols.put(model.name, Maps.newHashMap())
 			}
 			for (symbol : model.symbols) {
 				imlStdSymbols.get(model.name).put(symbol.name, symbol)
@@ -195,6 +196,10 @@ class ImlStdLib {
 	
 	def boolean isStdLib(Model model) {
 		return model.name !== null && model.name.startsWith("iml.")
+	}
+	
+	def reset() {
+		imlStdSymbols.clear
 	}
 
 	

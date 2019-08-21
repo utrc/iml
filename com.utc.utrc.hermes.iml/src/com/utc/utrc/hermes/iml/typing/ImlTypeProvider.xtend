@@ -54,6 +54,7 @@ import static extension org.eclipse.xtext.EcoreUtil2.*
 import com.utc.utrc.hermes.iml.iml.Model
 import com.utc.utrc.hermes.iml.iml.Inclusion
 import com.utc.utrc.hermes.iml.iml.Refinement
+import com.google.common.collect.Lists
 
 class ImlTypeProvider {
 	
@@ -324,7 +325,7 @@ class ImlTypeProvider {
 				return env.bind(symbolRef)
 			} else {
 				// Collect related types from relations
-				val relatedTypes = newArrayList
+				val relatedTypes = Lists.newArrayList()
 				for (rel : env.typeContext.type.relations) {
 					switch (rel) {
 						Inclusion: {
