@@ -17,6 +17,7 @@ import com.utc.utrc.hermes.iml.iml.SelfType
 import com.utc.utrc.hermes.iml.custom.ImlCustomFactory
 import com.utc.utrc.hermes.iml.util.ImlUtil
 import com.utc.utrc.hermes.iml.iml.Alias
+import com.google.common.collect.Maps
 
 class TypingEnvironment {
 	Map<NamedType, ImlType> bindingMap
@@ -26,7 +27,7 @@ class TypingEnvironment {
 	SymbolReferenceTerm symbolRefContext
 	
 	new() {
-		bindingMap = newHashMap
+		bindingMap = Maps.newHashMap()
 	}
 	
 	new(NamedType ctx) {

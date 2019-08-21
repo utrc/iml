@@ -220,13 +220,13 @@ class TypingServices {
 	}
 
 	def getSuperTypes(SimpleTypeReference tf) {
-		val closed = <NamedType>newArrayList()
+		val closed = new ArrayList<NamedType>()
 		val retVal = new ArrayList<List<SimpleTypeReference>>()
 		retVal.add(new ArrayList<SimpleTypeReference>());
 		retVal.get(0).add(tf); // A type is a super type of itself
 		var index = 0;
 		while (retVal.get(index).size() > 0) {
-			val toAdd = <SimpleTypeReference>newArrayList();
+			val toAdd = new ArrayList<SimpleTypeReference>();
 			for (current : retVal.get(index)) {
 				val ctype = current.type
 				if (ctype.relations !== null) {

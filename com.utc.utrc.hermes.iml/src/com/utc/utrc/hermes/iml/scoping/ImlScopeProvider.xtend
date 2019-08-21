@@ -37,6 +37,7 @@ import org.eclipse.xtext.scoping.impl.FilteringScope
 import static extension org.eclipse.xtext.EcoreUtil2.*
 import com.utc.utrc.hermes.iml.iml.MatchStatement
 import com.utc.utrc.hermes.iml.iml.Datatype
+import com.google.common.collect.Lists
 
 /**
  * This class contains custom scoping description.
@@ -71,7 +72,7 @@ class ImlScopeProvider extends AbstractDeclarativeScopeProvider {
 			return true;
 		}
 		
-		val allImports = newArrayList
+		val allImports = Lists.newArrayList()
 		allImports.addAll(importedScopeProvider.getImplicitImports(false).map[it.toString()])
 		allImports.addAll(context.imports.map[it.importedNamespace]);
 		

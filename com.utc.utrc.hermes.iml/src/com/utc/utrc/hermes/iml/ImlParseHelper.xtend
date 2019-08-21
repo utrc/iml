@@ -58,15 +58,16 @@ class ImlParseHelper {
 	}
 	
 	def ResourceSet loadStdLibs() {
-		if (stdRs === null) {
+		//if (stdRs === null) {
 			val imlLibUrl = getImlLibUrl();
 			stdRs = rsp.get
+			stdLib.reset()
 			Files.walk(Paths.get(imlLibUrl)).filter[Files.isRegularFile(it) && it.toFile().getName().endsWith(".iml")]
 					.forEach[
 						stdRs.createResource(URI.createFileURI(it.toFile.absolutePath)).load(stdRs.loadOptions)
 					]
-			stdLib.populateLibrary(stdRs)
-		}
+//			stdLib.populateLibrary(stdRs)
+		//}
 		return stdRs;
 	}
 	
