@@ -20,9 +20,9 @@ import com.google.common.collect.Maps
 @Singleton
 class ImlStdLib {
 	
-	@Inject extension private IQualifiedNameProvider qnp ;
+	@Inject extension IQualifiedNameProvider qnp ;
 
-	private Map<String, Map<String, Symbol>> imlStdSymbols = Maps.newHashMap();
+	Map<String, Map<String, Symbol>> imlStdSymbols = Maps.newHashMap();
 	
 	public val INT = "Int";
 	public val REAL = "Real";
@@ -198,8 +198,16 @@ class ImlStdLib {
 		return model.name !== null && model.name.startsWith("iml.")
 	}
 	
+	def getStdLibNames() {
+		return imlStdSymbols.keySet.toList
+	}
+	
 	def reset() {
 		imlStdSymbols.clear
+	}
+	
+	def getModelSymbols(String packageName) {
+		return imlStdSymbols.get(packageName).values.toList
 	}
 
 	

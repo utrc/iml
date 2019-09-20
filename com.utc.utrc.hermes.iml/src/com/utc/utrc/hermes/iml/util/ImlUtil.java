@@ -79,6 +79,21 @@ public class ImlUtil {
 		return symbolsWithTheTrait;
 	}
 	
+	public static List<SymbolDeclaration> getSymbolsWithType(NamedType type, NamedType symbolType, boolean recursive) {
+		List<SymbolDeclaration> symbolsWithType = new ArrayList<SymbolDeclaration>();
+		if (recursive) {
+			for (SimpleTypeReference parent : getRelatedTypes(type)) {
+				symbolsWithType.addAll(getSymbolsWithType(parent.getType(), symbolType, recursive));
+			}
+		}
+		for (SymbolDeclaration symbol : type.getSymbols()) {
+			if (symbol == symbolType) {
+				symbolsWithType.add(symbol);
+			}
+		}
+		return symbolsWithType;
+	}
+	
 	public static boolean hasProperty(Symbol symbol, String property) {
 		if (symbol.getPropertylist() == null)
 			return false;
@@ -525,7 +540,18 @@ public class ImlUtil {
 			}
 		}
 		return retval;
-
+	}
+	
+	public static boolean isEqual(FolFormula left, FolFormula right) {
+		if (left == null && right == null) return true;
+		if (left == null || right == null) return false;
+ 		if (left.getClass() != right.getClass()) return false;
+		
+ 		if (!isEqual(left.getLeft(), right.getLeft())) return false;
+ 		if (left.getOp() != right.getOp()) return false;
+ 		
+		
+		return true;
 	}
 
 }
