@@ -26,8 +26,9 @@ public class SymbolExtractor {
 		}
 		
 		@Override
-		public void visit(SymbolReferenceTerm e) {
+		public Object visit(SymbolReferenceTerm e) {
 			symbols.add(e.getSymbol());
+			return null;
 		}
 		
 		public List<Symbol> getSymbols(){

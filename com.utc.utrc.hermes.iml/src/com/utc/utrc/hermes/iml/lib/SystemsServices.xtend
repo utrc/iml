@@ -8,7 +8,7 @@ import com.utc.utrc.hermes.iml.util.ImlUtil
 import org.eclipse.emf.ecore.EObject
 
 @Singleton
-class SystemsServices {
+class SystemsServices extends BasicServices {
 	@Inject
 	ImlStdLib stdLib;
 	
@@ -62,4 +62,13 @@ class SystemsServices {
 	def getComponents(NamedType type, boolean recursive) {
 		ImlUtil.getSymbolsWithTrait(type, compoentTrait, recursive);
 	}
+	
+	def getConnectors(NamedType type, boolean recursive) {
+		ImlUtil.getSymbolsWithType(type, connectorType, recursive)
+	}
+	
+	override getPackageName() {
+		PACKAGE_NAME
+	}
+	
 }

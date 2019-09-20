@@ -16,6 +16,7 @@ import com.utc.utrc.hermes.iml.iml.NamedType
 import com.utc.utrc.hermes.iml.iml.ImlType
 import com.utc.utrc.hermes.iml.iml.ExpressionTail
 import com.utc.utrc.hermes.iml.iml.OptionalTermExpr
+import com.utc.utrc.hermes.iml.iml.TermMemberSelection
 
 public class ImlCustomFactory extends ImlFactoryImpl {
 	
@@ -35,6 +36,16 @@ public class ImlCustomFactory extends ImlFactoryImpl {
 		createTermMemberSelection(receiver, createSymbolReferenceTerm(member))
 	}
 	
+	def TermMemberSelection createTermMemberSelection(TermExpression receiver, TermExpression member) {
+		if (member instanceof SymbolReferenceTerm) {
+			return createTermMemberSelection(receiver, member as SymbolReferenceTerm);
+		} else if (member instanceof TermMemberSelection) {
+			return createTermMemberSelection(createTermMemberSelection(receiver, member.receiver), member.member);
+		} else {
+			throw new IllegalArgumentException("Creating TermMemberSelection with member other than simple TermMemberSelection!");
+		}
+	}
+
 	def createTermMemberSelection(TermExpression receiver, SymbolReferenceTerm member) {
 		createTermMemberSelection => [
 			it.receiver = receiver;
