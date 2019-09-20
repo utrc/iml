@@ -20,8 +20,8 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 import static org.junit.Assert.*
-import com.utc.utrc.hermes.iml.iml.TermMemberSelection
 import com.utc.utrc.hermes.iml.lib.ImlStdLib
+import com.utc.utrc.hermes.iml.lib.LibraryServicesGenerator
 
 @RunWith(XtextRunner)
 @InjectWith(ImlInjectorProvider)
@@ -36,9 +36,21 @@ class LibraryServicesGenTest {
 	
 	@Inject ImlStdLib stdLib;
 	
+	@Inject LibraryServicesGenerator libraryServiceGenerator;
+	
 	@Test
-	def void testGenerateServicesForContract() {
-		"package p;".parse
+	def void testTraitDeclaration() {
+		'''
+		package iml.test;
+		trait Type1;
+		'''.parse.assertNoErrors
+		
+		val libName = "iml.test"
+		val serviceClass = libraryServiceGenerator.generateSevices(libName, stdLib.getModelSymbols(libName)).toString
+		assertTrue(serviceClass.contains("public static final String TYPE1 = \"Type1\""))
+		assertTrue(serviceClass.contains("def getType1Trait()"))
+		assertTrue(serviceClass.contains("def isType1("));
+		assertTrue(serviceClass.contains("def getType1Symbols("));
 	}
 	
 }

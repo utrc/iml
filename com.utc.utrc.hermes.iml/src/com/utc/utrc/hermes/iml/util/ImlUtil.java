@@ -48,7 +48,7 @@ import com.utc.utrc.hermes.iml.iml.TypeWithProperties;
 
 public class ImlUtil {
 
-	public static List<SymbolDeclaration> getSymbolsWithProperty(NamedType type, String property,
+	public static List<SymbolDeclaration> getSymbolsWithProperty(NamedType type, NamedType property,
 			boolean recursive) {
 		List<SymbolDeclaration> symbolsWithTheProperty = new ArrayList<SymbolDeclaration>();
 		if (recursive) {
@@ -94,11 +94,11 @@ public class ImlUtil {
 		return symbolsWithType;
 	}
 	
-	public static boolean hasProperty(Symbol symbol, String property) {
+	public static boolean hasProperty(Symbol symbol, NamedType property) {
 		if (symbol.getPropertylist() == null)
 			return false;
 		for (Property actualProperty : symbol.getPropertylist().getProperties()) {
-			if (((SimpleTypeReference) actualProperty.getRef()).getType().getName().equals(property)) {
+			if (((SimpleTypeReference) actualProperty.getRef()).getType() == property) {
 				return true;
 			}
 		}

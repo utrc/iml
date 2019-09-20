@@ -28,6 +28,7 @@ import com.utc.utrc.hermes.iml.iml.TailedExpression;
 import com.utc.utrc.hermes.iml.iml.TermMemberSelection;
 import com.utc.utrc.hermes.iml.iml.TupleConstructor;
 import com.utc.utrc.hermes.iml.iml.TypeWithProperties;
+import com.utc.utrc.hermes.iml.lib.ContractsServices;
 
 public abstract class AbstractModelVisitor implements IModelVisitor {
 
