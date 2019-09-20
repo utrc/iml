@@ -3,8 +3,8 @@
  */
 package com.utc.utrc.hermes.iml.lib
 
-import com.utc.utrc.hermes.iml.lib.gen._SmsServices
+import com.utc.utrc.hermes.iml.lib.gen._GraphsServices
 
-public class SmsServices extends _SmsServices {
+public class GraphsServices extends _GraphsServices {
 	
 }

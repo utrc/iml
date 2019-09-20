@@ -104,7 +104,7 @@ class ImlParseHelper {
 			}
 		}
 		if (imlLibUrl === null) {
-			throw new IllegalStateException("Couldn't retrieve the standard library path")
+			throw new IllegalStateException("*** Couldn't retrieve the standard library path ***")
 		} else {
 			val result = rsp.get
 			Files.walk(Paths.get(imlLibUrl)).filter[Files.isRegularFile(it) && it.toFile().getName().endsWith(".iml")]
