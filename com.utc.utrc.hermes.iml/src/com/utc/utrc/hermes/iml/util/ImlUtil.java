@@ -21,6 +21,7 @@ import com.utc.utrc.hermes.iml.iml.Alias;
 import com.utc.utrc.hermes.iml.iml.Annotation;
 import com.utc.utrc.hermes.iml.iml.ArrayType;
 import com.utc.utrc.hermes.iml.iml.Assertion;
+import com.utc.utrc.hermes.iml.iml.Datatype;
 import com.utc.utrc.hermes.iml.iml.EnumRestriction;
 import com.utc.utrc.hermes.iml.iml.NamedType;
 import com.utc.utrc.hermes.iml.iml.FolFormula;
@@ -552,6 +553,11 @@ public class ImlUtil {
  		
 		
 		return true;
+	}
+
+	public static boolean isActualNamedType(NamedType type) {
+		return !(type instanceof Annotation || type instanceof Trait ||
+				type instanceof Datatype);
 	}
 
 }
