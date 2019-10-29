@@ -15,7 +15,7 @@ import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
 @Singleton
 class _PortsServices extends BasicServices
  {
-	public static final String PACKAGE_NAME = "iml.ports.gen"
+	public static final String PACKAGE_NAME = "iml.ports"
 	public static final String ENDTOENDFLOW = "EndToEndFlow"	
 	public static final String ENDTOENDFLOW_START_VAR = "start"
 	public static final String ENDTOENDFLOW_END_VAR = "end"

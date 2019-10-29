@@ -15,7 +15,7 @@ import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
 @Singleton
 class _OntologicalServices extends BasicServices
  {
-	public static final String PACKAGE_NAME = "iml.synchdf.ontological.gen"
+	public static final String PACKAGE_NAME = "iml.synchdf.ontological"
 	public static final String SYNCHRONOUS = "Synchronous"	
 	public static final String INIT_VAR = "init"	
 	public static final String PRE_VAR = "pre"	

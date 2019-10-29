@@ -15,7 +15,7 @@ import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
 @Singleton
 class _UtilsServices extends BasicServices
  {
-	public static final String PACKAGE_NAME = "iml.lang.utils.gen"
+	public static final String PACKAGE_NAME = "iml.lang.utils"
 	public static final String TREE = "Tree"	
 	public static final String TREE_ROOT_VAR = "root"
 	public static final String TREE_LEFT_VAR = "left"

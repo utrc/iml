@@ -13,6 +13,7 @@ import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
+import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.naming.IQualifiedNameProvider;
 import org.eclipse.xtext.resource.XtextResource;
@@ -483,8 +484,10 @@ public class ImlUtil {
 		List<TypeWithProperties> traits = getRelationTypes(type, TraitExhibition.class);
 		if (traits.size() == 0)
 			return false;
-		//Either the type exhibits the trait	
-		return traits.stream().filter(twp -> twp.getType() instanceof SimpleTypeReference).map(twp -> (Trait) ((SimpleTypeReference) twp.getType()).getType() ).anyMatch(t -> t == trait || refines(t, trait)) ;
+		return traits.stream()
+				.filter(twp -> twp.getType() instanceof SimpleTypeReference)
+				.map(twp -> (Trait) ((SimpleTypeReference) twp.getType()).getType() )
+				.anyMatch(t -> EcoreUtil.equals(t, trait) || refines(t, trait)) ;
 		
 	}
 
@@ -500,8 +503,10 @@ public class ImlUtil {
 		List<TypeWithProperties> traits = getRelationTypes(type, Refinement.class);
 		if (traits.size() == 0)
 			return false;
-		//Either the type exhibits the trait	
-		return traits.stream().filter(twp -> twp.getType() instanceof SimpleTypeReference).map(twp -> (Trait) ((SimpleTypeReference) twp.getType()).getType() ).anyMatch(t -> t == trait || refines(t, trait)) ;
+		return traits.stream()
+				.filter(twp -> twp.getType() instanceof SimpleTypeReference)
+				.map(twp -> (Trait) ((SimpleTypeReference) twp.getType()).getType() )
+				.anyMatch(t -> EcoreUtil.equals(t, trait) || refines(t, trait)) ;
 		
 		
 	}

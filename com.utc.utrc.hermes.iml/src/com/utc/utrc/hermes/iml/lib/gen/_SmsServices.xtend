@@ -15,7 +15,7 @@ import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
 @Singleton
 class _SmsServices extends BasicServices
  {
-	public static final String PACKAGE_NAME = "iml.sms.gen"
+	public static final String PACKAGE_NAME = "iml.sms"
 	public static final String STATELESS = "StateLess"	
 	public static final String STATEMACHINE = "StateMachine"	
 	public static final String STATEMACHINE_STATE_VAR = "state"
