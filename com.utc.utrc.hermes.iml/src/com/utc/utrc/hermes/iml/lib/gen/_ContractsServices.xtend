@@ -15,7 +15,7 @@ import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
 @Singleton
 class _ContractsServices extends BasicServices
  {
-	public static final String PACKAGE_NAME = "iml.contracts.gen"
+	public static final String PACKAGE_NAME = "iml.contracts"
 	public static final String REFINES = "Refines"	
 	public static final String REFINES_SPEC_VAR = "spec"
 	public static final String REFINES_IMPL_VAR = "impl"

@@ -15,7 +15,7 @@ import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
 @Singleton
 class _SoftwareServices extends BasicServices
  {
-	public static final String PACKAGE_NAME = "iml.software.gen"
+	public static final String PACKAGE_NAME = "iml.software"
 	public static final String SUBPROGRAM = "SubProgram"	
 	public static final String PROCESS = "Process"	
 	public static final String DATA = "Data"	

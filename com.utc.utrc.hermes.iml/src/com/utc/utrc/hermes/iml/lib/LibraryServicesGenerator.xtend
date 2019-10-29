@@ -23,6 +23,10 @@ class LibraryServicesGenerator {
 	@Inject
 	ImlStdLib stdLib
 	
+	/**
+	 * Standalone run to generate new library services. It parse a dummy iml file to load IML libraries, then 
+	 * iterate over all iml standard libraries and generate services classes
+	 */
 	def static void main(String[] args) {
 		val injector = ImlStandaloneSetup.injector;
 		val parseHelper = injector.getInstance(ImlParseHelper);
@@ -89,7 +93,7 @@ class LibraryServicesGenerator {
 		if (subClass) {
 			return PACKAGE_NAME
 		} else {
-			return PACKAGE_NAME + ".gen"	
+			return PACKAGE_NAME + ".gen"
 		}
 	}
 	
@@ -102,7 +106,7 @@ class LibraryServicesGenerator {
 	
 	def getStaticVariables(String libName, List<Symbol> symbols) {
 		'''
-		public static final String PACKAGE_NAME = "«libName».gen"
+		public static final String PACKAGE_NAME = "«libName»"
 		«FOR symbol: symbols»public static final String «getSymbolName(symbol, true)» = "«symbol.name»"	
 			«IF symbol instanceof NamedType»
 				«FOR element : symbol.symbols»

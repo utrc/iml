@@ -15,7 +15,7 @@ import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
 @Singleton
 class _QueriesServices extends BasicServices
  {
-	public static final String PACKAGE_NAME = "iml.queries.gen"
+	public static final String PACKAGE_NAME = "iml.queries"
 	public static final String QUERY_VAR = "query"	
 	public static final String PROPERTY = "Property"	
 	public static final String PROPERTY_HOLDS_VAR = "holds"
