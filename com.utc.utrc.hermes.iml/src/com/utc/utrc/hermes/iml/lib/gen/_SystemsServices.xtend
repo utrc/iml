@@ -15,7 +15,7 @@ import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
 @Singleton
 class _SystemsServices extends BasicServices
  {
-	public static final String PACKAGE_NAME = "iml.systems.gen"
+	public static final String PACKAGE_NAME = "iml.systems"
 	public static final String CONNECTOR = "Connector"	
 	public static final String CONNECTOR_SOURCE_VAR = "source"
 	public static final String CONNECTOR_TARGET_VAR = "target"

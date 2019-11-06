@@ -15,7 +15,7 @@ import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
 @Singleton
 class _LangServices extends BasicServices
  {
-	public static final String PACKAGE_NAME = "iml.lang.gen"
+	public static final String PACKAGE_NAME = "iml.lang"
 	public static final String INT2STR_VAR = "int2str"	
 	public static final String STR2RE_VAR = "str2re"	
 	public static final String RE2STR_VAR = "re2str"	

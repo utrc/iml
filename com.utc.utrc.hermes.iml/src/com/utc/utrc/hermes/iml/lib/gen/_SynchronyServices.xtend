@@ -15,7 +15,7 @@ import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
 @Singleton
 class _SynchronyServices extends BasicServices
  {
-	public static final String PACKAGE_NAME = "iml.synchrony.gen"
+	public static final String PACKAGE_NAME = "iml.synchrony"
 	public static final String NUMERICTYPE = "NumericType"	
 	public static final String NUMERICTYPE_PLUS_VAR = "plus"
 	public static final String NUMERICTYPE_MINUS_VAR = "minus"
