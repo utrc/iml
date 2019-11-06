@@ -15,7 +15,7 @@ import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
 @Singleton
 class _GraphsServices extends BasicServices
  {
-	public static final String PACKAGE_NAME = "iml.graphs.gen"
+	public static final String PACKAGE_NAME = "iml.graphs"
 	public static final String VERTEX = "Vertex"	
 	public static final String GRAPH = "Graph"	
 	public static final String GRAPH_EDGES_VAR = "edges"

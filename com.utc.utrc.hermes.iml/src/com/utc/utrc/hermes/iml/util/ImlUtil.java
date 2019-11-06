@@ -13,6 +13,7 @@ import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
+import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.naming.IQualifiedNameProvider;
 import org.eclipse.xtext.resource.XtextResource;
@@ -88,7 +89,7 @@ public class ImlUtil {
 			}
 		}
 		for (SymbolDeclaration symbol : type.getSymbols()) {
-			if (symbol == symbolType) {
+			if (EcoreUtil.equals(symbol, symbolType)) {
 				symbolsWithType.add(symbol);
 			}
 		}
@@ -99,7 +100,7 @@ public class ImlUtil {
 		if (symbol.getPropertylist() == null)
 			return false;
 		for (Property actualProperty : symbol.getPropertylist().getProperties()) {
-			if (((SimpleTypeReference) actualProperty.getRef()).getType() == property) {
+			if (EcoreUtil.equals(((SimpleTypeReference) actualProperty.getRef()).getType(), property)) {
 				return true;
 			}
 		}
@@ -455,7 +456,7 @@ public class ImlUtil {
 
 	public static boolean hasType(ImlType imlType, NamedType namedType) {
 		if (imlType instanceof SimpleTypeReference &&
-			((SimpleTypeReference)imlType).getType() == namedType	) {
+				EcoreUtil.equals(((SimpleTypeReference)imlType).getType(), namedType)) {
 			return true ;
 		}
 		return false;
@@ -483,8 +484,10 @@ public class ImlUtil {
 		List<TypeWithProperties> traits = getRelationTypes(type, TraitExhibition.class);
 		if (traits.size() == 0)
 			return false;
-		//Either the type exhibits the trait	
-		return traits.stream().filter(twp -> twp.getType() instanceof SimpleTypeReference).map(twp -> (Trait) ((SimpleTypeReference) twp.getType()).getType() ).anyMatch(t -> t == trait || refines(t, trait)) ;
+		return traits.stream()
+				.filter(twp -> twp.getType() instanceof SimpleTypeReference)
+				.map(twp -> (Trait) ((SimpleTypeReference) twp.getType()).getType() )
+				.anyMatch(t -> EcoreUtil.equals(t, trait) || refines(t, trait)) ;
 		
 	}
 
@@ -500,23 +503,28 @@ public class ImlUtil {
 		List<TypeWithProperties> traits = getRelationTypes(type, Refinement.class);
 		if (traits.size() == 0)
 			return false;
-		//Either the type exhibits the trait	
-		return traits.stream().filter(twp -> twp.getType() instanceof SimpleTypeReference).map(twp -> (Trait) ((SimpleTypeReference) twp.getType()).getType() ).anyMatch(t -> t == trait || refines(t, trait)) ;
+		return traits.stream()
+				.filter(twp -> twp.getType() instanceof SimpleTypeReference)
+				.map(twp -> (Trait) ((SimpleTypeReference) twp.getType()).getType() )
+				.anyMatch(t -> EcoreUtil.equals(t, trait) || refines(t, trait)) ;
 		
 		
 	}
 	
 	public static boolean hasAnnotation(SymbolDeclaration s, Annotation a) {
-		return false;
+		return hasProperty(s, a);
 	}
-	
-	
+
 	public static boolean hasAnnotation(ImlType t, Annotation a) {
-		return false;
+		if (t instanceof NamedType) {
+			return hasProperty((NamedType) t, a);
+		} else {
+			return false;
+		}
 	}
 	
 	public static boolean hasAnnotation(NamedType t, Annotation a) {
-		return false;
+		return hasProperty(t, a);
 	}
 	
 	public static boolean isEnum(NamedType t) {
@@ -527,7 +535,6 @@ public class ImlUtil {
 			return true;
 		}
 		return false;
-
 	}
 	
 	public static List<String> getLiterals(NamedType t) {
