@@ -14,4 +14,8 @@ trait Contract {
 type Refines<Spec exhibits(Contract), Impl exhibits(Contract)> exhibits(Property) {
 	spec : Spec ;
 	impl : Impl ;
-}
+};
+
+trait Implements<T>{
+	spec:T;
+};
