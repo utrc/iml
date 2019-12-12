@@ -292,4 +292,15 @@ class ImlParsingTest {
 		model.assertNoErrors
 	}
 	
+	@Test
+	def void testParsingDeliveryDroneModel() {
+		val rs = "./models/DeliveryDrone/verdict".parseDir(true)
+		for (res : rs.resources) {
+			println((res.contents.get(0) as Model).name)
+		}
+		rs.assertNoErrors
+		val errors = rs.checkErrors
+		println(errors)
+	}
+	
 }
