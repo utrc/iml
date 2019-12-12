@@ -1,6 +1,8 @@
 package iml.software ;
+import iml.lang.* ;
 
-annotation Process ;
-annotation Thread ;
-annotation SubProgram;
 
+trait Process ;
+trait Thread ;
+trait SubProgram;
+trait Data ;

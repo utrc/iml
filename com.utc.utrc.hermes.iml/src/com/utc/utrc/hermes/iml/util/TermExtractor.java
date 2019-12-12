@@ -23,14 +23,16 @@ public class TermExtractor {
 			terms = new ArrayList<TermExpression>();
 		}
 		@Override
-		public void visit(TermMemberSelection e) {
+		public Object visit(TermMemberSelection e) {
 			terms.add(e);
+			return null;
 		}
 		@Override
-		public void visit(SymbolReferenceTerm e) {
+		public Object visit(SymbolReferenceTerm e) {
 			if (! (e.eContainer() instanceof TermMemberSelection)) {
 				terms.add(e);
 			}
+			return null;
 		}
 		
 		public List<TermExpression> getTerms(){

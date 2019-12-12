@@ -29,56 +29,56 @@ import com.utc.utrc.hermes.iml.iml.TermMemberSelection;
 import com.utc.utrc.hermes.iml.iml.TupleConstructor;
 import com.utc.utrc.hermes.iml.iml.TypeWithProperties;
 
-public interface IModelVisitor {
+public interface IModelVisitor<T> {
 	
-	public void visit(Import e) ;
+	public T visit(Import e) ;
 	
-	public void visit(Model e) ;
+	public T visit(Model e) ;
 	
-	public  void visit(NamedType e);
+	public T visit(NamedType e);
 	
-	public  void visit(Assertion e);
+	public T visit(Assertion e);
 
-	public  void visit(SymbolDeclaration e);
+	public T visit(SymbolDeclaration e);
 	
-	public void visit(PropertyList e) ;
+	public T visit(PropertyList e) ;
 	
-	public void visit(Property e) ;
+	public T visit(Property e) ;
 	
-	public void visit(SimpleTypeReference e);
+	public T visit(SimpleTypeReference e);
 	
-	public void visit(SequenceTerm e) ;
+	public T visit(SequenceTerm e) ;
 	
-	public void visit(TypeWithProperties e) ;
+	public T visit(TypeWithProperties e) ;
 	
-	public void visit(CardinalityRestriction e);
+	public T visit(CardinalityRestriction e);
 	
-	public void visit(EnumRestriction e);
+	public T visit(EnumRestriction e);
 	
-	public void visit(ImlType e);
+	public T visit(ImlType e);
 	
-	public void visit(FolFormula e);
+	public T visit(FolFormula e);
 	
-	public void visit(AtomicExpression e);
+	public T visit(AtomicExpression e);
 	
-	public void visit(Addition e);
+	public T visit(Addition e);
 	
-	public void visit(Multiplication e);
+	public T visit(Multiplication e);
 	
-	public void visit(TermMemberSelection e);
+	public T visit(TermMemberSelection e);
 	
-	public void visit(SymbolReferenceTerm e);
+	public T visit(SymbolReferenceTerm e);
 	
-	public void visit(TailedExpression e);
+	public T visit(TailedExpression e);
 	
-	public void visit(TupleConstructor e);
+	public T visit(TupleConstructor e);
 	
-	public void visit(SignedAtomicFormula e);
+	public T visit(SignedAtomicFormula e);
 	
-	public void visit(IteTermExpression e);
+	public T visit(IteTermExpression e);
 	
-	public void visit(CaseTermExpression e);
+	public T visit(CaseTermExpression e);
 	
-	public void visit(OptionalTermExpr e);
+	public T visit(OptionalTermExpr e);
 	
 }

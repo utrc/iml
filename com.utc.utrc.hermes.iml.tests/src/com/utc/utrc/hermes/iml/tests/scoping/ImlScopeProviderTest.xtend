@@ -392,6 +392,26 @@ class ImlScopeProviderTest {
 		model.assertNoErrors
 	}
 	
+	@Test
+	def scopeForExhibitsWithTemplates() {
+		val model = '''
+			package p;
+			trait Tr<T> {
+				spec : T;				
+			}
+			
+			type Tx {
+				x : Int;
+			};
+			
+			type Ty exhibits(Tr<Tx>) {
+				y : Int := spec.x;
+			}
+		'''.parse
+		
+		model.assertNoErrors
+	}
+	
 	def private assertScope(EObject context, EReference ref, List<String> expected) {
 		context.assertNoErrors
 		val scope = context.getScope(ref).allElements.map[name.toString].toList

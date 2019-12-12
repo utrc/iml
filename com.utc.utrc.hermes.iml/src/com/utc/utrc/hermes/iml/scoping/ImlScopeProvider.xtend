@@ -37,6 +37,7 @@ import org.eclipse.xtext.scoping.impl.FilteringScope
 import static extension org.eclipse.xtext.EcoreUtil2.*
 import com.utc.utrc.hermes.iml.iml.MatchStatement
 import com.utc.utrc.hermes.iml.iml.Datatype
+import com.google.common.collect.Lists
 
 /**
  * This class contains custom scoping description.
@@ -71,7 +72,7 @@ class ImlScopeProvider extends AbstractDeclarativeScopeProvider {
 			return true;
 		}
 		
-		val allImports = newArrayList
+		val allImports = Lists.newArrayList()
 		allImports.addAll(importedScopeProvider.getImplicitImports(false).map[it.toString()])
 		allImports.addAll(context.imports.map[it.importedNamespace]);
 		
@@ -141,10 +142,9 @@ class ImlScopeProvider extends AbstractDeclarativeScopeProvider {
 				// The receiver is a constrained type
 				// This is a reference to an enum
 				val nt = (receiver as SymbolReferenceTerm).symbol as NamedType
-				if (! nt.restrictions.isEmpty) {
-					val res = nt.restrictions.filter(EnumRestriction)
-					if (! res.isEmpty) {
-						return Scopes::scopeFor(res.get(0).literals);
+				if (nt.restriction !== null) {
+					if (nt.restriction instanceof EnumRestriction) {
+						return Scopes::scopeFor((nt.restriction as EnumRestriction).literals);
 					}
 				}
 			}

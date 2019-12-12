@@ -23,6 +23,12 @@ import org.eclipse.core.runtime.Platform
 import org.eclipse.core.runtime.FileLocator
 import java.net.URISyntaxException
 import java.io.IOException
+import java.nio.file.FileSystem
+import java.nio.file.FileSystems
+import java.util.HashMap
+import java.util.stream.Collectors
+import java.io.File
+import java.util.jar.JarFile
 
 class ImlParseHelper {
 
@@ -39,6 +45,8 @@ class ImlParseHelper {
 	private ImlStdLib stdLib;
 	
 	private ResourceSet stdRs;
+	
+	Object Collections
 	
 	
 	def parse(CharSequence modelText) {
@@ -58,22 +66,26 @@ class ImlParseHelper {
 	}
 	
 	def ResourceSet loadStdLibs() {
-		if (stdRs === null) {
-			val imlLibUrl = getImlLibUrl();
-			stdRs = rsp.get
-			Files.walk(Paths.get(imlLibUrl)).filter[Files.isRegularFile(it) && it.toFile().getName().endsWith(".iml")]
-					.forEach[
-						stdRs.createResource(URI.createFileURI(it.toFile.absolutePath)).load(stdRs.loadOptions)
-					]
-			stdLib.populateLibrary(stdRs)
-		}
+		stdLib.reset()
+		stdRs = getStandardRs()
 		return stdRs;
 	}
 	
-	def private getImlLibUrl() {
+	def getStandardRs() {
 		var java.net.URI imlLibUrl = null;
-		if (this.getClass().classLoader.getResource("./iml/") !== null) {
+		val jarFile = new File(getClass().getProtectionDomain().getCodeSource().getLocation().getPath());
+		if (jarFile.isFile) {
+			return getRsFromJar(jarFile)
+		} else if (this.getClass().classLoader.getResource("./iml/") !== null) {
 			imlLibUrl = this.getClass().classLoader.getResource("./iml/").toURI
+			if (imlLibUrl.getScheme().equals("jar")) {
+	            val fileSystem = FileSystems.newFileSystem(imlLibUrl, new HashMap());
+	            val path = fileSystem.getPath(".");
+	         	
+	         	val libFiles = Files.walk(path).filter[Files.isRegularFile(it) && it.toFile().getName().endsWith(".iml")]
+					.map[new String(Files.readAllBytes(it))].collect(Collectors.toList())
+				return parse(libFiles, false);
+            }
 		} else {
 			// Get lib folder for plugin
 			val bundle = Platform.getBundle("com.utc.utrc.hermes.iml.lib");
@@ -92,10 +104,31 @@ class ImlParseHelper {
 			}
 		}
 		if (imlLibUrl === null) {
-			throw new IllegalStateException("Couldn't retrieve the standard library path")
+			throw new IllegalStateException("*** Couldn't retrieve the standard library path ***")
 		} else {
-			return imlLibUrl
+			val result = rsp.get
+			Files.walk(Paths.get(imlLibUrl)).filter[Files.isRegularFile(it) && it.toFile().getName().endsWith(".iml")]
+				.forEach[
+					result.createResource(URI.createFileURI(it.toFile.absolutePath)).load(result.loadOptions)
+				]
+			return result
 		}
+	}
+	
+	def getRsFromJar(File file) {
+		val jar = new JarFile(file);
+		val entries = jar.entries(); //gives ALL entries in jar
+		val libFiles = new ArrayList<String>()
+		while(entries.hasMoreElements()) {
+		    val entry = entries.nextElement();
+		    if (entry.name.startsWith("iml/") && entry.name.endsWith(".iml")) { //filter according to the path
+		    	val is = jar.getInputStream(entry)
+		    	libFiles.add(FileUtil.convertStreamToString(is))
+		    	is.close
+		    }
+		}
+		jar.close();
+		return parse(libFiles, false)
 	}
 	
 	/**
