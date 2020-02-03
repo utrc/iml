@@ -18,6 +18,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import com.utc.utrc.hermes.iml.iml.NamedType
 import com.utc.utrc.hermes.iml.ImlParseHelper
+import com.google.common.collect.Maps
 
 @RunWith(XtextRunner)
 @InjectWith(ImlInjectorProvider)
@@ -157,7 +158,7 @@ class ImlParsingTest {
 			]))
 		
 		model.assertNoErrors
-		model.eResource.save(System.out, newHashMap)
+		model.eResource.save(System.out, Maps.newHashMap())
 	}	
 	
 	@Test
@@ -291,5 +292,15 @@ class ImlParsingTest {
 		model.assertNoErrors
 	}
 	
+	@Test
+	def void testParsingDeliveryDroneModel() {
+		val rs = "./models/DeliveryDrone/verdict".parseDir(true)
+		for (res : rs.resources) {
+			println((res.contents.get(0) as Model).name)
+		}
+		rs.assertNoErrors
+		val errors = rs.checkErrors
+		println(errors)
+	}
 	
 }

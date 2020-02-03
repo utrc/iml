@@ -28,155 +28,156 @@ import com.utc.utrc.hermes.iml.iml.TailedExpression;
 import com.utc.utrc.hermes.iml.iml.TermMemberSelection;
 import com.utc.utrc.hermes.iml.iml.TupleConstructor;
 import com.utc.utrc.hermes.iml.iml.TypeWithProperties;
+import com.utc.utrc.hermes.iml.lib.ContractsServices;
 
 public abstract class AbstractModelVisitor implements IModelVisitor {
 
 	@Override
-	public void visit(Import e) {
-		// TODO Auto-generated method stub
+	public Object visit(Import e) {
+		return null;
 
 	}
 
 	@Override
-	public void visit(Model e) {
-		// TODO Auto-generated method stub
+	public Object visit(Model e) {
+		return null;
 
 	}
 
 	@Override
-	public void visit(NamedType e) {
-		// TODO Auto-generated method stub
+	public Object visit(NamedType e) {
+		return null;
 
 	}
 
 	@Override
-	public void visit(Assertion e) {
-		// TODO Auto-generated method stub
+	public Object visit(Assertion e) {
+		return null;
 
 	}
 
 	@Override
-	public void visit(SymbolDeclaration e) {
-		// TODO Auto-generated method stub
+	public Object visit(SymbolDeclaration e) {
+		return null;
 
 	}
 
 	@Override
-	public void visit(PropertyList e) {
-		// TODO Auto-generated method stub
+	public Object visit(PropertyList e) {
+		return null;
 
 	}
 
 	@Override
-	public void visit(Property e) {
-		// TODO Auto-generated method stub
+	public Object visit(Property e) {
+		return null;
 
 	}
 
 	@Override
-	public void visit(SimpleTypeReference e) {
-		// TODO Auto-generated method stub
+	public Object visit(SimpleTypeReference e) {
+		return null;
 
 	}
 
 	@Override
-	public void visit(SequenceTerm e) {
-		// TODO Auto-generated method stub
+	public Object visit(SequenceTerm e) {
+		return null;
 
 	}
 
 	@Override
-	public void visit(TypeWithProperties e) {
-		// TODO Auto-generated method stub
+	public Object visit(TypeWithProperties e) {
+		return null;
 
 	}
 
 	@Override
-	public void visit(CardinalityRestriction e) {
-		// TODO Auto-generated method stub
+	public Object visit(CardinalityRestriction e) {
+		return null;
 
 	}
 
 	@Override
-	public void visit(EnumRestriction e) {
-		// TODO Auto-generated method stub
+	public Object visit(EnumRestriction e) {
+		return null;
 
 	}
 
 	@Override
-	public void visit(ImlType e) {
-		// TODO Auto-generated method stub
+	public Object visit(ImlType e) {
+		return null;
 
 	}
 
 	@Override
-	public void visit(FolFormula e) {
-		// TODO Auto-generated method stub
+	public Object visit(FolFormula e) {
+		return null;
 
 	}
 
 	@Override
-	public void visit(AtomicExpression e) {
-		// TODO Auto-generated method stub
+	public Object visit(AtomicExpression e) {
+		return null;
 
 	}
 
 	@Override
-	public void visit(Addition e) {
-		// TODO Auto-generated method stub
+	public Object visit(Addition e) {
+		return null;
 
 	}
 
 	@Override
-	public void visit(Multiplication e) {
-		// TODO Auto-generated method stub
+	public Object visit(Multiplication e) {
+		return null;
 
 	}
 
 	@Override
-	public void visit(TermMemberSelection e) {
-		// TODO Auto-generated method stub
+	public Object visit(TermMemberSelection e) {
+		return null;
 
 	}
 
 	@Override
-	public void visit(SymbolReferenceTerm e) {
-		// TODO Auto-generated method stub
+	public Object visit(SymbolReferenceTerm e) {
+		return null;
 
 	}
 	
 	@Override
-	public void visit(TailedExpression e) {
-		// TODO Auto-generated method stub
+	public Object visit(TailedExpression e) {
+		return null;
 		
 	}
 
 	@Override
-	public void visit(TupleConstructor e) {
-		// TODO Auto-generated method stub
+	public Object visit(TupleConstructor e) {
+		return null;
 
 	}
 
 	@Override
-	public void visit(SignedAtomicFormula e) {
-		// TODO Auto-generated method stub
+	public Object visit(SignedAtomicFormula e) {
+		return null;
 
 	}
 
 	@Override
-	public void visit(IteTermExpression e) {
-		// TODO Auto-generated method stub
+	public Object visit(IteTermExpression e) {
+		return null;
 
 	}
 
 	@Override
-	public void visit(CaseTermExpression e) {
-		// TODO Auto-generated method stub
+	public Object visit(CaseTermExpression e) {
+		return null;
 	}
 	
 	@Override
-	public void visit(OptionalTermExpr e) {
-		// TODO Auto-generated method stub
+	public Object visit(OptionalTermExpr e) {
+		return null;
 	}
 
 }

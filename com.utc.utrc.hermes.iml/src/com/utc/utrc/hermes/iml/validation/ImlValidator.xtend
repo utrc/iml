@@ -62,6 +62,7 @@ import com.utc.utrc.hermes.iml.iml.Annotation
 import com.utc.utrc.hermes.iml.iml.Trait
 import com.utc.utrc.hermes.iml.iml.Refinement
 import com.utc.utrc.hermes.iml.iml.TraitExhibition
+import com.google.common.collect.Lists
 
 /**
  * This class contains custom validation rules. 
@@ -209,13 +210,13 @@ class ImlValidator extends AbstractImlValidator {
 		val extensions = getInclusions(nt) 
 		if (extensions.empty)
 			return
-		val visited = <NamedType>newArrayList()
+		val visited = new ArrayList<NamedType>()
 		val superTypeHierarchy = new ArrayList<List<NamedType>>()
 		superTypeHierarchy.add(new ArrayList<NamedType>())
 		superTypeHierarchy.get(0).add(nt)
 		var index = 0
 		while (superTypeHierarchy.get(index).size() > 0) {
-			val toAdd = <NamedType>newArrayList()
+			val toAdd = new ArrayList<NamedType>()
 			for (cur : superTypeHierarchy.get(index)) {
 				for (supType : getInclusions(cur)) {
 					for(tr : supType.inclusions){
@@ -307,7 +308,7 @@ class ImlValidator extends AbstractImlValidator {
 	}
 	
 	def boolean isFinite(NamedType type) {
-		type.restrictions.filter[it instanceof CardinalityRestriction].size > 0
+		type.restriction instanceof CardinalityRestriction
 	}
 	
 	def checkTypeAgainstTail(ImlType type, ExpressionTail tail) {
@@ -380,7 +381,7 @@ class ImlValidator extends AbstractImlValidator {
 		} else if (domain instanceof RecordType) {
 			domainList = domain.symbols.map[type]
 		} else {
-			domainList = newArrayList(domain)
+			domainList = Lists.newArrayList(domain)
 		}
 		
 		if (tupleTail.elements.size == 1) { // Special case to handle alias

@@ -7,17 +7,22 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
+import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.naming.IQualifiedNameProvider;
 import org.eclipse.xtext.resource.XtextResource;
 
 import com.utc.utrc.hermes.iml.iml.Alias;
+import com.utc.utrc.hermes.iml.iml.Annotation;
 import com.utc.utrc.hermes.iml.iml.ArrayType;
+import com.utc.utrc.hermes.iml.iml.Assertion;
+import com.utc.utrc.hermes.iml.iml.Datatype;
 import com.utc.utrc.hermes.iml.iml.EnumRestriction;
 import com.utc.utrc.hermes.iml.iml.NamedType;
 import com.utc.utrc.hermes.iml.iml.FolFormula;
@@ -28,6 +33,7 @@ import com.utc.utrc.hermes.iml.iml.Model;
 import com.utc.utrc.hermes.iml.iml.ParenthesizedTerm;
 import com.utc.utrc.hermes.iml.iml.Property;
 import com.utc.utrc.hermes.iml.iml.RecordType;
+import com.utc.utrc.hermes.iml.iml.Refinement;
 import com.utc.utrc.hermes.iml.iml.Relation;
 import com.utc.utrc.hermes.iml.iml.SelfType;
 import com.utc.utrc.hermes.iml.iml.SignedAtomicFormula;
@@ -36,6 +42,7 @@ import com.utc.utrc.hermes.iml.iml.Symbol;
 import com.utc.utrc.hermes.iml.iml.SymbolDeclaration;
 import com.utc.utrc.hermes.iml.iml.SymbolReferenceTerm;
 import com.utc.utrc.hermes.iml.iml.TermExpression;
+import com.utc.utrc.hermes.iml.iml.Trait;
 import com.utc.utrc.hermes.iml.iml.TraitExhibition;
 import com.utc.utrc.hermes.iml.iml.TupleType;
 import com.utc.utrc.hermes.iml.iml.TypeRestriction;
@@ -43,12 +50,12 @@ import com.utc.utrc.hermes.iml.iml.TypeWithProperties;
 
 public class ImlUtil {
 
-	public static List<SymbolDeclaration> getSymbolsWithProperty(NamedType type, String property,
-			boolean considerParent) {
+	public static List<SymbolDeclaration> getSymbolsWithProperty(NamedType type, NamedType property,
+			boolean recursive) {
 		List<SymbolDeclaration> symbolsWithTheProperty = new ArrayList<SymbolDeclaration>();
-		if (considerParent) {
-			for (NamedType parent : getDirectParents(type)) {
-				symbolsWithTheProperty.addAll(getSymbolsWithProperty(parent, property, true));
+		if (recursive) {
+			for (SimpleTypeReference parent : getRelatedTypes(type)) {
+				symbolsWithTheProperty.addAll(getSymbolsWithProperty(parent.getType(), property, recursive));
 			}
 		}
 		for (SymbolDeclaration symbol : type.getSymbols()) {
@@ -58,48 +65,48 @@ public class ImlUtil {
 		}
 		return symbolsWithTheProperty;
 	}
-
-	public static List<NamedType> getDirectParents(NamedType type) {
-		List<NamedType> retval = new ArrayList<>();
-		if (type.getRelations() != null) {
-			for(Relation rel : type.getRelations()) {
-				if(rel instanceof Inclusion) {
-					retval.addAll(
-							((Inclusion) rel).getInclusions().stream()
-							.map(it -> ((SimpleTypeReference) it.getType()).getType())
-							.collect(Collectors.toList())) ;
-				}
-			}
-		}
-		return retval;
-	}
-
-	public static List<SimpleTypeReference> getDirectParentTypeRefs(NamedType type) {
-		List<SimpleTypeReference> retval = new ArrayList<>();
-		if (type.getRelations() != null) {
-			for(Relation rel : type.getRelations()) {
-				if(rel instanceof Inclusion) {
-					retval.addAll(
-							((Inclusion) rel).getInclusions().stream()
-							.map(it -> ((SimpleTypeReference) it.getType()))
-							.collect(Collectors.toList())) ;
-				}
-			}
-		}
-		return retval;
-	}	
 	
-	public static boolean hasProperty(Symbol symbol, String property) {
+	public static List<SymbolDeclaration> getSymbolsWithTrait(NamedType type, Trait trait, boolean recursive) {
+		List<SymbolDeclaration> symbolsWithTheTrait = new ArrayList<SymbolDeclaration>();
+		if (recursive) {
+			for (SimpleTypeReference parent : getRelatedTypes(type)) {
+				symbolsWithTheTrait.addAll(getSymbolsWithTrait(parent.getType(), trait, recursive));
+			}
+		}
+		for (SymbolDeclaration symbol : type.getSymbols()) {
+			if (exhibitsOrRefines(symbol, trait)) {
+				symbolsWithTheTrait.add(symbol);
+			}
+		}
+		return symbolsWithTheTrait;
+	}
+	
+	public static List<SymbolDeclaration> getSymbolsWithType(NamedType type, NamedType symbolType, boolean recursive) {
+		List<SymbolDeclaration> symbolsWithType = new ArrayList<SymbolDeclaration>();
+		if (recursive) {
+			for (SimpleTypeReference parent : getRelatedTypes(type)) {
+				symbolsWithType.addAll(getSymbolsWithType(parent.getType(), symbolType, recursive));
+			}
+		}
+		for (SymbolDeclaration symbol : type.getSymbols()) {
+			if (EcoreUtil.equals(symbol, symbolType)) {
+				symbolsWithType.add(symbol);
+			}
+		}
+		return symbolsWithType;
+	}
+	
+	public static boolean hasProperty(Symbol symbol, NamedType property) {
 		if (symbol.getPropertylist() == null)
 			return false;
 		for (Property actualProperty : symbol.getPropertylist().getProperties()) {
-			if (((SimpleTypeReference) actualProperty.getRef()).getType().getName().equals(property)) {
+			if (EcoreUtil.equals(((SimpleTypeReference) actualProperty.getRef()).getType(), property)) {
 				return true;
 			}
 		}
 		return false;
 	}
-
+	
 	public static NamedType getNamedTypeByName(Model model, String name) {
 		return (NamedType) model.getSymbols().stream()
 				.filter(it -> it instanceof NamedType && it.getName().equals(name)).findFirst().orElse(null);
@@ -158,7 +165,26 @@ public class ImlUtil {
 		return "UNKNOWN_IML_TYPE";
 	}
 	
-	public static List<TypeWithProperties> getRelationTypes(NamedType type) {
+
+	/**
+	 * Get all related type recursively and store them by level
+	 * @return
+	 */
+	public static List<List<TypeWithProperties>> getAllRelationTypes(NamedType type) {
+		List<List<TypeWithProperties>> types = new ArrayList<>();
+		throw new IllegalStateException("Unimplemented method!");
+	}
+	
+	/**
+	 * Get related types that are SimpleTypeReferece
+	 */
+	public static List<SimpleTypeReference> getRelatedTypes(NamedType type) {
+		return getRelatedTypesWithProp(type).stream().filter(twp -> twp.getType() instanceof SimpleTypeReference)
+			.map(twp -> (SimpleTypeReference)twp.getType())
+			.collect(Collectors.toList());
+	}
+	
+	public static List<TypeWithProperties> getRelatedTypesWithProp(NamedType type) {
 		List<TypeWithProperties> types = new ArrayList<>();
 		EList<Relation> relations = type.getRelations();
 		for (Relation relation : relations) {
@@ -166,8 +192,12 @@ public class ImlUtil {
 				types.addAll(((Inclusion) relation).getInclusions());
 			} else if (relation instanceof Alias) {
 				types.add(((Alias) relation).getType());
-			} else {
+			} else if (relation instanceof Refinement) {
+				types.addAll(((Refinement) relation).getRefinements());
+			} else if (relation instanceof TraitExhibition) {
 				types.addAll(((TraitExhibition) relation).getExhibitions());
+			} else {
+				throw new IllegalArgumentException("Unknown relation type: " + relation.getClass());
 			}
 		}
 		return types;
@@ -183,6 +213,8 @@ public class ImlUtil {
 					types.add(((Alias) relation).getType());
 				} else if (relation instanceof TraitExhibition){
 					types.addAll(((TraitExhibition) relation).getExhibitions());
+				} else if (relation instanceof Refinement) {
+					types.addAll(((Refinement) relation).getRefinements());
 				}
 			}
 		}
@@ -250,6 +282,23 @@ public class ImlUtil {
 		return null;
 	}
 	
+	public static SymbolDeclaration findSymbol(NamedType type, String symbolName, boolean recursive) {
+		SymbolDeclaration symbol = findSymbol(type, symbolName);
+		if (symbol != null) {
+			return symbol;
+		} else if (recursive) {
+			for (TypeWithProperties relatedtype : getRelatedTypesWithProp(type)) {
+				if (relatedtype.getType() instanceof SimpleTypeReference) {
+					symbol = findSymbol(((SimpleTypeReference) relatedtype.getType()).getType(), symbolName, recursive);
+					if (symbol != null) {
+						return symbol;
+					}
+				}
+			}
+		} 
+		return null;
+	}
+	
 	public static Symbol findSymbol(Model model, String symbolName) {
 		for (Symbol symbol : model.getSymbols()) {
 			if (symbolName.equals(symbol.getName())) {
@@ -292,7 +341,7 @@ public class ImlUtil {
 		}
 		return null;
 	}
-
+	
 	public static NamedType getContainerCt(EObject eObject) {
 		return EcoreUtil2.getContainerOfType(eObject, NamedType.class);
 	}
@@ -387,11 +436,9 @@ public class ImlUtil {
 	}
 
 	public static boolean isLiteralOf(Symbol s, NamedType t) {
-		for (TypeRestriction r : t.getRestrictions()) {
-			if (r instanceof EnumRestriction) {
-				if (((EnumRestriction) r).getLiterals().contains(s)) {
-					return true;
-				}
+		if (t.getRestriction() instanceof EnumRestriction) {
+			if (((EnumRestriction) t.getRestriction()).getLiterals().contains(s)) {
+				return true;
 			}
 		}
 		return false;
@@ -405,6 +452,119 @@ public class ImlUtil {
 			return !((SymbolDeclaration) s).getTypeParameter().isEmpty();
 		}
 		return false;
+	}
+
+	public static boolean hasType(ImlType imlType, NamedType namedType) {
+		if (imlType instanceof SimpleTypeReference &&
+				EcoreUtil.equals(((SimpleTypeReference)imlType).getType(), namedType)) {
+			return true ;
+		}
+		return false;
+	}
+	
+	public static boolean exhibitsOrRefines(EObject symbol, Trait trait) {
+		if (symbol instanceof Trait) {
+			return refines((Trait) symbol, trait);
+		} else if (symbol instanceof NamedType){
+			return exhibits((NamedType) symbol, trait);
+		} else if (symbol instanceof SimpleTypeReference) {
+			return exhibits(((SimpleTypeReference) symbol).getType(), trait);
+		} else if (symbol instanceof SymbolDeclaration) {
+			return exhibitsOrRefines(((SymbolDeclaration) symbol).getType(), trait);
+		} else {
+			return false;
+		}
+	}
+	
+	public static boolean exhibits(NamedType type, Trait trait) {
+		if (type instanceof Trait) {
+			return refines((Trait) type, trait);
+		}
+		
+		List<TypeWithProperties> traits = getRelationTypes(type, TraitExhibition.class);
+		if (traits.size() == 0)
+			return false;
+		return traits.stream()
+				.filter(twp -> twp.getType() instanceof SimpleTypeReference)
+				.map(twp -> (Trait) ((SimpleTypeReference) twp.getType()).getType() )
+				.anyMatch(t -> EcoreUtil.equals(t, trait) || refines(t, trait)) ;
+		
+	}
+
+	public static boolean exhibits(ImlType type, Trait trait) {
+		if (type instanceof SimpleTypeReference) {
+			return exhibits( ((SimpleTypeReference) type).getType() , trait) ;
+		}
+		return false;
+	}
+	
+	public static boolean refines(Trait type, Trait trait) {
+		
+		List<TypeWithProperties> traits = getRelationTypes(type, Refinement.class);
+		if (traits.size() == 0)
+			return false;
+		return traits.stream()
+				.filter(twp -> twp.getType() instanceof SimpleTypeReference)
+				.map(twp -> (Trait) ((SimpleTypeReference) twp.getType()).getType() )
+				.anyMatch(t -> EcoreUtil.equals(t, trait) || refines(t, trait)) ;
+		
+		
+	}
+	
+	public static boolean hasAnnotation(SymbolDeclaration s, Annotation a) {
+		return hasProperty(s, a);
+	}
+
+	public static boolean hasAnnotation(ImlType t, Annotation a) {
+		if (t instanceof NamedType) {
+			return hasProperty((NamedType) t, a);
+		} else {
+			return false;
+		}
+	}
+	
+	public static boolean hasAnnotation(NamedType t, Annotation a) {
+		return hasProperty(t, a);
+	}
+	
+	public static boolean isEnum(NamedType t) {
+		if (t.getRelations() == null) {
+			return false;
+		}
+		if (t.getRestriction() instanceof EnumRestriction) {
+			return true;
+		}
+		return false;
+	}
+	
+	public static List<String> getLiterals(NamedType t) {
+		List<String> retval = new ArrayList<String>();
+		if (t.getRestriction() != null) {
+			TypeRestriction r = t.getRestriction();
+			if (r instanceof EnumRestriction) {
+				for(SymbolDeclaration sd : ((EnumRestriction) r).getLiterals()) {
+					retval.add(sd.getName());
+				}
+			}
+		}
+		return retval;
+	}
+	
+	public static boolean isEqual(FolFormula left, FolFormula right) {
+		if (left == null && right == null) return true;
+		if (left == null || right == null) return false;
+ 		if (left.getClass() != right.getClass()) return false;
+		
+ 		if (!isEqual(left.getLeft(), right.getLeft())) return false;
+ 		if (left.getOp() != right.getOp()) return false;
+ 		
+		
+		return true;
+	}
+
+	public static boolean isActualNamedType(NamedType type) {
+		return !(type instanceof Annotation || type instanceof Trait ||
+				type instanceof Datatype);
 	}
 
 }

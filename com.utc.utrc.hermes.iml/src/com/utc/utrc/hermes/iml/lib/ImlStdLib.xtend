@@ -14,13 +14,15 @@ import org.eclipse.emf.ecore.resource.ResourceSet
 import com.google.inject.Singleton
 import com.google.inject.Inject
 import org.eclipse.xtext.naming.IQualifiedNameProvider
+import org.eclipse.xtext.naming.QualifiedName
+import com.google.common.collect.Maps
 
 @Singleton
 class ImlStdLib {
 	
-	@Inject extension private IQualifiedNameProvider qnp ;
+	@Inject extension IQualifiedNameProvider qnp ;
 
-	private Map<String, Map<String, Symbol>> imlStdSymbols = newHashMap;
+	Map<String, Map<String, Symbol>> imlStdSymbols = Maps.newHashMap();
 	
 	public val INT = "Int";
 	public val REAL = "Real";
@@ -155,16 +157,20 @@ class ImlStdLib {
 	}
 	
 	def getNamedType(String modelName, String typeName) {
-		val symbol = getSymbol(modelName, typeName)
-		if (symbol instanceof NamedType) {
-			return symbol as NamedType
-		}
-		return null
+		return getSymbol(modelName, typeName, NamedType)
 	}
 	
 	def getSymbol(String modelName, String typeName) {
 		if (imlStdSymbols.containsKey(modelName)) {
 			return imlStdSymbols.get(modelName).get(typeName)
+		}
+		return null
+	}
+	
+	def <T extends Symbol> T getSymbol(String modelName, String typeName, Class<T> symbolClass) {
+		val symbol = getSymbol(modelName, typeName)
+		if (symbol  !== null && symbolClass.isInstance(symbol)) {
+			return symbolClass.cast(symbol)
 		}
 		return null
 	}
@@ -180,7 +186,7 @@ class ImlStdLib {
 	def populate(Model model) {
 		if (model.stdLib) {
 			if (!imlStdSymbols.containsKey(model.name)) {
-				imlStdSymbols.put(model.name, newHashMap)
+				imlStdSymbols.put(model.name, Maps.newHashMap())
 			}
 			for (symbol : model.symbols) {
 				imlStdSymbols.get(model.name).put(symbol.name, symbol)
@@ -191,5 +197,18 @@ class ImlStdLib {
 	def boolean isStdLib(Model model) {
 		return model.name !== null && model.name.startsWith("iml.")
 	}
+	
+	def getStdLibNames() {
+		return imlStdSymbols.keySet.toList
+	}
+	
+	def reset() {
+		imlStdSymbols.clear
+	}
+	
+	def getModelSymbols(String packageName) {
+		return imlStdSymbols.get(packageName).values.toList
+	}
+
 	
 }

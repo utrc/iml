@@ -1,5 +1,9 @@
 package iml.lang;
 
+annotation Doc {
+	text : String ;
+}
+
 type Int;
 type Real;
 type Bool;
@@ -15,10 +19,14 @@ type String {
 	subStr : (Int,Int) -> String ;
 	prefixOf : String -> Bool ;
 	suffixOf : String -> Bool ;
-	int2str : Int -> String ;
-	re2str : Real -> String ; 
+	
 };
+int2str : Int -> String ;
+re2str : Real -> String ; 
 str2int : String -> Int ;
 str2re : String->Real ;
-// emptyString : String := some(x:String) {x.length = 0}; 
-emptyString : String  ; 
+emptyString : String := some(x:String) {x.length = 0}; 
+
+
+
+

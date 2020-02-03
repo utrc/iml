@@ -5,6 +5,5 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="src-gen"/>
 	<classpathentry kind="src" path="xtend-gen"/>
-	<classpathentry exported="true" kind="lib" path="libs/jgrapht-core-1.1.0.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

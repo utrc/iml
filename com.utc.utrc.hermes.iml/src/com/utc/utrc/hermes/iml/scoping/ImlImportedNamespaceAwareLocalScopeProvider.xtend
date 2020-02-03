@@ -9,6 +9,7 @@ import org.eclipse.emf.ecore.EObject
 import java.util.List
 import com.utc.utrc.hermes.iml.iml.Model
 import org.eclipse.xtext.naming.QualifiedName
+import com.google.common.collect.Lists
 
 class ImlImportedNamespaceAwareLocalScopeProvider extends ImportedNamespaceAwareLocalScopeProvider {
 
@@ -25,7 +26,7 @@ class ImlImportedNamespaceAwareLocalScopeProvider extends ImportedNamespaceAware
 	}
 	
 	override public getImplicitImports(boolean ignoreCase) {
-		newArrayList(new ImportNormalizer(QualifiedName.create("iml","lang"),true,ignoreCase))
+		Lists.newArrayList(new ImportNormalizer(QualifiedName.create("iml","lang"),true,ignoreCase))
 	}
 	
 }
