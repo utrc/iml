@@ -67,11 +67,8 @@ class _GraphsServices extends BasicServices
 	 * Get the edges symbol declaration inside the given Graph type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getGraphEdges(NamedType type, boolean recursive) {
-		if (isGraph(type)) {
-			return ImlUtil.findSymbol(type, GRAPH_EDGES_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getGraphEdgesVar() {
+		return ImlUtil.findSymbol(getType(GRAPH), GRAPH_EDGES_VAR, true) as SymbolDeclaration;
 	}
 	/**
 	 * get Edge type declaration

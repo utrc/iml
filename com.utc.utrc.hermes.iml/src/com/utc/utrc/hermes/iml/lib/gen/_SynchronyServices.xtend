@@ -25,16 +25,16 @@ class _SynchronyServices extends BasicServices
 	public static final String NUMERICTYPE_GEQ_VAR = "geq"
 	public static final String NUMERICTYPE_LE_VAR = "le"
 	public static final String NUMERICTYPE_GR_VAR = "gr"
-	public static final String TOREALSTREAM_VAR = "toRealStream"	
-	public static final String OR_VAR = "or"	
-	public static final String TOBOOLSTREAM_VAR = "toBoolStream"	
+	public static final String TOREALSTREAM_SYMBOL = "toRealStream"	
+	public static final String OR_SYMBOL = "or"	
+	public static final String TOBOOLSTREAM_SYMBOL = "toBoolStream"	
 	public static final String REALSTREAM = "RealStream"	
-	public static final String TOSTREAM_VAR = "toStream"	
-	public static final String PLUS_VAR = "plus"	
+	public static final String TOSTREAM_SYMBOL = "toStream"	
+	public static final String PLUS_SYMBOL = "plus"	
 	public static final String SYNCHRONOUS = "Synchronous"	
 	public static final String BOOLSTREAM = "BoolStream"	
-	public static final String NOT_VAR = "not"	
-	public static final String AND_VAR = "and"	
+	public static final String NOT_SYMBOL = "not"	
+	public static final String AND_SYMBOL = "and"	
 	public static final String LET = "Let"	
 	public static final String STREAM = "Stream"	
 	public static final String STREAM_PRE_VAR = "pre"
@@ -44,9 +44,9 @@ class _SynchronyServices extends BasicServices
 	public static final String STREAM_WHEN_VAR = "when"
 	public static final String STREAM_VALUE_VAR = "value"
 	public static final String STREAM_EQ_VAR = "eq"
-	public static final String ITE_VAR = "ite"	
+	public static final String ITE_SYMBOL = "ite"	
 	public static final String INTSTREAM = "IntStream"	
-	public static final String TOINTSTREAM_VAR = "toIntStream"	
+	public static final String TOINTSTREAM_SYMBOL = "toIntStream"	
 	
 	/**
 	 * get NumericType trait declaration
@@ -74,82 +74,76 @@ class _SynchronyServices extends BasicServices
 	 * Get the plus symbol declaration inside the given NumericType type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getNumericTypePlus(NamedType type, boolean recursive) {
-		if (isNumericType(type)) {
-			return ImlUtil.findSymbol(type, NUMERICTYPE_PLUS_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getNumericTypePlusVar() {
+		return ImlUtil.findSymbol(getType(NUMERICTYPE), NUMERICTYPE_PLUS_VAR, true) as SymbolDeclaration;
 	}
 	/**
 	 * Get the minus symbol declaration inside the given NumericType type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getNumericTypeMinus(NamedType type, boolean recursive) {
-		if (isNumericType(type)) {
-			return ImlUtil.findSymbol(type, NUMERICTYPE_MINUS_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getNumericTypeMinusVar() {
+		return ImlUtil.findSymbol(getType(NUMERICTYPE), NUMERICTYPE_MINUS_VAR, true) as SymbolDeclaration;
 	}
 	/**
 	 * Get the div symbol declaration inside the given NumericType type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getNumericTypeDiv(NamedType type, boolean recursive) {
-		if (isNumericType(type)) {
-			return ImlUtil.findSymbol(type, NUMERICTYPE_DIV_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getNumericTypeDivVar() {
+		return ImlUtil.findSymbol(getType(NUMERICTYPE), NUMERICTYPE_DIV_VAR, true) as SymbolDeclaration;
 	}
 	/**
 	 * Get the mult symbol declaration inside the given NumericType type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getNumericTypeMult(NamedType type, boolean recursive) {
-		if (isNumericType(type)) {
-			return ImlUtil.findSymbol(type, NUMERICTYPE_MULT_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getNumericTypeMultVar() {
+		return ImlUtil.findSymbol(getType(NUMERICTYPE), NUMERICTYPE_MULT_VAR, true) as SymbolDeclaration;
 	}
 	/**
 	 * Get the leq symbol declaration inside the given NumericType type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getNumericTypeLeq(NamedType type, boolean recursive) {
-		if (isNumericType(type)) {
-			return ImlUtil.findSymbol(type, NUMERICTYPE_LEQ_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getNumericTypeLeqVar() {
+		return ImlUtil.findSymbol(getType(NUMERICTYPE), NUMERICTYPE_LEQ_VAR, true) as SymbolDeclaration;
 	}
 	/**
 	 * Get the geq symbol declaration inside the given NumericType type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getNumericTypeGeq(NamedType type, boolean recursive) {
-		if (isNumericType(type)) {
-			return ImlUtil.findSymbol(type, NUMERICTYPE_GEQ_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getNumericTypeGeqVar() {
+		return ImlUtil.findSymbol(getType(NUMERICTYPE), NUMERICTYPE_GEQ_VAR, true) as SymbolDeclaration;
 	}
 	/**
 	 * Get the le symbol declaration inside the given NumericType type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getNumericTypeLe(NamedType type, boolean recursive) {
-		if (isNumericType(type)) {
-			return ImlUtil.findSymbol(type, NUMERICTYPE_LE_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getNumericTypeLeVar() {
+		return ImlUtil.findSymbol(getType(NUMERICTYPE), NUMERICTYPE_LE_VAR, true) as SymbolDeclaration;
 	}
 	/**
 	 * Get the gr symbol declaration inside the given NumericType type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getNumericTypeGr(NamedType type, boolean recursive) {
-		if (isNumericType(type)) {
-			return ImlUtil.findSymbol(type, NUMERICTYPE_GR_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getNumericTypeGrVar() {
+		return ImlUtil.findSymbol(getType(NUMERICTYPE), NUMERICTYPE_GR_VAR, true) as SymbolDeclaration;
 	}
+	/**
+	 * Get ToRealStreamSymbol symbol declaration
+	 */
+	 def getToRealStreamSymbol() {
+	 	return getSymbolDeclaration(TOREALSTREAM_SYMBOL)
+	 }
+	/**
+	 * Get OrSymbol symbol declaration
+	 */
+	 def getOrSymbol() {
+	 	return getSymbolDeclaration(OR_SYMBOL)
+	 }
+	/**
+	 * Get ToBoolStreamSymbol symbol declaration
+	 */
+	 def getToBoolStreamSymbol() {
+	 	return getSymbolDeclaration(TOBOOLSTREAM_SYMBOL)
+	 }
 	/**
 	 * get RealStream type declaration
 	 */
@@ -171,6 +165,18 @@ class _SynchronyServices extends BasicServices
 	def getRealStreamSymbols(NamedType type, boolean recursive) {
 		ImlUtil.getSymbolsWithType(type, getRealStreamType, recursive)
 	}
+	/**
+	 * Get ToStreamSymbol symbol declaration
+	 */
+	 def getToStreamSymbol() {
+	 	return getSymbolDeclaration(TOSTREAM_SYMBOL)
+	 }
+	/**
+	 * Get PlusSymbol symbol declaration
+	 */
+	 def getPlusSymbol() {
+	 	return getSymbolDeclaration(PLUS_SYMBOL)
+	 }
 	/**
 	 * get Synchronous trait declaration
 	 */
@@ -214,6 +220,18 @@ class _SynchronyServices extends BasicServices
 	def getBoolStreamSymbols(NamedType type, boolean recursive) {
 		ImlUtil.getSymbolsWithType(type, getBoolStreamType, recursive)
 	}
+	/**
+	 * Get NotSymbol symbol declaration
+	 */
+	 def getNotSymbol() {
+	 	return getSymbolDeclaration(NOT_SYMBOL)
+	 }
+	/**
+	 * Get AndSymbol symbol declaration
+	 */
+	 def getAndSymbol() {
+	 	return getSymbolDeclaration(AND_SYMBOL)
+	 }
 	/**
 	 * get Let annotation declaration
 	 */
@@ -262,72 +280,57 @@ class _SynchronyServices extends BasicServices
 	 * Get the pre symbol declaration inside the given Stream type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getStreamPre(NamedType type, boolean recursive) {
-		if (isStream(type)) {
-			return ImlUtil.findSymbol(type, STREAM_PRE_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getStreamPreVar() {
+		return ImlUtil.findSymbol(getType(STREAM), STREAM_PRE_VAR, true) as SymbolDeclaration;
 	}
 	/**
 	 * Get the init symbol declaration inside the given Stream type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getStreamInit(NamedType type, boolean recursive) {
-		if (isStream(type)) {
-			return ImlUtil.findSymbol(type, STREAM_INIT_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getStreamInitVar() {
+		return ImlUtil.findSymbol(getType(STREAM), STREAM_INIT_VAR, true) as SymbolDeclaration;
 	}
 	/**
 	 * Get the then symbol declaration inside the given Stream type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getStreamThen(NamedType type, boolean recursive) {
-		if (isStream(type)) {
-			return ImlUtil.findSymbol(type, STREAM_THEN_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getStreamThenVar() {
+		return ImlUtil.findSymbol(getType(STREAM), STREAM_THEN_VAR, true) as SymbolDeclaration;
 	}
 	/**
 	 * Get the current symbol declaration inside the given Stream type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getStreamCurrent(NamedType type, boolean recursive) {
-		if (isStream(type)) {
-			return ImlUtil.findSymbol(type, STREAM_CURRENT_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getStreamCurrentVar() {
+		return ImlUtil.findSymbol(getType(STREAM), STREAM_CURRENT_VAR, true) as SymbolDeclaration;
 	}
 	/**
 	 * Get the when symbol declaration inside the given Stream type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getStreamWhen(NamedType type, boolean recursive) {
-		if (isStream(type)) {
-			return ImlUtil.findSymbol(type, STREAM_WHEN_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getStreamWhenVar() {
+		return ImlUtil.findSymbol(getType(STREAM), STREAM_WHEN_VAR, true) as SymbolDeclaration;
 	}
 	/**
 	 * Get the value symbol declaration inside the given Stream type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getStreamValue(NamedType type, boolean recursive) {
-		if (isStream(type)) {
-			return ImlUtil.findSymbol(type, STREAM_VALUE_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getStreamValueVar() {
+		return ImlUtil.findSymbol(getType(STREAM), STREAM_VALUE_VAR, true) as SymbolDeclaration;
 	}
 	/**
 	 * Get the eq symbol declaration inside the given Stream type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getStreamEq(NamedType type, boolean recursive) {
-		if (isStream(type)) {
-			return ImlUtil.findSymbol(type, STREAM_EQ_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getStreamEqVar() {
+		return ImlUtil.findSymbol(getType(STREAM), STREAM_EQ_VAR, true) as SymbolDeclaration;
 	}
+	/**
+	 * Get IteSymbol symbol declaration
+	 */
+	 def getIteSymbol() {
+	 	return getSymbolDeclaration(ITE_SYMBOL)
+	 }
 	/**
 	 * get IntStream type declaration
 	 */
@@ -349,6 +352,12 @@ class _SynchronyServices extends BasicServices
 	def getIntStreamSymbols(NamedType type, boolean recursive) {
 		ImlUtil.getSymbolsWithType(type, getIntStreamType, recursive)
 	}
+	/**
+	 * Get ToIntStreamSymbol symbol declaration
+	 */
+	 def getToIntStreamSymbol() {
+	 	return getSymbolDeclaration(TOINTSTREAM_SYMBOL)
+	 }
 	
 	override getPackageName() {
 		PACKAGE_NAME

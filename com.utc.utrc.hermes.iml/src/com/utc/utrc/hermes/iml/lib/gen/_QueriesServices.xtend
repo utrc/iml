@@ -16,10 +16,16 @@ import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
 class _QueriesServices extends BasicServices
  {
 	public static final String PACKAGE_NAME = "iml.queries"
-	public static final String QUERY_VAR = "query"	
+	public static final String QUERY_SYMBOL = "query"	
 	public static final String PROPERTY = "Property"	
 	public static final String PROPERTY_HOLDS_VAR = "holds"
 	
+	/**
+	 * Get QuerySymbol symbol declaration
+	 */
+	 def getQuerySymbol() {
+	 	return getSymbolDeclaration(QUERY_SYMBOL)
+	 }
 	/**
 	 * get Property trait declaration
 	 */
@@ -46,11 +52,8 @@ class _QueriesServices extends BasicServices
 	 * Get the holds symbol declaration inside the given Property type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getPropertyHolds(NamedType type, boolean recursive) {
-		if (isProperty(type)) {
-			return ImlUtil.findSymbol(type, PROPERTY_HOLDS_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getPropertyHoldsVar() {
+		return ImlUtil.findSymbol(getType(PROPERTY), PROPERTY_HOLDS_VAR, true) as SymbolDeclaration;
 	}
 	
 	override getPackageName() {

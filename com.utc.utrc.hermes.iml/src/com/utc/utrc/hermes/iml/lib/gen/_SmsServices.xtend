@@ -71,51 +71,36 @@ class _SmsServices extends BasicServices
 	 * Get the state symbol declaration inside the given StateMachine type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getStateMachineState(NamedType type, boolean recursive) {
-		if (isStateMachine(type)) {
-			return ImlUtil.findSymbol(type, STATEMACHINE_STATE_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getStateMachineStateVar() {
+		return ImlUtil.findSymbol(getType(STATEMACHINE), STATEMACHINE_STATE_VAR, true) as SymbolDeclaration;
 	}
 	/**
 	 * Get the next symbol declaration inside the given StateMachine type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getStateMachineNext(NamedType type, boolean recursive) {
-		if (isStateMachine(type)) {
-			return ImlUtil.findSymbol(type, STATEMACHINE_NEXT_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getStateMachineNextVar() {
+		return ImlUtil.findSymbol(getType(STATEMACHINE), STATEMACHINE_NEXT_VAR, true) as SymbolDeclaration;
 	}
 	/**
 	 * Get the init symbol declaration inside the given StateMachine type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getStateMachineInit(NamedType type, boolean recursive) {
-		if (isStateMachine(type)) {
-			return ImlUtil.findSymbol(type, STATEMACHINE_INIT_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getStateMachineInitVar() {
+		return ImlUtil.findSymbol(getType(STATEMACHINE), STATEMACHINE_INIT_VAR, true) as SymbolDeclaration;
 	}
 	/**
 	 * Get the invariant symbol declaration inside the given StateMachine type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getStateMachineInvariant(NamedType type, boolean recursive) {
-		if (isStateMachine(type)) {
-			return ImlUtil.findSymbol(type, STATEMACHINE_INVARIANT_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getStateMachineInvariantVar() {
+		return ImlUtil.findSymbol(getType(STATEMACHINE), STATEMACHINE_INVARIANT_VAR, true) as SymbolDeclaration;
 	}
 	/**
 	 * Get the transition symbol declaration inside the given StateMachine type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getStateMachineTransition(NamedType type, boolean recursive) {
-		if (isStateMachine(type)) {
-			return ImlUtil.findSymbol(type, STATEMACHINE_TRANSITION_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getStateMachineTransitionVar() {
+		return ImlUtil.findSymbol(getType(STATEMACHINE), STATEMACHINE_TRANSITION_VAR, true) as SymbolDeclaration;
 	}
 	
 	override getPackageName() {

@@ -19,6 +19,7 @@ class _ContractsServices extends BasicServices
 	public static final String REFINES = "Refines"	
 	public static final String REFINES_SPEC_VAR = "spec"
 	public static final String REFINES_IMPL_VAR = "impl"
+	public static final String IMPLEMENTS = "Implements"	
 	public static final String ASSUME = "Assume"	
 	public static final String ASSUME_COMMENT_VAR = "comment"
 	public static final String GUARANTEE = "Guarantee"	
@@ -52,22 +53,38 @@ class _ContractsServices extends BasicServices
 	 * Get the spec symbol declaration inside the given Refines type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getRefinesSpec(NamedType type, boolean recursive) {
-		if (isRefines(type)) {
-			return ImlUtil.findSymbol(type, REFINES_SPEC_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getRefinesSpecVar() {
+		return ImlUtil.findSymbol(getType(REFINES), REFINES_SPEC_VAR, true) as SymbolDeclaration;
 	}
 	/**
 	 * Get the impl symbol declaration inside the given Refines type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getRefinesImpl(NamedType type, boolean recursive) {
-		if (isRefines(type)) {
-			return ImlUtil.findSymbol(type, REFINES_IMPL_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getRefinesImplVar() {
+		return ImlUtil.findSymbol(getType(REFINES), REFINES_IMPL_VAR, true) as SymbolDeclaration;
 	}
+	/**
+	 * get Implements trait declaration
+	 */
+	def getImplementsTrait() {
+		return getTrait(IMPLEMENTS)
+	}
+	
+	/**
+	 * check wether the given eObject refines or exhibits the Implements trait
+	 */
+	def isImplements(EObject eObject) {
+		return ImlUtil.exhibitsOrRefines(eObject, getImplementsTrait);
+	}
+	
+	/**
+	 * Get all symbols inside the given type that exhibits/refines the Implements trait. If recursive is true
+	 * then it will search for symbols inside type's parents
+	 */
+	def getImplementsSymbols(NamedType type, boolean recursive) {
+		ImlUtil.getSymbolsWithTrait(type, getImplementsTrait, recursive);
+	}
+	
 	/**
 	 * get Assume annotation declaration
 	 */
@@ -94,11 +111,8 @@ class _ContractsServices extends BasicServices
 	 * Get the comment symbol declaration inside the given Assume type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getAssumeComment(NamedType type, boolean recursive) {
-		if (isAssume(type)) {
-			return ImlUtil.findSymbol(type, ASSUME_COMMENT_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getAssumeCommentVar() {
+		return ImlUtil.findSymbol(getType(ASSUME), ASSUME_COMMENT_VAR, true) as SymbolDeclaration;
 	}
 	/**
 	 * get Guarantee annotation declaration
@@ -126,11 +140,8 @@ class _ContractsServices extends BasicServices
 	 * Get the comment symbol declaration inside the given Guarantee type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getGuaranteeComment(NamedType type, boolean recursive) {
-		if (isGuarantee(type)) {
-			return ImlUtil.findSymbol(type, GUARANTEE_COMMENT_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getGuaranteeCommentVar() {
+		return ImlUtil.findSymbol(getType(GUARANTEE), GUARANTEE_COMMENT_VAR, true) as SymbolDeclaration;
 	}
 	/**
 	 * get Contract trait declaration
@@ -158,21 +169,15 @@ class _ContractsServices extends BasicServices
 	 * Get the assumption symbol declaration inside the given Contract type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getContractAssumption(NamedType type, boolean recursive) {
-		if (isContract(type)) {
-			return ImlUtil.findSymbol(type, CONTRACT_ASSUMPTION_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getContractAssumptionVar() {
+		return ImlUtil.findSymbol(getType(CONTRACT), CONTRACT_ASSUMPTION_VAR, true) as SymbolDeclaration;
 	}
 	/**
 	 * Get the guarantee symbol declaration inside the given Contract type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getContractGuarantee(NamedType type, boolean recursive) {
-		if (isContract(type)) {
-			return ImlUtil.findSymbol(type, CONTRACT_GUARANTEE_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getContractGuaranteeVar() {
+		return ImlUtil.findSymbol(getType(CONTRACT), CONTRACT_GUARANTEE_VAR, true) as SymbolDeclaration;
 	}
 	
 	override getPackageName() {

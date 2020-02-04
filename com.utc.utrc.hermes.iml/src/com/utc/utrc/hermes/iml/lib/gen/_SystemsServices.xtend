@@ -21,22 +21,20 @@ class _SystemsServices extends BasicServices
 	public static final String CONNECTOR_TARGET_VAR = "target"
 	public static final String OUTEVENTPORT = "OutEventPort"	
 	public static final String IN = "In"	
-	public static final String IN_NULL_VAR = ""
 	public static final String PORT = "Port"	
 	public static final String PORT_DIRECTION_VAR = "direction"
 	public static final String INOUTEVENTPORT = "InOutEventPort"	
-	public static final String CONNECTEQUAL_VAR = "connectEqual"	
+	public static final String CONNECTEQUAL_SYMBOL = "connectEqual"	
 	public static final String DIRECTION = "Direction"	
 	public static final String SYSTEM = "System"	
-	public static final String SYSTEM_NULL_VAR = ""
-	public static final String DELEGATE_VAR = "delegate"	
+	public static final String DELEGATE_SYMBOL = "delegate"	
 	public static final String CONNECTABLE = "Connectable"	
 	public static final String INEVENTDATAPORT = "InEventDataPort"	
 	public static final String COMPONENT = "Component"	
 	public static final String COMPONENT_SUBCOMPONENTS_VAR = "subComponents"
 	public static final String COMPONENT_PORTS_VAR = "ports"
 	public static final String COMPONENT_ISROOT_VAR = "isRoot"
-	public static final String CONNECT_VAR = "connect"	
+	public static final String CONNECT_SYMBOL = "connect"	
 	public static final String INPORT = "InPort"	
 	public static final String INEVENTPORT = "InEventPort"	
 	public static final String INDATAPORT = "InDataPort"	
@@ -48,16 +46,13 @@ class _SystemsServices extends BasicServices
 	public static final String INOUTEVENTDATAPORT = "InOutEventDataPort"	
 	public static final String INOUTPORT = "InOutPort"	
 	public static final String OUT = "Out"	
-	public static final String OUT_NULL_VAR = ""
 	public static final String EQUALITYCONNECTOR = "EqualityConnector"	
 	public static final String EQUALITYCONNECTOR_SOURCE_VAR = "source"
 	public static final String EQUALITYCONNECTOR_TARGET_VAR = "target"
-	public static final String EQUALITYCONNECTOR_NULL_VAR = ""
 	public static final String OUTEVENTDATAPORT = "OutEventDataPort"	
 	public static final String OUTPORT = "OutPort"	
 	public static final String OUTDATAPORT = "OutDataPort"	
 	public static final String INOUT = "InOut"	
-	public static final String INOUT_NULL_VAR = ""
 	
 	/**
 	 * get Connector type declaration
@@ -84,21 +79,15 @@ class _SystemsServices extends BasicServices
 	 * Get the source symbol declaration inside the given Connector type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getConnectorSource(NamedType type, boolean recursive) {
-		if (isConnector(type)) {
-			return ImlUtil.findSymbol(type, CONNECTOR_SOURCE_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getConnectorSourceVar() {
+		return ImlUtil.findSymbol(getType(CONNECTOR), CONNECTOR_SOURCE_VAR, true) as SymbolDeclaration;
 	}
 	/**
 	 * Get the target symbol declaration inside the given Connector type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getConnectorTarget(NamedType type, boolean recursive) {
-		if (isConnector(type)) {
-			return ImlUtil.findSymbol(type, CONNECTOR_TARGET_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getConnectorTargetVar() {
+		return ImlUtil.findSymbol(getType(CONNECTOR), CONNECTOR_TARGET_VAR, true) as SymbolDeclaration;
 	}
 	/**
 	 * get OutEventPort type declaration
@@ -144,16 +133,6 @@ class _SystemsServices extends BasicServices
 	}
 	
 	/**
-	 * Get the  symbol declaration inside the given In type. If recursive is true
-	 * then it will search for symbols inside type's parents 
-	 */
-	def getIn(NamedType type, boolean recursive) {
-		if (isIn(type)) {
-			return ImlUtil.findSymbol(type, IN_NULL_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
-	}
-	/**
 	 * get Port trait declaration
 	 */
 	def getPortTrait() {
@@ -179,11 +158,8 @@ class _SystemsServices extends BasicServices
 	 * Get the direction symbol declaration inside the given Port type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getPortDirection(NamedType type, boolean recursive) {
-		if (isPort(type)) {
-			return ImlUtil.findSymbol(type, PORT_DIRECTION_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getPortDirectionVar() {
+		return ImlUtil.findSymbol(getType(PORT), PORT_DIRECTION_VAR, true) as SymbolDeclaration;
 	}
 	/**
 	 * get InOutEventPort type declaration
@@ -206,6 +182,12 @@ class _SystemsServices extends BasicServices
 	def getInOutEventPortSymbols(NamedType type, boolean recursive) {
 		ImlUtil.getSymbolsWithType(type, getInOutEventPortType, recursive)
 	}
+	/**
+	 * Get ConnectEqualSymbol symbol declaration
+	 */
+	 def getConnectEqualSymbol() {
+	 	return getSymbolDeclaration(CONNECTEQUAL_SYMBOL)
+	 }
 	/**
 	 * get Direction type declaration
 	 */
@@ -250,15 +232,11 @@ class _SystemsServices extends BasicServices
 	}
 	
 	/**
-	 * Get the  symbol declaration inside the given System type. If recursive is true
-	 * then it will search for symbols inside type's parents 
+	 * Get DelegateSymbol symbol declaration
 	 */
-	def getSystem(NamedType type, boolean recursive) {
-		if (isSystem(type)) {
-			return ImlUtil.findSymbol(type, SYSTEM_NULL_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
-	}
+	 def getDelegateSymbol() {
+	 	return getSymbolDeclaration(DELEGATE_SYMBOL)
+	 }
 	/**
 	 * get Connectable trait declaration
 	 */
@@ -328,32 +306,29 @@ class _SystemsServices extends BasicServices
 	 * Get the subComponents symbol declaration inside the given Component type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getComponentSubComponents(NamedType type, boolean recursive) {
-		if (isComponent(type)) {
-			return ImlUtil.findSymbol(type, COMPONENT_SUBCOMPONENTS_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getComponentSubComponentsVar() {
+		return ImlUtil.findSymbol(getType(COMPONENT), COMPONENT_SUBCOMPONENTS_VAR, true) as SymbolDeclaration;
 	}
 	/**
 	 * Get the ports symbol declaration inside the given Component type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getComponentPorts(NamedType type, boolean recursive) {
-		if (isComponent(type)) {
-			return ImlUtil.findSymbol(type, COMPONENT_PORTS_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getComponentPortsVar() {
+		return ImlUtil.findSymbol(getType(COMPONENT), COMPONENT_PORTS_VAR, true) as SymbolDeclaration;
 	}
 	/**
 	 * Get the isRoot symbol declaration inside the given Component type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getComponentIsRoot(NamedType type, boolean recursive) {
-		if (isComponent(type)) {
-			return ImlUtil.findSymbol(type, COMPONENT_ISROOT_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getComponentIsRootVar() {
+		return ImlUtil.findSymbol(getType(COMPONENT), COMPONENT_ISROOT_VAR, true) as SymbolDeclaration;
 	}
+	/**
+	 * Get ConnectSymbol symbol declaration
+	 */
+	 def getConnectSymbol() {
+	 	return getSymbolDeclaration(CONNECT_SYMBOL)
+	 }
 	/**
 	 * get InPort type declaration
 	 */
@@ -443,11 +418,8 @@ class _SystemsServices extends BasicServices
 	 * Get the data symbol declaration inside the given DataCarrier type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getDataCarrierData(NamedType type, boolean recursive) {
-		if (isDataCarrier(type)) {
-			return ImlUtil.findSymbol(type, DATACARRIER_DATA_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getDataCarrierDataVar() {
+		return ImlUtil.findSymbol(getType(DATACARRIER), DATACARRIER_DATA_VAR, true) as SymbolDeclaration;
 	}
 	/**
 	 * get EventCarrier trait declaration
@@ -475,11 +447,8 @@ class _SystemsServices extends BasicServices
 	 * Get the event symbol declaration inside the given EventCarrier type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getEventCarrierEvent(NamedType type, boolean recursive) {
-		if (isEventCarrier(type)) {
-			return ImlUtil.findSymbol(type, EVENTCARRIER_EVENT_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getEventCarrierEventVar() {
+		return ImlUtil.findSymbol(getType(EVENTCARRIER), EVENTCARRIER_EVENT_VAR, true) as SymbolDeclaration;
 	}
 	/**
 	 * get InOutDataPort type declaration
@@ -567,16 +536,6 @@ class _SystemsServices extends BasicServices
 	}
 	
 	/**
-	 * Get the  symbol declaration inside the given Out type. If recursive is true
-	 * then it will search for symbols inside type's parents 
-	 */
-	def getOut(NamedType type, boolean recursive) {
-		if (isOut(type)) {
-			return ImlUtil.findSymbol(type, OUT_NULL_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
-	}
-	/**
 	 * get EqualityConnector type declaration
 	 */
 	def getEqualityConnectorType() {
@@ -601,31 +560,15 @@ class _SystemsServices extends BasicServices
 	 * Get the source symbol declaration inside the given EqualityConnector type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getEqualityConnectorSource(NamedType type, boolean recursive) {
-		if (isEqualityConnector(type)) {
-			return ImlUtil.findSymbol(type, EQUALITYCONNECTOR_SOURCE_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getEqualityConnectorSourceVar() {
+		return ImlUtil.findSymbol(getType(EQUALITYCONNECTOR), EQUALITYCONNECTOR_SOURCE_VAR, true) as SymbolDeclaration;
 	}
 	/**
 	 * Get the target symbol declaration inside the given EqualityConnector type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getEqualityConnectorTarget(NamedType type, boolean recursive) {
-		if (isEqualityConnector(type)) {
-			return ImlUtil.findSymbol(type, EQUALITYCONNECTOR_TARGET_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
-	}
-	/**
-	 * Get the  symbol declaration inside the given EqualityConnector type. If recursive is true
-	 * then it will search for symbols inside type's parents 
-	 */
-	def getEqualityConnector(NamedType type, boolean recursive) {
-		if (isEqualityConnector(type)) {
-			return ImlUtil.findSymbol(type, EQUALITYCONNECTOR_NULL_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getEqualityConnectorTargetVar() {
+		return ImlUtil.findSymbol(getType(EQUALITYCONNECTOR), EQUALITYCONNECTOR_TARGET_VAR, true) as SymbolDeclaration;
 	}
 	/**
 	 * get OutEventDataPort type declaration
@@ -712,16 +655,6 @@ class _SystemsServices extends BasicServices
 		ImlUtil.getSymbolsWithTrait(type, getInOutTrait, recursive);
 	}
 	
-	/**
-	 * Get the  symbol declaration inside the given InOut type. If recursive is true
-	 * then it will search for symbols inside type's parents 
-	 */
-	def getInOut(NamedType type, boolean recursive) {
-		if (isInOut(type)) {
-			return ImlUtil.findSymbol(type, INOUT_NULL_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
-	}
 	
 	override getPackageName() {
 		PACKAGE_NAME

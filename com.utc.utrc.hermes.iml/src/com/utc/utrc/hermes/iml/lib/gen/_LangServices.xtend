@@ -16,16 +16,16 @@ import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
 class _LangServices extends BasicServices
  {
 	public static final String PACKAGE_NAME = "iml.lang"
-	public static final String INT2STR_VAR = "int2str"	
-	public static final String STR2RE_VAR = "str2re"	
-	public static final String RE2STR_VAR = "re2str"	
-	public static final String STR2INT_VAR = "str2int"	
+	public static final String INT2STR_SYMBOL = "int2str"	
+	public static final String STR2RE_SYMBOL = "str2re"	
+	public static final String RE2STR_SYMBOL = "re2str"	
+	public static final String STR2INT_SYMBOL = "str2int"	
 	public static final String BOOL = "Bool"	
 	public static final String CHAR = "Char"	
 	public static final String REAL = "Real"	
 	public static final String DOC = "Doc"	
 	public static final String DOC_TEXT_VAR = "text"
-	public static final String EMPTYSTRING_VAR = "emptyString"	
+	public static final String EMPTYSTRING_SYMBOL = "emptyString"	
 	public static final String STRING = "String"	
 	public static final String STRING_CONCAT_VAR = "concat"
 	public static final String STRING_LENGTH_VAR = "length"
@@ -39,6 +39,30 @@ class _LangServices extends BasicServices
 	public static final String STRING_SUFFIXOF_VAR = "suffixOf"
 	public static final String INT = "Int"	
 	
+	/**
+	 * Get Int2strSymbol symbol declaration
+	 */
+	 def getInt2strSymbol() {
+	 	return getSymbolDeclaration(INT2STR_SYMBOL)
+	 }
+	/**
+	 * Get Str2reSymbol symbol declaration
+	 */
+	 def getStr2reSymbol() {
+	 	return getSymbolDeclaration(STR2RE_SYMBOL)
+	 }
+	/**
+	 * Get Re2strSymbol symbol declaration
+	 */
+	 def getRe2strSymbol() {
+	 	return getSymbolDeclaration(RE2STR_SYMBOL)
+	 }
+	/**
+	 * Get Str2intSymbol symbol declaration
+	 */
+	 def getStr2intSymbol() {
+	 	return getSymbolDeclaration(STR2INT_SYMBOL)
+	 }
 	/**
 	 * get Bool type declaration
 	 */
@@ -128,12 +152,15 @@ class _LangServices extends BasicServices
 	 * Get the text symbol declaration inside the given Doc type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getDocText(NamedType type, boolean recursive) {
-		if (isDoc(type)) {
-			return ImlUtil.findSymbol(type, DOC_TEXT_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getDocTextVar() {
+		return ImlUtil.findSymbol(getType(DOC), DOC_TEXT_VAR, true) as SymbolDeclaration;
 	}
+	/**
+	 * Get EmptyStringSymbol symbol declaration
+	 */
+	 def getEmptyStringSymbol() {
+	 	return getSymbolDeclaration(EMPTYSTRING_SYMBOL)
+	 }
 	/**
 	 * get String type declaration
 	 */
@@ -159,101 +186,71 @@ class _LangServices extends BasicServices
 	 * Get the concat symbol declaration inside the given String type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getStringConcat(NamedType type, boolean recursive) {
-		if (isString(type)) {
-			return ImlUtil.findSymbol(type, STRING_CONCAT_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getStringConcatVar() {
+		return ImlUtil.findSymbol(getType(STRING), STRING_CONCAT_VAR, true) as SymbolDeclaration;
 	}
 	/**
 	 * Get the length symbol declaration inside the given String type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getStringLength(NamedType type, boolean recursive) {
-		if (isString(type)) {
-			return ImlUtil.findSymbol(type, STRING_LENGTH_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getStringLengthVar() {
+		return ImlUtil.findSymbol(getType(STRING), STRING_LENGTH_VAR, true) as SymbolDeclaration;
 	}
 	/**
 	 * Get the contains symbol declaration inside the given String type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getStringContains(NamedType type, boolean recursive) {
-		if (isString(type)) {
-			return ImlUtil.findSymbol(type, STRING_CONTAINS_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getStringContainsVar() {
+		return ImlUtil.findSymbol(getType(STRING), STRING_CONTAINS_VAR, true) as SymbolDeclaration;
 	}
 	/**
 	 * Get the indexOf symbol declaration inside the given String type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getStringIndexOf(NamedType type, boolean recursive) {
-		if (isString(type)) {
-			return ImlUtil.findSymbol(type, STRING_INDEXOF_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getStringIndexOfVar() {
+		return ImlUtil.findSymbol(getType(STRING), STRING_INDEXOF_VAR, true) as SymbolDeclaration;
 	}
 	/**
 	 * Get the replace symbol declaration inside the given String type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getStringReplace(NamedType type, boolean recursive) {
-		if (isString(type)) {
-			return ImlUtil.findSymbol(type, STRING_REPLACE_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getStringReplaceVar() {
+		return ImlUtil.findSymbol(getType(STRING), STRING_REPLACE_VAR, true) as SymbolDeclaration;
 	}
 	/**
 	 * Get the replaceAll symbol declaration inside the given String type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getStringReplaceAll(NamedType type, boolean recursive) {
-		if (isString(type)) {
-			return ImlUtil.findSymbol(type, STRING_REPLACEALL_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getStringReplaceAllVar() {
+		return ImlUtil.findSymbol(getType(STRING), STRING_REPLACEALL_VAR, true) as SymbolDeclaration;
 	}
 	/**
 	 * Get the charAt symbol declaration inside the given String type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getStringCharAt(NamedType type, boolean recursive) {
-		if (isString(type)) {
-			return ImlUtil.findSymbol(type, STRING_CHARAT_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getStringCharAtVar() {
+		return ImlUtil.findSymbol(getType(STRING), STRING_CHARAT_VAR, true) as SymbolDeclaration;
 	}
 	/**
 	 * Get the subStr symbol declaration inside the given String type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getStringSubStr(NamedType type, boolean recursive) {
-		if (isString(type)) {
-			return ImlUtil.findSymbol(type, STRING_SUBSTR_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getStringSubStrVar() {
+		return ImlUtil.findSymbol(getType(STRING), STRING_SUBSTR_VAR, true) as SymbolDeclaration;
 	}
 	/**
 	 * Get the prefixOf symbol declaration inside the given String type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getStringPrefixOf(NamedType type, boolean recursive) {
-		if (isString(type)) {
-			return ImlUtil.findSymbol(type, STRING_PREFIXOF_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getStringPrefixOfVar() {
+		return ImlUtil.findSymbol(getType(STRING), STRING_PREFIXOF_VAR, true) as SymbolDeclaration;
 	}
 	/**
 	 * Get the suffixOf symbol declaration inside the given String type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getStringSuffixOf(NamedType type, boolean recursive) {
-		if (isString(type)) {
-			return ImlUtil.findSymbol(type, STRING_SUFFIXOF_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getStringSuffixOfVar() {
+		return ImlUtil.findSymbol(getType(STRING), STRING_SUFFIXOF_VAR, true) as SymbolDeclaration;
 	}
 	/**
 	 * get Int type declaration

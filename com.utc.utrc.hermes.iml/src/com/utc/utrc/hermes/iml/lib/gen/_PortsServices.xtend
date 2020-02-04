@@ -23,13 +23,13 @@ class _PortsServices extends BasicServices
 	public static final String FLOWCONNECTOR = "FlowConnector"	
 	public static final String FLOWCONNECTOR_CONNECTOR_VAR = "connector"
 	public static final String FLOWCONNECTOR_FLOW_VAR = "flow"
-	public static final String FLOWPATHSPEC_VAR = "flowpathspec"	
+	public static final String FLOWPATHSPEC_SYMBOL = "flowpathspec"	
 	public static final String PORT = "Port"	
-	public static final String SOURCE_VAR = "source"	
+	public static final String SOURCE_SYMBOL = "source"	
 	public static final String DATAPORT = "DataPort"	
 	public static final String DATAPORT_DATA_VAR = "data"
 	public static final String DATAPORT_FLOWPOINT_VAR = "flowpoint"
-	public static final String FLOWDELAYBOUND_VAR = "flowdelaybound"	
+	public static final String FLOWDELAYBOUND_SYMBOL = "flowdelaybound"	
 	public static final String THREESTATE = "ThreeState"	
 	public static final String DELAYSTATE = "DelayState"	
 	public static final String DELAYSTATE_STATE_VAR = "state"
@@ -48,8 +48,8 @@ class _PortsServices extends BasicServices
 	public static final String FLOWPOINT_EVENT_VAR = "event"
 	public static final String FLOWPOINT_UPPERBOUND_VAR = "upperBound"
 	public static final String FLOWPOINT_LOWERBOUND_VAR = "lowerBound"
-	public static final String FLOWPATH_VAR = "flowpath"	
-	public static final String FLOWCONNECT_VAR = "flowconnect"	
+	public static final String FLOWPATH_SYMBOL = "flowpath"	
+	public static final String FLOWCONNECT_SYMBOL = "flowconnect"	
 	public static final String FLOWPATH = "FlowPath"	
 	public static final String FLOWPATH_START_VAR = "start"
 	public static final String FLOWPATH_END_VAR = "end"
@@ -85,31 +85,22 @@ class _PortsServices extends BasicServices
 	 * Get the start symbol declaration inside the given EndToEndFlow type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getEndToEndFlowStart(NamedType type, boolean recursive) {
-		if (isEndToEndFlow(type)) {
-			return ImlUtil.findSymbol(type, ENDTOENDFLOW_START_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getEndToEndFlowStartVar() {
+		return ImlUtil.findSymbol(getType(ENDTOENDFLOW), ENDTOENDFLOW_START_VAR, true) as SymbolDeclaration;
 	}
 	/**
 	 * Get the end symbol declaration inside the given EndToEndFlow type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getEndToEndFlowEnd(NamedType type, boolean recursive) {
-		if (isEndToEndFlow(type)) {
-			return ImlUtil.findSymbol(type, ENDTOENDFLOW_END_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getEndToEndFlowEndVar() {
+		return ImlUtil.findSymbol(getType(ENDTOENDFLOW), ENDTOENDFLOW_END_VAR, true) as SymbolDeclaration;
 	}
 	/**
 	 * Get the append symbol declaration inside the given EndToEndFlow type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getEndToEndFlowAppend(NamedType type, boolean recursive) {
-		if (isEndToEndFlow(type)) {
-			return ImlUtil.findSymbol(type, ENDTOENDFLOW_APPEND_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getEndToEndFlowAppendVar() {
+		return ImlUtil.findSymbol(getType(ENDTOENDFLOW), ENDTOENDFLOW_APPEND_VAR, true) as SymbolDeclaration;
 	}
 	/**
 	 * get FlowConnector type declaration
@@ -136,22 +127,22 @@ class _PortsServices extends BasicServices
 	 * Get the connector symbol declaration inside the given FlowConnector type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getFlowConnectorConnector(NamedType type, boolean recursive) {
-		if (isFlowConnector(type)) {
-			return ImlUtil.findSymbol(type, FLOWCONNECTOR_CONNECTOR_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getFlowConnectorConnectorVar() {
+		return ImlUtil.findSymbol(getType(FLOWCONNECTOR), FLOWCONNECTOR_CONNECTOR_VAR, true) as SymbolDeclaration;
 	}
 	/**
 	 * Get the flow symbol declaration inside the given FlowConnector type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getFlowConnectorFlow(NamedType type, boolean recursive) {
-		if (isFlowConnector(type)) {
-			return ImlUtil.findSymbol(type, FLOWCONNECTOR_FLOW_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getFlowConnectorFlowVar() {
+		return ImlUtil.findSymbol(getType(FLOWCONNECTOR), FLOWCONNECTOR_FLOW_VAR, true) as SymbolDeclaration;
 	}
+	/**
+	 * Get FlowpathspecSymbol symbol declaration
+	 */
+	 def getFlowpathspecSymbol() {
+	 	return getSymbolDeclaration(FLOWPATHSPEC_SYMBOL)
+	 }
 	/**
 	 * get Port type declaration
 	 */
@@ -173,6 +164,12 @@ class _PortsServices extends BasicServices
 	def getPortSymbols(NamedType type, boolean recursive) {
 		ImlUtil.getSymbolsWithType(type, getPortType, recursive)
 	}
+	/**
+	 * Get SourceSymbol symbol declaration
+	 */
+	 def getSourceSymbol() {
+	 	return getSymbolDeclaration(SOURCE_SYMBOL)
+	 }
 	/**
 	 * get DataPort type declaration
 	 */
@@ -198,22 +195,22 @@ class _PortsServices extends BasicServices
 	 * Get the data symbol declaration inside the given DataPort type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getDataPortData(NamedType type, boolean recursive) {
-		if (isDataPort(type)) {
-			return ImlUtil.findSymbol(type, DATAPORT_DATA_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getDataPortDataVar() {
+		return ImlUtil.findSymbol(getType(DATAPORT), DATAPORT_DATA_VAR, true) as SymbolDeclaration;
 	}
 	/**
 	 * Get the flowpoint symbol declaration inside the given DataPort type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getDataPortFlowpoint(NamedType type, boolean recursive) {
-		if (isDataPort(type)) {
-			return ImlUtil.findSymbol(type, DATAPORT_FLOWPOINT_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getDataPortFlowpointVar() {
+		return ImlUtil.findSymbol(getType(DATAPORT), DATAPORT_FLOWPOINT_VAR, true) as SymbolDeclaration;
 	}
+	/**
+	 * Get FlowdelayboundSymbol symbol declaration
+	 */
+	 def getFlowdelayboundSymbol() {
+	 	return getSymbolDeclaration(FLOWDELAYBOUND_SYMBOL)
+	 }
 	/**
 	 * get ThreeState type declaration
 	 */
@@ -260,102 +257,78 @@ class _PortsServices extends BasicServices
 	 * Get the state symbol declaration inside the given DelayState type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getDelayStateState(NamedType type, boolean recursive) {
-		if (isDelayState(type)) {
-			return ImlUtil.findSymbol(type, DELAYSTATE_STATE_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getDelayStateStateVar() {
+		return ImlUtil.findSymbol(getType(DELAYSTATE), DELAYSTATE_STATE_VAR, true) as SymbolDeclaration;
 	}
 	/**
 	 * Get the i symbol declaration inside the given DelayState type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getDelayStateI(NamedType type, boolean recursive) {
-		if (isDelayState(type)) {
-			return ImlUtil.findSymbol(type, DELAYSTATE_I_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getDelayStateIVar() {
+		return ImlUtil.findSymbol(getType(DELAYSTATE), DELAYSTATE_I_VAR, true) as SymbolDeclaration;
 	}
 	/**
-	 * get delay type declaration
+	 * get Delay type declaration
 	 */
-	def getdelayType() {
+	def getDelayType() {
 		return getType(DELAY)
 	}
 	
 	/**
-	 * check whether the given type is delay type
+	 * check whether the given type is Delay type
 	 */
-	def isdelay(NamedType type) {
-		return getdelayType == type
+	def isDelay(NamedType type) {
+		return getDelayType == type
 	}
 	
 	/**
-	 * Get all symbols inside the given type that are delay type. If recursive is true
+	 * Get all symbols inside the given type that are Delay type. If recursive is true
 	 * then it will search for symbols inside type's parents
 	 */
-	def getdelaySymbols(NamedType type, boolean recursive) {
-		ImlUtil.getSymbolsWithType(type, getdelayType, recursive)
+	def getDelaySymbols(NamedType type, boolean recursive) {
+		ImlUtil.getSymbolsWithType(type, getDelayType, recursive)
 	}
 	/**
 	 * Get the f symbol declaration inside the given delay type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getdelayF(NamedType type, boolean recursive) {
-		if (isdelay(type)) {
-			return ImlUtil.findSymbol(type, DELAY_F_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getDelayFVar() {
+		return ImlUtil.findSymbol(getType(DELAY), DELAY_F_VAR, true) as SymbolDeclaration;
 	}
 	/**
 	 * Get the n symbol declaration inside the given delay type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getdelayN(NamedType type, boolean recursive) {
-		if (isdelay(type)) {
-			return ImlUtil.findSymbol(type, DELAY_N_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getDelayNVar() {
+		return ImlUtil.findSymbol(getType(DELAY), DELAY_N_VAR, true) as SymbolDeclaration;
 	}
 	/**
 	 * Get the holds symbol declaration inside the given delay type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getdelayHolds(NamedType type, boolean recursive) {
-		if (isdelay(type)) {
-			return ImlUtil.findSymbol(type, DELAY_HOLDS_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getDelayHoldsVar() {
+		return ImlUtil.findSymbol(getType(DELAY), DELAY_HOLDS_VAR, true) as SymbolDeclaration;
 	}
 	/**
 	 * Get the init symbol declaration inside the given delay type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getdelayInit(NamedType type, boolean recursive) {
-		if (isdelay(type)) {
-			return ImlUtil.findSymbol(type, DELAY_INIT_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getDelayInitVar() {
+		return ImlUtil.findSymbol(getType(DELAY), DELAY_INIT_VAR, true) as SymbolDeclaration;
 	}
 	/**
 	 * Get the transition symbol declaration inside the given delay type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getdelayTransition(NamedType type, boolean recursive) {
-		if (isdelay(type)) {
-			return ImlUtil.findSymbol(type, DELAY_TRANSITION_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getDelayTransitionVar() {
+		return ImlUtil.findSymbol(getType(DELAY), DELAY_TRANSITION_VAR, true) as SymbolDeclaration;
 	}
 	/**
 	 * Get the invariant symbol declaration inside the given delay type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getdelayInvariant(NamedType type, boolean recursive) {
-		if (isdelay(type)) {
-			return ImlUtil.findSymbol(type, DELAY_INVARIANT_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getDelayInvariantVar() {
+		return ImlUtil.findSymbol(getType(DELAY), DELAY_INVARIANT_VAR, true) as SymbolDeclaration;
 	}
 	/**
 	 * get EventPort type declaration
@@ -382,21 +355,15 @@ class _PortsServices extends BasicServices
 	 * Get the event symbol declaration inside the given EventPort type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getEventPortEvent(NamedType type, boolean recursive) {
-		if (isEventPort(type)) {
-			return ImlUtil.findSymbol(type, EVENTPORT_EVENT_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getEventPortEventVar() {
+		return ImlUtil.findSymbol(getType(EVENTPORT), EVENTPORT_EVENT_VAR, true) as SymbolDeclaration;
 	}
 	/**
 	 * Get the flowpoint symbol declaration inside the given EventPort type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getEventPortFlowpoint(NamedType type, boolean recursive) {
-		if (isEventPort(type)) {
-			return ImlUtil.findSymbol(type, EVENTPORT_FLOWPOINT_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getEventPortFlowpointVar() {
+		return ImlUtil.findSymbol(getType(EVENTPORT), EVENTPORT_FLOWPOINT_VAR, true) as SymbolDeclaration;
 	}
 	/**
 	 * get FlowPoint type declaration
@@ -423,32 +390,35 @@ class _PortsServices extends BasicServices
 	 * Get the event symbol declaration inside the given FlowPoint type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getFlowPointEvent(NamedType type, boolean recursive) {
-		if (isFlowPoint(type)) {
-			return ImlUtil.findSymbol(type, FLOWPOINT_EVENT_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getFlowPointEventVar() {
+		return ImlUtil.findSymbol(getType(FLOWPOINT), FLOWPOINT_EVENT_VAR, true) as SymbolDeclaration;
 	}
 	/**
 	 * Get the upperBound symbol declaration inside the given FlowPoint type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getFlowPointUpperBound(NamedType type, boolean recursive) {
-		if (isFlowPoint(type)) {
-			return ImlUtil.findSymbol(type, FLOWPOINT_UPPERBOUND_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getFlowPointUpperBoundVar() {
+		return ImlUtil.findSymbol(getType(FLOWPOINT), FLOWPOINT_UPPERBOUND_VAR, true) as SymbolDeclaration;
 	}
 	/**
 	 * Get the lowerBound symbol declaration inside the given FlowPoint type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getFlowPointLowerBound(NamedType type, boolean recursive) {
-		if (isFlowPoint(type)) {
-			return ImlUtil.findSymbol(type, FLOWPOINT_LOWERBOUND_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getFlowPointLowerBoundVar() {
+		return ImlUtil.findSymbol(getType(FLOWPOINT), FLOWPOINT_LOWERBOUND_VAR, true) as SymbolDeclaration;
 	}
+	/**
+	 * Get FlowpathSymbol symbol declaration
+	 */
+	 def getFlowpathSymbol() {
+	 	return getSymbolDeclaration(FLOWPATH_SYMBOL)
+	 }
+	/**
+	 * Get FlowconnectSymbol symbol declaration
+	 */
+	 def getFlowconnectSymbol() {
+	 	return getSymbolDeclaration(FLOWCONNECT_SYMBOL)
+	 }
 	/**
 	 * get FlowPath type declaration
 	 */
@@ -474,41 +444,29 @@ class _PortsServices extends BasicServices
 	 * Get the start symbol declaration inside the given FlowPath type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getFlowPathStart(NamedType type, boolean recursive) {
-		if (isFlowPath(type)) {
-			return ImlUtil.findSymbol(type, FLOWPATH_START_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getFlowPathStartVar() {
+		return ImlUtil.findSymbol(getType(FLOWPATH), FLOWPATH_START_VAR, true) as SymbolDeclaration;
 	}
 	/**
 	 * Get the end symbol declaration inside the given FlowPath type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getFlowPathEnd(NamedType type, boolean recursive) {
-		if (isFlowPath(type)) {
-			return ImlUtil.findSymbol(type, FLOWPATH_END_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getFlowPathEndVar() {
+		return ImlUtil.findSymbol(getType(FLOWPATH), FLOWPATH_END_VAR, true) as SymbolDeclaration;
 	}
 	/**
 	 * Get the upperBound symbol declaration inside the given FlowPath type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getFlowPathUpperBound(NamedType type, boolean recursive) {
-		if (isFlowPath(type)) {
-			return ImlUtil.findSymbol(type, FLOWPATH_UPPERBOUND_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getFlowPathUpperBoundVar() {
+		return ImlUtil.findSymbol(getType(FLOWPATH), FLOWPATH_UPPERBOUND_VAR, true) as SymbolDeclaration;
 	}
 	/**
 	 * Get the lowerBound symbol declaration inside the given FlowPath type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getFlowPathLowerBound(NamedType type, boolean recursive) {
-		if (isFlowPath(type)) {
-			return ImlUtil.findSymbol(type, FLOWPATH_LOWERBOUND_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getFlowPathLowerBoundVar() {
+		return ImlUtil.findSymbol(getType(FLOWPATH), FLOWPATH_LOWERBOUND_VAR, true) as SymbolDeclaration;
 	}
 	/**
 	 * get EventDataPort type declaration
@@ -535,31 +493,22 @@ class _PortsServices extends BasicServices
 	 * Get the event symbol declaration inside the given EventDataPort type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getEventDataPortEvent(NamedType type, boolean recursive) {
-		if (isEventDataPort(type)) {
-			return ImlUtil.findSymbol(type, EVENTDATAPORT_EVENT_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getEventDataPortEventVar() {
+		return ImlUtil.findSymbol(getType(EVENTDATAPORT), EVENTDATAPORT_EVENT_VAR, true) as SymbolDeclaration;
 	}
 	/**
 	 * Get the data symbol declaration inside the given EventDataPort type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getEventDataPortData(NamedType type, boolean recursive) {
-		if (isEventDataPort(type)) {
-			return ImlUtil.findSymbol(type, EVENTDATAPORT_DATA_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getEventDataPortDataVar() {
+		return ImlUtil.findSymbol(getType(EVENTDATAPORT), EVENTDATAPORT_DATA_VAR, true) as SymbolDeclaration;
 	}
 	/**
 	 * Get the flowpoint symbol declaration inside the given EventDataPort type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getEventDataPortFlowpoint(NamedType type, boolean recursive) {
-		if (isEventDataPort(type)) {
-			return ImlUtil.findSymbol(type, EVENTDATAPORT_FLOWPOINT_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getEventDataPortFlowpointVar() {
+		return ImlUtil.findSymbol(getType(EVENTDATAPORT), EVENTDATAPORT_FLOWPOINT_VAR, true) as SymbolDeclaration;
 	}
 	
 	override getPackageName() {

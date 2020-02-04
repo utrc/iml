@@ -17,11 +17,11 @@ class _OntologicalServices extends BasicServices
  {
 	public static final String PACKAGE_NAME = "iml.synchdf.ontological"
 	public static final String SYNCHRONOUS = "Synchronous"	
-	public static final String INIT_VAR = "init"	
-	public static final String PRE_VAR = "pre"	
-	public static final String CURRENT_VAR = "current"	
+	public static final String INIT_SYMBOL = "init"	
+	public static final String PRE_SYMBOL = "pre"	
+	public static final String CURRENT_SYMBOL = "current"	
 	public static final String LET = "Let"	
-	public static final String WHEN_VAR = "when"	
+	public static final String WHEN_SYMBOL = "when"	
 	
 	/**
 	 * get Synchronous trait declaration
@@ -46,6 +46,24 @@ class _OntologicalServices extends BasicServices
 	}
 	
 	/**
+	 * Get InitSymbol symbol declaration
+	 */
+	 def getInitSymbol() {
+	 	return getSymbolDeclaration(INIT_SYMBOL)
+	 }
+	/**
+	 * Get PreSymbol symbol declaration
+	 */
+	 def getPreSymbol() {
+	 	return getSymbolDeclaration(PRE_SYMBOL)
+	 }
+	/**
+	 * Get CurrentSymbol symbol declaration
+	 */
+	 def getCurrentSymbol() {
+	 	return getSymbolDeclaration(CURRENT_SYMBOL)
+	 }
+	/**
 	 * get Let annotation declaration
 	 */
 	def getLetAnnotation() {
@@ -67,6 +85,12 @@ class _OntologicalServices extends BasicServices
 		ImlUtil.getSymbolsWithProperty(type, getLetAnnotation, recursive);
 	}		
 	
+	/**
+	 * Get WhenSymbol symbol declaration
+	 */
+	 def getWhenSymbol() {
+	 	return getSymbolDeclaration(WHEN_SYMBOL)
+	 }
 	
 	override getPackageName() {
 		PACKAGE_NAME

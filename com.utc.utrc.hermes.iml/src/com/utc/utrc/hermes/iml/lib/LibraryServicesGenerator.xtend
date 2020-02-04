@@ -13,6 +13,8 @@ import com.utc.utrc.hermes.iml.ImlParseHelper
 import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
 import java.util.Set
 import java.util.HashSet
+import com.utc.utrc.hermes.iml.iml.Model
+import com.utc.utrc.hermes.iml.iml.Assertion
 
 class LibraryServicesGenerator {
 
@@ -24,13 +26,13 @@ class LibraryServicesGenerator {
 	ImlStdLib stdLib
 	
 	/**
-	 * Standalone run to generate new library services. It parse a dummy iml file to load IML libraries, then 
-	 * iterate over all iml standard libraries and generate services classes
+	 * Standalone run to generate new library services. It loads IML standard libraries, then 
+	 * iterate over all of them to generate services classes
 	 */
 	def static void main(String[] args) {
 		val injector = ImlStandaloneSetup.injector;
 		val parseHelper = injector.getInstance(ImlParseHelper);
-		parseHelper.parse("package p;")
+		parseHelper.loadStdLibs
 		val libraryGenerator = injector.getInstance(LibraryServicesGenerator)
 		libraryGenerator.generateServices
 	}
@@ -39,6 +41,7 @@ class LibraryServicesGenerator {
 		if (stdLib === null) return;
 		
 		for (libName : stdLib.stdLibNames) {
+			println("Generating " + libName)
 			// Create the actual services file
 			var classFile = getFile(libName, false)
 			var serviceClass = generateSevices(libName, stdLib.getModelSymbols(libName));
@@ -109,8 +112,8 @@ class LibraryServicesGenerator {
 		public static final String PACKAGE_NAME = "«libName»"
 		«FOR symbol: symbols»public static final String «getSymbolName(symbol, true)» = "«symbol.name»"	
 			«IF symbol instanceof NamedType»
-				«FOR element : symbol.symbols»
-		public static final String «getSymbolName(symbol, true)»_«getSymbolName(element, true)» = "«element.name»"
+				«FOR element : symbol.symbols.filter[! (it instanceof Assertion)]»
+		public static final String «getSymbolName(element, true)» = "«element.name»"
 				«ENDFOR»
 			«ENDIF»
 		«ENDFOR»
@@ -191,19 +194,23 @@ class LibraryServicesGenerator {
 		def get«symbolName»Symbols(NamedType type, boolean recursive) {
 			ImlUtil.getSymbolsWithType(type, get«symbolName»Type, recursive)
 		}
+		«ELSEIF symbol instanceof SymbolDeclaration && !(symbol instanceof Assertion)»
+		/**
+		 * Get «symbolName» symbol declaration
+		 */
+		 def get«symbolName»() {
+		 	return getSymbolDeclaration(«symbolUpperCase»)
+		 }
 		«ENDIF»
 «««		Create get methods for symbols inside the type
 		«IF symbol instanceof NamedType»
-			«FOR element : symbol.symbols»
+			«FOR element : symbol.symbols.filter[! (it instanceof Assertion)]»
 				/**
 				 * Get the «element.name» symbol declaration inside the given «symbol.name» type. If recursive is true
 				 * then it will search for symbols inside type's parents 
 				 */
-				def get«symbolName»«element.name.toFirstUpper»(NamedType type, boolean recursive) {
-					if (is«symbolName»(type)) {
-						return ImlUtil.findSymbol(type, «getSymbolName(symbol, true)»_«getSymbolName(element, true)», recursive) as SymbolDeclaration;
-					}
-					return null;
+				def get«getSymbolName(element, false)»() {
+					return ImlUtil.findSymbol(getType(«symbolUpperCase»), «getSymbolName(element, true)», true) as SymbolDeclaration;
 				}
 			«ENDFOR»
 		«ENDIF»
@@ -262,15 +269,25 @@ class LibraryServicesGenerator {
 		return targetFile;
 	}
 	
-	def getSymbolName(Symbol symbol, boolean upperCase) {
-		var suffix = ""
+	def String getSymbolName(Symbol symbol, boolean upperCase) {
+		val parts = <String>newArrayList()
 		if (symbol instanceof SymbolDeclaration) {
-			suffix = "Var"
-		}
-		if (upperCase) {
-			toUpperCase(symbol.name + '''«IF !suffix.empty»_«suffix»«ENDIF»''')			
+			if (symbol.eContainer instanceof NamedType) {
+				parts.add(getSymbolName(symbol.eContainer as NamedType, upperCase))
+				parts.add(symbol.name)
+				parts.add("Var")
+			} else {
+				parts.add(symbol.name)
+				parts.add("Symbol")
+			}
 		} else {
-			return symbol.name + suffix
+			parts.add(symbol.name)
+		}
+		
+		if (upperCase) {
+			parts.join("_").toUpperCase
+		} else {
+			parts.map[it.toFirstUpper].join
 		}
 	}
 	

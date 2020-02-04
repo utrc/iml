@@ -51,41 +51,29 @@ class _UtilsServices extends BasicServices
 	 * Get the root symbol declaration inside the given Tree type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getTreeRoot(NamedType type, boolean recursive) {
-		if (isTree(type)) {
-			return ImlUtil.findSymbol(type, TREE_ROOT_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getTreeRootVar() {
+		return ImlUtil.findSymbol(getType(TREE), TREE_ROOT_VAR, true) as SymbolDeclaration;
 	}
 	/**
 	 * Get the left symbol declaration inside the given Tree type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getTreeLeft(NamedType type, boolean recursive) {
-		if (isTree(type)) {
-			return ImlUtil.findSymbol(type, TREE_LEFT_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getTreeLeftVar() {
+		return ImlUtil.findSymbol(getType(TREE), TREE_LEFT_VAR, true) as SymbolDeclaration;
 	}
 	/**
 	 * Get the right symbol declaration inside the given Tree type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getTreeRight(NamedType type, boolean recursive) {
-		if (isTree(type)) {
-			return ImlUtil.findSymbol(type, TREE_RIGHT_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getTreeRightVar() {
+		return ImlUtil.findSymbol(getType(TREE), TREE_RIGHT_VAR, true) as SymbolDeclaration;
 	}
 	/**
 	 * Get the size symbol declaration inside the given Tree type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getTreeSize(NamedType type, boolean recursive) {
-		if (isTree(type)) {
-			return ImlUtil.findSymbol(type, TREE_SIZE_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getTreeSizeVar() {
+		return ImlUtil.findSymbol(getType(TREE), TREE_SIZE_VAR, true) as SymbolDeclaration;
 	}
 	/**
 	 * get List type declaration
@@ -112,31 +100,22 @@ class _UtilsServices extends BasicServices
 	 * Get the head symbol declaration inside the given List type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getListHead(NamedType type, boolean recursive) {
-		if (isList(type)) {
-			return ImlUtil.findSymbol(type, LIST_HEAD_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getListHeadVar() {
+		return ImlUtil.findSymbol(getType(LIST), LIST_HEAD_VAR, true) as SymbolDeclaration;
 	}
 	/**
 	 * Get the tail symbol declaration inside the given List type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getListTail(NamedType type, boolean recursive) {
-		if (isList(type)) {
-			return ImlUtil.findSymbol(type, LIST_TAIL_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getListTailVar() {
+		return ImlUtil.findSymbol(getType(LIST), LIST_TAIL_VAR, true) as SymbolDeclaration;
 	}
 	/**
 	 * Get the len symbol declaration inside the given List type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getListLen(NamedType type, boolean recursive) {
-		if (isList(type)) {
-			return ImlUtil.findSymbol(type, LIST_LEN_VAR, recursive) as SymbolDeclaration;
-		}
-		return null;
+	def getListLenVar() {
+		return ImlUtil.findSymbol(getType(LIST), LIST_LEN_VAR, true) as SymbolDeclaration;
 	}
 	
 	override getPackageName() {
