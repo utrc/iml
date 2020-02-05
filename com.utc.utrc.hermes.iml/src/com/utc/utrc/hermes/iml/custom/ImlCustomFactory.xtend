@@ -88,11 +88,17 @@ public class ImlCustomFactory extends ImlFactoryImpl {
 			it.name = name
 		]
 	}
+
+	//TODO: Delete this function to refactor the call in other files
+ 	def SimpleTypeReference createSimpleTypeReference(NamedType type) {
+		createSimpleTypeReference(type, true)
+	}
 	
-	def SimpleTypeReference createSimpleTypeReference(NamedType type) {
+	def SimpleTypeReference createSimpleTypeReference(NamedType type, Boolean inheritBinding) {
 		createSimpleTypeReference => [
 			it.type = type
-			it.typeBinding.addAll(type.typeParameter.map[createSimpleTypeReference(it)])
+			if (inheritBinding)
+				it.typeBinding.addAll(type.typeParameter.map[createSimpleTypeReference(it, inheritBinding)])
 		]
 	}
 	
