@@ -3,7 +3,7 @@
  * See License.txt in the project root directory for license information. */
 package com.utc.utrc.hermes.iml.util;
 import java.util.List;
-import org.eclipse.emf.ecore.util.EcoreUtil;
+import static org.eclipse.emf.ecore.util.EcoreUtil.copy;
 
 import com.utc.utrc.hermes.iml.custom.ImlCustomFactory;
 import com.utc.utrc.hermes.iml.iml.ArrayAccess;
@@ -18,8 +18,8 @@ import com.utc.utrc.hermes.iml.iml.TermMemberSelection;
 import com.utc.utrc.hermes.iml.iml.TruthValue;
 import com.utc.utrc.hermes.iml.iml.TupleConstructor;
 
+
 public class FormulaHelper {
-	
 	public final static String IMPLIES = "=>";
 	public final static FolFormula TRUE = ImlCustomFactory.INST.createTruthValue(true);
 	public final static FolFormula FALSE = ImlCustomFactory.INST.createTruthValue(false);
@@ -29,15 +29,15 @@ public class FormulaHelper {
 	}
 
 	public static FolFormula AND(FolFormula left, FolFormula right) {
-		return ImlCustomFactory.INST.createAndExpression(left, right);
+		return ImlCustomFactory.INST.createAndExpression(copy(left), copy(right));
 	}
 	
 	public static FolFormula OR(FolFormula left, FolFormula right) {
-		return ImlCustomFactory.INST.createAndExpression(left, right);
+		return ImlCustomFactory.INST.createOrExpression(copy(left), copy(right));
 	}
 
 	public static FolFormula IMPLIES(FolFormula assumption, FolFormula guarantee) {
-		return ImlCustomFactory.INST.createFolFormula(assumption, IMPLIES, guarantee);
+		return ImlCustomFactory.INST.createFolFormula(copy(assumption), IMPLIES, copy(guarantee));
 	}
 
 	public static FolFormula AND_ALL(List<FolFormula> formulas) {
@@ -48,7 +48,7 @@ public class FormulaHelper {
 			}
 			return conjunction;
 		}
-		return EcoreUtil.copy(TRUE);
+		return copy(TRUE);
 	}
 	
 	public static FolFormula orAll(List<FolFormula> formulas) {

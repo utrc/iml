@@ -57,14 +57,14 @@ type InOutEventDataPort<EventType,DataType> exhibits(InOut, EventCarrier<EventTy
 
 
 trait Component { 
-	subComponents<T exhibits(Component)> : Int -> T ; 
-	ports<T exhibits(Port)> : Int -> T ;
-	isRoot : Bool ;
+	//subComponents<T exhibits(Component)> : Int -> T ; 
+	//ports<T exhibits(Port)> : Int -> T ;
+	//isRoot : Bool ;
 };
 
 
 trait System refines(Component) {
-	assert {isRoot = true} ;
+	//assert {isRoot = true} ;
 }
 
 
