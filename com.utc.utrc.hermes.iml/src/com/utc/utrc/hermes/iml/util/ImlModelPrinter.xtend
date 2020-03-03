@@ -279,7 +279,7 @@ class ImlModelPrinter extends ImlSwitch<String> {
 
 	
 	override String caseAssertion(Assertion object) {
-		'''assert «doSwitch(object.propertylist)» "«object.comment»" «doSwitch(object.definition)»'''
+		'''assert «doSwitch(object.propertylist)»«IF object.comment !== null»"«object.comment»" «ENDIF»«IF object.name !== null»«object.name» «ENDIF»«doSwitch(object.definition)»'''
 	}
 
 	
@@ -434,7 +434,7 @@ class ImlModelPrinter extends ImlSwitch<String> {
 
 	
 	override String caseSequenceTerm(SequenceTerm object) {
-		'''{ 	«FOR va:object.defs»«va.doSwitch»;«ENDFOR»
+		'''{ 	«FOR va:object.defs»var «va.doSwitch»;«ENDFOR»
 	«object.^return.doSwitch»;
 }'''
 	}

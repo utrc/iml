@@ -38,6 +38,7 @@ import static extension org.eclipse.xtext.EcoreUtil2.*
 import com.utc.utrc.hermes.iml.iml.MatchStatement
 import com.utc.utrc.hermes.iml.iml.Datatype
 import com.google.common.collect.Lists
+import com.utc.utrc.hermes.iml.iml.TailedExpression
 
 /**
  * This class contains custom scoping description.
@@ -128,7 +129,7 @@ class ImlScopeProvider extends AbstractDeclarativeScopeProvider {
 		}
 		return Scopes::scopeFor(features, scope)
 	}
-
+	
 	def scope_SymbolReferenceTerm_symbol(TermMemberSelection context, EReference r) {
 		var parentScope = IScope::NULLSCOPE
 		val receiver = context.receiver
