@@ -4,7 +4,25 @@
   <packaging>eclipse-plugin</packaging>
   
   <build>
-		<plugins>
+		<plugins> 
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+			    <artifactId>tycho-compiler-plugin</artifactId>
+			    <executions>
+			    	<execution>
+			    		<id>compile-custom-emfgen</id>
+			    		<goals><goal>compile</goal></goals>
+			    		<phase>generate-sources</phase>
+					    <configuration>
+						    <compilerArgument>-err:-forbidden</compilerArgument>
+						 	<useProjectSettings>false</useProjectSettings>
+					        <includes>
+					          <include>com/utc/utrc/hermes/iml/custom/EmfGeneratorWithCustomToString.java</include>
+					        </includes>
+					    </configuration>
+			    	</execution>
+			    </executions>
+		  </plugin> 
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>exec-maven-plugin</artifactId>
@@ -16,19 +34,19 @@
 						<goals>
 							<goal>java</goal>
 						</goals>
+						<configuration>
+							<mainClass>org.eclipse.emf.mwe2.launch.runtime.Mwe2Launcher</mainClass>
+							<arguments>
+								<argument>/${project.basedir}/src/com/utc/utrc/hermes/iml/GenerateIml.mwe2</argument>
+								<argument>-p</argument>
+								<argument>rootPath=/${project.basedir}/..</argument>
+							</arguments>
+							<classpathScope>compile</classpathScope>
+							<includePluginDependencies>true</includePluginDependencies>
+							<cleanupDaemonThreads>false</cleanupDaemonThreads><!-- see https://bugs.eclipse.org/bugs/show_bug.cgi?id=475098#c3 -->
+						</configuration>
 					</execution>
 				</executions>
-				<configuration>
-					<mainClass>org.eclipse.emf.mwe2.launch.runtime.Mwe2Launcher</mainClass>
-					<arguments>
-						<argument>/${project.basedir}/src/com/utc/utrc/hermes/iml/GenerateIml.mwe2</argument>
-						<argument>-p</argument>
-						<argument>rootPath=/${project.basedir}/..</argument>
-					</arguments>
-					<classpathScope>compile</classpathScope>
-					<includePluginDependencies>true</includePluginDependencies>
-					<cleanupDaemonThreads>false</cleanupDaemonThreads><!-- see https://bugs.eclipse.org/bugs/show_bug.cgi?id=475098#c3 -->
-				</configuration>
 				<dependencies>
 					<dependency>
 						<groupId>org.eclipse.emf</groupId>
