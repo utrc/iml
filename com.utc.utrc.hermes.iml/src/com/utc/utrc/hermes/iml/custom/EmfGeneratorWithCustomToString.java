@@ -3,20 +3,30 @@ package com.utc.utrc.hermes.iml.custom;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import org.eclipse.emf.codegen.ecore.genmodel.GenModel;
+import org.eclipse.xtend.lib.annotations.AccessorType;
+import org.eclipse.xtend.lib.annotations.Accessors;
 import org.eclipse.xtext.xtext.generator.ecore.EMFGeneratorFragment2;
 
 public class EmfGeneratorWithCustomToString extends EMFGeneratorFragment2 {
 	
 	static final String IMPL_DIR = "com/utc/utrc/hermes/iml/iml/impl";
 	
+	@Accessors(AccessorType.PUBLIC_SETTER)
+	public String rootDirectory;
+	
 	@Override
 	protected void doGenerate(GenModel genModel) {
 		super.doGenerate(genModel);
 		try {
-			Files.walk(Paths.get(".." + genModel.getModelDirectory(), IMPL_DIR))
+			Path srcGenImplDir = Paths.get(".." + genModel.getModelDirectory(), IMPL_DIR);
+			if (!Files.exists(srcGenImplDir)) {
+				srcGenImplDir = Paths.get("../.." + genModel.getModelDirectory(), IMPL_DIR);
+			}
+			Files.walk(srcGenImplDir)
 				.filter(it -> Files.isRegularFile(it))
 				.forEach(it -> replaceToStringMethod(it.toFile()));
 		} catch (IOException e) {
