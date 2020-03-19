@@ -259,7 +259,7 @@ class ImlTypeProvider {
 		if (index.left !== null) {
 			val indexAtomic = index.left
 			if (indexAtomic instanceof NumberLiteral) { // Specific index
-				val indexValue = indexAtomic.value * (if(indexAtomic.neg) -1 else 1)
+				val indexValue = indexAtomic.value.intValue
 				if (indexValue >= 0 && indexValue < type.types.size) {
 					return type.types.get(indexValue)
 				}

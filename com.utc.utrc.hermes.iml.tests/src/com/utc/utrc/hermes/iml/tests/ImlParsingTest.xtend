@@ -19,6 +19,10 @@ import org.junit.runner.RunWith
 import com.utc.utrc.hermes.iml.iml.NamedType
 import com.utc.utrc.hermes.iml.ImlParseHelper
 import com.google.common.collect.Maps
+import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
+import com.utc.utrc.hermes.iml.iml.NumberLiteral
+import java.math.BigInteger
+import static org.junit.Assert.assertEquals
 
 @RunWith(XtextRunner)
 @InjectWith(ImlInjectorProvider)
@@ -288,6 +292,47 @@ class ImlParsingTest {
 			
 			l : T := T.cons(T.nil, 10);
 		'''.parse
+		
+		model.assertNoErrors
+	}
+	
+	@Test
+	def void testParsingBigInteger() {
+		val model = '''
+			package p;
+			x : Int := 1234567890123456789;
+		'''.parse
+		
+		model.assertNoErrors
+		val x = model.findSymbol('x') as SymbolDeclaration
+		assertEquals((x.definition.left as NumberLiteral).value, new BigInteger("1234567890123456789"))
+	}
+	
+	@Test
+	def void testParsingNegativeNumbers() {
+		val model = '''
+			package p;
+			x1 : Int := - 12345;
+			X2: Int := 5-3;
+			x3: Int := 5- 3;
+			x4 : Int := -1234567890123456789;
+			y1 : Real := - 123.456;
+			y2 : Real := 4.5-3.5;
+			y3 : Real := 4.5- 3.5;
+			y4 : Real := 1234567890123456789.1234567890123456789;
+		'''.parse
+		
+		model.assertNoErrors
+		val x1 = model.findSymbol("x1") as SymbolDeclaration
+		assertEquals((x1.definition.left as NumberLiteral).value.intValue, -12345)
+	}
+	
+	@Test
+	def void testParsingNegative() {
+		val model = '''
+			package p;
+			assert { - 12345 > 0};
+		'''.parse(false)
 		
 		model.assertNoErrors
 	}

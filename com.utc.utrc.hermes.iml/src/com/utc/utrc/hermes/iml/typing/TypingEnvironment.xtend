@@ -18,6 +18,7 @@ import com.utc.utrc.hermes.iml.custom.ImlCustomFactory
 import com.utc.utrc.hermes.iml.util.ImlUtil
 import com.utc.utrc.hermes.iml.iml.Alias
 import com.google.common.collect.Maps
+import java.math.BigInteger
 
 class TypingEnvironment {
 	Map<NamedType, ImlType> bindingMap
@@ -111,7 +112,7 @@ class TypingEnvironment {
 				for (d : type.dimensions) {
 					// TODO : Should we TypingServices.clone the term expressions?
 					retval.dimensions.add(ImlFactory::eINSTANCE.createOptionalTermExpr => [
-						term = ImlFactory::eINSTANCE.createNumberLiteral => [value = 0];
+						term = ImlFactory::eINSTANCE.createNumberLiteral => [value = BigInteger.valueOf(0)];
 					])
 				}
 				return retval

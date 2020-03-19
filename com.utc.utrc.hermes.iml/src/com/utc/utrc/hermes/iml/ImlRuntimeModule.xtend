@@ -15,6 +15,7 @@ import com.utc.utrc.hermes.iml.custom.ImlCustomLinker
 import org.eclipse.xtext.linking.ILinker
 import org.eclipse.xtext.resource.IDefaultResourceDescriptionStrategy
 import com.utc.utrc.hermes.iml.scoping.ImlResourceDescriptionsStrategy
+import com.utc.utrc.hermes.iml.custom.ImlValueConverters
 
 /**
  * Use this class to register components to be used at runtime / without the Equinox extension registry.
@@ -33,6 +34,10 @@ class ImlRuntimeModule extends AbstractImlRuntimeModule {
 	
 	override Class<? extends ILinker> bindILinker() {
 		ImlCustomLinker
+	}
+	
+	override bindIValueConverterService() {
+		ImlValueConverters
 	}
 	
 	def Class<? extends IDefaultResourceDescriptionStrategy> bindIDefaultResourceDescriptionStrategy() {
