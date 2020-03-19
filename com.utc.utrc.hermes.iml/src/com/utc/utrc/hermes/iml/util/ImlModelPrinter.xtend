@@ -369,12 +369,12 @@ class ImlModelPrinter extends ImlSwitch<String> {
 
 	
 	override String caseNumberLiteral(NumberLiteral object) {
-		'''«IF object.neg»-«ENDIF»«object.value»'''
+		'''«object.value»'''
 	}
 
 	
 	override String caseFloatNumberLiteral(FloatNumberLiteral object) {
-		'''«IF object.neg»-«ENDIF»«object.value»'''
+		'''«object.value»'''
 	}
 
 	

@@ -17,6 +17,8 @@ import com.utc.utrc.hermes.iml.iml.ImlType
 import com.utc.utrc.hermes.iml.iml.ExpressionTail
 import com.utc.utrc.hermes.iml.iml.OptionalTermExpr
 import com.utc.utrc.hermes.iml.iml.TermMemberSelection
+import java.math.BigInteger
+import java.math.BigDecimal
 
 public class ImlCustomFactory extends ImlFactoryImpl {
 	
@@ -225,15 +227,49 @@ public class ImlCustomFactory extends ImlFactoryImpl {
 	
 	def createNumberLiteral(boolean neg, int value) {
 		createNumberLiteral => [
-			it.neg = neg
+			it.value = BigInteger.valueOf(value * (if (neg) -1 else 1))
+		]
+	}
+	
+	def createNumberLiteral(int value) {
+		createNumberLiteral => [
+			it.value = BigInteger.valueOf(value)
+		]
+	}
+	
+	def createNumberLiteral(BigInteger value) {
+		createNumberLiteral => [
 			it.value = value
+		]
+	}
+	
+	def createNumberLiteral(String value) {
+		createNumberLiteral => [
+			it.value = new BigInteger(value)
 		]
 	}
 	
 	def createFloatNumberLiteral(boolean neg, float value) {
 		createFloatNumberLiteral => [
-			it.neg = neg
+			it.value = BigDecimal.valueOf(value * (if (neg) -1 else 1))
+		]
+	}
+	
+	def createFloatNumberLiteral(float value) {
+		createFloatNumberLiteral => [
+			it.value = BigDecimal.valueOf(value)
+		]
+	}
+	
+	def createFloatNumberLiteral(BigDecimal value) {
+		createFloatNumberLiteral => [
 			it.value = value
+		]
+	}
+	
+	def createFloatNumberLiteral(String value) {
+		createFloatNumberLiteral => [
+			it.value = new BigDecimal(value)
 		]
 	}
 	

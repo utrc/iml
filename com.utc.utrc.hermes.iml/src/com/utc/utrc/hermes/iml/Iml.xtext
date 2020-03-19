@@ -216,8 +216,8 @@ ExpressionTail:
  * expression, the keyword this, or a parenthesized term.
  */
 TerminalTerm returns TermExpression:
-	{NumberLiteral} neg?=('-')? value=INT |
-	{FloatNumberLiteral} neg?=('-')? value = FLOAT |
+	{NumberLiteral} value=BIGINT |
+	{FloatNumberLiteral} value = FLOAT |
 	{StringLiteral} value = STRING |
 	{CharLiteral} value = CHAR |
 	SymbolReferenceTerm |
@@ -298,8 +298,9 @@ MatchStatement:
 			':' return=FolFormula ';'
 ;
 
-terminal EXT_INT: INT ('e'|'E')('-'|'+') INT;
-terminal FLOAT returns ecore::EFloat : ('0'..'9')+ '.' ('0'..'9')+;
+BIGINT returns ecore::EBigInteger: '-'? INT;
+FLOAT returns ecore::EBigDecimal : '-'? INT '.' INT;
+
 terminal CHAR returns ecore::EString:
 			"'"."'"
 		;

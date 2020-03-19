@@ -26,6 +26,7 @@ import com.utc.utrc.hermes.iml.iml.ImlFactory
 import com.utc.utrc.hermes.iml.iml.Inclusion
 import org.eclipse.xtext.EcoreUtil2
 import com.utc.utrc.hermes.iml.iml.Refinement
+import java.math.BigInteger
 
 class TypingServices {
 	
@@ -290,7 +291,7 @@ class TypingServices {
 			for (i : 0 ..< (type.dimensions.size() - dim)) {
 				// TODO : Should we clone the term expressions?
 				ret.dimensions.add(ImlFactory::eINSTANCE.createOptionalTermExpr => [
-					term = ImlFactory::eINSTANCE.createNumberLiteral => [value = 0];
+					term = ImlFactory::eINSTANCE.createNumberLiteral => [value = BigInteger.valueOf(0)];
 				])
 			}
 			return ret

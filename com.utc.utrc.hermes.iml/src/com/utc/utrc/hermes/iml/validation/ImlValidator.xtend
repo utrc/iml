@@ -345,9 +345,9 @@ class ImlValidator extends AbstractImlValidator {
 			} else if (tail instanceof ArrayAccess) { 
 				val index = tail.index.left
 				if (index instanceof NumberLiteral) {
-					if (index.value >= type.types.size || index.neg) {
+					if (index.value.intValue >= type.types.size || index.value.signum == -1) {
 						error('''Tuple access index must be within the declared tuple elements size of '«typeAsString»
-						'. Expected <«type.types.size» but got «if (index.neg) '-'»«index.value» ''',
+						'. Expected <«type.types.size» but got «index.value» ''',
 							ImlPackage.eINSTANCE.tailedExpression_Tail,
 							INVALID_INDEX_ACCESS
 						)
