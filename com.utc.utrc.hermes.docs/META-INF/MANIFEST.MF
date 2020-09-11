@@ -1,0 +1,8 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: HERMES Docs
+Bundle-SymbolicName: com.utc.utrc.hermes.docs;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Bundle-Vendor: UTC
+Automatic-Module-Name: com.utc.utrc.hermes.docs
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
