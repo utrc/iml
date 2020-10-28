@@ -38,4 +38,18 @@
          version="0.0.0"
          unpack="false"/>
 
+   <plugin
+         id="com.utc.utrc.hermes.docs"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="com.utc.utrc.hermes.iml.lib"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
 </feature>
