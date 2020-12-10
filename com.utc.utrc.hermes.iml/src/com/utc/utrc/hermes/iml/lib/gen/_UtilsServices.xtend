@@ -24,7 +24,10 @@ class _UtilsServices extends BasicServices
 	public static final String LIST = "List"	
 	public static final String LIST_HEAD_VAR = "head"
 	public static final String LIST_TAIL_VAR = "tail"
+	public static final String LIST_LAST_VAR = "last"
 	public static final String LIST_LEN_VAR = "len"
+	public static final String LIST_CONTAINS_VAR = "contains"
+	public static final String LIST_NEXT_VAR = "next"
 	
 	/**
 	 * get Tree type declaration
@@ -111,11 +114,32 @@ class _UtilsServices extends BasicServices
 		return ImlUtil.findSymbol(getType(LIST), LIST_TAIL_VAR, true) as SymbolDeclaration;
 	}
 	/**
+	 * Get the last symbol declaration inside the given List type. If recursive is true
+	 * then it will search for symbols inside type's parents 
+	 */
+	def getListLastVar() {
+		return ImlUtil.findSymbol(getType(LIST), LIST_LAST_VAR, true) as SymbolDeclaration;
+	}
+	/**
 	 * Get the len symbol declaration inside the given List type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
 	def getListLenVar() {
 		return ImlUtil.findSymbol(getType(LIST), LIST_LEN_VAR, true) as SymbolDeclaration;
+	}
+	/**
+	 * Get the contains symbol declaration inside the given List type. If recursive is true
+	 * then it will search for symbols inside type's parents 
+	 */
+	def getListContainsVar() {
+		return ImlUtil.findSymbol(getType(LIST), LIST_CONTAINS_VAR, true) as SymbolDeclaration;
+	}
+	/**
+	 * Get the next symbol declaration inside the given List type. If recursive is true
+	 * then it will search for symbols inside type's parents 
+	 */
+	def getListNextVar() {
+		return ImlUtil.findSymbol(getType(LIST), LIST_NEXT_VAR, true) as SymbolDeclaration;
 	}
 	
 	override getPackageName() {

@@ -28,5 +28,18 @@ str2re : String->Real ;
 emptyString : String := some(x:String) {x.length = 0}; 
 
 
+datatype IntRange (cons(Int,Int))
+ {
+   lb : Int := match (self) {
+             cons(l,u): l ;
+           };
+   ub : Int := match (self) {
+             cons(l,u): u ;
+           };
+   
+   value : Int ;
+   assert { value >= lb && value <= ub} ;
+ }
+
 
 

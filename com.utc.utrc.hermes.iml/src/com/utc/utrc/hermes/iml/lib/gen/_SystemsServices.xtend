@@ -31,9 +31,6 @@ class _SystemsServices extends BasicServices
 	public static final String CONNECTABLE = "Connectable"	
 	public static final String INEVENTDATAPORT = "InEventDataPort"	
 	public static final String COMPONENT = "Component"	
-	public static final String COMPONENT_SUBCOMPONENTS_VAR = "subComponents"
-	public static final String COMPONENT_PORTS_VAR = "ports"
-	public static final String COMPONENT_ISROOT_VAR = "isRoot"
 	public static final String CONNECT_SYMBOL = "connect"	
 	public static final String INPORT = "InPort"	
 	public static final String INEVENTPORT = "InEventPort"	
@@ -302,27 +299,6 @@ class _SystemsServices extends BasicServices
 		ImlUtil.getSymbolsWithTrait(type, getComponentTrait, recursive);
 	}
 	
-	/**
-	 * Get the subComponents symbol declaration inside the given Component type. If recursive is true
-	 * then it will search for symbols inside type's parents 
-	 */
-	def getComponentSubComponentsVar() {
-		return ImlUtil.findSymbol(getType(COMPONENT), COMPONENT_SUBCOMPONENTS_VAR, true) as SymbolDeclaration;
-	}
-	/**
-	 * Get the ports symbol declaration inside the given Component type. If recursive is true
-	 * then it will search for symbols inside type's parents 
-	 */
-	def getComponentPortsVar() {
-		return ImlUtil.findSymbol(getType(COMPONENT), COMPONENT_PORTS_VAR, true) as SymbolDeclaration;
-	}
-	/**
-	 * Get the isRoot symbol declaration inside the given Component type. If recursive is true
-	 * then it will search for symbols inside type's parents 
-	 */
-	def getComponentIsRootVar() {
-		return ImlUtil.findSymbol(getType(COMPONENT), COMPONENT_ISROOT_VAR, true) as SymbolDeclaration;
-	}
 	/**
 	 * Get ConnectSymbol symbol declaration
 	 */

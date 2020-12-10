@@ -23,6 +23,10 @@ class _LangServices extends BasicServices
 	public static final String BOOL = "Bool"	
 	public static final String CHAR = "Char"	
 	public static final String REAL = "Real"	
+	public static final String INTRANGE = "IntRange"	
+	public static final String INTRANGE_LB_VAR = "lb"
+	public static final String INTRANGE_UB_VAR = "ub"
+	public static final String INTRANGE_VALUE_VAR = "value"
 	public static final String DOC = "Doc"	
 	public static final String DOC_TEXT_VAR = "text"
 	public static final String EMPTYSTRING_SYMBOL = "emptyString"	
@@ -125,6 +129,48 @@ class _LangServices extends BasicServices
 	 */
 	def getRealSymbols(NamedType type, boolean recursive) {
 		ImlUtil.getSymbolsWithType(type, getRealType, recursive)
+	}
+	/**
+	 * get IntRange type declaration
+	 */
+	def getIntRangeType() {
+		return getType(INTRANGE)
+	}
+	
+	/**
+	 * check whether the given type is IntRange type
+	 */
+	def isIntRange(NamedType type) {
+		return getIntRangeType == type
+	}
+	
+	/**
+	 * Get all symbols inside the given type that are IntRange type. If recursive is true
+	 * then it will search for symbols inside type's parents
+	 */
+	def getIntRangeSymbols(NamedType type, boolean recursive) {
+		ImlUtil.getSymbolsWithType(type, getIntRangeType, recursive)
+	}
+	/**
+	 * Get the lb symbol declaration inside the given IntRange type. If recursive is true
+	 * then it will search for symbols inside type's parents 
+	 */
+	def getIntRangeLbVar() {
+		return ImlUtil.findSymbol(getType(INTRANGE), INTRANGE_LB_VAR, true) as SymbolDeclaration;
+	}
+	/**
+	 * Get the ub symbol declaration inside the given IntRange type. If recursive is true
+	 * then it will search for symbols inside type's parents 
+	 */
+	def getIntRangeUbVar() {
+		return ImlUtil.findSymbol(getType(INTRANGE), INTRANGE_UB_VAR, true) as SymbolDeclaration;
+	}
+	/**
+	 * Get the value symbol declaration inside the given IntRange type. If recursive is true
+	 * then it will search for symbols inside type's parents 
+	 */
+	def getIntRangeValueVar() {
+		return ImlUtil.findSymbol(getType(INTRANGE), INTRANGE_VALUE_VAR, true) as SymbolDeclaration;
 	}
 	/**
 	 * get Doc annotation declaration

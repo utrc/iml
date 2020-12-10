@@ -1,19 +1,67 @@
 package iml.sms ;
 import iml.lang.* ;
+import iml.queries.*;
+import iml.ltl.*;
 
+/*A special type to be use as argument 
+ * to a state machine in case the machine 
+ * is state-less.
+ */
+type EmptyState;
 
-type StateLess;
+/*A state machine model includes  
+ * - A predicate init that defines the initial set of states
+ * - A predicate transition that defines the transition function 
+ *   (as a relation from the current state S and the next state next(S))
+ */
 
 trait StateMachine<S> {
-	state : S ;
-	next : S ->S ;
 	/*A predicate that defines the initial state */
 	init : S->Bool ;
-	/*A predicate that defines invariants */
-	invariant : S->Bool ;
 	/*A predicate that defines the transition function */
 	transition : (S,S)->Bool ;
-	
 }
+
+trait ValidTransition<S> refines(StateMachine<S>) {
+	time : Int ;
+	state : S ;
+	next : S ;
+	assert { time = 0 => init(state)} ;
+	assert { transition(state,next)};
+}
+
+
+type Trace<S> is Int->S;
+
+
+type Execution<S, T exhibits(ValidTransition<S>)> is Int->T ;
+assert "Executions are synchronous" { 
+	forall<S,T exhibits(ValidTransition<S>)>(x:Execution<S,T>, i:Int){ 
+		(x(i+1).time = x(i).time + 1) && (x(i+1).state = x(i).next) ;
+	}
+} ;
+
+stateTrace<S, T exhibits(ValidTransition<S>)> : Execution<S,T> -> Trace<S> := 
+fun ( x : Execution<S,T> ) {
+	fun(i : Int){
+		x(i).state ;
+	}
+} ;
+
+
+execSat<S, T exhibits(ValidTransition<S>)>: Execution<S,T> -> (LtlFormula<S> -> Bool) :=
+	 fun (t: Execution<S,T>) {
+	 	fun (x: LtlFormula<S>) {
+	 		x(stateTrace<S,T>(t))(0)
+	 	}
+	 };
+
+smSat<S , T exhibits(ValidTransition<S>)>: LtlFormula<S> -> Bool :=
+		fun (x: LtlFormula<S>) {
+			forall (t:Execution<S,T>) {
+				execSat<S,T>(t)(x)
+			}
+		}
+	;
 
 

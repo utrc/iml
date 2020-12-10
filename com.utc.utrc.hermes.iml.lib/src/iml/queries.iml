@@ -1,8 +1,80 @@
 package iml.queries ;
 
-trait Property {
-	holds : Bool ;
+
+//Queries whether a property holds for a certain type
+type Probability {
+	value : Real ;
+	assert {value >= 0.0 && value <= 1.0};
 }
 
-query<T exhibits(Property)> : Bool := forall(x:T){x.holds};
+type Property<T> is T -> Bool ;
 
+type PrbabilisticProperty<T> is T -> Probability ;
+
+probOf<T> : PrbabilisticProperty<T> -> (T -> Real) := 
+	fun(p:PrbabilisticProperty<T>){
+		fun(x:T){
+			p(x).value
+		}
+	} ;
+
+type RelationalProperty<T1,T2> is (T1,T2) -> Bool ;
+
+type RelationalProbabilisticProperty<T1,T2> is (T1,T2) -> Probability ;
+
+/*Deterministic queries */
+queryF<T> : Property<T> -> Bool := 
+	fun(x: Property<T>){ 
+		forall(y:T){x(y)}
+	};
+
+queryE<T> : Property<T> -> Bool := 
+	fun(x: Property<T>){ 
+		exists(y:T){x(y)}
+	};
+
+/*Deterministic relational queries */
+	
+RqueryFF<T1,T2> : RelationalProperty<T1,T2> -> Bool := 
+	fun(x: RelationalProperty<T1,T2>){ 
+		forall(y1:T1,y2:T2){x(y1,y2)}
+	};
+
+RqueryEE<T1,T2> : RelationalProperty<T1,T2> -> Bool := 
+	fun(x: RelationalProperty<T1,T2>){ 
+		exists(y1:T1,y2:T2){x(y1,y2)}
+	};
+
+RqueryFE<T1,T2> : RelationalProperty<T1,T2> -> Bool := 
+	fun(x: RelationalProperty<T1,T2>){ 
+		forall(y1:T1){ exists(y2:T2){x(y1,y2)}}
+	};
+
+RqueryEF<T1,T2> : RelationalProperty<T1,T2> -> Bool := 
+	fun(x: RelationalProperty<T1,T2>){ 
+		exists(y1:T1){ forall(y2:T2){x(y1,y2)}}
+	};
+
+/*Probabilistic queries ? */
+
+/*This seems to be a forall query */
+Pquery_ge<T> : (PrbabilisticProperty<T>,Probability) -> Bool := 
+	fun(x: PrbabilisticProperty<T>, p : Probability){ 
+		probOf<T>(x)( min<T>( probOf<T>(x) ) )  >= p.value 
+	} ;
+	
+/*Optimization queries */
+min<T> : (T->Real) -> T := 
+	fun(f : T->Real){
+		some(x:T){forall(y:T){f(x) <= f(y)}}
+	} ;
+
+max<T> : (T->Real) -> T := 
+	fun(f : T->Real){
+		some(x:T){forall(y:T){f(x) >= f(y)}}
+	} ;
+
+sat<T> : Property<T> -> T := 
+	fun(f : Property<T>){
+		some(x:T){Property<T>(x)}
+	} ;

@@ -16,52 +16,55 @@ import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
 class _ContractsServices extends BasicServices
  {
 	public static final String PACKAGE_NAME = "iml.contracts"
-	public static final String REFINES = "Refines"	
-	public static final String REFINES_SPEC_VAR = "spec"
-	public static final String REFINES_IMPL_VAR = "impl"
+	public static final String REFINEMENTRELATION = "RefinementRelation"	
+	public static final String REFINEMENTRELATION_SPEC_VAR = "spec"
+	public static final String REFINEMENTRELATION_IMPL_VAR = "impl"
 	public static final String IMPLEMENTS = "Implements"	
 	public static final String ASSUME = "Assume"	
 	public static final String ASSUME_COMMENT_VAR = "comment"
+	public static final String ISREFINEMENT_SYMBOL = "isRefinement"	
+	public static final String REFINEMENT_SYMBOL = "refinement"	
 	public static final String GUARANTEE = "Guarantee"	
 	public static final String GUARANTEE_COMMENT_VAR = "comment"
 	public static final String CONTRACT = "Contract"	
 	public static final String CONTRACT_ASSUMPTION_VAR = "assumption"
 	public static final String CONTRACT_GUARANTEE_VAR = "guarantee"
+	public static final String CONTRACT_CONTRACT_VAR = "contract"
 	
 	/**
-	 * get Refines type declaration
+	 * get RefinementRelation type declaration
 	 */
-	def getRefinesType() {
-		return getType(REFINES)
+	def getRefinementRelationType() {
+		return getType(REFINEMENTRELATION)
 	}
 	
 	/**
-	 * check whether the given type is Refines type
+	 * check whether the given type is RefinementRelation type
 	 */
-	def isRefines(NamedType type) {
-		return getRefinesType == type
+	def isRefinementRelation(NamedType type) {
+		return getRefinementRelationType == type
 	}
 	
 	/**
-	 * Get all symbols inside the given type that are Refines type. If recursive is true
+	 * Get all symbols inside the given type that are RefinementRelation type. If recursive is true
 	 * then it will search for symbols inside type's parents
 	 */
-	def getRefinesSymbols(NamedType type, boolean recursive) {
-		ImlUtil.getSymbolsWithType(type, getRefinesType, recursive)
+	def getRefinementRelationSymbols(NamedType type, boolean recursive) {
+		ImlUtil.getSymbolsWithType(type, getRefinementRelationType, recursive)
 	}
 	/**
-	 * Get the spec symbol declaration inside the given Refines type. If recursive is true
+	 * Get the spec symbol declaration inside the given RefinementRelation type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getRefinesSpecVar() {
-		return ImlUtil.findSymbol(getType(REFINES), REFINES_SPEC_VAR, true) as SymbolDeclaration;
+	def getRefinementRelationSpecVar() {
+		return ImlUtil.findSymbol(getType(REFINEMENTRELATION), REFINEMENTRELATION_SPEC_VAR, true) as SymbolDeclaration;
 	}
 	/**
-	 * Get the impl symbol declaration inside the given Refines type. If recursive is true
+	 * Get the impl symbol declaration inside the given RefinementRelation type. If recursive is true
 	 * then it will search for symbols inside type's parents 
 	 */
-	def getRefinesImplVar() {
-		return ImlUtil.findSymbol(getType(REFINES), REFINES_IMPL_VAR, true) as SymbolDeclaration;
+	def getRefinementRelationImplVar() {
+		return ImlUtil.findSymbol(getType(REFINEMENTRELATION), REFINEMENTRELATION_IMPL_VAR, true) as SymbolDeclaration;
 	}
 	/**
 	 * get Implements trait declaration
@@ -114,6 +117,18 @@ class _ContractsServices extends BasicServices
 	def getAssumeCommentVar() {
 		return ImlUtil.findSymbol(getType(ASSUME), ASSUME_COMMENT_VAR, true) as SymbolDeclaration;
 	}
+	/**
+	 * Get IsRefinementSymbol symbol declaration
+	 */
+	 def getIsRefinementSymbol() {
+	 	return getSymbolDeclaration(ISREFINEMENT_SYMBOL)
+	 }
+	/**
+	 * Get RefinementSymbol symbol declaration
+	 */
+	 def getRefinementSymbol() {
+	 	return getSymbolDeclaration(REFINEMENT_SYMBOL)
+	 }
 	/**
 	 * get Guarantee annotation declaration
 	 */
@@ -178,6 +193,13 @@ class _ContractsServices extends BasicServices
 	 */
 	def getContractGuaranteeVar() {
 		return ImlUtil.findSymbol(getType(CONTRACT), CONTRACT_GUARANTEE_VAR, true) as SymbolDeclaration;
+	}
+	/**
+	 * Get the contract symbol declaration inside the given Contract type. If recursive is true
+	 * then it will search for symbols inside type's parents 
+	 */
+	def getContractContractVar() {
+		return ImlUtil.findSymbol(getType(CONTRACT), CONTRACT_CONTRACT_VAR, true) as SymbolDeclaration;
 	}
 	
 	override getPackageName() {

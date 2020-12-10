@@ -14,6 +14,7 @@ trait Stream<T> {
 	eq : Self->Stream<Bool> ;
 }
  
+
 trait NumericType  {
 	plus : Self->Self; 
 	minus : Self->Self; 

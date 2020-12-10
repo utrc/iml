@@ -1,0 +1,111 @@
+package iml.ltl ;
+import iml.lang.* ;
+import iml.queries.*;
+import iml.sms.*;
+
+
+
+
+/*LTL formulas */
+type LtlFormula<S> is (Int->S) -> (Int->Bool);
+
+ltlTrue<S>: LtlFormula<S> :=
+	fun (t:Trace<S>) {
+		fun (i: Int) { true }
+	};
+
+ltlAtom<S>: Property<S> -> LtlFormula<S> :=
+	fun (p: Property<S>) {
+		fun (t: Trace<S>) {
+			fun (i : Int) { p(t(i)) }
+		}	
+	};
+	
+ltlNot<S>: LtlFormula<S> -> LtlFormula<S> :=
+	fun (x: LtlFormula<S>) {
+		fun (t: Trace<S>) {
+			fun (i : Int) { !x(t)(i) }
+		}
+	};
+
+ltlAnd<S>: (LtlFormula<S>, LtlFormula<S>) -> LtlFormula<S> :=
+	fun (x: LtlFormula<S>, y: LtlFormula<S>) {
+		fun (t: Trace<S>) {
+			fun (i : Int) { x(t)(i) && y(t)(i) }
+		}
+	};
+
+ltlOr<S>: (LtlFormula<S>, LtlFormula<S>)-> LtlFormula<S> :=
+	fun (x: LtlFormula<S>, y: LtlFormula<S>) {
+		fun (t: Trace<S>) {
+			fun (i : Int) { x(t)(i) || y(t)(i) }
+		}
+	};
+
+ltlImplies<S>: (LtlFormula<S>, LtlFormula<S>)-> LtlFormula<S> :=
+	fun (x: LtlFormula<S>, y: LtlFormula<S>) {
+		fun (t: Trace<S>) {
+			fun (i : Int) { x(t)(i) => y(t)(i) }
+		}
+	};
+
+// Next
+ltlX<S>: LtlFormula<S> -> LtlFormula<S> :=
+	fun (x: LtlFormula<S>) {
+		fun (t: Trace<S>) {
+			fun (i : Int) { x(t)(i+1) }
+		}
+	};
+
+// Until
+ltlU<S>: (LtlFormula<S>, LtlFormula<S>) -> LtlFormula<S> :=
+	fun (x: LtlFormula<S>, y: LtlFormula<S>) {
+		fun (t: Trace<S>) {
+			fun (i : Int) {
+				exists (j: Int) {
+					j>= i && y(t)(j)
+					&&
+					forall (n: Int) {
+						i<= n && n<j => x(t)(n) 
+					}
+				}
+			}
+		}
+	};
+
+// Eventually
+ltlF<S>: LtlFormula<S> -> LtlFormula<S> := 
+	fun (x: LtlFormula<S>) {
+		ltlU<S>(ltlTrue<S>, x)
+	};
+
+// Globally
+ltlG<S>: LtlFormula<S> -> LtlFormula<S> :=
+	fun (x: LtlFormula<S>) {
+		ltlNot<S>(ltlF <S>(ltlNot<S> (x)));
+	};
+
+// Examples
+type IntState is Int;
+
+A: Property<IntState> := fun (x: IntState) { x>=0; };
+
+B: Property<IntState> := fun (x: IntState) { x<5; }; 
+
+// F A => G B
+f := ltlImplies<IntState> (ltlF<IntState> (ltlAtom<IntState>(A)), ltlG<IntState> (ltlAtom<IntState>(B)));
+
+type MyState {
+	request: Bool;
+	response: Bool;
+};
+
+Request: Property<MyState> := fun (s: MyState) { s.request };
+
+Response: Property<MyState> := fun (s: MyState) { s.response };
+
+// Progress property: every request will eventually lead to a response
+// G (Request => F Response)
+g : LtlFormula<MyState> := ltlG<MyState>( ltlImplies<MyState>(ltlAtom<MyState>(Request), ltlF<MyState>(ltlAtom<MyState>(Response))) );
+
+

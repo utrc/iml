@@ -1,0 +1,37 @@
+package iml.synchrony.functional ;
+
+trait Synchronous ;
+
+stream<T> : Int -> T ;
+
+type Stream<T> is Int -> T;
+type RealStream is Int->Real;
+type IntStream is Int->Int;
+type BoolStream is Int->Bool;
+
+pre<T> : Stream<T> -> Stream<T> := 
+	fun(x:Stream<T>){ 
+		some(y:Stream<T>){ 
+			forall(i:Int){
+				y(i) = x(i-1)
+			}
+		} ;
+	};
+	
+const<T> : T -> Stream<T> := 
+	fun(x:T){ 
+		fun( i : Int) {
+			x
+		}
+	};
+
+lift1<T> : (T->T) -> (Stream<T> -> Stream<T>) ;
+
+eq<T> : (Stream<T>,Stream<T>) -> Stream<Bool> := 
+	fun(x:Stream<T>,y:Stream<T>){ 
+		some(z:Stream<Bool>){ 
+			forall(i:Int){
+				z(i) = (x(i) = y(i))
+			}
+		} ;
+	}; 

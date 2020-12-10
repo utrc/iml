@@ -9,13 +9,38 @@ annotation Guarantee {comment:String;};
 trait Contract {
 	assumption : Bool ;
 	guarantee : Bool ;	
+	contract : Bool ;
+	assert {contract = (assumption => guarantee)};
 } ;
 
-type Refines<Spec exhibits(Contract), Impl exhibits(Contract)> exhibits(Property) {
+//Refinement property
+refinement<Spec exhibits(Contract), Impl exhibits(Contract)> : RelationalProperty<Spec, Impl> := 
+fun(s:Spec,i:Impl){ 
+	(i.contract => s.contract) &&
+	(s.assumption => i.assumption)
+};
+
+isRefinement<Spec exhibits(Contract), Impl exhibits(Contract)> : Bool := RqueryFF<Spec,Impl>( refinement<Spec,Impl> );
+
+type RefinementRelation<Spec exhibits(Contract), Impl exhibits(Contract)> {
 	spec : Spec ;
 	impl : Impl ;
 };
 
+
 trait Implements<T>{
 	// spec:T;
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
