@@ -8,7 +8,6 @@ import com.utc.utrc.hermes.iml.iml.Symbol
 import com.utc.utrc.hermes.iml.iml.Annotation
 import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
 
-// WIP FIXME we need to make other services extend this one and refactor accordingly
 abstract class BasicServices {
 	@Inject
 	ImlStdLib stdLib;

@@ -5,12 +5,14 @@ package com.utc.utrc.hermes.iml.lib.gen
 
 import com.google.inject.Singleton
 import com.google.inject.Inject
+import org.eclipse.emf.ecore.EObject
 import com.utc.utrc.hermes.iml.iml.Trait
 import com.utc.utrc.hermes.iml.iml.NamedType
 import com.utc.utrc.hermes.iml.util.ImlUtil
 import com.utc.utrc.hermes.iml.lib.BasicServices
-import org.eclipse.emf.ecore.EObject
 import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
+import com.utc.utrc.hermes.iml.iml.Model
+import com.utc.utrc.hermes.iml.iml.Symbol
 
 @Singleton
 class _GraphsServices extends BasicServices
@@ -94,5 +96,18 @@ class _GraphsServices extends BasicServices
 	
 	override getPackageName() {
 		PACKAGE_NAME
+	}
+	
+	/**
+	 * Checks if a symbol is defined inside Graphs IML library
+	 */
+	def isGraphsSymbol(Symbol symbol) {
+		if (symbol !== null) {
+			val containerModel = ImlUtil.getContainerOfType(symbol, Model)
+			if (containerModel.name == getPackageName()) {
+				return true;
+			}
+		}
+		return false;
 	}
 }

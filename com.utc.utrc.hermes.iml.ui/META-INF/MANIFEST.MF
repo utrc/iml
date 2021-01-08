@@ -22,7 +22,12 @@ Require-Bundle: com.utc.utrc.hermes.iml,
  org.eclipse.ui.console
 Import-Package: org.apache.log4j
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
-Export-Package: com.utc.utrc.hermes.iml.ui.quickfix,
+Export-Package: com.utc.utrc.hermes.iml.ui,
  com.utc.utrc.hermes.iml.ui.contentassist,
- com.utc.utrc.hermes.iml.ui.internal
+ com.utc.utrc.hermes.iml.ui.handler,
+ com.utc.utrc.hermes.iml.ui.internal,
+ com.utc.utrc.hermes.iml.ui.labeling,
+ com.utc.utrc.hermes.iml.ui.outline,
+ com.utc.utrc.hermes.iml.ui.quickfix,
+ com.utc.utrc.hermes.iml.ui.wizard
 Bundle-Activator: com.utc.utrc.hermes.iml.ui.internal.ImlActivator

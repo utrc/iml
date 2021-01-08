@@ -16,6 +16,16 @@ import java.util.HashSet
 import com.utc.utrc.hermes.iml.iml.Model
 import com.utc.utrc.hermes.iml.iml.Assertion
 
+/**
+ * Standalone class that generates the services for IML standard library. This should be executed after any modification
+ * to the IML Standard Library at <em>com.utc.utrc.hermes.iml.lib</em>.
+ * The generator works by loading all Standard Libraries defined under <em>com.utc.utrc.hermes.iml.lib</em> project and 
+ * for each IML file, create a Java class with service methods to work with this IML library. The generator uses 
+ * <i>Generation Gap</i> design pattern where the generated classes are stored and overridden inside <em>com.utc.utrc.hermes.iml.lib.gen<em/> 
+ * package. Any user custom code should be added to the subclasses under <em>com.utc.utrc.hermes.iml.lib</em>.
+ * 
+ * @author Ayman Elkfrawy
+ */
 class LibraryServicesGenerator {
 
 	static final String PACKAGE_NAME = "com.utc.utrc.hermes.iml.lib"
@@ -218,16 +228,19 @@ class LibraryServicesGenerator {
 	}
 	
 	def getClassName(String libFqn, boolean subClass) {
-		var String libName
-		if (libFqn.contains(".")) {
-			libName = libFqn.substring(libFqn.lastIndexOf(".") + 1).toFirstUpper
-		} else {
-			libName = libFqn.toFirstUpper
-		}
+		var String libName = getHumanLibName(libFqn)
 		if (subClass) {
 			return libName + "Services"
 		} else {
 			return "_" + libName + "Services"
+		}
+	}
+	
+	def getHumanLibName(String libFqn) {
+		if (libFqn.contains(".")) {
+			return libFqn.substring(libFqn.lastIndexOf(".") + 1).toFirstUpper
+		} else {
+			return libFqn.toFirstUpper
 		}
 	}
 	
@@ -236,12 +249,14 @@ class LibraryServicesGenerator {
 		'''
 		import com.google.inject.Singleton
 		import com.google.inject.Inject
+		import org.eclipse.emf.ecore.EObject
 		import com.utc.utrc.hermes.iml.iml.Trait
 		import com.utc.utrc.hermes.iml.iml.NamedType
 		import com.utc.utrc.hermes.iml.util.ImlUtil
 		import com.utc.utrc.hermes.iml.lib.BasicServices
-		import org.eclipse.emf.ecore.EObject
 		import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
+		import com.utc.utrc.hermes.iml.iml.Model
+		import com.utc.utrc.hermes.iml.iml.Symbol
 		'''
 	}
 	
@@ -256,6 +271,19 @@ class LibraryServicesGenerator {
 		'''
 		override getPackageName() {
 			PACKAGE_NAME
+		}
+		
+		/**
+		 * Checks if a symbol is defined inside «libName.humanLibName» IML library
+		 */
+		def is«libName.humanLibName»Symbol(Symbol symbol) {
+			if (symbol !== null) {
+				val containerModel = ImlUtil.getContainerOfType(symbol, Model)
+				if (containerModel.name == getPackageName()) {
+					return true;
+				}
+			}
+			return false;
 		}
 		'''
 	}
