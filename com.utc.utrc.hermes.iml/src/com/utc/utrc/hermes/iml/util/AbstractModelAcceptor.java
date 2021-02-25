@@ -371,6 +371,7 @@ public class AbstractModelAcceptor implements IModelAcceptor {
 		}else if (e instanceof SymbolReferenceTerm) {
 			visitor.visit((SymbolReferenceTerm)e);
 		} else if (e instanceof TailedExpression) {
+			accept(e.getLeft(), visitor);
 			if (((TailedExpression)e).getTail() instanceof TupleConstructor) {
 				accept((TupleConstructor) ((TailedExpression)e).getTail(), visitor);
 			} else {

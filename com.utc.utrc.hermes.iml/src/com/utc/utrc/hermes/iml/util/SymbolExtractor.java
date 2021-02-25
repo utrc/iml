@@ -4,7 +4,9 @@
 package com.utc.utrc.hermes.iml.util;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import com.utc.utrc.hermes.iml.iml.Assertion;
 import com.utc.utrc.hermes.iml.iml.FolFormula;
@@ -20,9 +22,9 @@ import com.utc.utrc.hermes.iml.lib.ImlStdLib;
 public class SymbolExtractor {
 	
 	static private class TermVisitor extends AbstractModelVisitor {
-		private List<Symbol> symbols ;
+		private Set<Symbol> symbols ;
 		public TermVisitor() {
-			symbols = new ArrayList<>();
+			symbols = new HashSet<>();
 		}
 		
 		@Override
@@ -31,7 +33,7 @@ public class SymbolExtractor {
 			return null;
 		}
 		
-		public List<Symbol> getSymbols(){
+		public Set<Symbol> getSymbols(){
 			return symbols;
 		}
 		
@@ -59,7 +61,7 @@ public class SymbolExtractor {
 	
 	
 	
-	public static List<Symbol> extractFrom(FolFormula f, ImlStdLib lib) {
+	public static Set<Symbol> extractFrom(FolFormula f, ImlStdLib lib) {
 		TermAcceptor acceptor = new TermAcceptor(lib);
 		TermVisitor visitor = new TermVisitor() ;
 		acceptor.accept(f, visitor);

@@ -35,16 +35,41 @@ class LibraryServicesGenerator {
 	@Inject
 	ImlStdLib stdLib
 	
+	@Inject
+	ImlParseHelper parseHelper;
+	
 	/**
 	 * Standalone run to generate new library services. It loads IML standard libraries, then 
 	 * iterate over all of them to generate services classes
 	 */
 	def static void main(String[] args) {
 		val injector = ImlStandaloneSetup.injector;
-		val parseHelper = injector.getInstance(ImlParseHelper);
-		parseHelper.loadStdLibs
 		val libraryGenerator = injector.getInstance(LibraryServicesGenerator)
-		libraryGenerator.generateServices
+		
+		if (args.length == 2) {
+			// Custom Lib service generator
+			val customLibFolder = args.get(0);
+			val outputFolder = args.get(1);
+			libraryGenerator.generateCustomLibServices(customLibFolder, outputFolder);
+		} else {
+			libraryGenerator.parseHelper.loadStdLibs
+			libraryGenerator.generateServices			
+		}
+		
+	}
+	
+	def generateCustomLibServices(String customLibFolder, String outputFolder) {
+		val rs = parseHelper.parseDir(customLibFolder, true);
+		for (res : rs.resources) {
+			if (res.URI.toFileString.contains(customLibFolder) && !res.contents.empty && res.contents.get(0) instanceof Model) {
+				val model = res.contents.get(0) as Model
+//				val classFile = getFile(model.name, true);
+				val libName = model.name
+				val serviceClass = generateSevices(libName, model.symbols)
+				val outputFile = outputFolder + "/" + getClassName(libName, false) + ".xtend"
+				Files.write( new File(outputFile).toPath , serviceClass.toString.bytes)
+			}
+		}
 	}
 	
 	def generateServices() {
