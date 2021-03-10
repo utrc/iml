@@ -639,6 +639,30 @@ function setDocumentScrollTop(ypos)
 
 </head>
 <body class="markdown-body">
-<h1> <a id="extending-iml-generator" class="anchor" href="#extending-iml-generator" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Extending IML Generator</h1>
+<h1> <a id="extending-iml-generators" class="anchor" href="#extending-iml-generators" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Extending IML Generators</h1> 
+<p>Generator is a tool that converts an IML model into other model. This typically used to encode IML models into a target format of solver to use. For example, encoding IML into SMT-Lib (look at <code>com.utc.utrc.hermes.iml.gen.smt</code> plugin project) for SMT solvers such as Z3 and CVC4.</p> 
+<h2> <a id="setting-up-custom-iml-generator" class="anchor" href="#setting-up-custom-iml-generator" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Setting up custom IML Generator</h2> 
+<ol> 
+ <li> <em>Create new eclipse plugin project or use an existing one</em>: <code>File</code> &gt; <code>New</code> &gt; <code>Project</code> and select from <code>Plug-in Development</code> &gt; <code>Plug-in Project</code>.</li> 
+ <li> <em>Create generator class</em>: create normal Java or Xtend class that implements <code>com.utc.utrc.hermes.iml.gen.common.IImlGenerator</code> interface.</li> 
+ <li> <em>Contribute to the extension point</em>: Go to the <code>META-INF</code> &gt; <code>MANIFEST.MF</code> then select <code>Extensions</code> tab. Click <code>Add</code> and select <code>com.utc.utrc.hermes.iml.gen</code> extension point from the list. Under that extension point, right click and click <code>New</code> &gt; <code>generator</code> then provide the fully qualified name for the generator class.</li> 
+ <li>If you didn't find <code>com.utc.utrc.hermes.iml.gen</code> extension point in the list from previous step, you can directly add/modify <code>plugin.xml</code> by adding the following (change the class value to your validator class):</li> 
+</ol> 
+<div class="highlight highlight-text-xml">
+ <pre>&lt;<span class="pl-ent">extension</span> <span class="pl-e">point</span>=<span class="pl-s"><span class="pl-pds">&quot;</span>com.utc.utrc.hermes.iml.gen<span class="pl-pds">&quot;</span></span>&gt;
+    &lt;<span class="pl-ent">generator</span> <span class="pl-e">class</span>=<span class="pl-s"><span class="pl-pds">&quot;</span>com.utc.utrc.hermes.iml.example.generator.ExampleGenerator<span class="pl-pds">&quot;</span></span>&gt; &lt;/<span class="pl-ent">generator</span>&gt;
+ &lt;/<span class="pl-ent">extension</span>&gt;</pre>
+</div> 
+<h2> <a id="implementing-custom-generator" class="anchor" href="#implementing-custom-generator" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Implementing custom generator</h2> 
+<p>As mentioned in the previous section, any custom generators should implement <code>IImlGenerator</code> interface. This interface defines the following API that need to be implemented:</p> 
+<ol> 
+ <li> <code>canGenerate(Symbol query): boolean</code>: user need to implement this method to determine if a given symbol can be used this generator or not. Typically, the user would check the symbol type or some properties on the symbol to determine that.</li> 
+ <li> <code>generate(): ImlGeneratorResult</code>: the user should implement this method for generating compatible symbols into target model. The result of this method should be an object of <code>ImlGeneratorResult</code> class which is defined below.</li> 
+ <li> <code>canRunSolver(): boolean</code>: this method should return true if the generator can run a solver over the generated model.</li> 
+ <li> <code>runSolver(String generatedModel): String</code>: if the generator support running a solver, this method should be implemented to run the solver over a generated model. The return of this method String as the result from the solver.</li> 
+</ol> 
+<p>As stated earlier, the result of <code>generate()</code> method is an object of <code>ImlGeneratorResult</code>. Such object should be created and maintained during the generation of the model. While generating new elements, the user should use <code>addMapping(String originalName, String generatedName)</code> method to map the generated element name with the original name from IML. This can be used later by calling <code>getOriginalNameOf(String generatedName)</code> or <code>getGeneratedNameOf(String originalName)</code> to get the corresponding mapped name. Maintaining such map is important when providing an explanation to the end user where the result should in term of the original model names and not in the generated names.</p> 
+<p>At the end of the model generation, the user need to set the actual generated model as String using <code>setGeneratedModel(String generatedModel): void</code>.</p> 
+<h2> <a id="using-custom-generator" class="anchor" href="#using-custom-generator" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Using custom generator</h2>
 </body>
 </html>

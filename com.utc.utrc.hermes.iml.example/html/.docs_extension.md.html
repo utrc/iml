@@ -639,6 +639,31 @@ function setDocumentScrollTop(ypos)
 
 </head>
 <body class="markdown-body">
-<h1> <a id="extending-iml-documentations" class="anchor" href="#extending-iml-documentations" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Extending IML Documentations</h1>
+<h1> <a id="extending-iml-documentations" class="anchor" href="#extending-iml-documentations" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Extending IML Documentations</h1> 
+<p>Extending IML documentations is a good place for documenting any of the custom extensions that user might have. For example, the user can create a help extension to describe a custom library and how an end user can use such library. Actually, all these extensions documentations are created using the method described below and can be found under the example extension project <code>com.utc.utrc.hermes.iml.example</code>.</p> 
+<h2> <a id="setting-up-custom-iml-generator" class="anchor" href="#setting-up-custom-iml-generator" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Setting up custom IML Generator</h2> 
+<ol> 
+ <li> <em>Create new eclipse plugin project or use an existing one</em>: <code>File</code> &gt; <code>New</code> &gt; <code>Project</code> and select from <code>Plug-in Development</code> &gt; <code>Plug-in Project</code>.</li> 
+ <li> <em>Create Table Of Content (TOC) file</em>: inside the main project directory, create <code>toc.xml</code> file.</li> 
+ <li> <em>Contribute to the extension point</em>: Go to the <code>META-INF</code> &gt; <code>MANIFEST.MF</code> then select <code>Extensions</code> tab. Click <code>Add</code> and select <code>&quot;org.eclipse.help.toc&quot;</code> extension point from the list. Under that extension point, right click and click <code>New</code> &gt; <code>toc</code> then provide the name of the <code>toc.xml</code> file and set <code>primary</code> to be <code>true</code>.</li> 
+</ol> 
+<h2> <a id="writing-the-documentations" class="anchor" href="#writing-the-documentations" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Writing the documentations</h2> 
+<p>After setting up the documentation project as in the previous section, you will need to change the <code>toc.xml</code> to provide the layout of your documentation menu and files. The main outline for the <code>toc.xml</code> file should be as following:</p> 
+<div class="highlight highlight-text-xml">
+ <pre>&lt;<span class="pl-ent">toc</span> <span class="pl-e">label</span>=<span class="pl-s"><span class="pl-pds">&quot;</span><span class="pl-pds">&quot;</span></span>  <span class="pl-e">link_to</span>=<span class="pl-s"><span class="pl-pds">&quot;</span>../com.utc.utrc.hermes.docs/toc.xml#extensions<span class="pl-pds">&quot;</span></span>&gt;
+	&lt;<span class="pl-ent">topic</span> <span class="pl-e">label</span>=<span class="pl-s"><span class="pl-pds">&quot;</span>[MAIN_PAGE_MENU_LABEL]<span class="pl-pds">&quot;</span></span> <span class="pl-e">href</span>=<span class="pl-s"><span class="pl-pds">&quot;</span>[MAIN_PAGE.html]<span class="pl-pds">&quot;</span></span>&gt;
+	   &lt;<span class="pl-ent">topic</span> <span class="pl-e">label</span>=<span class="pl-s"><span class="pl-pds">&quot;</span>[SUBPAGE_1_MENU_LABEL]<span class="pl-pds">&quot;</span></span> <span class="pl-e">href</span>=<span class="pl-s"><span class="pl-pds">&quot;</span>[SUBPAGE_1.html]<span class="pl-pds">&quot;</span></span>&gt; &lt;/<span class="pl-ent">topic</span>&gt;
+	   &lt;<span class="pl-ent">topic</span> <span class="pl-e">label</span>=<span class="pl-s"><span class="pl-pds">&quot;</span>[SUBPAGE_2_MENU_LABEL]<span class="pl-pds">&quot;</span></span> <span class="pl-e">href</span>=<span class="pl-s"><span class="pl-pds">&quot;</span>[SUBPAGE_2.html]<span class="pl-pds">&quot;</span></span>&gt; &lt;/<span class="pl-ent">topic</span>&gt;
+	&lt;/<span class="pl-ent">topic</span>&gt;
+&lt;/<span class="pl-ent">toc</span>&gt;</pre>
+</div> 
+<p>The user need to change parts with <code>[]</code> accordingly. Having <code>link_to</code> reference to <code>../com.utc.utrc.hermes.docs/toc.xml#extensions</code> will allow the documentations to be displayed under <code>HERMES Documentations</code> menu. Although the user can choose most suitable method to generate the HTML for topics we recommend the following method:</p> 
+<ol> 
+ <li>Create <code>html</code> directory and inside it write markdown (<code>.md</code>) file for each topic.</li> 
+ <li>Generate the HTML files from <code>.md</code> files by using tool like <code>GFM Viewer</code> here: [<a href="https://github.com/satyagraha/gfm_viewer">https://github.com/satyagraha/gfm_viewer</a>]. After installing that tool, right click on the <code>html</code> folder and press <code>Generate Markdown Preview</code>. This feature requires internet access.</li> 
+ <li>If used the <code>GFM Viewer</code> tool, the resulting files will be in format <code>.[original_file_name].md.html</code>. Then use that inside the <code>href</code> property. For example <code>href=&quot;.main.md.html&quot;</code>.</li> 
+</ol> 
+<h2> <a id="using-custom-documentations" class="anchor" href="#using-custom-documentations" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Using custom documentations</h2> 
+<p>Custom extension documentation can be used by installing the plugin in an Eclipse IDE or an Eclipse custom product. The documentations can be viewed by pressing <code>Help</code> menu and choosing <code>Help Contents</code>. If the standard IML documentations is already installed (<code>com.utc.utrc.hermes.docs</code>), the documentations will be found under <code>HERMES Documentation</code> section.</p>
 </body>
 </html>

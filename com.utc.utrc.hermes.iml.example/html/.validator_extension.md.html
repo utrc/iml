@@ -640,7 +640,7 @@ function setDocumentScrollTop(ypos)
 </head>
 <body class="markdown-body">
 <h1> <a id="extending-iml-validator" class="anchor" href="#extending-iml-validator" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Extending IML Validator</h1> 
-<p>Providing custom library is a good way to support new domains by defining the basic elements of that domain. To have more control over how the use will use such library, the library developer will need to extend the validator to add validation rules over the library or any IML elements.</p> 
+<p>Providing custom library is a good way to support new domains by defining the basic elements of that domain. To have more control over how the user will use such library, the library developer will need to extend the validator and add validation rules over the library.</p> 
 <h2> <a id="setting-up-iml-custom-validator" class="anchor" href="#setting-up-iml-custom-validator" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Setting up IML Custom Validator</h2> 
 <ol> 
  <li> <em>Create new eclipse plugin project or use an existing one</em>: <code>File</code> &gt; <code>New</code> &gt; <code>Project</code> and select from <code>Plug-in Development</code> &gt; <code>Plug-in Project</code>.</li> 
@@ -663,19 +663,18 @@ function setDocumentScrollTop(ypos)
     <span class="pl-k">if</span> (libServices<span class="pl-k">.</span>isMyType(element)) {
         <span class="pl-c"><span class="pl-c">//</span> Write your custom validation here</span>
         <span class="pl-k">if</span> (somethingIsWrong) {
-            error(<span class="pl-s"><span class="pl-pds">&quot;</span>Custom error message<span class="pl-pds">&quot;</span></span>
-						, <span class="pl-smi">ImlPackage</span><span class="pl-k">::</span>eINSTANCE<span class="pl-k">.</span>symbol_Name, <span class="pl-c1">UNIQUE_ID_FOR_THE_ERROR</span>
-					)
+            error(<span class="pl-s"><span class="pl-pds">&quot;</span>Custom error message<span class="pl-pds">&quot;</span></span> , <span class="pl-smi">ImlPackage</span><span class="pl-k">::</span>eINSTANCE<span class="pl-k">.</span>symbol_Name, <span class="pl-c1">UNIQUE_ID_FOR_THE_ERROR</span>)
         }
     }
 }</pre>
 </div> 
 <h2> <a id="using-the-custom-validator" class="anchor" href="#using-the-custom-validator" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Using the custom validator</h2> 
-<p>After setting up and defining the language as described in the previous section, a user can use this library in multiple ways. In the following sections, we describe two common methods of using it. In both cases, the user will need to add this library to the project dependencies in <code>META-INF</code> &gt; <code>MANIFEST.MF</code> &gt; <code>Dependencies</code> and add it under <code>Required Plug-ins</code>.</p> 
-<h3> <a id="programmatically-for-parsing-iml-file" class="anchor" href="#programmatically-for-parsing-iml-file" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Programmatically for Parsing IML file</h3> 
-<p>In this method user can use the library to write IML files that import that library and programmatically parse these IML files using <code>ImlParseHelper.parse(String)</code> method from <code>com.utc.utrc.hermes.iml</code> package. This method will take care of looking at all contributions to the extension point <code>com.utc.utrc.hermes.iml.lib</code> and automatically loading their related IML files.</p> 
-<p>This method is typically used in standalone applications or in testing projects. See <code>com.utc.utrc.hermes.iml.example.test</code> project for an example of this usage.</p> 
+<p>After setting up and writing down your validators, there are two ways you can use that validator described below. In both cases, the user will need to add this validator project to the project dependencies in <code>META-INF</code> &gt; <code>MANIFEST.MF</code> &gt; <code>Dependencies</code> and add it under <code>Required Plug-ins</code>.</p> 
+<h3> <a id="programmatically-for-validating-iml-file" class="anchor" href="#programmatically-for-validating-iml-file" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Programmatically for Validating IML file</h3> 
+<p>User can validate IML parsed files to ensure there is no errors. The custom validators that contributes to <code>com.utc.utrc.hermes.iml.validators</code> will be automatically picked and run against the IML model.</p> 
+<p>This approach is typically used while writing test cases where the user can use <code>org.eclipse.xtext.testing.validation.ValidationTestHelper</code> methods like <code>assertNoErrors</code> or <code>assertError</code>. See <code>com.utc.utrc.hermes.iml.example.test</code> project for an example of this usage.</p> 
+<p>To validate IML models programmatically outside the test environment, user can use <code>com.utc.utrc.hermes.iml.ImlParseHelper.checkErrors()</code> method.</p> 
 <h3> <a id="runtime-as-part-of-eclipse-ide" class="anchor" href="#runtime-as-part-of-eclipse-ide" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Runtime as part of Eclipse IDE</h3> 
-<p>This work when the user install the custom library plugin inside an eclipse IDE instance with IML already installed or as part of a feature. An example is to install the plugin inside <code>HERMES Reasoning</code> eclipse product. Creating new IML project (<code>File</code> &gt; <code>New</code> &gt; <code>IML</code> &gt; <code>IML Project</code>) while such custom library installed will allow the wizard to load that library and make it available for the user to import and use.</p>
+<p>User can also use the custom validator inside an Eclipse IDE instance or part of Eclipse custom product by installing the plugin there. The custom validator will run on compatible types while editing an IML file and any error will be reported by Eclipse. Example for an error reported by the example custom validators inside <code>com.utc.utrc.hermes.iml.example.validator.ExampleValidator</code> is shown below: <a href="images/CustomValidator.png" target="_blank" rel="noopener noreferrer"><img src="images/CustomValidator.png" alt="alt text" style="max-width:100%;" /></a></p>
 </body>
 </html>
