@@ -19,9 +19,9 @@ class PcHardwareServices extends BasicServices
  {
 	public static final String PACKAGE_NAME = "iml.pc_hardware"
 	public static final String MOTHERBOARD = "Motherboard"	
-	public static final String PERSONCOMPUTER = "PersonComputer"	
-	public static final String PERSONCOMPUTER_COMPONENTS_VAR = "components"
-	public static final String PERSONCOMPUTER_PERIPHERALS_VAR = "peripherals"
+	public static final String PERSONALCOMPUTER = "PersonalComputer"	
+	public static final String PERSONALCOMPUTER_COMPONENTS_VAR = "components"
+	public static final String PERSONALCOMPUTER_PERIPHERALS_VAR = "peripherals"
 	public static final String STORAGE = "Storage"	
 	public static final String STORAGE_SIZE_VAR = "size"
 	public static final String STORAGE_SPEED_VAR = "speed"
@@ -58,6 +58,41 @@ class PcHardwareServices extends BasicServices
 	 */
 	def getComputerWithSSDStorageSymbols(NamedType type, boolean recursive) {
 		ImlUtil.getSymbolsWithType(type, getComputerWithSSDStorageType, recursive)
+	}
+	/**
+	 * get PersonalComputer type declaration
+	 */
+	def getPersonalComputerType() {
+		return getType(PERSONALCOMPUTER)
+	}
+	
+	/**
+	 * check whether the given type is PersonalComputer type
+	 */
+	def isPersonalComputer(NamedType type) {
+		return getPersonalComputerType == type
+	}
+	
+	/**
+	 * Get all symbols inside the given type that are PersonalComputer type. If recursive is true
+	 * then it will search for symbols inside type's parents
+	 */
+	def getPersonalComputerSymbols(NamedType type, boolean recursive) {
+		ImlUtil.getSymbolsWithType(type, getPersonalComputerType, recursive)
+	}
+	/**
+	 * Get the components symbol declaration inside the given PersonalComputer type. If recursive is true
+	 * then it will search for symbols inside type's parents 
+	 */
+	def getPersonalComputerComponentsVar() {
+		return ImlUtil.findSymbol(getType(PERSONALCOMPUTER), PERSONALCOMPUTER_COMPONENTS_VAR, true) as SymbolDeclaration;
+	}
+	/**
+	 * Get the peripherals symbol declaration inside the given PersonalComputer type. If recursive is true
+	 * then it will search for symbols inside type's parents 
+	 */
+	def getPersonalComputerPeripheralsVar() {
+		return ImlUtil.findSymbol(getType(PERSONALCOMPUTER), PERSONALCOMPUTER_PERIPHERALS_VAR, true) as SymbolDeclaration;
 	}
 	/**
 	 * get Storage trait declaration
@@ -250,41 +285,6 @@ class PcHardwareServices extends BasicServices
 	 */
 	def getCanStoreStorageVar() {
 		return ImlUtil.findSymbol(getType(CANSTORE), CANSTORE_STORAGE_VAR, true) as SymbolDeclaration;
-	}
-	/**
-	 * get PersonComputer type declaration
-	 */
-	def getPersonComputerType() {
-		return getType(PERSONCOMPUTER)
-	}
-	
-	/**
-	 * check whether the given type is PersonComputer type
-	 */
-	def isPersonComputer(NamedType type) {
-		return getPersonComputerType == type
-	}
-	
-	/**
-	 * Get all symbols inside the given type that are PersonComputer type. If recursive is true
-	 * then it will search for symbols inside type's parents
-	 */
-	def getPersonComputerSymbols(NamedType type, boolean recursive) {
-		ImlUtil.getSymbolsWithType(type, getPersonComputerType, recursive)
-	}
-	/**
-	 * Get the components symbol declaration inside the given PersonComputer type. If recursive is true
-	 * then it will search for symbols inside type's parents 
-	 */
-	def getPersonComputerComponentsVar() {
-		return ImlUtil.findSymbol(getType(PERSONCOMPUTER), PERSONCOMPUTER_COMPONENTS_VAR, true) as SymbolDeclaration;
-	}
-	/**
-	 * Get the peripherals symbol declaration inside the given PersonComputer type. If recursive is true
-	 * then it will search for symbols inside type's parents 
-	 */
-	def getPersonComputerPeripheralsVar() {
-		return ImlUtil.findSymbol(getType(PERSONCOMPUTER), PERSONCOMPUTER_PERIPHERALS_VAR, true) as SymbolDeclaration;
 	}
 	
 	override getPackageName() {

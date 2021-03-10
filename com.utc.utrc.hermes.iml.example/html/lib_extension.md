@@ -2,7 +2,7 @@
 IML comes with standard libraries that include constructs for commonly used domains. User can extend these libraries for supporting new domains or solvers. In such library, the user can define custom types, traits, and their related properties. The end-users can then use these elements by importing the library. 
 
 ## Setting up IML Custom Library
-1. *Create new eclipse plugin project*: `File` > `New` > `Project` and select from `Plug-in Development` > `Plug-in Project`.
+1. *Create new eclipse plugin project or use an existing one*: `File` > `New` > `Project` and select from `Plug-in Development` > `Plug-in Project`.
 1. *Create IML package*: Under the `src` folder, create package named `iml`.
 1. Write your IML library files under that package directory.
 1. Each IML module package name must start with `iml.`. I.e. the first line of each library must be `package iml.<Your_library_name_here>;`

@@ -6,7 +6,7 @@ type Motherboard {
     
 }
 
-type PersonComputer {
+type PersonalComputer {
     components: Component[];
     peripherals: Port[];
 }
@@ -32,7 +32,6 @@ type Processor {
     core_count: Int;
     l2_cache: Int;
 }
-
 
 trait Monitor exhibits(Out) {
     resolution: (Int, Int); // (width, height) in pixels

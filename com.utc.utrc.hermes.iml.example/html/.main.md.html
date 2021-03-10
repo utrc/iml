@@ -639,6 +639,14 @@ function setDocumentScrollTop(ypos)
 
 </head>
 <body class="markdown-body">
-<h1> <a id="how-to-extend-iml-language-and-framework" class="anchor" href="#how-to-extend-iml-language-and-framework" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>How to extend IML language and framework</h1>
+<h1> <a id="how-to-extend-iml-language-and-framework" class="anchor" href="#how-to-extend-iml-language-and-framework" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>How to extend IML language and framework</h1> 
+<p>The vision for IML is to be a framework where developers can contribute to and build their custom code on top of it. To support that vision, we have provided extensive extendability options using eclipse extension points. The summary of extension provided by IML are as following:</p> 
+<ol> 
+ <li> <em>Extending IML Libraries</em>: this allows the user to extend IML language by providing custom library to support specific domain.</li> 
+ <li> <em>Extending IML Validators</em>: this allows the use to write custom validators for any IML constructs or custom IML libraries as defined in the previous point.</li> 
+ <li> <em>Extending IML Generators</em>: where the user can write custom generators for IML or the custom libraries defined earlier.</li> 
+ <li> <em>Extending IML Documentations</em>: where the use can provide documentations for any of the custom extensions mentioned before.</li> 
+</ol> 
+<p>We also provided an example project <code>com.utc.utrc.hermes.iml.example</code> and associated test project <code>com.utc.utrc.hermes.iml.example.test</code> to give sample codes for how to use these extension points. In fact, this documentation is part of this example project for extending the IML documentations.</p>
 </body>
 </html>
