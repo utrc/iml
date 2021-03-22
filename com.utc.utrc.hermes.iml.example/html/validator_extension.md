@@ -16,7 +16,7 @@ Providing custom libraries is a good way to support new domains by defining the 
 ## Writing custom validators
 You can write your custom validation rules inside the validator class (which was created in as in the second step of the procedure explained in previous section). Inside this file you can write multiple validation methods. Each validation method should be annotated with `@Check`, and the signature should have only one parameter that extends `EObject`. You typically want to check first if the given element is the one you are interested in validating. For that you can use the service class defined in the "Extending IML Libraries" section. If you want to report any issues with the model, you can use the `error` method. For more information, please check the custom validation section here: https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#validation
 
-For example, if you want to validate a specific `NamedType` in you library, you could write a method as following:
+For example, if you want to validate a specific `NamedType` in your library, you could write a method as following:
 ```java
 @Inject MyLibraryServices libServices
 @Check
@@ -34,7 +34,7 @@ void checkMyType(NamedType element) {
 After setting up and writing down your validators, there are two ways you can use it as described below. In both cases, the user will need to add this validator project to the project dependencies in `META-INF` > `MANIFEST.MF` > `Dependencies` and add it under `Required Plug-ins`. 
 
 ### Validating IML file programmatically 
-Usera can validate IML parsed files to ensure that there is no error. The custom validators that contributes to `com.utc.utrc.hermes.iml.validators` will be automatically loaded and run against the IML model.
+User can validate IML parsed files to ensure that there is no error. The custom validators that contributes to `com.utc.utrc.hermes.iml.validators` will be automatically loaded and run against the IML model.
 
 This approach is typically used while writing test cases where the user can use `org.eclipse.xtext.testing.validation.ValidationTestHelper` methods like `assertNoErrors` or `assertError`. See `com.utc.utrc.hermes.iml.example.test` project for an example of this usage.
 

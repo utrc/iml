@@ -639,14 +639,20 @@ function setDocumentScrollTop(ypos)
 
 </head>
 <body class="markdown-body">
-<h1> <a id="how-to-extend-iml-language-and-framework" class="anchor" href="#how-to-extend-iml-language-and-framework" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>How to extend IML language and framework</h1> 
-<p>The vision for IML is to be a framework where developers can contribute to and build their custom code on top of it. To support this vision, we have provided extensive extendability options using eclipse extension points. The summary of extension provided by IML are as following:</p> 
+<h1> <a id="how-to-extend-the-iml-language-and-framework" class="anchor" href="#how-to-extend-the-iml-language-and-framework" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>How to extend the IML language and framework</h1> 
+<p>The IML language can be extended by defining dedicated domain models. A domain model consists of two elements:</p> 
 <ol> 
- <li> <em>Extending IML Libraries</em>: this allows the user to extend IML language by providing custom library to support specific domain.</li> 
- <li> <em>Extending IML Validators</em>: this allows the use to write custom validators for any IML constructs or custom IML libraries as defined in the previous point.</li> 
- <li> <em>Extending IML Generators</em>: where the user can write custom generators for IML or the custom libraries defined earlier.</li> 
- <li> <em>Extending IML Documentations</em>: where the use can provide documentations for any of the custom extensions mentioned before.</li> 
+ <li>A standard library that defines an ontology of reusable symbols to build domain models.</li> 
+ <li>Several tools that manipulate domain models.</li> 
 </ol> 
-<p>We also provided an example project <code>com.utc.utrc.hermes.iml.example</code> and associated test project <code>com.utc.utrc.hermes.iml.example.test</code> to give sample codes for how to use these extension points. In fact, this documentation is part of this example project for extending IML documentations.</p>
+<p>The ontology contains symbols to help end users construct models in a specific domain. For example, the library for a domain dedicated to the modeling of electric circuits would contain IML types for resitors, capcitors, and generators. Several tools can then be provided such as model validation, translation to other languages, and domain specific solvers.</p> 
+<p>We have provided several facilities to extend the IML language using <a href="https://wiki.eclipse.org/FAQ_What_are_extensions_and_extension_points%3F" rel="nofollow">Eclipse extension points</a>. In particular, we provide the following extension mechanisms:</p> 
+<ol> 
+ <li> <em>Extending IML Libraries</em>: developers can extend the IML language by providing custom library to support specific domains.</li> 
+ <li> <em>Extending IML Validators</em>: developers can write custom model validation rules for any IML construct or custom IML libraries as defined in the previous point. Model validation can be effectively used to restrict the class of valid models within a domain in addition to the basic rules already provided by the IML language such as typing.</li> 
+ <li> <em>Extending IML Generators</em>: developers can write custom code generation algorithms from IML (or any library they have provided) to other languages. Generators are typically used to perform analysis or transformation of models using external tools, but they can be used in general to synthesis new models starting from IML.</li> 
+ <li> <em>Extending IML Documentation</em>: developers can provide documentations for any of the custom extensions mentioned before.</li> 
+</ol> 
+<p>We have provided an example project <code>com.utc.utrc.hermes.iml.example</code> and associated test project <code>com.utc.utrc.hermes.iml.example.test</code> as reference to developers who may want to implement any of the extensions mentioned above. In fact, this documentation is part of this example project for extending IML documentation.</p>
 </body>
 </html>
