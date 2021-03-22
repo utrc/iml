@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="com.utc.utrc.hermes.iml.gen">
+      <generator
+            class="com.utc.utrc.hermes.iml.example.generator.ExampleGenerator">
+      </generator>
+   </extension>
+   
+   <extension
+         point="org.eclipse.help.toc">
+      <toc
+            file="toc.xml"
+            primary="true">
+      </toc>
+   </extension>
+   <extension
+         point="com.utc.utrc.hermes.iml.lib">
+      <library
+            lib_directory="src/iml/">
+      </library>
+   </extension>
+   
+   <extension
+         point="com.utc.utrc.hermes.iml.validators">
+         <validator
+               class="com.utc.utrc.hermes.iml.example.validator.ExampleValidator">
+         </validator>
+   </extension>
+
+</plugin>

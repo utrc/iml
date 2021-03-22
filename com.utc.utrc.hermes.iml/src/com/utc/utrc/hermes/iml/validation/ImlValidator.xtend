@@ -63,6 +63,7 @@ import com.utc.utrc.hermes.iml.iml.Trait
 import com.utc.utrc.hermes.iml.iml.Refinement
 import com.utc.utrc.hermes.iml.iml.TraitExhibition
 import com.google.common.collect.Lists
+import com.google.inject.Injector
 
 /**
  * This class contains custom validation rules. 
@@ -78,8 +79,10 @@ class ImlValidator extends AbstractImlValidator {
 	@Inject extension TypingServices
 	
 	@Inject extension ImlStdLib
+	
+	@Inject Injector injector
 
-	static final String DOMAIN_EXTENSION_ID = "com.utc.utrc.hermes.iml.validation.domaindefinition";
+	static final String CUSTOM_VALIDATOR_ID = "com.utc.utrc.hermes.iml.validators";
 	// FIXME these constants need to be moved to another class and their names and usage need to be reviewed
 	public static val INVALID_PARAMETER_LIST = 'com.utc.utrc.hermes.iml.validation.InvalidParameterList'
 	public static val METHOD_INVOCATION_ON_VARIABLE = 'com.utc.utrc.hermes.iml.validation.MethodInvocationOnVariable'
@@ -112,7 +115,7 @@ class ImlValidator extends AbstractImlValidator {
 	
   		val registry = Platform.getExtensionRegistry();
   		if (registry !== null) {
-	   		val extensions = registry.getConfigurationElementsFor(DOMAIN_EXTENSION_ID);
+	   		val extensions = registry.getConfigurationElementsFor(ImlValidator.CUSTOM_VALIDATOR_ID);
 			val packages = getEPackages();
 			if (packages.size()==0) {
 				throw new IllegalStateException("No EPackages were registered for the validator "+getClass().getName()+" please override and implement getEPackages().");
@@ -121,7 +124,8 @@ class ImlValidator extends AbstractImlValidator {
 				registrar.register(ePackage, this);
 			}
 			for (ext : extensions) {
-				val p = ext.createExecutableExtension("class") as AbstractDeclarativeValidator;
+				var p = ext.createExecutableExtension("class") as AbstractDeclarativeValidator;
+				p = injector.getInstance(p.class) as AbstractDeclarativeValidator;
 				for (EPackage ePackage : packages) {
 					registrar.register(ePackage, p);
 				}

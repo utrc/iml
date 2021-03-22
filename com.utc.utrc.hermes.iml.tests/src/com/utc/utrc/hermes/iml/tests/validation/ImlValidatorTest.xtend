@@ -19,6 +19,7 @@ import com.utc.utrc.hermes.iml.iml.NamedType
 import com.utc.utrc.hermes.iml.iml.SimpleTypeReference
 import static extension org.junit.Assert.*
 import com.utc.utrc.hermes.iml.ImlParseHelper
+import com.utc.utrc.hermes.iml.example.validator.*
 
 /**
  * Test related helper methods

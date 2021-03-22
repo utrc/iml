@@ -1,0 +1,42 @@
+package iml.pc_hardware;
+
+import iml.systems.*;
+
+type Motherboard {
+    
+}
+
+type PersonalComputer {
+    components: Component[];
+    peripherals: Port[];
+}
+
+trait Storage {
+    size : Int ;
+    speed : Real ;
+}
+type SSD exhibits(Storage) {
+    //assert {speed > ..} ;
+}
+
+trait CanStore<T exhibits(Storage)> {
+    storage : T ;
+};
+
+type ComputerWithSSDStorage exhibits(CanStore<SSD>) {
+    
+}
+
+type Processor {
+    clock_speed: Int; // In Hz
+    core_count: Int;
+    l2_cache: Int;
+}
+
+trait Monitor exhibits(Out) {
+    resolution: (Int, Int); // (width, height) in pixels
+    size: Real; // in inch
+    ideal_view : Real -> boolean := fun(distance: Real) {
+        (resolution[0] * resolution[1]/size) > 100000;
+    }; // given viewing distance, determine if this monitor would provide idea view for human eyes
+}

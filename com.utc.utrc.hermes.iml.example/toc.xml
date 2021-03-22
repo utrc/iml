@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?NLS TYPE="org.eclipse.help.toc"?>
+
+<toc label="Extending IML Framework"  link_to="../com.utc.utrc.hermes.docs/toc.xml#extensions">
+	<topic label="How to extend IML language and framework" href="html/.main.md.html">
+	   <topic label="Extending IML Library" href="html/.lib_extension.md.html">
+	   </topic>
+	   <topic label="Extending IML Generator" href="html/.generator_extension.md.html">
+	   </topic>
+	   <topic label="Extending IML Validator" href="html/.validator_extension.md.html">
+	   </topic>
+	   <topic label="Extending IML Documentations" href="html/.docs_extension.md.html">
+	   </topic>
+	</topic>
+</toc>

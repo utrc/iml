@@ -53,9 +53,9 @@ class ImlParseHelper {
 		parse(modelText, true)
 	}
 	
-	def parse(CharSequence modelText, boolean loadStdLib) {
-		if (loadStdLib) {
-			parseHelper.parse(modelText, loadStdLibs)
+	def parse(CharSequence modelText, boolean loadLibs) {
+		if (loadLibs) {
+			parseHelper.parse(modelText, loadAllLibraries)
 		} else {
 			parseHelper.parse(modelText)
 		}
@@ -65,8 +65,23 @@ class ImlParseHelper {
 		parseHelper.parse(modelText, rs)
 	}
 	
-	def ResourceSet loadStdLibs() {
+	def ResourceSet loadAllLibraries() {
 		stdLib.reset()
+		var ResourceSet rs = loadStdLibs;
+		val registry = Platform.getExtensionRegistry();
+  		if (registry !== null) {
+	   		val extensions = registry.getConfigurationElementsFor("com.utc.utrc.hermes.iml.lib");
+	   		for (libExtension : extensions) {
+//	   			val libDir = libExtension.namespace + '/' + libExtension.getAttribute("lib_directory")
+				val libExtentionUrl = getLibFolderFromPlugin(libExtension.namespaceIdentifier)
+	   			rs = getRsFromFolder(libExtentionUrl, rs);
+	   		}
+		}
+		
+		return rs;
+	}
+	
+	def ResourceSet loadStdLibs() {
 		stdRs = getStandardRs()
 		return stdRs;
 	}
@@ -88,31 +103,44 @@ class ImlParseHelper {
             }
 		} else {
 			// Get lib folder for plugin
-			val bundle = Platform.getBundle("com.utc.utrc.hermes.iml.lib");
-			var fileURL = bundle.getEntry("iml/");
-			if (fileURL === null) { // It might be in development environment
-				fileURL = bundle.getEntry("src/iml/")
-			}
-			try {
-				val resolvedFileURL = FileLocator.toFileURL(fileURL);
-			   // We need to use the 3-arg constructor of URI in order to properly escape file system chars
-			   imlLibUrl = new java.net.URI(resolvedFileURL.getProtocol(), resolvedFileURL.getPath(), null);
-			} catch (URISyntaxException e1) {
-			    e1.printStackTrace();
-			} catch (IOException e1) {
-			    e1.printStackTrace();
-			}
+			imlLibUrl = getLibFolderFromPlugin("com.utc.utrc.hermes.iml.lib")
 		}
 		if (imlLibUrl === null) {
 			throw new IllegalStateException("*** Couldn't retrieve the standard library path ***")
 		} else {
-			val result = rsp.get
-			Files.walk(Paths.get(imlLibUrl)).filter[Files.isRegularFile(it) && it.toFile().getName().endsWith(".iml")]
-				.forEach[
-					result.createResource(URI.createFileURI(it.toFile.absolutePath)).load(result.loadOptions)
-				]
-			return result
+			return getRsFromFolder(imlLibUrl, null)
 		}
+	}
+	
+	def getLibFolderFromPlugin(String pluginNs) {
+		val bundle = Platform.getBundle(pluginNs);
+		var fileURL = bundle.getEntry("iml/");
+		if (fileURL === null) { // It might be in development environment
+			fileURL = bundle.getEntry("src/iml/")
+		}
+		try {
+			val resolvedFileURL = FileLocator.toFileURL(fileURL);
+		   // We need to use the 3-arg constructor of URI in order to properly escape file system chars
+		   return new java.net.URI(resolvedFileURL.getProtocol(), resolvedFileURL.getPath(), null);
+		} catch (URISyntaxException e1) {
+		    e1.printStackTrace();
+		} catch (IOException e1) {
+		    e1.printStackTrace();
+		}
+		return null
+	}
+	
+	def getRsFromFolder(java.net.URI imlLibUrl, ResourceSet rs) {
+		var initRs = rs
+		if (initRs === null) {
+			initRs = rsp.get
+		}
+		val result = initRs
+		Files.walk(Paths.get(imlLibUrl)).filter[Files.isRegularFile(it) && it.toFile().getName().endsWith(".iml")]
+			.forEach[
+				result.createResource(URI.createFileURI(it.toFile.absolutePath)).load(result.loadOptions)
+			]
+		return result
 	}
 	
 	def getRsFromJar(File file) {
@@ -136,10 +164,10 @@ class ImlParseHelper {
 	 * @param texts list of models text to be parsed
 	 * @return
 	 */
-	def ResourceSet parse(List<String> models, boolean loadStdLib) {
+	def ResourceSet parse(List<String> models, boolean loadLibs) {
 		var rs = rsp.get
-		if (loadStdLib) {
-			rs = loadStdLibs
+		if (loadLibs) {
+			rs = loadAllLibraries
 		}
 		for (modelText : models) {
 			parse(modelText, rs)
@@ -147,8 +175,13 @@ class ImlParseHelper {
 		return rs
 	}
 	
-	def ResourceSet parseDir(String dirUrl, boolean loadStdLib) {
-		return parse(FileUtil.readAllFilesUnderDir(dirUrl), loadStdLib);
+	def ResourceSet parseDir(String dirUrl, boolean loadLibs) {
+//		return parse(FileUtil.readAllFilesUnderDir(dirUrl), loadLibs);
+		var rs = rsp.get
+		if (loadLibs) {
+			rs = loadAllLibraries
+		}
+		return getRsFromFolder(new File(dirUrl).toURI, rs);
 	}
 	
 	def private List<Issue> getErrors(Model model) {
