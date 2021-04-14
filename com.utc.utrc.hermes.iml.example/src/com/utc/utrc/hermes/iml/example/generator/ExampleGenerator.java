@@ -1,7 +1,7 @@
 package com.utc.utrc.hermes.iml.example.generator;
 
 import com.utc.utrc.hermes.iml.gen.common.IImlGenerator;
-import com.utc.utrc.hermes.iml.gen.common.ImlGeneratorResult;
+import com.utc.utrc.hermes.iml.gen.common.impl.AbstractImlGeneratorResult;
 import com.utc.utrc.hermes.iml.iml.Symbol;
 
 public class ExampleGenerator implements IImlGenerator {
@@ -12,8 +12,8 @@ public class ExampleGenerator implements IImlGenerator {
 	}
 
 	@Override
-	public ImlGeneratorResult generate(Symbol query) {
-		ImlGeneratorResult result = new ImlGeneratorResult();
+	public AbstractImlGeneratorResult generate(Symbol query) {
+		AbstractImlGeneratorResult result = new AbstractImlGeneratorResult();
 		result.setGeneratedModel(query.toString());
 		return result;
 	}
