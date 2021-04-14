@@ -1,0 +1,48 @@
+package iml.probabilistic;
+import iml.queries.*;
+
+type Probability {
+	value : Real ;
+	assert {0<= value && value <=1} ;
+}
+
+trait Distribution<T> { 
+	possible : T -> Bool ;
+}
+
+trait Density refines (Distribution<Real>){ 
+	
+}
+
+trait Probabilistic {
+	sample<T> : Distribution<T> -> T := fun(d:Distribution<T>) : T { 
+		some(x:T){ d.possible(x) };
+	};
+}
+
+datatype UniformInt (ul(Int,Int)) exhibits ( Distribution<Int> ) {
+	low : Int := match(self){ ul(l,h) : l ; } ;
+	high : Int := match(self){ ul(l,h) : h ; } ;
+	possible : Int -> Bool := fun(x:Int) : Real { if ( x >= low && x <= high) { true } else { false } } ;
+}
+
+datatype UniformReal (ul(Real,Real)) exhibits ( Density ) {
+	low : Real := match(self){ ul(l,h) : l ; } ;
+	high : Real := match(self){ ul(l,h) : h ; } ;
+	possible : Real -> Bool := fun(x:Int) : Real { if ( x >= low && x <= high) { true } else { false } } ;
+}
+
+datatype Gaussian (params(Real,Real)) exhibits ( Density ) {
+	mean : Real := match(self){ params(m,v) : m ; } ;
+	variance : Real := match(self){ params(m,v) : v ; } ;
+	possible : Real -> Bool := fun(x:Int) : Real { true } ;
+}
+
+//Probabilistic query
+Prob<T> : Property<T> -> Probability ;
+
+//type M exhibits(Probabilistic) {
+//	x : Int := sample<Int>(UniformInt.ul(0,10)) ;
+//	y : Int := sample<Int>(UniformInt.ul(0,10)) ;
+//	assert {y = x} ;	
+//}

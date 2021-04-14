@@ -1,11 +1,11 @@
 package iml.synchdf.ontological ;
 
-
 annotation Let ;
+annotation LocalVar  ;
+annotation OutputVar ; 
 
-trait Synchronous {
+trait Synchronous {}
 
-}
 pre<T> : T -> T ;
 init<T> : (T,T) -> T ;
 current<T> : (T,T) -> T ;

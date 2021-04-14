@@ -7,8 +7,6 @@ import com.utc.utrc.hermes.iml.lib.gen._QueriesServices
 import com.utc.utrc.hermes.iml.iml.Symbol
 import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
 import com.utc.utrc.hermes.iml.iml.SymbolReferenceTerm
-import com.utc.utrc.hermes.iml.util.ImlUtil
-import com.utc.utrc.hermes.iml.iml.Model
 
 class QueriesServices extends _QueriesServices {
 	
