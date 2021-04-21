@@ -13,6 +13,8 @@ import com.utc.utrc.hermes.iml.lib.BasicServices
 import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
 import com.utc.utrc.hermes.iml.iml.Model
 import com.utc.utrc.hermes.iml.iml.Symbol
+import com.utc.utrc.hermes.iml.iml.TypeWithProperties
+import com.utc.utrc.hermes.iml.iml.SimpleTypeReference
 
 @Singleton
 class _SynchronyServices extends BasicServices
@@ -246,6 +248,26 @@ class _SynchronyServices extends BasicServices
 	 */
 	def isLet(NamedType annotation) {
 		return getLetAnnotation == annotation
+	}
+	
+	/**
+	 * check whether the given symbol is annotated with Let annotation
+	 */
+	def hasLetAnnotation(Symbol symbol) {
+		if (symbol.propertylist !== null) {
+			return symbol.propertylist.properties.map[(it.ref as SimpleTypeReference).type].contains(getLetAnnotation())	
+		}
+		return false;
+	}
+	
+	/**
+	 * check whether the given type is annotated with Let annotation
+	 */
+	def hasLetAnnotation(TypeWithProperties type) {
+		if (type.properties !== null) {
+			return type.properties.properties.map[(it.ref as SimpleTypeReference).type].contains(getLetAnnotation())	
+		}
+		return false;
 	}
 	
 	/**

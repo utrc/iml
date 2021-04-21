@@ -43,17 +43,16 @@ RqueryEF<T1,T2> : RelationalProperty<T1,T2> -> Bool :=
 	};
 
 /*Optimization queries */
-min<T> : Metric<T> -> T := 
+[QueryFunction] min<T> : Metric<T> -> T := 
 	fun(f : T->Real){
 		some(x:T){forall(y:T){f(x) <= f(y)}}
 	} ;
 
-max<T> : Metric<T> -> T := 
+[QueryFunction] max<T> : Metric<T> -> T := 
 	fun(f : T->Real){
 		some(x:T){forall(y:T){f(x) >= f(y)}}
 	} ;
 
-sat<T> : Property<T> -> T := 
-	fun(f : Property<T>){
-		some(x:T){Property<T>(x)}
-	} ;
+[QueryFunction] sat<T> : Property<T> -> T;
+
+[QueryFunction] valid<T> : Property<T> -> T;

@@ -13,6 +13,8 @@ import com.utc.utrc.hermes.iml.lib.BasicServices
 import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
 import com.utc.utrc.hermes.iml.iml.Model
 import com.utc.utrc.hermes.iml.iml.Symbol
+import com.utc.utrc.hermes.iml.iml.TypeWithProperties
+import com.utc.utrc.hermes.iml.iml.SimpleTypeReference
 
 @Singleton
 class _PortsServices extends BasicServices

@@ -13,6 +13,8 @@ import com.utc.utrc.hermes.iml.lib.BasicServices
 import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
 import com.utc.utrc.hermes.iml.iml.Model
 import com.utc.utrc.hermes.iml.iml.Symbol
+import com.utc.utrc.hermes.iml.iml.TypeWithProperties
+import com.utc.utrc.hermes.iml.iml.SimpleTypeReference
 
 @Singleton
 class _LangServices extends BasicServices
@@ -186,6 +188,26 @@ class _LangServices extends BasicServices
 	 */
 	def isDoc(NamedType annotation) {
 		return getDocAnnotation == annotation
+	}
+	
+	/**
+	 * check whether the given symbol is annotated with Doc annotation
+	 */
+	def hasDocAnnotation(Symbol symbol) {
+		if (symbol.propertylist !== null) {
+			return symbol.propertylist.properties.map[(it.ref as SimpleTypeReference).type].contains(getDocAnnotation())	
+		}
+		return false;
+	}
+	
+	/**
+	 * check whether the given type is annotated with Doc annotation
+	 */
+	def hasDocAnnotation(TypeWithProperties type) {
+		if (type.properties !== null) {
+			return type.properties.properties.map[(it.ref as SimpleTypeReference).type].contains(getDocAnnotation())	
+		}
+		return false;
 	}
 	
 	/**

@@ -184,7 +184,7 @@ class ImlStdLib {
 	}
 	
 	def populate(Model model) {
-		if (model.stdLib) {
+		if (model.stdLib && !imlStdSymbols.containsKey(model.name)) {
 			if (!imlStdSymbols.containsKey(model.name)) {
 				imlStdSymbols.put(model.name, Maps.newHashMap())
 			}

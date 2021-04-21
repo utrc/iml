@@ -566,5 +566,18 @@ public class ImlUtil {
 		return !(type instanceof Annotation || type instanceof Trait ||
 				type instanceof Datatype);
 	}
+	
+	public static List<SymbolDeclaration> getAllSymbols(NamedType type, boolean recursive) {
+		List<SymbolDeclaration> symbols = new ArrayList<SymbolDeclaration>();
+		if (recursive) {
+			for (SimpleTypeReference parent : getRelatedTypes(type)) {
+				symbols.addAll(getAllSymbols(parent.getType(), recursive));
+			}
+		}
+		for (SymbolDeclaration symbol : type.getSymbols()) {
+				symbols.add(symbol);
+		}
+		return symbols;
+	}
 
 }

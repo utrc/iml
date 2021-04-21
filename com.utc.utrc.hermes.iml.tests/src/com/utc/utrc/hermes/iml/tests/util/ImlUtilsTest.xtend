@@ -27,6 +27,7 @@ import com.utc.utrc.hermes.iml.custom.ImlCustomFactory
 import org.eclipse.xtext.resource.XtextResource
 import com.utc.utrc.hermes.iml.util.TermExtractor
 import com.utc.utrc.hermes.iml.ImlParseHelper
+import com.utc.utrc.hermes.iml.iml.SimpleTypeReference
 
 @RunWith(XtextRunner)
 @InjectWith(ImlInjectorProvider)
@@ -179,6 +180,25 @@ class ImlUtilsTest {
 		val tl = TermExtractor.extractFrom(a.definition);	
 		print(tl)
 //		System.out.println( ( model.eResource as XtextResource).getSerializer().serialize(model)) ;
+	}
+	
+	@Test
+	def void testHasProperty() {
+		val model = '''
+		package p;
+		annotation A;
+		
+		[A] a1: Int;
+		a2: Int;
+		'''.parse
+		
+		model.assertNoErrors
+		
+		val a1 = model.findSymbol("a1") as SymbolDeclaration;
+		val a2 = model.findSymbol("a2") as SymbolDeclaration;
+		val A = model.findSymbol("A") as NamedType;
+		
+		assertTrue(a1.propertylist.properties.map[(it.ref as SimpleTypeReference).type].contains(A))
 	}
 	
 	

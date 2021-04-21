@@ -13,6 +13,8 @@ import com.utc.utrc.hermes.iml.lib.BasicServices
 import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
 import com.utc.utrc.hermes.iml.iml.Model
 import com.utc.utrc.hermes.iml.iml.Symbol
+import com.utc.utrc.hermes.iml.iml.TypeWithProperties
+import com.utc.utrc.hermes.iml.iml.SimpleTypeReference
 
 @Singleton
 class _VerdictServices extends BasicServices
@@ -67,6 +69,26 @@ class _VerdictServices extends BasicServices
 	 */
 	def isCyberRel(NamedType annotation) {
 		return getCyberRelAnnotation == annotation
+	}
+	
+	/**
+	 * check whether the given symbol is annotated with CyberRel annotation
+	 */
+	def hasCyberRelAnnotation(Symbol symbol) {
+		if (symbol.propertylist !== null) {
+			return symbol.propertylist.properties.map[(it.ref as SimpleTypeReference).type].contains(getCyberRelAnnotation())	
+		}
+		return false;
+	}
+	
+	/**
+	 * check whether the given type is annotated with CyberRel annotation
+	 */
+	def hasCyberRelAnnotation(TypeWithProperties type) {
+		if (type.properties !== null) {
+			return type.properties.properties.map[(it.ref as SimpleTypeReference).type].contains(getCyberRelAnnotation())	
+		}
+		return false;
 	}
 	
 	/**
@@ -132,6 +154,26 @@ class _VerdictServices extends BasicServices
 	}
 	
 	/**
+	 * check whether the given symbol is annotated with CyberMission annotation
+	 */
+	def hasCyberMissionAnnotation(Symbol symbol) {
+		if (symbol.propertylist !== null) {
+			return symbol.propertylist.properties.map[(it.ref as SimpleTypeReference).type].contains(getCyberMissionAnnotation())	
+		}
+		return false;
+	}
+	
+	/**
+	 * check whether the given type is annotated with CyberMission annotation
+	 */
+	def hasCyberMissionAnnotation(TypeWithProperties type) {
+		if (type.properties !== null) {
+			return type.properties.properties.map[(it.ref as SimpleTypeReference).type].contains(getCyberMissionAnnotation())	
+		}
+		return false;
+	}
+	
+	/**
 	 * Get all symbols inside the given type that has the CyberMission annotation. If recursive is true
 	 * then it will search for symbols inside type's parents
 	 */
@@ -172,6 +214,26 @@ class _VerdictServices extends BasicServices
 	 */
 	def isCyberReq(NamedType annotation) {
 		return getCyberReqAnnotation == annotation
+	}
+	
+	/**
+	 * check whether the given symbol is annotated with CyberReq annotation
+	 */
+	def hasCyberReqAnnotation(Symbol symbol) {
+		if (symbol.propertylist !== null) {
+			return symbol.propertylist.properties.map[(it.ref as SimpleTypeReference).type].contains(getCyberReqAnnotation())	
+		}
+		return false;
+	}
+	
+	/**
+	 * check whether the given type is annotated with CyberReq annotation
+	 */
+	def hasCyberReqAnnotation(TypeWithProperties type) {
+		if (type.properties !== null) {
+			return type.properties.properties.map[(it.ref as SimpleTypeReference).type].contains(getCyberReqAnnotation())	
+		}
+		return false;
 	}
 	
 	/**
@@ -294,6 +356,26 @@ class _VerdictServices extends BasicServices
 	}
 	
 	/**
+	 * check whether the given symbol is annotated with EventAn annotation
+	 */
+	def hasEventAnAnnotation(Symbol symbol) {
+		if (symbol.propertylist !== null) {
+			return symbol.propertylist.properties.map[(it.ref as SimpleTypeReference).type].contains(getEventAnAnnotation())	
+		}
+		return false;
+	}
+	
+	/**
+	 * check whether the given type is annotated with EventAn annotation
+	 */
+	def hasEventAnAnnotation(TypeWithProperties type) {
+		if (type.properties !== null) {
+			return type.properties.properties.map[(it.ref as SimpleTypeReference).type].contains(getEventAnAnnotation())	
+		}
+		return false;
+	}
+	
+	/**
 	 * Get all symbols inside the given type that has the EventAn annotation. If recursive is true
 	 * then it will search for symbols inside type's parents
 	 */
@@ -334,6 +416,26 @@ class _VerdictServices extends BasicServices
 	 */
 	def isSafetyRel(NamedType annotation) {
 		return getSafetyRelAnnotation == annotation
+	}
+	
+	/**
+	 * check whether the given symbol is annotated with SafetyRel annotation
+	 */
+	def hasSafetyRelAnnotation(Symbol symbol) {
+		if (symbol.propertylist !== null) {
+			return symbol.propertylist.properties.map[(it.ref as SimpleTypeReference).type].contains(getSafetyRelAnnotation())	
+		}
+		return false;
+	}
+	
+	/**
+	 * check whether the given type is annotated with SafetyRel annotation
+	 */
+	def hasSafetyRelAnnotation(TypeWithProperties type) {
+		if (type.properties !== null) {
+			return type.properties.properties.map[(it.ref as SimpleTypeReference).type].contains(getSafetyRelAnnotation())	
+		}
+		return false;
 	}
 	
 	/**
@@ -419,6 +521,26 @@ class _VerdictServices extends BasicServices
 	 */
 	def isSafetyReq(NamedType annotation) {
 		return getSafetyReqAnnotation == annotation
+	}
+	
+	/**
+	 * check whether the given symbol is annotated with SafetyReq annotation
+	 */
+	def hasSafetyReqAnnotation(Symbol symbol) {
+		if (symbol.propertylist !== null) {
+			return symbol.propertylist.properties.map[(it.ref as SimpleTypeReference).type].contains(getSafetyReqAnnotation())	
+		}
+		return false;
+	}
+	
+	/**
+	 * check whether the given type is annotated with SafetyReq annotation
+	 */
+	def hasSafetyReqAnnotation(TypeWithProperties type) {
+		if (type.properties !== null) {
+			return type.properties.properties.map[(it.ref as SimpleTypeReference).type].contains(getSafetyReqAnnotation())	
+		}
+		return false;
 	}
 	
 	/**

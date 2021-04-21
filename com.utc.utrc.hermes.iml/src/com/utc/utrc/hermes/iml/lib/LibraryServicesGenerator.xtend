@@ -200,6 +200,26 @@ class LibraryServicesGenerator {
 		}
 		
 		/**
+		 * check whether the given symbol is annotated with «symbolName» annotation
+		 */
+		def has«symbolName»Annotation(Symbol symbol) {
+			if (symbol.propertylist !== null) {
+				return symbol.propertylist.properties.map[(it.ref as SimpleTypeReference).type].contains(get«symbolName»Annotation())	
+			}
+			return false;
+		}
+		
+		/**
+		 * check whether the given type is annotated with «symbolName» annotation
+		 */
+		def has«symbolName»Annotation(TypeWithProperties type) {
+			if (type.properties !== null) {
+				return type.properties.properties.map[(it.ref as SimpleTypeReference).type].contains(get«symbolName»Annotation())	
+			}
+			return false;
+		}
+		
+		/**
 		 * Get all symbols inside the given type that has the «symbolName» annotation. If recursive is true
 		 * then it will search for symbols inside type's parents
 		 */
@@ -282,6 +302,8 @@ class LibraryServicesGenerator {
 		import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
 		import com.utc.utrc.hermes.iml.iml.Model
 		import com.utc.utrc.hermes.iml.iml.Symbol
+		import com.utc.utrc.hermes.iml.iml.TypeWithProperties
+		import com.utc.utrc.hermes.iml.iml.SimpleTypeReference
 		'''
 	}
 	

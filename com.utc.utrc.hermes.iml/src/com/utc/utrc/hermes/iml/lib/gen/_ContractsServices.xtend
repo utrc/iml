@@ -13,6 +13,8 @@ import com.utc.utrc.hermes.iml.lib.BasicServices
 import com.utc.utrc.hermes.iml.iml.SymbolDeclaration
 import com.utc.utrc.hermes.iml.iml.Model
 import com.utc.utrc.hermes.iml.iml.Symbol
+import com.utc.utrc.hermes.iml.iml.TypeWithProperties
+import com.utc.utrc.hermes.iml.iml.SimpleTypeReference
 
 @Singleton
 class _ContractsServices extends BasicServices
@@ -105,6 +107,26 @@ class _ContractsServices extends BasicServices
 	}
 	
 	/**
+	 * check whether the given symbol is annotated with Assume annotation
+	 */
+	def hasAssumeAnnotation(Symbol symbol) {
+		if (symbol.propertylist !== null) {
+			return symbol.propertylist.properties.map[(it.ref as SimpleTypeReference).type].contains(getAssumeAnnotation())	
+		}
+		return false;
+	}
+	
+	/**
+	 * check whether the given type is annotated with Assume annotation
+	 */
+	def hasAssumeAnnotation(TypeWithProperties type) {
+		if (type.properties !== null) {
+			return type.properties.properties.map[(it.ref as SimpleTypeReference).type].contains(getAssumeAnnotation())	
+		}
+		return false;
+	}
+	
+	/**
 	 * Get all symbols inside the given type that has the Assume annotation. If recursive is true
 	 * then it will search for symbols inside type's parents
 	 */
@@ -143,6 +165,26 @@ class _ContractsServices extends BasicServices
 	 */
 	def isGuarantee(NamedType annotation) {
 		return getGuaranteeAnnotation == annotation
+	}
+	
+	/**
+	 * check whether the given symbol is annotated with Guarantee annotation
+	 */
+	def hasGuaranteeAnnotation(Symbol symbol) {
+		if (symbol.propertylist !== null) {
+			return symbol.propertylist.properties.map[(it.ref as SimpleTypeReference).type].contains(getGuaranteeAnnotation())	
+		}
+		return false;
+	}
+	
+	/**
+	 * check whether the given type is annotated with Guarantee annotation
+	 */
+	def hasGuaranteeAnnotation(TypeWithProperties type) {
+		if (type.properties !== null) {
+			return type.properties.properties.map[(it.ref as SimpleTypeReference).type].contains(getGuaranteeAnnotation())	
+		}
+		return false;
 	}
 	
 	/**

@@ -320,7 +320,8 @@ class ImlTypeProvider {
 
 	def ImlType getSymbolType(SymbolReferenceTerm symbolRef, TypingEnvironment env) {
 		if (symbolRef.symbol instanceof SymbolDeclaration) {
-			if ((symbolRef.symbol.eContainer instanceof Model) || isSymbolLocalScope(symbolRef.symbol as SymbolDeclaration) || 
+			if ((symbolRef.symbol.eContainer instanceof Model) || (symbolRef.symbol.eContainer === null) || 
+				isSymbolLocalScope(symbolRef.symbol as SymbolDeclaration) || 
 				(env.typeContext !== null && env.typeContext.type.symbols.contains(symbolRef.symbol as SymbolDeclaration))) {
 				return env.bind(symbolRef)
 			} else {
