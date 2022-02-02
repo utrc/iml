@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Tests
-Bundle-SymbolicName: com.utc.utrc.hermes.iml.example.tests
+Bundle-SymbolicName: com.utc.utrc.hermes.iml.example.tests;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-Vendor: UTC
 Automatic-Module-Name: com.utc.utrc.hermes.iml.example.tests

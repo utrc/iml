@@ -419,4 +419,52 @@ class ImlScopeProviderTest {
 		assertTrue(expected.containsAll(scope))
 	}
 	
+	@Test
+	def scopeForTypeInit() {
+		val model = '''
+			package p;
+			type T1 {
+				a : Int;
+				b: Real;				
+			}
+			
+			t1 : T1(a := 5, b := 2.5);
+		'''.parse
+		
+		model.assertNoErrors
+	}
+	
+	@Test
+	def scopeForTypeInitParentSymbol() {
+		val model = '''
+			package p;
+			trait P1 {
+				x: Int;
+			}
+			type T1 exhibits (P1) {
+				a : Int;
+				b: Real;				
+			}
+			
+			t1 : T1(a := 5, b := 2.5, x := 10);
+		'''.parse
+		
+		model.assertNoErrors
+	}
+	
+	@Test
+	def scopeForTypeInitPartialInit() {
+		val model = '''
+			package p;
+			type T1 {
+				a : Int;
+				b: Real;				
+			}
+			
+			t1 : T1(a := 5);
+		'''.parse
+		
+		model.assertNoErrors
+	}
+	
 }

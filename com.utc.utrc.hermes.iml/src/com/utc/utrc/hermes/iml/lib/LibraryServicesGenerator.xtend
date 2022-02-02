@@ -220,6 +220,16 @@ class LibraryServicesGenerator {
 		}
 		
 		/**
+		 * check whether the given model is annotated with «symbolName» annotation
+		 */
+		def has«symbolName»Annotation(Model model) {
+			if (model.propertylist !== null) {
+				return model.propertylist.properties.map[(it.ref as SimpleTypeReference).type].contains(get«symbolName»Annotation())	
+			}
+			return false;
+		}
+		
+		/**
 		 * Get all symbols inside the given type that has the «symbolName» annotation. If recursive is true
 		 * then it will search for symbols inside type's parents
 		 */

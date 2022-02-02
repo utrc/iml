@@ -39,6 +39,7 @@ import com.utc.utrc.hermes.iml.iml.MatchStatement
 import com.utc.utrc.hermes.iml.iml.Datatype
 import com.google.common.collect.Lists
 import com.utc.utrc.hermes.iml.iml.TailedExpression
+import com.utc.utrc.hermes.iml.iml.TypeInit
 
 /**
  * This class contains custom scoping description.
@@ -181,6 +182,11 @@ class ImlScopeProvider extends AbstractDeclarativeScopeProvider {
 		return getScope(context.eContainer, r)
 	}
 
+	def scope_SymbolReferenceTerm_symbol(TypeInit context, EReference r) {
+		return getScope(context.eContainer, r)
+	}
+	
+
 	def IScope buildNestedScope(EObject o) {
 		if (o === null) {
 			return IScope::NULLSCOPE
@@ -204,6 +210,13 @@ class ImlScopeProvider extends AbstractDeclarativeScopeProvider {
 				return scopeOfNamedType((o.ref as SimpleTypeReference).type, buildNestedScope(o.eContainer))
 			Model:
 				return Scopes::scopeFor(o.symbols, getGlobalScope(o,ImlPackage::eINSTANCE.model_Symbols))
+			TypeInit:{
+				if (o.eContainer instanceof SimpleTypeReference){
+					var str = o.eContainer as SimpleTypeReference;
+					return scopeOfNamedType(str.type, buildNestedScope(o.eContainer));
+				}
+				return buildNestedScope(o.eContainer)	
+			}
 			default:
 				return buildNestedScope(o.eContainer)
 		}

@@ -9,14 +9,14 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  com.utc.utrc.hermes.docs;bundle-version="1.0.0",
  com.utc.utrc.hermes.iml;bundle-version="1.0.0",
- com.utc.utrc.hermes.iml.gen.common;bundle-version="1.0.0",
  com.utc.utrc.hermes.iml.lib;bundle-version="1.0.0",
  org.eclipse.emf.ecore,
  org.eclipse.xtext,
  com.google.guava,
  org.eclipse.xtext.xbase.lib,
  org.eclipse.xtend.lib,
- org.eclipse.xtend.lib.macro
+ org.eclipse.xtend.lib.macro,
+ com.utc.utrc.hermes.iml.gen.common;bundle-version="1.0.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Automatic-Module-Name: com.utc.utrc.hermes.iml.example
 Bundle-ActivationPolicy: lazy

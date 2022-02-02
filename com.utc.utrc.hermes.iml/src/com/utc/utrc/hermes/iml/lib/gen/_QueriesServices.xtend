@@ -25,6 +25,7 @@ class _QueriesServices extends BasicServices
 	public static final String QUERY = "Query"	
 	public static final String MAX_SYMBOL = "max"	
 	public static final String SAT_SYMBOL = "sat"	
+	public static final String VALID_SYMBOL = "valid"	
 	public static final String RELATIONALPROPERTY = "RelationalProperty"	
 	public static final String MIN_SYMBOL = "min"	
 	public static final String QUERYFUNCTION = "QueryFunction"	
@@ -100,6 +101,12 @@ class _QueriesServices extends BasicServices
 	 */
 	 def getSatSymbol() {
 	 	return getSymbolDeclaration(SAT_SYMBOL)
+	 }
+	/**
+	 * Get ValidSymbol symbol declaration
+	 */
+	 def getValidSymbol() {
+	 	return getSymbolDeclaration(VALID_SYMBOL)
 	 }
 	/**
 	 * get RelationalProperty type declaration

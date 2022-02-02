@@ -485,7 +485,7 @@ public class ImlUtil {
 		if (traits.size() == 0)
 			return false;
 		return traits.stream()
-				.filter(twp -> twp.getType() instanceof SimpleTypeReference)
+				.filter(twp -> twp.getType() instanceof SimpleTypeReference && ((SimpleTypeReference) twp.getType()).getType() instanceof Trait)
 				.map(twp -> (Trait) ((SimpleTypeReference) twp.getType()).getType() )
 				.anyMatch(t -> EcoreUtil.equals(t, trait) || refines(t, trait)) ;
 		
