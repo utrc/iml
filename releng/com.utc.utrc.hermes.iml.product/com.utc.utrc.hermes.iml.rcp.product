@@ -3,7 +3,6 @@
 
 <product name="IML IDE" uid="com.utc.utrc.hermes.iml.rcp.product" id="com.utc.utrc.hermes.rcp.IML" application="org.eclipse.ui.ide.workbench" version="1.0.0.qualifier" useFeatures="true" includeLaunchers="true">
 
-
    <configIni use="default">
    </configIni>
 
@@ -16,17 +15,14 @@
 
    <windowImages/>
 
-
    <launcher>
       <win useIco="false">
          <bmp/>
       </win>
    </launcher>
 
-
    <vm>
    </vm>
-
 
    <plugins>
    </plugins>
@@ -36,8 +32,6 @@
       <feature id="org.eclipse.platform"/>
       <feature id="org.eclipse.emf.ecore"/>
       <feature id="org.eclipse.equinox.p2.user.ui"/>
-      <feature id="org.eclipse.ecf.filetransfer.httpclient4.feature"/>
-      <feature id="org.eclipse.ecf.filetransfer.httpclient4.ssl.feature"/>
       <feature id="org.eclipse.help"/>
       <feature id="org.eclipse.equinox.p2.extras.feature"/>
       <feature id="org.eclipse.rcp"/>
@@ -49,7 +43,7 @@
       <feature id="org.eclipse.ecf.core.ssl.feature"/>
       <feature id="org.eclipse.ecf.filetransfer.ssl.feature"/>
       <feature id="org.eclipse.e4.rcp"/>
-      <feature id="org.eclipse.xtext.sdk" version="2.12.0.v20170519-1412"/>
+      <feature id="org.eclipse.xtext.sdk"/>
       <feature id="org.eclipse.xtext.redist"/>
       <feature id="org.eclipse.emf.mwe2.language.sdk"/>
       <feature id="org.eclipse.xtext.xtext.ui"/>
@@ -63,12 +57,14 @@
       <feature id="org.eclipse.xtext.examples"/>
       <feature id="org.eclipse.xtext.ui"/>
       <feature id="org.eclipse.xtext.docs"/>
+      <feature id="org.eclipse.xtext.xtext.ui.graph" installMode="root"/>
+      <feature id="org.eclipse.ecf.filetransfer.httpclient45.feature" installMode="root"/>
    </features>
 
    <configurations>
+      <plugin id="org.apache.felix.scr" autoStart="true" startLevel="2" />
       <plugin id="org.eclipse.core.runtime" autoStart="true" startLevel="0" />
       <plugin id="org.eclipse.equinox.common" autoStart="true" startLevel="2" />
-      <plugin id="org.eclipse.equinox.ds" autoStart="true" startLevel="2" />
       <plugin id="org.eclipse.equinox.event" autoStart="true" startLevel="2" />
       <plugin id="org.eclipse.equinox.simpleconfigurator" autoStart="true" startLevel="1" />
    </configurations>
