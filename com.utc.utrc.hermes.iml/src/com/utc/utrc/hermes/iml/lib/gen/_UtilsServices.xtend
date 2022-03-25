@@ -44,7 +44,7 @@ class _UtilsServices extends BasicServices
 	 * check whether the given type is Tree type
 	 */
 	def isTree(NamedType type) {
-		return getTreeType == type
+		return equalOrSameQn(getTreeType, type)
 	}
 	
 	/**
@@ -93,7 +93,7 @@ class _UtilsServices extends BasicServices
 	 * check whether the given type is List type
 	 */
 	def isList(NamedType type) {
-		return getListType == type
+		return equalOrSameQn(getListType, type)
 	}
 	
 	/**

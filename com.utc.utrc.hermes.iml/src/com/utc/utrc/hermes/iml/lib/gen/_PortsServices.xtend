@@ -75,7 +75,7 @@ class _PortsServices extends BasicServices
 	 * check whether the given type is EndToEndFlow type
 	 */
 	def isEndToEndFlow(NamedType type) {
-		return getEndToEndFlowType == type
+		return equalOrSameQn(getEndToEndFlowType, type)
 	}
 	
 	/**
@@ -117,7 +117,7 @@ class _PortsServices extends BasicServices
 	 * check whether the given type is FlowConnector type
 	 */
 	def isFlowConnector(NamedType type) {
-		return getFlowConnectorType == type
+		return equalOrSameQn(getFlowConnectorType, type)
 	}
 	
 	/**
@@ -158,7 +158,7 @@ class _PortsServices extends BasicServices
 	 * check whether the given type is Port type
 	 */
 	def isPort(NamedType type) {
-		return getPortType == type
+		return equalOrSameQn(getPortType, type)
 	}
 	
 	/**
@@ -185,7 +185,7 @@ class _PortsServices extends BasicServices
 	 * check whether the given type is DataPort type
 	 */
 	def isDataPort(NamedType type) {
-		return getDataPortType == type
+		return equalOrSameQn(getDataPortType, type)
 	}
 	
 	/**
@@ -226,7 +226,7 @@ class _PortsServices extends BasicServices
 	 * check whether the given type is ThreeState type
 	 */
 	def isThreeState(NamedType type) {
-		return getThreeStateType == type
+		return equalOrSameQn(getThreeStateType, type)
 	}
 	
 	/**
@@ -247,7 +247,7 @@ class _PortsServices extends BasicServices
 	 * check whether the given type is DelayState type
 	 */
 	def isDelayState(NamedType type) {
-		return getDelayStateType == type
+		return equalOrSameQn(getDelayStateType, type)
 	}
 	
 	/**
@@ -282,7 +282,7 @@ class _PortsServices extends BasicServices
 	 * check whether the given type is Delay type
 	 */
 	def isDelay(NamedType type) {
-		return getDelayType == type
+		return equalOrSameQn(getDelayType, type)
 	}
 	
 	/**
@@ -345,7 +345,7 @@ class _PortsServices extends BasicServices
 	 * check whether the given type is EventPort type
 	 */
 	def isEventPort(NamedType type) {
-		return getEventPortType == type
+		return equalOrSameQn(getEventPortType, type)
 	}
 	
 	/**
@@ -380,7 +380,7 @@ class _PortsServices extends BasicServices
 	 * check whether the given type is FlowPoint type
 	 */
 	def isFlowPoint(NamedType type) {
-		return getFlowPointType == type
+		return equalOrSameQn(getFlowPointType, type)
 	}
 	
 	/**
@@ -434,7 +434,7 @@ class _PortsServices extends BasicServices
 	 * check whether the given type is FlowPath type
 	 */
 	def isFlowPath(NamedType type) {
-		return getFlowPathType == type
+		return equalOrSameQn(getFlowPathType, type)
 	}
 	
 	/**
@@ -483,7 +483,7 @@ class _PortsServices extends BasicServices
 	 * check whether the given type is EventDataPort type
 	 */
 	def isEventDataPort(NamedType type) {
-		return getEventDataPortType == type
+		return equalOrSameQn(getEventDataPortType, type)
 	}
 	
 	/**

@@ -71,7 +71,7 @@ class _LtlServices extends BasicServices
 	 * check whether the given type is LtlFormula type
 	 */
 	def isLtlFormula(NamedType type) {
-		return getLtlFormulaType == type
+		return equalOrSameQn(getLtlFormulaType, type)
 	}
 	
 	/**
@@ -104,7 +104,7 @@ class _LtlServices extends BasicServices
 	 * check whether the given type is MyState type
 	 */
 	def isMyState(NamedType type) {
-		return getMyStateType == type
+		return equalOrSameQn(getMyStateType, type)
 	}
 	
 	/**
@@ -205,7 +205,7 @@ class _LtlServices extends BasicServices
 	 * check whether the given type is IntState type
 	 */
 	def isIntState(NamedType type) {
-		return getIntStateType == type
+		return equalOrSameQn(getIntStateType, type)
 	}
 	
 	/**

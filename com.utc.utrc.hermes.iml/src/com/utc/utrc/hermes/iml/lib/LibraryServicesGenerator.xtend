@@ -196,7 +196,7 @@ class LibraryServicesGenerator {
 		 * check whether the given type is «symbolName» annotation
 		 */
 		def is«symbolName»(NamedType annotation) {
-			return get«symbolName»Annotation == annotation
+			return equalOrSameQn(get«symbolName»Annotation, annotation)
 		}
 		
 		/**
@@ -204,7 +204,7 @@ class LibraryServicesGenerator {
 		 */
 		def has«symbolName»Annotation(Symbol symbol) {
 			if (symbol.propertylist !== null) {
-				return symbol.propertylist.properties.map[(it.ref as SimpleTypeReference).type].contains(get«symbolName»Annotation())	
+				return symbol.propertylist.properties.map[(it.ref as SimpleTypeReference).type].containsSameQn(get«symbolName»Annotation())	
 			}
 			return false;
 		}
@@ -214,7 +214,7 @@ class LibraryServicesGenerator {
 		 */
 		def has«symbolName»Annotation(TypeWithProperties type) {
 			if (type.properties !== null) {
-				return type.properties.properties.map[(it.ref as SimpleTypeReference).type].contains(get«symbolName»Annotation())	
+				return type.properties.properties.map[(it.ref as SimpleTypeReference).type].containsSameQn(get«symbolName»Annotation())	
 			}
 			return false;
 		}
@@ -224,7 +224,7 @@ class LibraryServicesGenerator {
 		 */
 		def has«symbolName»Annotation(Model model) {
 			if (model.propertylist !== null) {
-				return model.propertylist.properties.map[(it.ref as SimpleTypeReference).type].contains(get«symbolName»Annotation())	
+				return model.propertylist.properties.map[(it.ref as SimpleTypeReference).type].containsSameQn(get«symbolName»Annotation())	
 			}
 			return false;
 		}
@@ -249,7 +249,7 @@ class LibraryServicesGenerator {
 		 * check whether the given type is «symbolName» type
 		 */
 		def is«symbolName»(NamedType type) {
-			return get«symbolName»Type == type
+			return equalOrSameQn(get«symbolName»Type, type)
 		}
 		
 		/**

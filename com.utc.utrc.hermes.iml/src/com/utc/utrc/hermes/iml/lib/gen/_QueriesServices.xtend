@@ -59,7 +59,7 @@ class _QueriesServices extends BasicServices
 	 * check whether the given type is Query annotation
 	 */
 	def isQuery(NamedType annotation) {
-		return getQueryAnnotation == annotation
+		return equalOrSameQn(getQueryAnnotation, annotation)
 	}
 	
 	/**
@@ -67,7 +67,7 @@ class _QueriesServices extends BasicServices
 	 */
 	def hasQueryAnnotation(Symbol symbol) {
 		if (symbol.propertylist !== null) {
-			return symbol.propertylist.properties.map[(it.ref as SimpleTypeReference).type].contains(getQueryAnnotation())	
+			return symbol.propertylist.properties.map[(it.ref as SimpleTypeReference).type].containsSameQn(getQueryAnnotation())	
 		}
 		return false;
 	}
@@ -77,7 +77,17 @@ class _QueriesServices extends BasicServices
 	 */
 	def hasQueryAnnotation(TypeWithProperties type) {
 		if (type.properties !== null) {
-			return type.properties.properties.map[(it.ref as SimpleTypeReference).type].contains(getQueryAnnotation())	
+			return type.properties.properties.map[(it.ref as SimpleTypeReference).type].containsSameQn(getQueryAnnotation())	
+		}
+		return false;
+	}
+	
+	/**
+	 * check whether the given model is annotated with Query annotation
+	 */
+	def hasQueryAnnotation(Model model) {
+		if (model.propertylist !== null) {
+			return model.propertylist.properties.map[(it.ref as SimpleTypeReference).type].containsSameQn(getQueryAnnotation())	
 		}
 		return false;
 	}
@@ -119,7 +129,7 @@ class _QueriesServices extends BasicServices
 	 * check whether the given type is RelationalProperty type
 	 */
 	def isRelationalProperty(NamedType type) {
-		return getRelationalPropertyType == type
+		return equalOrSameQn(getRelationalPropertyType, type)
 	}
 	
 	/**
@@ -146,7 +156,7 @@ class _QueriesServices extends BasicServices
 	 * check whether the given type is QueryFunction annotation
 	 */
 	def isQueryFunction(NamedType annotation) {
-		return getQueryFunctionAnnotation == annotation
+		return equalOrSameQn(getQueryFunctionAnnotation, annotation)
 	}
 	
 	/**
@@ -154,7 +164,7 @@ class _QueriesServices extends BasicServices
 	 */
 	def hasQueryFunctionAnnotation(Symbol symbol) {
 		if (symbol.propertylist !== null) {
-			return symbol.propertylist.properties.map[(it.ref as SimpleTypeReference).type].contains(getQueryFunctionAnnotation())	
+			return symbol.propertylist.properties.map[(it.ref as SimpleTypeReference).type].containsSameQn(getQueryFunctionAnnotation())	
 		}
 		return false;
 	}
@@ -164,7 +174,17 @@ class _QueriesServices extends BasicServices
 	 */
 	def hasQueryFunctionAnnotation(TypeWithProperties type) {
 		if (type.properties !== null) {
-			return type.properties.properties.map[(it.ref as SimpleTypeReference).type].contains(getQueryFunctionAnnotation())	
+			return type.properties.properties.map[(it.ref as SimpleTypeReference).type].containsSameQn(getQueryFunctionAnnotation())	
+		}
+		return false;
+	}
+	
+	/**
+	 * check whether the given model is annotated with QueryFunction annotation
+	 */
+	def hasQueryFunctionAnnotation(Model model) {
+		if (model.propertylist !== null) {
+			return model.propertylist.properties.map[(it.ref as SimpleTypeReference).type].containsSameQn(getQueryFunctionAnnotation())	
 		}
 		return false;
 	}
@@ -194,7 +214,7 @@ class _QueriesServices extends BasicServices
 	 * check whether the given type is Metric type
 	 */
 	def isMetric(NamedType type) {
-		return getMetricType == type
+		return equalOrSameQn(getMetricType, type)
 	}
 	
 	/**
@@ -233,7 +253,7 @@ class _QueriesServices extends BasicServices
 	 * check whether the given type is Property type
 	 */
 	def isProperty(NamedType type) {
-		return getPropertyType == type
+		return equalOrSameQn(getPropertyType, type)
 	}
 	
 	/**

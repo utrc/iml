@@ -68,7 +68,7 @@ class _VerdictServices extends BasicServices
 	 * check whether the given type is CyberRel annotation
 	 */
 	def isCyberRel(NamedType annotation) {
-		return getCyberRelAnnotation == annotation
+		return equalOrSameQn(getCyberRelAnnotation, annotation)
 	}
 	
 	/**
@@ -76,7 +76,7 @@ class _VerdictServices extends BasicServices
 	 */
 	def hasCyberRelAnnotation(Symbol symbol) {
 		if (symbol.propertylist !== null) {
-			return symbol.propertylist.properties.map[(it.ref as SimpleTypeReference).type].contains(getCyberRelAnnotation())	
+			return symbol.propertylist.properties.map[(it.ref as SimpleTypeReference).type].containsSameQn(getCyberRelAnnotation())	
 		}
 		return false;
 	}
@@ -86,7 +86,17 @@ class _VerdictServices extends BasicServices
 	 */
 	def hasCyberRelAnnotation(TypeWithProperties type) {
 		if (type.properties !== null) {
-			return type.properties.properties.map[(it.ref as SimpleTypeReference).type].contains(getCyberRelAnnotation())	
+			return type.properties.properties.map[(it.ref as SimpleTypeReference).type].containsSameQn(getCyberRelAnnotation())	
+		}
+		return false;
+	}
+	
+	/**
+	 * check whether the given model is annotated with CyberRel annotation
+	 */
+	def hasCyberRelAnnotation(Model model) {
+		if (model.propertylist !== null) {
+			return model.propertylist.properties.map[(it.ref as SimpleTypeReference).type].containsSameQn(getCyberRelAnnotation())	
 		}
 		return false;
 	}
@@ -150,7 +160,7 @@ class _VerdictServices extends BasicServices
 	 * check whether the given type is CyberMission annotation
 	 */
 	def isCyberMission(NamedType annotation) {
-		return getCyberMissionAnnotation == annotation
+		return equalOrSameQn(getCyberMissionAnnotation, annotation)
 	}
 	
 	/**
@@ -158,7 +168,7 @@ class _VerdictServices extends BasicServices
 	 */
 	def hasCyberMissionAnnotation(Symbol symbol) {
 		if (symbol.propertylist !== null) {
-			return symbol.propertylist.properties.map[(it.ref as SimpleTypeReference).type].contains(getCyberMissionAnnotation())	
+			return symbol.propertylist.properties.map[(it.ref as SimpleTypeReference).type].containsSameQn(getCyberMissionAnnotation())	
 		}
 		return false;
 	}
@@ -168,7 +178,17 @@ class _VerdictServices extends BasicServices
 	 */
 	def hasCyberMissionAnnotation(TypeWithProperties type) {
 		if (type.properties !== null) {
-			return type.properties.properties.map[(it.ref as SimpleTypeReference).type].contains(getCyberMissionAnnotation())	
+			return type.properties.properties.map[(it.ref as SimpleTypeReference).type].containsSameQn(getCyberMissionAnnotation())	
+		}
+		return false;
+	}
+	
+	/**
+	 * check whether the given model is annotated with CyberMission annotation
+	 */
+	def hasCyberMissionAnnotation(Model model) {
+		if (model.propertylist !== null) {
+			return model.propertylist.properties.map[(it.ref as SimpleTypeReference).type].containsSameQn(getCyberMissionAnnotation())	
 		}
 		return false;
 	}
@@ -213,7 +233,7 @@ class _VerdictServices extends BasicServices
 	 * check whether the given type is CyberReq annotation
 	 */
 	def isCyberReq(NamedType annotation) {
-		return getCyberReqAnnotation == annotation
+		return equalOrSameQn(getCyberReqAnnotation, annotation)
 	}
 	
 	/**
@@ -221,7 +241,7 @@ class _VerdictServices extends BasicServices
 	 */
 	def hasCyberReqAnnotation(Symbol symbol) {
 		if (symbol.propertylist !== null) {
-			return symbol.propertylist.properties.map[(it.ref as SimpleTypeReference).type].contains(getCyberReqAnnotation())	
+			return symbol.propertylist.properties.map[(it.ref as SimpleTypeReference).type].containsSameQn(getCyberReqAnnotation())	
 		}
 		return false;
 	}
@@ -231,7 +251,17 @@ class _VerdictServices extends BasicServices
 	 */
 	def hasCyberReqAnnotation(TypeWithProperties type) {
 		if (type.properties !== null) {
-			return type.properties.properties.map[(it.ref as SimpleTypeReference).type].contains(getCyberReqAnnotation())	
+			return type.properties.properties.map[(it.ref as SimpleTypeReference).type].containsSameQn(getCyberReqAnnotation())	
+		}
+		return false;
+	}
+	
+	/**
+	 * check whether the given model is annotated with CyberReq annotation
+	 */
+	def hasCyberReqAnnotation(Model model) {
+		if (model.propertylist !== null) {
+			return model.propertylist.properties.map[(it.ref as SimpleTypeReference).type].containsSameQn(getCyberReqAnnotation())	
 		}
 		return false;
 	}
@@ -310,7 +340,7 @@ class _VerdictServices extends BasicServices
 	 * check whether the given type is TargetLikelihood type
 	 */
 	def isTargetLikelihood(NamedType type) {
-		return getTargetLikelihoodType == type
+		return equalOrSameQn(getTargetLikelihoodType, type)
 	}
 	
 	/**
@@ -331,7 +361,7 @@ class _VerdictServices extends BasicServices
 	 * check whether the given type is Severity type
 	 */
 	def isSeverity(NamedType type) {
-		return getSeverityType == type
+		return equalOrSameQn(getSeverityType, type)
 	}
 	
 	/**
@@ -352,7 +382,7 @@ class _VerdictServices extends BasicServices
 	 * check whether the given type is EventAn annotation
 	 */
 	def isEventAn(NamedType annotation) {
-		return getEventAnAnnotation == annotation
+		return equalOrSameQn(getEventAnAnnotation, annotation)
 	}
 	
 	/**
@@ -360,7 +390,7 @@ class _VerdictServices extends BasicServices
 	 */
 	def hasEventAnAnnotation(Symbol symbol) {
 		if (symbol.propertylist !== null) {
-			return symbol.propertylist.properties.map[(it.ref as SimpleTypeReference).type].contains(getEventAnAnnotation())	
+			return symbol.propertylist.properties.map[(it.ref as SimpleTypeReference).type].containsSameQn(getEventAnAnnotation())	
 		}
 		return false;
 	}
@@ -370,7 +400,17 @@ class _VerdictServices extends BasicServices
 	 */
 	def hasEventAnAnnotation(TypeWithProperties type) {
 		if (type.properties !== null) {
-			return type.properties.properties.map[(it.ref as SimpleTypeReference).type].contains(getEventAnAnnotation())	
+			return type.properties.properties.map[(it.ref as SimpleTypeReference).type].containsSameQn(getEventAnAnnotation())	
+		}
+		return false;
+	}
+	
+	/**
+	 * check whether the given model is annotated with EventAn annotation
+	 */
+	def hasEventAnAnnotation(Model model) {
+		if (model.propertylist !== null) {
+			return model.propertylist.properties.map[(it.ref as SimpleTypeReference).type].containsSameQn(getEventAnAnnotation())	
 		}
 		return false;
 	}
@@ -415,7 +455,7 @@ class _VerdictServices extends BasicServices
 	 * check whether the given type is SafetyRel annotation
 	 */
 	def isSafetyRel(NamedType annotation) {
-		return getSafetyRelAnnotation == annotation
+		return equalOrSameQn(getSafetyRelAnnotation, annotation)
 	}
 	
 	/**
@@ -423,7 +463,7 @@ class _VerdictServices extends BasicServices
 	 */
 	def hasSafetyRelAnnotation(Symbol symbol) {
 		if (symbol.propertylist !== null) {
-			return symbol.propertylist.properties.map[(it.ref as SimpleTypeReference).type].contains(getSafetyRelAnnotation())	
+			return symbol.propertylist.properties.map[(it.ref as SimpleTypeReference).type].containsSameQn(getSafetyRelAnnotation())	
 		}
 		return false;
 	}
@@ -433,7 +473,17 @@ class _VerdictServices extends BasicServices
 	 */
 	def hasSafetyRelAnnotation(TypeWithProperties type) {
 		if (type.properties !== null) {
-			return type.properties.properties.map[(it.ref as SimpleTypeReference).type].contains(getSafetyRelAnnotation())	
+			return type.properties.properties.map[(it.ref as SimpleTypeReference).type].containsSameQn(getSafetyRelAnnotation())	
+		}
+		return false;
+	}
+	
+	/**
+	 * check whether the given model is annotated with SafetyRel annotation
+	 */
+	def hasSafetyRelAnnotation(Model model) {
+		if (model.propertylist !== null) {
+			return model.propertylist.properties.map[(it.ref as SimpleTypeReference).type].containsSameQn(getSafetyRelAnnotation())	
 		}
 		return false;
 	}
@@ -478,7 +528,7 @@ class _VerdictServices extends BasicServices
 	 * check whether the given type is Event type
 	 */
 	def isEvent(NamedType type) {
-		return getEventType == type
+		return equalOrSameQn(getEventType, type)
 	}
 	
 	/**
@@ -499,7 +549,7 @@ class _VerdictServices extends BasicServices
 	 * check whether the given type is CIA type
 	 */
 	def isCIA(NamedType type) {
-		return getCIAType == type
+		return equalOrSameQn(getCIAType, type)
 	}
 	
 	/**
@@ -520,7 +570,7 @@ class _VerdictServices extends BasicServices
 	 * check whether the given type is SafetyReq annotation
 	 */
 	def isSafetyReq(NamedType annotation) {
-		return getSafetyReqAnnotation == annotation
+		return equalOrSameQn(getSafetyReqAnnotation, annotation)
 	}
 	
 	/**
@@ -528,7 +578,7 @@ class _VerdictServices extends BasicServices
 	 */
 	def hasSafetyReqAnnotation(Symbol symbol) {
 		if (symbol.propertylist !== null) {
-			return symbol.propertylist.properties.map[(it.ref as SimpleTypeReference).type].contains(getSafetyReqAnnotation())	
+			return symbol.propertylist.properties.map[(it.ref as SimpleTypeReference).type].containsSameQn(getSafetyReqAnnotation())	
 		}
 		return false;
 	}
@@ -538,7 +588,17 @@ class _VerdictServices extends BasicServices
 	 */
 	def hasSafetyReqAnnotation(TypeWithProperties type) {
 		if (type.properties !== null) {
-			return type.properties.properties.map[(it.ref as SimpleTypeReference).type].contains(getSafetyReqAnnotation())	
+			return type.properties.properties.map[(it.ref as SimpleTypeReference).type].containsSameQn(getSafetyReqAnnotation())	
+		}
+		return false;
+	}
+	
+	/**
+	 * check whether the given model is annotated with SafetyReq annotation
+	 */
+	def hasSafetyReqAnnotation(Model model) {
+		if (model.propertylist !== null) {
+			return model.propertylist.properties.map[(it.ref as SimpleTypeReference).type].containsSameQn(getSafetyReqAnnotation())	
 		}
 		return false;
 	}

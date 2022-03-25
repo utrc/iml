@@ -49,7 +49,7 @@ public class EmfGeneratorWithCustomToString extends EMFGeneratorFragment2 {
 	}
 	
 	private String getCustomToStringMethod() {
-		return "public String toString() {\n"
+		return "\n  public String toString() {\n"
 				+ "    if (eIsProxy()) return super.toString();\n"
 				+ "    \n"
 				+ "    return com.utc.utrc.hermes.iml.util.ImlModelPrinter.print(this);\n"

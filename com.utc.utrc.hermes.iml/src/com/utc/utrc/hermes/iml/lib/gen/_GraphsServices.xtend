@@ -36,7 +36,7 @@ class _GraphsServices extends BasicServices
 	 * check whether the given type is Vertex type
 	 */
 	def isVertex(NamedType type) {
-		return getVertexType == type
+		return equalOrSameQn(getVertexType, type)
 	}
 	
 	/**
@@ -57,7 +57,7 @@ class _GraphsServices extends BasicServices
 	 * check whether the given type is Graph type
 	 */
 	def isGraph(NamedType type) {
-		return getGraphType == type
+		return equalOrSameQn(getGraphType, type)
 	}
 	
 	/**
@@ -85,7 +85,7 @@ class _GraphsServices extends BasicServices
 	 * check whether the given type is Edge type
 	 */
 	def isEdge(NamedType type) {
-		return getEdgeType == type
+		return equalOrSameQn(getEdgeType, type)
 	}
 	
 	/**

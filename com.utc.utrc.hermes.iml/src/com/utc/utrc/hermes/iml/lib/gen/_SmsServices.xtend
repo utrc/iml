@@ -46,7 +46,7 @@ class _SmsServices extends BasicServices
 	 * check whether the given type is Trace type
 	 */
 	def isTrace(NamedType type) {
-		return getTraceType == type
+		return equalOrSameQn(getTraceType, type)
 	}
 	
 	/**
@@ -67,7 +67,7 @@ class _SmsServices extends BasicServices
 	 * check whether the given type is EmptyState type
 	 */
 	def isEmptyState(NamedType type) {
-		return getEmptyStateType == type
+		return equalOrSameQn(getEmptyStateType, type)
 	}
 	
 	/**
@@ -88,7 +88,7 @@ class _SmsServices extends BasicServices
 	 * check whether the given type is Execution type
 	 */
 	def isExecution(NamedType type) {
-		return getExecutionType == type
+		return equalOrSameQn(getExecutionType, type)
 	}
 	
 	/**

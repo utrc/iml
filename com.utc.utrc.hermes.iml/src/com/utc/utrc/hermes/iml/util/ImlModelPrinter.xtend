@@ -75,7 +75,7 @@ class ImlModelPrinter extends ImlSwitch<String> {
 	
 	override String caseModel(Model object) {
 		'''
-		package «object.name»;
+		package «object.propertylist.doSwitch» «object.name»;
 		
 		«FOR importt : object.imports»
 		«importt.doSwitch»

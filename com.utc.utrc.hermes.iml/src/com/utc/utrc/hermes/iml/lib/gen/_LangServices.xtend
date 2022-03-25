@@ -82,7 +82,7 @@ class _LangServices extends BasicServices
 	 * check whether the given type is Bool type
 	 */
 	def isBool(NamedType type) {
-		return getBoolType == type
+		return equalOrSameQn(getBoolType, type)
 	}
 	
 	/**
@@ -103,7 +103,7 @@ class _LangServices extends BasicServices
 	 * check whether the given type is Char type
 	 */
 	def isChar(NamedType type) {
-		return getCharType == type
+		return equalOrSameQn(getCharType, type)
 	}
 	
 	/**
@@ -124,7 +124,7 @@ class _LangServices extends BasicServices
 	 * check whether the given type is Real type
 	 */
 	def isReal(NamedType type) {
-		return getRealType == type
+		return equalOrSameQn(getRealType, type)
 	}
 	
 	/**
@@ -145,7 +145,7 @@ class _LangServices extends BasicServices
 	 * check whether the given type is IntRange type
 	 */
 	def isIntRange(NamedType type) {
-		return getIntRangeType == type
+		return equalOrSameQn(getIntRangeType, type)
 	}
 	
 	/**
@@ -187,7 +187,7 @@ class _LangServices extends BasicServices
 	 * check whether the given type is Doc annotation
 	 */
 	def isDoc(NamedType annotation) {
-		return getDocAnnotation == annotation
+		return equalOrSameQn(getDocAnnotation, annotation)
 	}
 	
 	/**
@@ -195,7 +195,7 @@ class _LangServices extends BasicServices
 	 */
 	def hasDocAnnotation(Symbol symbol) {
 		if (symbol.propertylist !== null) {
-			return symbol.propertylist.properties.map[(it.ref as SimpleTypeReference).type].contains(getDocAnnotation())	
+			return symbol.propertylist.properties.map[(it.ref as SimpleTypeReference).type].containsSameQn(getDocAnnotation())	
 		}
 		return false;
 	}
@@ -205,7 +205,17 @@ class _LangServices extends BasicServices
 	 */
 	def hasDocAnnotation(TypeWithProperties type) {
 		if (type.properties !== null) {
-			return type.properties.properties.map[(it.ref as SimpleTypeReference).type].contains(getDocAnnotation())	
+			return type.properties.properties.map[(it.ref as SimpleTypeReference).type].containsSameQn(getDocAnnotation())	
+		}
+		return false;
+	}
+	
+	/**
+	 * check whether the given model is annotated with Doc annotation
+	 */
+	def hasDocAnnotation(Model model) {
+		if (model.propertylist !== null) {
+			return model.propertylist.properties.map[(it.ref as SimpleTypeReference).type].containsSameQn(getDocAnnotation())	
 		}
 		return false;
 	}
@@ -242,7 +252,7 @@ class _LangServices extends BasicServices
 	 * check whether the given type is String type
 	 */
 	def isString(NamedType type) {
-		return getStringType == type
+		return equalOrSameQn(getStringType, type)
 	}
 	
 	/**
@@ -333,7 +343,7 @@ class _LangServices extends BasicServices
 	 * check whether the given type is Int type
 	 */
 	def isInt(NamedType type) {
-		return getIntType == type
+		return equalOrSameQn(getIntType, type)
 	}
 	
 	/**

@@ -116,7 +116,7 @@ class _ProbabilisticServices extends BasicServices
 	 * check whether the given type is Probability type
 	 */
 	def isProbability(NamedType type) {
-		return getProbabilityType == type
+		return equalOrSameQn(getProbabilityType, type)
 	}
 	
 	/**
@@ -144,7 +144,7 @@ class _ProbabilisticServices extends BasicServices
 	 * check whether the given type is UniformReal type
 	 */
 	def isUniformReal(NamedType type) {
-		return getUniformRealType == type
+		return equalOrSameQn(getUniformRealType, type)
 	}
 	
 	/**
@@ -186,7 +186,7 @@ class _ProbabilisticServices extends BasicServices
 	 * check whether the given type is Gaussian type
 	 */
 	def isGaussian(NamedType type) {
-		return getGaussianType == type
+		return equalOrSameQn(getGaussianType, type)
 	}
 	
 	/**
@@ -250,7 +250,7 @@ class _ProbabilisticServices extends BasicServices
 	 * check whether the given type is UniformInt type
 	 */
 	def isUniformInt(NamedType type) {
-		return getUniformIntType == type
+		return equalOrSameQn(getUniformIntType, type)
 	}
 	
 	/**

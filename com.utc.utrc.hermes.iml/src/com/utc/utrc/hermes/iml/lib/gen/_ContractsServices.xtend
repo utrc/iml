@@ -46,7 +46,7 @@ class _ContractsServices extends BasicServices
 	 * check whether the given type is RefinementRelation type
 	 */
 	def isRefinementRelation(NamedType type) {
-		return getRefinementRelationType == type
+		return equalOrSameQn(getRefinementRelationType, type)
 	}
 	
 	/**
@@ -103,7 +103,7 @@ class _ContractsServices extends BasicServices
 	 * check whether the given type is Assume annotation
 	 */
 	def isAssume(NamedType annotation) {
-		return getAssumeAnnotation == annotation
+		return equalOrSameQn(getAssumeAnnotation, annotation)
 	}
 	
 	/**
@@ -111,7 +111,7 @@ class _ContractsServices extends BasicServices
 	 */
 	def hasAssumeAnnotation(Symbol symbol) {
 		if (symbol.propertylist !== null) {
-			return symbol.propertylist.properties.map[(it.ref as SimpleTypeReference).type].contains(getAssumeAnnotation())	
+			return symbol.propertylist.properties.map[(it.ref as SimpleTypeReference).type].containsSameQn(getAssumeAnnotation())	
 		}
 		return false;
 	}
@@ -121,7 +121,17 @@ class _ContractsServices extends BasicServices
 	 */
 	def hasAssumeAnnotation(TypeWithProperties type) {
 		if (type.properties !== null) {
-			return type.properties.properties.map[(it.ref as SimpleTypeReference).type].contains(getAssumeAnnotation())	
+			return type.properties.properties.map[(it.ref as SimpleTypeReference).type].containsSameQn(getAssumeAnnotation())	
+		}
+		return false;
+	}
+	
+	/**
+	 * check whether the given model is annotated with Assume annotation
+	 */
+	def hasAssumeAnnotation(Model model) {
+		if (model.propertylist !== null) {
+			return model.propertylist.properties.map[(it.ref as SimpleTypeReference).type].containsSameQn(getAssumeAnnotation())	
 		}
 		return false;
 	}
@@ -164,7 +174,7 @@ class _ContractsServices extends BasicServices
 	 * check whether the given type is Guarantee annotation
 	 */
 	def isGuarantee(NamedType annotation) {
-		return getGuaranteeAnnotation == annotation
+		return equalOrSameQn(getGuaranteeAnnotation, annotation)
 	}
 	
 	/**
@@ -172,7 +182,7 @@ class _ContractsServices extends BasicServices
 	 */
 	def hasGuaranteeAnnotation(Symbol symbol) {
 		if (symbol.propertylist !== null) {
-			return symbol.propertylist.properties.map[(it.ref as SimpleTypeReference).type].contains(getGuaranteeAnnotation())	
+			return symbol.propertylist.properties.map[(it.ref as SimpleTypeReference).type].containsSameQn(getGuaranteeAnnotation())	
 		}
 		return false;
 	}
@@ -182,7 +192,17 @@ class _ContractsServices extends BasicServices
 	 */
 	def hasGuaranteeAnnotation(TypeWithProperties type) {
 		if (type.properties !== null) {
-			return type.properties.properties.map[(it.ref as SimpleTypeReference).type].contains(getGuaranteeAnnotation())	
+			return type.properties.properties.map[(it.ref as SimpleTypeReference).type].containsSameQn(getGuaranteeAnnotation())	
+		}
+		return false;
+	}
+	
+	/**
+	 * check whether the given model is annotated with Guarantee annotation
+	 */
+	def hasGuaranteeAnnotation(Model model) {
+		if (model.propertylist !== null) {
+			return model.propertylist.properties.map[(it.ref as SimpleTypeReference).type].containsSameQn(getGuaranteeAnnotation())	
 		}
 		return false;
 	}

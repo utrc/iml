@@ -66,7 +66,7 @@ class _SystemsServices extends BasicServices
 	 * check whether the given type is Connector type
 	 */
 	def isConnector(NamedType type) {
-		return getConnectorType == type
+		return equalOrSameQn(getConnectorType, type)
 	}
 	
 	/**
@@ -101,7 +101,7 @@ class _SystemsServices extends BasicServices
 	 * check whether the given type is OutEventPort type
 	 */
 	def isOutEventPort(NamedType type) {
-		return getOutEventPortType == type
+		return equalOrSameQn(getOutEventPortType, type)
 	}
 	
 	/**
@@ -173,7 +173,7 @@ class _SystemsServices extends BasicServices
 	 * check whether the given type is InOutEventPort type
 	 */
 	def isInOutEventPort(NamedType type) {
-		return getInOutEventPortType == type
+		return equalOrSameQn(getInOutEventPortType, type)
 	}
 	
 	/**
@@ -200,7 +200,7 @@ class _SystemsServices extends BasicServices
 	 * check whether the given type is Direction type
 	 */
 	def isDirection(NamedType type) {
-		return getDirectionType == type
+		return equalOrSameQn(getDirectionType, type)
 	}
 	
 	/**
@@ -271,7 +271,7 @@ class _SystemsServices extends BasicServices
 	 * check whether the given type is InEventDataPort type
 	 */
 	def isInEventDataPort(NamedType type) {
-		return getInEventDataPortType == type
+		return equalOrSameQn(getInEventDataPortType, type)
 	}
 	
 	/**
@@ -320,7 +320,7 @@ class _SystemsServices extends BasicServices
 	 * check whether the given type is InPort type
 	 */
 	def isInPort(NamedType type) {
-		return getInPortType == type
+		return equalOrSameQn(getInPortType, type)
 	}
 	
 	/**
@@ -341,7 +341,7 @@ class _SystemsServices extends BasicServices
 	 * check whether the given type is InEventPort type
 	 */
 	def isInEventPort(NamedType type) {
-		return getInEventPortType == type
+		return equalOrSameQn(getInEventPortType, type)
 	}
 	
 	/**
@@ -362,7 +362,7 @@ class _SystemsServices extends BasicServices
 	 * check whether the given type is InDataPort type
 	 */
 	def isInDataPort(NamedType type) {
-		return getInDataPortType == type
+		return equalOrSameQn(getInDataPortType, type)
 	}
 	
 	/**
@@ -441,7 +441,7 @@ class _SystemsServices extends BasicServices
 	 * check whether the given type is InOutDataPort type
 	 */
 	def isInOutDataPort(NamedType type) {
-		return getInOutDataPortType == type
+		return equalOrSameQn(getInOutDataPortType, type)
 	}
 	
 	/**
@@ -462,7 +462,7 @@ class _SystemsServices extends BasicServices
 	 * check whether the given type is InOutEventDataPort type
 	 */
 	def isInOutEventDataPort(NamedType type) {
-		return getInOutEventDataPortType == type
+		return equalOrSameQn(getInOutEventDataPortType, type)
 	}
 	
 	/**
@@ -483,7 +483,7 @@ class _SystemsServices extends BasicServices
 	 * check whether the given type is InOutPort type
 	 */
 	def isInOutPort(NamedType type) {
-		return getInOutPortType == type
+		return equalOrSameQn(getInOutPortType, type)
 	}
 	
 	/**
@@ -526,7 +526,7 @@ class _SystemsServices extends BasicServices
 	 * check whether the given type is EqualityConnector type
 	 */
 	def isEqualityConnector(NamedType type) {
-		return getEqualityConnectorType == type
+		return equalOrSameQn(getEqualityConnectorType, type)
 	}
 	
 	/**
@@ -561,7 +561,7 @@ class _SystemsServices extends BasicServices
 	 * check whether the given type is OutEventDataPort type
 	 */
 	def isOutEventDataPort(NamedType type) {
-		return getOutEventDataPortType == type
+		return equalOrSameQn(getOutEventDataPortType, type)
 	}
 	
 	/**
@@ -582,7 +582,7 @@ class _SystemsServices extends BasicServices
 	 * check whether the given type is OutPort type
 	 */
 	def isOutPort(NamedType type) {
-		return getOutPortType == type
+		return equalOrSameQn(getOutPortType, type)
 	}
 	
 	/**
@@ -603,7 +603,7 @@ class _SystemsServices extends BasicServices
 	 * check whether the given type is OutDataPort type
 	 */
 	def isOutDataPort(NamedType type) {
-		return getOutDataPortType == type
+		return equalOrSameQn(getOutDataPortType, type)
 	}
 	
 	/**

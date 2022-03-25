@@ -159,7 +159,7 @@ class _SynchronyServices extends BasicServices
 	 * check whether the given type is RealStream type
 	 */
 	def isRealStream(NamedType type) {
-		return getRealStreamType == type
+		return equalOrSameQn(getRealStreamType, type)
 	}
 	
 	/**
@@ -214,7 +214,7 @@ class _SynchronyServices extends BasicServices
 	 * check whether the given type is BoolStream type
 	 */
 	def isBoolStream(NamedType type) {
-		return getBoolStreamType == type
+		return equalOrSameQn(getBoolStreamType, type)
 	}
 	
 	/**
@@ -247,7 +247,7 @@ class _SynchronyServices extends BasicServices
 	 * check whether the given type is Let annotation
 	 */
 	def isLet(NamedType annotation) {
-		return getLetAnnotation == annotation
+		return equalOrSameQn(getLetAnnotation, annotation)
 	}
 	
 	/**
@@ -255,7 +255,7 @@ class _SynchronyServices extends BasicServices
 	 */
 	def hasLetAnnotation(Symbol symbol) {
 		if (symbol.propertylist !== null) {
-			return symbol.propertylist.properties.map[(it.ref as SimpleTypeReference).type].contains(getLetAnnotation())	
+			return symbol.propertylist.properties.map[(it.ref as SimpleTypeReference).type].containsSameQn(getLetAnnotation())	
 		}
 		return false;
 	}
@@ -265,7 +265,17 @@ class _SynchronyServices extends BasicServices
 	 */
 	def hasLetAnnotation(TypeWithProperties type) {
 		if (type.properties !== null) {
-			return type.properties.properties.map[(it.ref as SimpleTypeReference).type].contains(getLetAnnotation())	
+			return type.properties.properties.map[(it.ref as SimpleTypeReference).type].containsSameQn(getLetAnnotation())	
+		}
+		return false;
+	}
+	
+	/**
+	 * check whether the given model is annotated with Let annotation
+	 */
+	def hasLetAnnotation(Model model) {
+		if (model.propertylist !== null) {
+			return model.propertylist.properties.map[(it.ref as SimpleTypeReference).type].containsSameQn(getLetAnnotation())	
 		}
 		return false;
 	}
@@ -366,7 +376,7 @@ class _SynchronyServices extends BasicServices
 	 * check whether the given type is IntStream type
 	 */
 	def isIntStream(NamedType type) {
-		return getIntStreamType == type
+		return equalOrSameQn(getIntStreamType, type)
 	}
 	
 	/**

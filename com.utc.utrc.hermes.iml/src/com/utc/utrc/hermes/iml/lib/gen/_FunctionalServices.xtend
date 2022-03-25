@@ -64,7 +64,7 @@ class _FunctionalServices extends BasicServices
 	 * check whether the given type is BoolStream type
 	 */
 	def isBoolStream(NamedType type) {
-		return getBoolStreamType == type
+		return equalOrSameQn(getBoolStreamType, type)
 	}
 	
 	/**
@@ -109,7 +109,7 @@ class _FunctionalServices extends BasicServices
 	 * check whether the given type is Stream type
 	 */
 	def isStream(NamedType type) {
-		return getStreamType == type
+		return equalOrSameQn(getStreamType, type)
 	}
 	
 	/**
@@ -136,7 +136,7 @@ class _FunctionalServices extends BasicServices
 	 * check whether the given type is RealStream type
 	 */
 	def isRealStream(NamedType type) {
-		return getRealStreamType == type
+		return equalOrSameQn(getRealStreamType, type)
 	}
 	
 	/**
@@ -157,7 +157,7 @@ class _FunctionalServices extends BasicServices
 	 * check whether the given type is IntStream type
 	 */
 	def isIntStream(NamedType type) {
-		return getIntStreamType == type
+		return equalOrSameQn(getIntStreamType, type)
 	}
 	
 	/**

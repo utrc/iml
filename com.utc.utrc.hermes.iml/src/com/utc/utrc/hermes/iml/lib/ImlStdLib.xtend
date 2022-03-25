@@ -14,14 +14,14 @@ import org.eclipse.emf.ecore.resource.ResourceSet
 import com.google.inject.Singleton
 import com.google.inject.Inject
 import org.eclipse.xtext.naming.IQualifiedNameProvider
-import org.eclipse.xtext.naming.QualifiedName
 import com.google.common.collect.Maps
+import org.eclipse.emf.ecore.EObject
 
 @Singleton
 class ImlStdLib {
 	
 	@Inject extension IQualifiedNameProvider qnp ;
-
+	
 	Map<String, Map<String, Symbol>> imlStdSymbols = Maps.newHashMap();
 	
 	public val INT = "Int";
@@ -209,6 +209,9 @@ class ImlStdLib {
 	def getModelSymbols(String packageName) {
 		return imlStdSymbols.get(packageName).values.toList
 	}
-
+	
+	def getFqn(EObject eobj) {
+		return eobj.fullyQualifiedName
+	}
 	
 }

@@ -80,7 +80,7 @@ class _OntologicalServices extends BasicServices
 	 * check whether the given type is OutputVar annotation
 	 */
 	def isOutputVar(NamedType annotation) {
-		return getOutputVarAnnotation == annotation
+		return equalOrSameQn(getOutputVarAnnotation, annotation)
 	}
 	
 	/**
@@ -88,7 +88,7 @@ class _OntologicalServices extends BasicServices
 	 */
 	def hasOutputVarAnnotation(Symbol symbol) {
 		if (symbol.propertylist !== null) {
-			return symbol.propertylist.properties.map[(it.ref as SimpleTypeReference).type].contains(getOutputVarAnnotation())	
+			return symbol.propertylist.properties.map[(it.ref as SimpleTypeReference).type].containsSameQn(getOutputVarAnnotation())	
 		}
 		return false;
 	}
@@ -98,7 +98,17 @@ class _OntologicalServices extends BasicServices
 	 */
 	def hasOutputVarAnnotation(TypeWithProperties type) {
 		if (type.properties !== null) {
-			return type.properties.properties.map[(it.ref as SimpleTypeReference).type].contains(getOutputVarAnnotation())	
+			return type.properties.properties.map[(it.ref as SimpleTypeReference).type].containsSameQn(getOutputVarAnnotation())	
+		}
+		return false;
+	}
+	
+	/**
+	 * check whether the given model is annotated with OutputVar annotation
+	 */
+	def hasOutputVarAnnotation(Model model) {
+		if (model.propertylist !== null) {
+			return model.propertylist.properties.map[(it.ref as SimpleTypeReference).type].containsSameQn(getOutputVarAnnotation())	
 		}
 		return false;
 	}
@@ -122,7 +132,7 @@ class _OntologicalServices extends BasicServices
 	 * check whether the given type is Let annotation
 	 */
 	def isLet(NamedType annotation) {
-		return getLetAnnotation == annotation
+		return equalOrSameQn(getLetAnnotation, annotation)
 	}
 	
 	/**
@@ -130,7 +140,7 @@ class _OntologicalServices extends BasicServices
 	 */
 	def hasLetAnnotation(Symbol symbol) {
 		if (symbol.propertylist !== null) {
-			return symbol.propertylist.properties.map[(it.ref as SimpleTypeReference).type].contains(getLetAnnotation())	
+			return symbol.propertylist.properties.map[(it.ref as SimpleTypeReference).type].containsSameQn(getLetAnnotation())	
 		}
 		return false;
 	}
@@ -140,7 +150,17 @@ class _OntologicalServices extends BasicServices
 	 */
 	def hasLetAnnotation(TypeWithProperties type) {
 		if (type.properties !== null) {
-			return type.properties.properties.map[(it.ref as SimpleTypeReference).type].contains(getLetAnnotation())	
+			return type.properties.properties.map[(it.ref as SimpleTypeReference).type].containsSameQn(getLetAnnotation())	
+		}
+		return false;
+	}
+	
+	/**
+	 * check whether the given model is annotated with Let annotation
+	 */
+	def hasLetAnnotation(Model model) {
+		if (model.propertylist !== null) {
+			return model.propertylist.properties.map[(it.ref as SimpleTypeReference).type].containsSameQn(getLetAnnotation())	
 		}
 		return false;
 	}
@@ -164,7 +184,7 @@ class _OntologicalServices extends BasicServices
 	 * check whether the given type is LocalVar annotation
 	 */
 	def isLocalVar(NamedType annotation) {
-		return getLocalVarAnnotation == annotation
+		return equalOrSameQn(getLocalVarAnnotation, annotation)
 	}
 	
 	/**
@@ -172,7 +192,7 @@ class _OntologicalServices extends BasicServices
 	 */
 	def hasLocalVarAnnotation(Symbol symbol) {
 		if (symbol.propertylist !== null) {
-			return symbol.propertylist.properties.map[(it.ref as SimpleTypeReference).type].contains(getLocalVarAnnotation())	
+			return symbol.propertylist.properties.map[(it.ref as SimpleTypeReference).type].containsSameQn(getLocalVarAnnotation())	
 		}
 		return false;
 	}
@@ -182,7 +202,17 @@ class _OntologicalServices extends BasicServices
 	 */
 	def hasLocalVarAnnotation(TypeWithProperties type) {
 		if (type.properties !== null) {
-			return type.properties.properties.map[(it.ref as SimpleTypeReference).type].contains(getLocalVarAnnotation())	
+			return type.properties.properties.map[(it.ref as SimpleTypeReference).type].containsSameQn(getLocalVarAnnotation())	
+		}
+		return false;
+	}
+	
+	/**
+	 * check whether the given model is annotated with LocalVar annotation
+	 */
+	def hasLocalVarAnnotation(Model model) {
+		if (model.propertylist !== null) {
+			return model.propertylist.properties.map[(it.ref as SimpleTypeReference).type].containsSameQn(getLocalVarAnnotation())	
 		}
 		return false;
 	}
